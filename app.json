@@ -1,0 +1,117 @@
+{
+  "expo": {
+    "name": "Looop",
+    "slug": "Looop",
+    "scheme": "looop",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#FF6D1B"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.looop.Looop",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "This app requires microphone access to play and record audio.",
+        "NSContactsUsageDescription": "This app needs access to your contacts to demonstrate its functionality.",
+        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos to let you upload cover images and collectibles.",
+        "NSPhotoLibraryAddUsageDescription": "Allow $(PRODUCT_NAME) to save photos.",
+        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera to take photos for your cover images and collectibles.",
+        "NSLocationWhenInUseUsageDescription": "This app needs access to your location to provide location-based services and show relevant content based on where you are.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location to provide location-based services and show relevant content based on where you are, even when the app is in the background.",
+        "NSLocationAlwaysUsageDescription": "This app needs access to your location to provide location-based services and show relevant content based on where you are, even when the app is in the background.",
+        "UIBackgroundModes": ["location", "fetch"]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FF6D1B"
+      },
+      "package": "com.looop.Looop",
+      "permissions": [
+        "android.permission.READ_CONTACTS",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_MEDIA_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-video",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#FF6D1B"
+        }
+      ],
+      [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "DEFAULT"
+        }
+      ],
+      "expo-secure-store",
+      [
+        "expo-av",
+        {
+          "isIosBackgroundAudioEnabled": true,
+          "android": {
+            "playbackAlwaysInForeground": false
+          }
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to let you upload cover images and collectibles.",
+          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Allow $(PRODUCT_NAME) to access your contacts."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location.",
+          "locationAlwaysPermission": "Allow $(PRODUCT_NAME) to use your location to provide location-based services and show relevant content based on where you are, even when the app is in the background.",
+          "locationWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location to provide location-based services and show relevant content based on where you are."
+        }
+      ],
+      "expo-localization"
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "cb90d7d7-2b0f-4020-b3d9-088ef6f0e2f1"
+      }
+    }
+  }
+}
