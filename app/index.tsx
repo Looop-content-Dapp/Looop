@@ -6,6 +6,7 @@ import {
   View,
   TouchableOpacity,
   Animated,
+  StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -39,7 +40,6 @@ export default function Page() {
     "Discover amazing music and people and connect with them"
   );
   const [active, setActive] = useState<string | undefined>("#FF8A49");
-
   // Animation values
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -139,6 +139,7 @@ export default function Page() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      <StatusBar backgroundColor={backgroundColor} barStyle="light-content" />
       <View className="items-center flex-1 w-full">
         <Image
           source={logowhite}
