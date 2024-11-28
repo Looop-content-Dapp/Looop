@@ -188,16 +188,6 @@ const SecureAccount = () => {
           </Text>
         </TouchableOpacity>
       )}
-
-      <View className="flex-row items-center justify-center gap-x-[2px] absolute bottom-12 left-0 right-0">
-        <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[16px]">
-          Powered by
-        </Text>
-        <Image source={require("../../assets/images/starknet.png")} />
-        <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[16px]">
-          Starknet
-        </Text>
-      </View>
     </SafeAreaView>
   );
 };

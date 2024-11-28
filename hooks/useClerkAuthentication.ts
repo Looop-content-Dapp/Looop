@@ -2,19 +2,40 @@ import { useState } from 'react';
 import { useAuth, useSignUp, useOAuth, useUser, useSignIn } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { Account, ID } from 'react-native-appwrite';
-import { account, client } from '../appWrite';
+import axios from 'axios';
+import { account } from '@/appWrite';
 
+
+const ENDPOINT = "https://looop-backend.onrender.com";
 export type UserRole = 'user' | 'admin' | 'artist';
 
 interface UserPublicMetadata {
   role?: UserRole;
 }
 
+interface SignInResponse {
+    message: string;
+    data: {
+      _id: string;
+      email: string;
+      username: string;
+      profileImage: string;
+      bio: string;
+      isPremium: boolean;
+      following: number;
+      friendsCount: number;
+      artistPlayed: number;
+      faveArtists: any[];
+      preferences: any[];
+    };
+  }
+
 /**
  * Custom hook to handle authentication with Clerk.
  */
 export const useClerkAuthentication = () => {
   const { signUp, setActive: setActiveSignUp, isLoaded } = useSignUp();
+  const [loading, setLoading] = useState(false)
   const { signOut } = useAuth();
   const { user, isSignedIn } = useUser();
   const { signIn, setActive: setActiveSignIn } = useSignIn();
@@ -56,15 +77,46 @@ export const useClerkAuthentication = () => {
    * Handles email sign-in using Clerk.
    * @param emailAddress - The user's email address.
    */
-  const handleEmailSignIn = async (emailAddress: string) => {
+/**
+   * Handles email sign-in using the backend API.
+   * @param emailAddress - The user's email address
+   * @param password - The user's password
+   */
+const handleEmailSignIn = async (emailAddress: string, password: string) => {
+    setLoading(true);
+    setError(null);
+
     try {
-      await signIn?.create({
-        identifier: emailAddress,
-      });
-      router.navigate('/(musicTabs)');
+      const response = await axios.post<SignInResponse>(
+        `${ENDPOINT}/api/user/signin`,
+        {
+          email: emailAddress,
+          password: password
+        }
+      );
+      console.log("response", response.data)
+      return response.data;
     } catch (err) {
-      console.error('Error during email sign-in:', err);
-      setError('Error during email sign-in.');
+      console.error('Error during sign-in:', err);
+
+      if (axios.isAxiosError(err)) {
+        // Handle specific error cases
+        if (err.response?.status === 404) {
+          console.log('User not found. Please check your email.');
+        } else if (err.response?.status === 401) {
+          console.log('Invalid password. Please try again.', err.message);
+        } else if (err.response?.status === 400) {
+          console.log('Please provide both email and password.');
+        } else {
+          console.log('An error occurred during sign-in. Please try again.');
+        }
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+
+      throw err;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -168,6 +220,7 @@ export const useClerkAuthentication = () => {
     getUserEmail,
     getUserRole,
     user,
-    userId
+    userId,
+    loading
   };
 };

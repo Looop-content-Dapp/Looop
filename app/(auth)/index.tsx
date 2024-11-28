@@ -253,12 +253,6 @@ const EmailSignupFlow = () => {
           )}
         />
 
-        {isCorrect === false && value.length === CELL_COUNT && (
-          <Text style={styles.errorMessage}>
-            Incorrect code. Please try again.
-          </Text>
-        )}
-
         <Text className="text-[14px] mt-[32px] font-PlusJakartaSansMedium text-Grey/04 text-center">
           Didn't receive a code?{" "}
           {timer > 0 ? (
@@ -283,16 +277,6 @@ const EmailSignupFlow = () => {
       className="flex-1 min-h-full px-6"
     >
       {currentStep === "email" ? renderEmailStep() : renderVerificationStep()}
-
-      <View className="flex-row items-center justify-center gap-x-[2px] absolute bottom-12 left-0 right-0">
-        <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[16px]">
-          Powered by
-        </Text>
-        <Image source={require("../../assets/images/starknet.png")} />
-        <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[16px]">
-          Starknet
-        </Text>
-      </View>
     </SafeAreaView>
   );
 };
