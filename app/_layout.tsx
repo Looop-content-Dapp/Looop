@@ -2,17 +2,17 @@ import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import { KeyboardProvider } from "react-native-keyboard-controller";
-import { ClerkProvider, ClerkLoaded } from "@clerk/clerk-expo";
 import * as SecureStore from "expo-secure-store";
-import { Provider } from "react-redux";
+import { Provider, useSelector } from "react-redux";
 import { SplashScreen, Stack } from "expo-router";
 import "../global.css";
-import store from "../redux/store";
+import store, { persistor, RootState } from "../redux/store";
 import { useFonts } from "expo-font";
 import { GiphySDK } from "@giphy/react-native-sdk";
 import { AuthProvider } from "../context/AuthContextProvider";
 import { getItem } from "../utils/asyncStorage";
 import { Client } from "react-native-appwrite";
+import { PersistGate } from "redux-persist/integration/react";
 
 const client = new Client()
   .setProject("6737282100305ba6f174")
@@ -65,69 +65,56 @@ export default function _RootLayout() {
     prepareApp();
   }, [fontsLoaded, fontsError, initialRoute]);
 
-  const tokenCache = {
-    async getToken(key: string) {
-      return SecureStore.getItemAsync(key);
-    },
-    async saveToken(key: string, value: string) {
-      return SecureStore.setItemAsync(key, value);
-    },
-  };
-
-  const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
-
   // Don't render anything until we know the initial route and fonts are loaded
   if (initialRoute === null || !fontsLoaded) {
     return null;
   }
 
   return (
-    <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
-      <ClerkLoaded>
-        <Provider store={store}>
-          <AuthProvider>
-            <KeyboardProvider>
-              <GestureHandlerRootView style={{ flex: 1 }}>
-                <StatusBar
-                  style="light"
-                  backgroundColor="transparent"
-                  translucent={false}
-                />
-                <Stack
-                  screenOptions={{
-                    contentStyle: { backgroundColor: "#0A0B0F" },
-                    headerShown: false,
+    <>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <KeyboardProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <StatusBar
+                style="light"
+                backgroundColor="transparent"
+                translucent={false}
+              />
+              <Stack
+                screenOptions={{
+                  contentStyle: { backgroundColor: "#0A0B0F" },
+                  headerShown: false,
+                }}
+                initialRouteName={initialRoute}
+              >
+                <Stack.Screen name="index" />
+                <Stack.Screen name="(auth)" />
+                <Stack.Screen name="(musicTabs)" />
+                <Stack.Screen name="(communityTabs)" />
+                <Stack.Screen name="musicDetails" />
+                <Stack.Screen name="(settingUp)" />
+                <Stack.Screen name="loadingScreen" />
+                <Stack.Screen
+                  name="nowPlaying"
+                  options={{
+                    presentation: "fullScreenModal",
                   }}
-                  initialRouteName={initialRoute}
-                >
-                  <Stack.Screen name="index" />
-                  <Stack.Screen name="(musicTabs)" />
-                  <Stack.Screen name="(auth)" />
-                  <Stack.Screen name="(communityTabs)" />
-                  <Stack.Screen name="musicDetails" />
-                  <Stack.Screen name="(settingUp)" />
-                  <Stack.Screen name="loadingScreen" />
-                  <Stack.Screen
-                    name="nowPlaying"
-                    options={{
-                      presentation: "fullScreenModal",
-                    }}
-                  />
-                  <Stack.Screen name="creatorOnboarding" />
-                  <Stack.Screen name="(artisteTabs)" />
-                  <Stack.Screen
-                    name="createPlaylist"
-                    options={{
-                      presentation: "fullScreenModal",
-                    }}
-                  />
-                  <Stack.Screen name="communityDetails" />
-                </Stack>
-              </GestureHandlerRootView>
-            </KeyboardProvider>
-          </AuthProvider>
-        </Provider>
-      </ClerkLoaded>
-    </ClerkProvider>
+                />
+                <Stack.Screen name="creatorOnboarding" />
+                <Stack.Screen name="(artisteTabs)" />
+                <Stack.Screen
+                  name="createPlaylist"
+                  options={{
+                    presentation: "fullScreenModal",
+                  }}
+                />
+                <Stack.Screen name="communityDetails" />
+              </Stack>
+            </GestureHandlerRootView>
+          </KeyboardProvider>
+        </PersistGate>
+      </Provider>
+    </>
   );
 }
