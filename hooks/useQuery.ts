@@ -2,8 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import useUserInfo from "./useUserInfo";
-
-const ENDPOINT = "https://looop-backend.onrender.com";
+import api from "@/config/apiConfig";
 
 // -----------------------------
 // TypeScript Interfaces
@@ -195,7 +194,7 @@ export const useQuery = () => {
   const createAccount = useCallback(
     async (_email: string, password: string) => {
       try {
-        const response = await axios.post(`${ENDPOINT}/api/user/createuser`, {
+        const response = await api.post(`/api/user/createuser`, {
           email: _email,
           password: password,
         });
@@ -216,7 +215,7 @@ export const useQuery = () => {
   const getUserByEmail = useCallback(
     async (email: string): Promise<UserData> => {
       try {
-        const response = await axios.get(`${ENDPOINT}/api/user/email/${email}`);
+        const response = await axios.get(`/api/user/email/${email}`);
         console.log("User data fetched by email successfully:", response.data);
         return response.data;
       } catch (error) {
@@ -278,13 +277,10 @@ export const useQuery = () => {
     async (id: string, genre: string[]) => {
       try {
         console.log("Sending data:", { userId: id, genres: genre });
-        const response = await axios.post(
-          `${ENDPOINT}/api/user/creategenresforuser`,
-          {
-            userId: id,
-            preferences: genre,
-          }
-        );
+        const response = await axios.post(`/api/user/creategenresforuser`, {
+          userId: id,
+          preferences: genre,
+        });
         console.log("Response from saving user preferences:", response.data);
         return true;
       } catch (error) {
@@ -304,7 +300,7 @@ export const useQuery = () => {
     async (id: string, artists: string[]) => {
       try {
         const response = await axios.post(
-          `${ENDPOINT}/api/user/createuserfaveartistbasedongenres`,
+          `/api/user/createuserfaveartistbasedongenres`,
           {
             userId: id,
             faveArtist: artists,
@@ -336,7 +332,7 @@ export const useQuery = () => {
     async (userId: string, artistId: string) => {
       try {
         const response = await axios.post(
-          `${ENDPOINT}/api/user/subcribetoartist/${userId}/${artistId}`
+          `/api/user/subcribetoartist/${userId}/${artistId}`
         );
         console.log("The response from subscribing to artist", response.data);
         return true;
@@ -356,7 +352,7 @@ export const useQuery = () => {
   const followArtist = useCallback(async (userId: string, artistId: string) => {
     try {
       const response = await axios.post(
-        `${ENDPOINT}/api/artist/follow/${userId}/${artistId}`
+        `/api/artist/follow/${userId}/${artistId}`
       );
       console.log("Response from following artist:", response.data);
       return true;
@@ -374,7 +370,7 @@ export const useQuery = () => {
   const isFollowingArtist = async (userId: string, artistId: string) => {
     try {
       const response = await axios.get(
-        `${ENDPOINT}/api/user/isfollowing/${userId}/${artistId}`
+        `/api/user/isfollowing/${userId}/${artistId}`
       );
       return response.data.bool; // Assuming the endpoint returns a boolean
     } catch (error) {
@@ -391,7 +387,7 @@ export const useQuery = () => {
   const getArtistBasedOnGenre = useCallback(async (id: string) => {
     try {
       const response = await axios.get(
-        `${ENDPOINT}/api/user/getartistbasedonusergenre/${id}`
+        `/api/user/getartistbasedonusergenre/${id}`
       );
       return response.data;
     } catch (error) {
@@ -408,7 +404,7 @@ export const useQuery = () => {
   const getUserSubscriptions = useCallback(async (id: string) => {
     try {
       const response = await axios.get(
-        `${ENDPOINT}/api/user/getartistusersubcribedto/${id}`
+        `/api/user/getartistusersubcribedto/${id}`
       );
       return response.data;
     } catch (error) {
@@ -424,9 +420,7 @@ export const useQuery = () => {
   // Fetch Artists the User is Following
   const fetchFollowingArtists = async (userId: string) => {
     try {
-      const response = await axios.get(
-        `${ENDPOINT}/api/artist/follow/${userId}`
-      );
+      const response = await axios.get(`/api/artist/follow/${userId}`);
       return response.data;
     } catch (error) {
       console.error("Error fetchFollowingArtists:", error);
@@ -440,7 +434,7 @@ export const useQuery = () => {
 
   const getArtistDetails = async (artistId: string) => {
     try {
-      const response = await axios.get(`${ENDPOINT}/api/artist/${artistId}`);
+      const response = await axios.get(`/api/artist/${artistId}`);
       // console.log("Artist details fetched successfully:", response.data);
       return response.data;
     } catch (error) {
@@ -460,7 +454,7 @@ export const useQuery = () => {
   // Get All Releases
   const getAllReleases = useCallback(async () => {
     try {
-      const response = await axios.get(`${ENDPOINT}/api/song/releases/all`);
+      const response = await axios.get(`/api/song/releases/all`);
       return response.data;
     } catch (error) {
       console.error("Error getting all releases:", error);
@@ -475,7 +469,7 @@ export const useQuery = () => {
   // Get All Artists
   const getAllArtists = useCallback(async () => {
     try {
-      const response = await axios.get(`${ENDPOINT}/api/artist`);
+      const response = await axios.get(`/api/artist`);
       return response.data;
     } catch (error) {
       console.error("Error getting all artists:", error);
@@ -490,7 +484,7 @@ export const useQuery = () => {
   // Get Genres
   const getGenres = useCallback(async () => {
     try {
-      const response = await axios.get(`${ENDPOINT}/api/genre/getgenres`);
+      const response = await axios.get(`/api/genre/getgenres`);
       return response.data;
     } catch (error) {
       console.error("Error getting genres:", error);
@@ -504,9 +498,7 @@ export const useQuery = () => {
 
   const getTracksFromId = useCallback(async (albumId: string) => {
     try {
-      const response = await axios.get(
-        `${ENDPOINT}/api/song/releases/${albumId}/tracks`
-      );
+      const response = await axios.get(`/api/song/releases/${albumId}/tracks`);
       return response.data;
     } catch (error) {
       console.error("Error getting genres:", error);
@@ -529,9 +521,7 @@ export const useQuery = () => {
    */
   const saveAlbum = useCallback(async (userId: string, albumId: string) => {
     try {
-      const response = await axios.post(
-        `${ENDPOINT}/api/song/album/${userId}/${albumId}`
-      );
+      const response = await axios.post(`/api/song/album/${userId}/${albumId}`);
       console.log("Album saved successfully:", response.data);
       return response.data;
     } catch (error) {
@@ -551,9 +541,7 @@ export const useQuery = () => {
    */
   const getSavedAlbums = useCallback(async (userId: string) => {
     try {
-      const response = await axios.get(
-        `${ENDPOINT}/api/song/library/saved/${userId}`
-      );
+      const response = await axios.get(`/api/song/library/saved/${userId}`);
       console.log("Saved albums fetched successfully:", response.data);
       return response.data;
     } catch (error) {
@@ -575,9 +563,7 @@ export const useQuery = () => {
   const likeSong = useCallback(async (userId: string, songId: string) => {
     console.log("liking a song of", userId, songId);
     try {
-      const response = await axios.post(
-        `${ENDPOINT}/api/song/like/${songId}/${userId}`
-      );
+      const response = await axios.post(`/api/song/like/${songId}/${userId}`);
       console.log("Song liked successfully:", response.data);
       return response.data;
     } catch (error) {
@@ -598,7 +584,7 @@ export const useQuery = () => {
   const getLikedSongs = useCallback(async (userId: string) => {
     try {
       const response = await axios.get(
-        `${ENDPOINT}/api/song/insights/top-songs/${userId}`
+        `/api/song/insights/top-songs/${userId}`
       );
       console.log("Liked songs fetched successfully:", response.data);
       return response.data;
@@ -615,7 +601,7 @@ export const useQuery = () => {
   // Search Songs
   const searchSongs = useCallback(async (query: string) => {
     try {
-      const response = await axios.get(`${ENDPOINT}/api/song/search`, {
+      const response = await axios.get(`/api/song/search`, {
         params: { query },
       });
       return response.data;
@@ -633,7 +619,7 @@ export const useQuery = () => {
   const getTopSongsForArtist = useCallback(async (artistId: string) => {
     try {
       const response = await axios.get(
-        `${ENDPOINT}/api/song/artist/${artistId}/top-songs`
+        `/api/song/artist/${artistId}/top-songs`
       );
       return response.data;
     } catch (error) {
@@ -650,9 +636,7 @@ export const useQuery = () => {
   const getSongsForUser = useCallback(async () => {
     try {
       const uId = await retrieveUserId();
-      const response = await axios.get(
-        `${ENDPOINT}/api/song/artisttheyfollow/${uId}`
-      );
+      const response = await axios.get(`/api/song/artisttheyfollow/${uId}`);
       return response.data;
     } catch (error) {
       console.error("Error fetching songs for user:", error);
@@ -667,9 +651,7 @@ export const useQuery = () => {
   // Get Singles for Artist
   const getSinglesForArtist = useCallback(async (artistId: string) => {
     try {
-      const response = await axios.get(
-        `${ENDPOINT}/api/song/artist/${artistId}/singles`
-      );
+      const response = await axios.get(`/api/song/artist/${artistId}/singles`);
       return response.data;
     } catch (error) {
       console.error("Error fetching singles for artist:", error);
@@ -688,9 +670,7 @@ export const useQuery = () => {
    */
   const getAlbumsAndEP = useCallback(async (id: string) => {
     try {
-      const response = await axios.get(
-        `${ENDPOINT}/api/song/artist/${id}/albums-eps`
-      );
+      const response = await axios.get(`/api/song/artist/${id}/albums-eps`);
       return response.data;
     } catch (error) {
       console.error("Error fetching albums and EPs:", error);
@@ -706,7 +686,7 @@ export const useQuery = () => {
   const getReleaseBasedOnGenres = useCallback(async (genreId: string) => {
     try {
       const response = await axios.get(
-        `${ENDPOINT}/api/song/getreleasebasedongenres/${genreId}`
+        `/api/song/getreleasebasedongenres/${genreId}`
       );
       return response.data;
     } catch (error) {
@@ -736,7 +716,7 @@ export const useQuery = () => {
       console.log("song id", songId);
       try {
         const response = await axios.post(
-          `${ENDPOINT}/api/song/stream/${songId}/${userId}`,
+          `/api/song/stream/${songId}/${userId}`,
           streamData
         );
 
@@ -758,9 +738,7 @@ export const useQuery = () => {
   // Get User Preference
   const getUserPreference = useCallback(async (userId: string) => {
     try {
-      const response = await axios.get(
-        `${ENDPOINT}/api/preference/user/${userId}`
-      );
+      const response = await axios.get(`/api/preference/user/${userId}`);
       return response.data;
     } catch (error) {
       console.error("Error getting user preference:", error);
@@ -776,7 +754,7 @@ export const useQuery = () => {
   const getSongArtistFeaturedOn = useCallback(async (songId: string) => {
     try {
       const response = await axios.get(
-        `${ENDPOINT}/api/song/getsongartistfeaturedon/${songId}`
+        `/api/song/getsongartistfeaturedon/${songId}`
       );
       return response.data;
     } catch (error) {
@@ -793,7 +771,7 @@ export const useQuery = () => {
   const getLastPlayedSongs = useCallback(async (userId: string) => {
     try {
       const response = await axios.get(
-        `${ENDPOINT}/api/song/history/last-played/${userId}`
+        `/api/song/history/last-played/${userId}`
       );
       return response.data;
     } catch (error) {
@@ -809,7 +787,7 @@ export const useQuery = () => {
   // Get Top 100 Songs
   const getTop100Songs = useCallback(async () => {
     try {
-      const response = await axios.get(`${ENDPOINT}/api/song/gettopp100songs`);
+      const response = await axios.get(`/api/song/gettopp100songs`);
       return response.data;
     } catch (error) {
       console.error("Error getting top 100 songs:", error);
@@ -824,9 +802,7 @@ export const useQuery = () => {
   // Follow Artist by ID (Different from the existing followArtist function)
   const followArtistById = useCallback(async (artistId: string) => {
     try {
-      const response = await axios.post(
-        `${ENDPOINT}/api/artist/follow/${artistId}`
-      );
+      const response = await axios.post(`/api/artist/follow/${artistId}`);
       console.log("Response from following artist by ID:", response.data);
       return response.data;
     } catch (error) {
@@ -851,7 +827,7 @@ export const useQuery = () => {
   const createPlaylist = useCallback(
     async (_title: string, _userId: string): Promise<PlaylistResponse> => {
       try {
-        const response = await axios.post(`${ENDPOINT}/api/playlist/create`, {
+        const response = await axios.post(`/api/playlist/create`, {
           title: _title,
           userId: _userId,
         });
@@ -884,10 +860,7 @@ export const useQuery = () => {
           playlistId: _playlistId,
           userId: _userId,
         };
-        const response = await axios.post(
-          `${ENDPOINT}/api/playlist/songs/add`,
-          payload
-        );
+        const response = await axios.post(`/api/playlist/songs/add`, payload);
         console.log("Song added to playlist:", response.data);
         return response.data;
       } catch (error) {
@@ -909,9 +882,7 @@ export const useQuery = () => {
    */
   const getAllPlaylistsForUser = useCallback(async (userId: string) => {
     try {
-      const response = await axios.get(
-        `${ENDPOINT}/api/playlist/user/${userId}`
-      );
+      const response = await axios.get(`/api/playlist/user/${userId}`);
       return response.data;
     } catch (error) {
       console.error("Error getting all playlists for user:", error);
@@ -928,11 +899,9 @@ export const useQuery = () => {
    * @param {string} playlistId - The playlist's ID to pin.
    * @returns {Promise<Object>} - Response data from the API.
    */
-  const pinPlaylist = useCallback(async (playlistId) => {
+  const pinPlaylist = useCallback(async (playlistId: any) => {
     try {
-      const response = await axios.post(
-        `${ENDPOINT}/api/playlist/pin/${playlistId}`
-      );
+      const response = await axios.post(`/api/playlist/pin/${playlistId}`);
       console.log("Playlist pinned:", response.data);
       return response.data;
     } catch (error) {
@@ -980,7 +949,7 @@ export const useQuery = () => {
     async (userId: string, isPremium: boolean) => {
       try {
         const response = await axios.post(
-          `${ENDPOINT}/api/user/changepremiumstate/${userId}`,
+          `/api/user/changepremiumstate/${userId}`,
           { isPremium } // Assuming the API expects this in the body
         );
         console.log("Premium state changed successfully:", response.data);
@@ -1011,22 +980,21 @@ export const useQuery = () => {
           case "add":
             if (!friendId)
               throw new Error("Friend ID is required to add a friend.");
-            response = await axios.post(
-              `${ENDPOINT}/api/user/friend/${userId}`,
-              { friendId }
-            );
+            response = await axios.post(`/api/user/friend/${userId}`, {
+              friendId,
+            });
             console.log("Friend added successfully:", response.data);
             break;
           case "remove":
             if (!friendId)
               throw new Error("Friend ID is required to remove a friend.");
             response = await axios.delete(
-              `${ENDPOINT}/api/user/friend/${userId}/${friendId}`
+              `/api/user/friend/${userId}/${friendId}`
             );
             console.log("Friend removed successfully:", response.data);
             break;
           case "get":
-            response = await axios.get(`${ENDPOINT}/api/user/friend/${userId}`);
+            response = await axios.get(`/api/user/friend/${userId}`);
             console.log("Fetched friends successfully:", response.data);
             return response.data;
           default:
@@ -1054,7 +1022,7 @@ export const useQuery = () => {
   // Get User Friends
   const getUserFriends = useCallback(async (userId: string) => {
     try {
-      const response = await axios.get(`${ENDPOINT}/api/user/friend/${userId}`);
+      const response = await axios.get(`/api/user/friend/${userId}`);
       return response.data;
     } catch (error) {
       console.error("Error getting user friends:", error);
@@ -1076,7 +1044,7 @@ export const useQuery = () => {
    */
   const getAllCommunities = useCallback(async () => {
     try {
-      const response = await axios.get(`${ENDPOINT}/api/community`);
+      const response = await axios.get(`/api/community`);
       console.log("All communities fetched successfully:", response.data);
       return response.data;
     } catch (error) {
@@ -1098,13 +1066,10 @@ export const useQuery = () => {
   const joinCommunity = useCallback(
     async (_userId: string, _communityId: string) => {
       try {
-        const response = await axios.post(
-          `${ENDPOINT}/api/community/joincommunity`,
-          {
-            userId: _userId,
-            communityId: _communityId,
-          }
-        );
+        const response = await axios.post(`/api/community/joincommunity`, {
+          userId: _userId,
+          communityId: _communityId,
+        });
         console.log("Joined community successfully:", response.data);
         return response.data;
       } catch (error) {
@@ -1127,7 +1092,7 @@ export const useQuery = () => {
   const createCommunity = useCallback(async (communityData: CommunityData) => {
     try {
       const response = await axios.post(
-        `${ENDPOINT}/api/community/createcommunity`,
+        `/api/community/createcommunity`,
         communityData
       );
       console.log("Community created successfully:", response.data);
@@ -1153,10 +1118,7 @@ export const useQuery = () => {
    */
   const createPost = useCallback(async (postData: PostData) => {
     try {
-      const response = await axios.post(
-        `${ENDPOINT}/api/post/createpost`,
-        postData
-      );
+      const response = await axios.post(`/api/post/createpost`, postData);
       console.log("Post created successfully:", response.data);
       return response.data;
     } catch (error) {
@@ -1176,10 +1138,7 @@ export const useQuery = () => {
    */
   const commentOnPost = useCallback(async (commentData: CommentData) => {
     try {
-      const response = await axios.post(
-        `${ENDPOINT}/api/post/commentonpost`,
-        commentData
-      );
+      const response = await axios.post(`/api/post/commentonpost`, commentData);
       console.log("Comment added successfully:", response.data);
       return response.data;
     } catch (error) {
@@ -1199,10 +1158,7 @@ export const useQuery = () => {
    */
   const likePost = useCallback(async (likeData: LikeData) => {
     try {
-      const response = await axios.post(
-        `${ENDPOINT}/api/post/likepost`,
-        likeData
-      );
+      const response = await axios.post(`/api/post/likepost`, likeData);
       console.log("Like added successfully:", response.data);
       return response.data;
     } catch (error) {
@@ -1222,9 +1178,7 @@ export const useQuery = () => {
    */
   const getPostsByArtist = useCallback(async (artistId: string) => {
     try {
-      const response = await axios.get(
-        `${ENDPOINT}/api/post/getpostbyartist/${artistId}`
-      );
+      const response = await axios.get(`/api/post/getpostbyartist/${artistId}`);
       console.log("Posts fetched successfully:", response.data);
       return response.data;
     } catch (error) {
@@ -1246,7 +1200,7 @@ export const useQuery = () => {
     async (userId: string, limit: number = 20) => {
       try {
         const response = await axios.get(
-          `${ENDPOINT}/api/song/recommendations/dashboard/${userId}`,
+          `/api/song/recommendations/dashboard/${userId}`,
           { params: { limit } }
         );
         return response.data;
@@ -1272,7 +1226,7 @@ export const useQuery = () => {
     async (userId: string, days: number = 30, limit: number = 20) => {
       try {
         const response = await axios.get(
-          `${ENDPOINT}/api/song/recommendations/followed/${userId}`,
+          `/api/song/recommendations/followed/${userId}`,
           { params: { days, limit } }
         );
         return response.data;
@@ -1298,7 +1252,7 @@ export const useQuery = () => {
     async (userId: string, mixCount: number = 6, songsPerMix: number = 25) => {
       try {
         const response = await axios.get(
-          `${ENDPOINT}/api/song/recommendations/daily-mix/${userId}`,
+          `/api/song/recommendations/daily-mix/${userId}`,
           { params: { mixCount, songsPerMix } }
         );
         return response.data;
@@ -1318,7 +1272,7 @@ export const useQuery = () => {
     async (userId: string): Promise<ArtistCommunitiesResponse> => {
       try {
         const response = await axios.get(
-          `${ENDPOINT}/api/community/artists-by-genre/${userId}`
+          `/api/community/artists-by-genre/${userId}`
         );
         return response.data;
       } catch (error) {
@@ -1337,7 +1291,7 @@ export const useQuery = () => {
     async (userId: string, timeframe: "24h" | "7d" | "30d" = "7d") => {
       try {
         const response = await axios.get(
-          `${ENDPOINT}/api/community/trending-artists/${userId}`,
+          `/api/community/trending-artists/${userId}`,
           {
             params: { timeframe },
           }
@@ -1364,9 +1318,7 @@ export const useQuery = () => {
       category,
     }: SearchParams) => {
       try {
-        const endpoint = category
-          ? `${ENDPOINT}/api/search/category`
-          : `${ENDPOINT}/api/search`;
+        const endpoint = category ? `/api/search/category` : `/api/search`;
 
         const response = await axios.get(endpoint, {
           params: {
@@ -1393,7 +1345,7 @@ export const useQuery = () => {
 
   const getRecentSearches = useCallback(async () => {
     try {
-      const response = await axios.get(`${ENDPOINT}/api/search/recent`);
+      const response = await axios.get(`/api/search/recent`);
       return response.data;
     } catch (error) {
       console.error("Error fetching recent searches:", error);
@@ -1410,7 +1362,7 @@ export const useQuery = () => {
       const userId = await retrieveUserId();
       if (!userId) throw new Error("User not authenticated");
 
-      const response = await axios.delete(`${ENDPOINT}/api/search/recent`);
+      const response = await axios.delete(`/api/search/recent`);
       console.log("recent search", response);
       return response.data;
     } catch (error) {
@@ -1425,7 +1377,7 @@ export const useQuery = () => {
   const getTrendingSearches = useCallback(
     async (timeframe: "24h" | "7d" | "30d" = "24h", limit = 10) => {
       try {
-        const response = await axios.get(`${ENDPOINT}/api/search/trending`, {
+        const response = await axios.get(`/api/search/trending`, {
           params: { timeframe, limit },
         });
         return response.data;
@@ -1447,16 +1399,13 @@ export const useQuery = () => {
       timeframe: "24h" | "7d" | "30d" = "7d"
     ) => {
       try {
-        const response = await axios.get(
-          `${ENDPOINT}/api/song/discover/location`,
-          {
-            params: {
-              countryCode,
-              limit,
-              timeframe,
-            },
-          }
-        );
+        const response = await axios.get(`/api/song/discover/location`, {
+          params: {
+            countryCode,
+            limit,
+            timeframe,
+          },
+        });
         console.log("response");
         return response.data;
       } catch (error) {
@@ -1478,16 +1427,13 @@ export const useQuery = () => {
       includeRegionalStats: boolean = false
     ) => {
       try {
-        const response = await axios.get(
-          `${ENDPOINT}/api/song/discover/worldwide`,
-          {
-            params: {
-              timeframe,
-              limit,
-              includeRegionalStats,
-            },
-          }
-        );
+        const response = await axios.get(`/api/song/discover/worldwide`, {
+          params: {
+            timeframe,
+            limit,
+            includeRegionalStats,
+          },
+        });
         return response.data;
       } catch (error) {
         console.error("Error fetching worldwide top songs:", error);
