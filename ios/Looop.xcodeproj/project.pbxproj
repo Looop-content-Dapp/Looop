@@ -384,7 +384,7 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = "loooooooooop-mobileapp";
+				PRODUCT_BUNDLE_IDENTIFIER = dscdbsjbyuew37283283;
 				PRODUCT_NAME = Looop;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Looop/Looop-Bridging-Header.h";
@@ -419,7 +419,7 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = "loooooooooop-mobileapp";
+				PRODUCT_BUNDLE_IDENTIFIER = dscdbsjbyuew37283283;
 				PRODUCT_NAME = Looop;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Looop/Looop-Bridging-Header.h";

@@ -6,12 +6,11 @@ export default () => {
   return (
     <Slot
       screenOptions={{
-        headerShown: false,
+        headerShown: true,
         contentStyle: {
           backgroundColor: "#040405",
         },
       }}
-    >
-    </Slot>
+    ></Slot>
   );
 };
