@@ -96,8 +96,8 @@ const handleEmailSignIn = async (emailAddress: string, password: string) => {
       );
       console.log("response", response.data)
       return response.data;
-    } catch (err) {
-      console.error('Error during sign-in:', err);
+    } catch (err: any) {
+      console.error('Error during sign-in:', err.message);
 
       if (axios.isAxiosError(err)) {
         // Handle specific error cases
