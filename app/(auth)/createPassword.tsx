@@ -9,7 +9,6 @@ import {
   ViewOffIcon,
 } from "@hugeicons/react-native";
 import { useQuery } from "../../hooks/useQuery";
-import { useUser } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
 
 const CreatePassword = () => {
