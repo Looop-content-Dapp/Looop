@@ -1,11 +1,10 @@
 // src/contexts/AuthContext.tsx
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
-import { useQuery } from '../hooks/useQuery';
-import { useClerkAuthentication } from '../hooks/useClerkAuthentication';
-import { useUser } from '@clerk/clerk-expo';
-import { account } from '../appWrite';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import { useQuery } from "../hooks/useQuery";
+import { useClerkAuthentication } from "../hooks/useClerkAuthentication";
+import { account } from "../appWrite";
 
 interface User {
   _id: string;
@@ -30,7 +29,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   refreshUserData: () => Promise<void>;
   signOut: () => Promise<void>;
-  firstTimeUser: boolean
+  firstTimeUser: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -39,21 +38,28 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   refreshUserData: async () => {},
   signOut: async () => {},
-  firstTimeUser: false
+  firstTimeUser: false,
 });
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [user, setUser] = useState<null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [firstTimeUser, setFirstTimeUser] = useState(false)
+  const [firstTimeUser, setFirstTimeUser] = useState(false);
   const router = useRouter();
-  const { user: signedUser } = useUser();
 
   const { getUserByEmail, storeUserId } = useQuery();
   const { handleSignOut } = useClerkAuthentication();
 
-  const checkAndFetchUser = async (email: string): Promise<{ user: User | null; isNewBackendUser: boolean; isRecentlyCreated: boolean }> => {
+  const checkAndFetchUser = async (
+    email: string
+  ): Promise<{
+    user: User | null;
+    isNewBackendUser: boolean;
+    isRecentlyCreated: boolean;
+  }> => {
     try {
       const response = await getUserByEmail(email);
 
@@ -64,33 +70,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const oneMinute = 60 * 1000; // milliseconds
         const isRecentlyCreated = currentTime - userCreationTime < oneMinute;
 
-        setFirstTimeUser(isRecentlyCreated)
+        setFirstTimeUser(isRecentlyCreated);
 
         return {
           user: response.data,
           isNewBackendUser: false,
-          isRecentlyCreated
+          isRecentlyCreated,
         };
       }
 
-      setFirstTimeUser(false)
+      setFirstTimeUser(false);
       return {
         user: null,
         isNewBackendUser: true,
-        isRecentlyCreated: false
+        isRecentlyCreated: false,
       };
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error("Error fetching user data:", error);
       return {
         user: null,
         isNewBackendUser: false,
-        isRecentlyCreated: false
+        isRecentlyCreated: false,
       };
     }
   };
 
   const refreshUserData = async () => {
-    const user = await account.get()
+    const user = await account.get();
     try {
       if (!user.email) {
         setUser(null);
@@ -98,8 +104,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      const { user: fetchedUser, isNewBackendUser, isRecentlyCreated } =
-        await checkAndFetchUser(user.email);
+      const {
+        user: fetchedUser,
+        isNewBackendUser,
+        isRecentlyCreated,
+      } = await checkAndFetchUser(user.email);
 
       if (fetchedUser) {
         setUser(fetchedUser);
@@ -109,26 +118,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // If user exists in backend and was created more than a minute ago,
         // they've already set up their account
         if (!isRecentlyCreated) {
-          router.navigate('/(musicTabs)');
+          router.navigate("/(musicTabs)");
         } else {
           // User exists but was just created, needs to set up their account
-          router.navigate('/(settingUp)/');
+          router.navigate("/(settingUp)/");
         }
       } else if (isNewBackendUser) {
         // User doesn't exist in backend yet
         setUser(null);
         setIsAuthenticated(false);
-        router.navigate('/(auth)/createPassword');
+        router.navigate("/(auth)/createPassword");
       } else {
         setUser(null);
         setIsAuthenticated(false);
-        router.navigate('/(auth)');
+        router.navigate("/(auth)");
       }
     } catch (error) {
-      console.error('Error refreshing user data:', error);
+      console.error("Error refreshing user data:", error);
       setUser(null);
       setIsAuthenticated(false);
-      router.navigate('/(auth)/createPassword');
+      router.navigate("/(auth)/createPassword");
     }
   };
 
@@ -137,31 +146,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await handleSignOut();
       setUser(null);
       setIsAuthenticated(false);
-      router.navigate('/(auth)');
+      router.navigate("/(auth)");
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error("Error signing out:", error);
     }
   };
 
-//   useEffect(() => {
-//     const initializeAuth = async () => {
-//       setIsLoading(true);
-//       try {
-//         if (signedUser?.emailAddresses[0]?.emailAddress) {
-//           await refreshUserData();
-//         } else {
-//           router.navigate('/(auth)');
-//         }
-//       } catch (error) {
-//         console.error('Error initializing auth:', error);
-//         router.navigate('/(auth)');
-//       } finally {
-//         setIsLoading(false);
-//       }
-//     };
+  //   useEffect(() => {
+  //     const initializeAuth = async () => {
+  //       setIsLoading(true);
+  //       try {
+  //         if (signedUser?.emailAddresses[0]?.emailAddress) {
+  //           await refreshUserData();
+  //         } else {
+  //           router.navigate('/(auth)');
+  //         }
+  //       } catch (error) {
+  //         console.error('Error initializing auth:', error);
+  //         router.navigate('/(auth)');
+  //       } finally {
+  //         setIsLoading(false);
+  //       }
+  //     };
 
-//     initializeAuth();
-//   }, [signedUser]);
+  //     initializeAuth();
+  //   }, [signedUser]);
 
   const value = {
     user,
@@ -169,20 +178,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAuthenticated,
     refreshUserData,
     signOut,
-    firstTimeUser
+    firstTimeUser,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useUserAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

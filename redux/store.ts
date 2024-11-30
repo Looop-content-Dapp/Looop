@@ -1,11 +1,5 @@
-// redux/store.ts
-import { configureStore, combineReducers } from "@reduxjs/toolkit";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage for React Native
-import { persistStore, persistReducer } from "redux-persist";
-
-import AuthSlice from "./slices/auth";
-import PlayerSlice from "./slices/PlayerSlice";
-
+import { configureStore } from "@reduxjs/toolkit";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   FLUSH,
   REHYDRATE,
@@ -14,42 +8,49 @@ import {
   PURGE,
   REGISTER,
 } from "redux-persist";
+import { persistStore, persistReducer } from "redux-persist";
 
-// Combine your reducers (if you have more, add them here)
-const rootReducer = combineReducers({
-  player: PlayerSlice,
-  authenticate: AuthSlice,
-});
+import authReducer from "./slices/auth";
+import playerReducer from "./slices/PlayerSlice";
+import miscReducer from "./slices/miscelleaneous";
 
-// Configure persist settings
 const persistConfig = {
   key: "root",
-  storage: AsyncStorage, // Use AsyncStorage for React Native
-  whitelist: ["player"], // Only persist the player slice
+  storage: AsyncStorage,
+  whitelist: ["player"],
 };
 
-// Create a persisted reducer
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+const persistAuthConfig = {
+  key: "authentication",
+  storage: AsyncStorage,
+};
 
-// Create the store with the persisted reducer
+const persistMiscConfig = {
+  key: "misc",
+  storage: AsyncStorage,
+};
+
+const persistedReducer = persistReducer(persistConfig, playerReducer);
+const persistedAuthReducer = persistReducer(persistAuthConfig, authReducer);
+const persistedMiscReducer = persistReducer(persistMiscConfig, miscReducer);
+
 const store = configureStore({
-  reducer: persistedReducer,
+  reducer: {
+    auth: persistedAuthReducer,
+    player: persistedReducer,
+    misc: persistedMiscReducer,
+  },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        // Ignore redux-persist action types
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-        // Ignore non-serializable properties in state
-        ignoredPaths: ["player.recentlyPlayed"],
       },
     }),
 });
 
-// Export the persistor
 export const persistor = persistStore(store);
 
-// Define RootState and AppDispatch types
-export type RootState = ReturnType<typeof rootReducer>;
+export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
 export default store;

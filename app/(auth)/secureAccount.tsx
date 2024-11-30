@@ -6,7 +6,6 @@ import { useNavigation } from "@react-navigation/native";
 import { router, useLocalSearchParams } from "expo-router";
 import AnimatedLock from "../../components/animated/AnimatedLock";
 import { useQuery } from "../../hooks/useQuery";
-import { useUser } from "@clerk/clerk-expo";
 import { MotiView } from "moti";
 import { account } from "../../appWrite";
 

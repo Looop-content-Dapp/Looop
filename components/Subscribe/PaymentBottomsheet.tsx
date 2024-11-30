@@ -61,7 +61,7 @@ const PaymentBottomSheet = ({
     return null;
   }
 
-  const handlePaymentComplete = async (paymentMethod) => {
+  const handlePaymentComplete = async (paymentMethod: any) => {
     try {
       setIsLoading(true);
       setActiveButton(paymentMethod);
