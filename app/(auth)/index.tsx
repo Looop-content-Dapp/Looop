@@ -22,6 +22,7 @@ import { router } from "expo-router";
 import { account } from "../../appWrite";
 import { useClerkAuthentication } from "../../hooks/useClerkAuthentication";
 import { ID } from "react-native-appwrite";
+import { AppButton } from "@/components/app-components/button";
 
 const CELL_COUNT = 6;
 
@@ -62,12 +63,14 @@ const EmailSignupFlow = () => {
       // Add proper email validation here
       return;
     }
-
+    setIsLoading(true);
     try {
       // Create verification request with Appwrite
       await handleEmailSignUp(emailAddress);
+      setIsLoading(false);
       setCurrentStep("verification");
     } catch (error: any) {
+      setIsLoading(false);
       console.error("Failed to send verification email:", error.message);
       // Add proper error handling/display here
     }
@@ -150,18 +153,18 @@ const EmailSignupFlow = () => {
             placeholder="Email address"
             value={emailAddress}
             onChangeText={setEmailAddress}
+            inputMode="email"
+            keyboardAppearance="dark"
+            keyboardType="email-address"
             className="h-16 text-sm font-PlusJakartaSansRegular bg-Grey/07 text-Grey/04 rounded-full px-8"
           />
         </View>
 
-        <TouchableOpacity
+        <AppButton.Primary
+          text="Continue"
+          loading={isLoading}
           onPress={handleEmailSubmit}
-          className="bg-orange-500 items-center py-4 rounded-full"
-        >
-          <Text className="text-lg font-PlusJakartaSansMedium text-white">
-            Continue
-          </Text>
-        </TouchableOpacity>
+        />
 
         <Text className="mt-14 text-center text-gray-400 font-PlusJakartaSansRegular text-sm">
           Or you can sign up with
@@ -223,7 +226,6 @@ const EmailSignupFlow = () => {
       <View className="">
         <CodeField
           ref={ref}
-          {...props}
           value={value}
           onChangeText={setValue}
           cellCount={CELL_COUNT}
@@ -251,18 +253,27 @@ const EmailSignupFlow = () => {
               {symbol || (isFocused ? <Cursor /> : null)}
             </Text>
           )}
+          {...props}
         />
 
-        <Text className="text-[14px] mt-[32px] font-PlusJakartaSansMedium text-Grey/04 text-center">
-          Didn't receive a code?{" "}
-          {timer > 0 ? (
-            <Text className="text-Grey/06">Resend in {timer}s</Text>
-          ) : (
-            <Pressable onPress={handleResend}>
-              <Text className="text-Orange/08">Resend</Text>
-            </Pressable>
-          )}
-        </Text>
+        {isCorrect === false && value.length === CELL_COUNT && (
+          <Text style={styles.errorMessage}>
+            Incorrect code. Please try again.
+          </Text>
+        )}
+
+        <View className="mt-[32px]">
+          <Text className="text-[14px] font-PlusJakartaSansMedium text-Grey/04 text-center">
+            Didn't receive a code?{" "}
+            {timer > 0 ? (
+              <Text className="text-Grey/06">Resend in {timer}s</Text>
+            ) : (
+              <Text onPress={handleResend} className="text-Orange/08">
+                Resend
+              </Text>
+            )}
+          </Text>
+        </View>
       </View>
     </>
   );

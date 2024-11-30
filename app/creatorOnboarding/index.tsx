@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   useWindowDimensions,
+  StatusBar,
 } from "react-native";
 import { router } from "expo-router";
 
@@ -16,12 +17,11 @@ const CreatorModeWelcome = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      minHeight: "100%",
-      backgroundColor: "#000", // Assuming a dark theme
+      // backgroundColor: "#000",
     },
     headerContainer: {
       alignItems: "center",
-      marginTop: height * 0.05,
+      marginTop: "20%",
     },
     image: {
       height: width * 0.45,
@@ -74,34 +74,43 @@ const CreatorModeWelcome = () => {
   });
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Image
-          source={require("../../assets/images/creatormode.png")}
-          style={styles.image}
-          resizeMode="contain"
+    <>
+      <SafeAreaView style={styles.container}>
+        <StatusBar
+          backgroundColor={"#040405"}
+          translucent={true}
+          barStyle="light-content"
         />
-        <Text style={styles.title}>
-          Welcome to{"\n"}
-          <Text style={styles.purpleText}>Creator mode</Text>
-        </Text>
-      </View>
+        <View style={styles.headerContainer}>
+          <Image
+            source={require("../../assets/images/creatormode.png")}
+            style={styles.image}
+            resizeMode="contain"
+          />
+          <Text style={styles.title}>
+            Welcome to{"\n"}
+            <Text style={styles.purpleText}>Creator mode</Text>
+          </Text>
+        </View>
 
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoTitle}>What you can do</Text>
-        <Text style={styles.infoText}>Upload and manage your music</Text>
-        <Text style={styles.infoText}>Build and connect with your fanbase</Text>
-        <Text style={styles.infoText}>Interact with your community</Text>
-        <Text style={styles.infoText}>Create your own collectibles</Text>
-      </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoTitle}>What you can do</Text>
+          <Text style={styles.infoText}>Upload and manage your music</Text>
+          <Text style={styles.infoText}>
+            Build and connect with your fanbase
+          </Text>
+          <Text style={styles.infoText}>Interact with your community</Text>
+          <Text style={styles.infoText}>Create your own collectibles</Text>
+        </View>
 
-      <TouchableOpacity
-        onPress={() => router.push("/creatorOnboarding/connectProfile")}
-        style={styles.button}
-      >
-        <Text style={styles.buttonText}>Start creating</Text>
-      </TouchableOpacity>
-    </SafeAreaView>
+        <TouchableOpacity
+          onPress={() => router.push("/creatorOnboarding/connectProfile")}
+          style={styles.button}
+        >
+          <Text style={styles.buttonText}>Start creating</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    </>
   );
 };
 

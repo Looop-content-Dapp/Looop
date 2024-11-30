@@ -133,129 +133,143 @@ export default function OnBoardingScreen() {
     }
   };
 
-  const completeOnboarding = () => {
+  const completeOnboarding = (type: string) => {
     dispatch(updateOnBoarded());
-    router.navigate("/(auth)/");
+    switch (type) {
+      case "create_account":
+        router.navigate("/(auth)/");
+        break;
+      case "signin":
+        router.navigate("/(auth)/signin");
+        break;
+      default:
+        router.navigate("/(auth)/");
+    }
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: backgroundColor }]}
-    >
-      <StatusBar backgroundColor={backgroundColor} barStyle="light-content" />
-      <View className="items-center flex-1 w-full">
-        <Image
-          source={logowhite}
-          resizeMode="cover"
-          className="w-[72.20px] h-[32px] my-[20px]"
-        />
-
-        <Animated.View
-          className="flex-1 w-full"
-          style={{
-            opacity: fadeAnim,
-            transform: [{ translateX: slideAnim }],
-          }}
-        >
-          {currentStep !== 3 && (
-            <Image
-              source={backgrounImage}
-              className=" "
-              resizeMode="cover"
-              style={{ height: hp("25%"), width: wp("100%") }}
-            />
-          )}
-
+    <>
+      <StatusBar
+        backgroundColor={backgroundColor}
+        translucent={true}
+        barStyle="light-content"
+      />
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: backgroundColor }]}
+      >
+        <View className="items-center flex-1 w-full">
           <Image
-            source={onBoardImage}
-            className={`${
-              currentStep === 3
-                ? "rounded-[30px]  mx-auto  mt-[10px]"
-                : "absolute -top-0  flex-shrink"
-            }`}
-            style={{
-              width: currentStep === 3 ? wp("95%") : wp("100%"),
-              height: currentStep === 3 ? hp("39%") : hp("45%"),
-            }}
-            resizeMode={currentStep === 3 ? "cover" : undefined}
+            source={logowhite}
+            resizeMode="cover"
+            className="w-[72.20px] h-[32px] my-[20px]"
           />
 
-          <View style={{ width: wp("90%") }} className="mx-auto">
-            <Text
+          <Animated.View
+            className="flex-1 w-full"
+            style={{
+              opacity: fadeAnim,
+              transform: [{ translateX: slideAnim }],
+            }}
+          >
+            {currentStep !== 3 && (
+              <Image
+                source={backgrounImage}
+                className=" "
+                resizeMode="cover"
+                style={{ height: hp("25%"), width: wp("100%") }}
+              />
+            )}
+
+            <Image
+              source={onBoardImage}
               className={`${
                 currentStep === 3
-                  ? "text-center md:text-[28px] pt-[24px] w-full"
-                  : "mt-[45%]"
-              } leading-[30px] text-[24px] font-PlusJakartaSansBold text-[#fff] font-bold`}
-            >
-              {title}
-            </Text>
-            <Text className="font-PlusJakartaSans-Light text-[16px] text-[#FBFEFC]">
-              {desc}
-            </Text>
-          </View>
+                  ? "rounded-[30px]  mx-auto  mt-[10px]"
+                  : "absolute -top-0  flex-shrink"
+              }`}
+              style={{
+                width: currentStep === 3 ? wp("95%") : wp("100%"),
+                height: currentStep === 3 ? hp("39%") : hp("45%"),
+              }}
+              resizeMode={currentStep === 3 ? "cover" : undefined}
+            />
 
-          <View className="flex-row justify-center mt-12">
-            {onBoardingSteps.map((_, index) => (
-              <View
-                key={index}
-                style={{
-                  width: 72,
-                  height: 6,
-                  borderRadius: 3,
-                  marginHorizontal: 4,
-                  backgroundColor: index <= currentStep ? "white" : active,
-                }}
-              />
-            ))}
-          </View>
-        </Animated.View>
+            <View style={{ width: wp("90%") }} className="mx-auto">
+              <Text
+                className={`${
+                  currentStep === 3
+                    ? "text-center md:text-[28px] pt-[24px] w-full"
+                    : "mt-[45%]"
+                } leading-[30px] text-[24px] font-PlusJakartaSansBold text-[#fff] font-bold`}
+              >
+                {title}
+              </Text>
+              <Text className="font-PlusJakartaSans-Light text-[16px] text-[#FBFEFC]">
+                {desc}
+              </Text>
+            </View>
 
-        {currentStep === 3 ? (
-          <View className="w-[85%] relative -top-14 gap-6 mb-1">
+            <View className="flex-row justify-center mt-12">
+              {onBoardingSteps.map((_, index) => (
+                <View
+                  key={index}
+                  style={{
+                    width: 72,
+                    height: 6,
+                    borderRadius: 3,
+                    marginHorizontal: 4,
+                    backgroundColor: index <= currentStep ? "white" : active,
+                  }}
+                />
+              ))}
+            </View>
+          </Animated.View>
+
+          {currentStep === 3 ? (
+            <View className="w-[85%] relative -top-14 gap-6 mb-1">
+              <TouchableOpacity
+                onPress={() => completeOnboarding("create_account")}
+                className="bg-white items-center justify-center py-[16px] rounded-[56px] w-full"
+              >
+                <Text
+                  className="font-normal font-PlusJakartaSans-Bold  text-center px-4"
+                  style={{ color: backgroundColor }}
+                >
+                  Create Account
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => completeOnboarding("signin")}
+                className="bg-[#12141B] items-center justify-center py-[16px] rounded-[56px] w-full"
+              >
+                <Text className="font-normal font-PlusJakartaSans-Bold text-center text-[#787A80] px-4">
+                  Sign in
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
             <TouchableOpacity
-              onPress={() => completeOnboarding()}
-              className="bg-white items-center justify-center py-[16px] rounded-[56px] w-full"
+              style={{ width: wp("95%") }}
+              onPress={handleNextStep}
+              className="bg-white items-center px-[158px] py-[16px] mb-12 rounded-[24px]"
             >
               <Text
-                className="font-normal font-PlusJakartaSans-Bold  text-center px-4"
+                className="font-normal font-PlusJakartaSans-Bold"
                 style={{ color: backgroundColor }}
               >
-                Create Account
+                Next
               </Text>
             </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => completeOnboarding()}
-              className="bg-[#12141B] items-center justify-center py-[16px] rounded-[56px] w-full"
-            >
-              <Text className="font-normal font-PlusJakartaSans-Bold text-center text-[#787A80] px-4">
-                Sign in
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <TouchableOpacity
-            style={{ width: wp("95%") }}
-            onPress={handleNextStep}
-            className="bg-white items-center px-[158px] py-[16px] mb-12 rounded-[24px]"
-          >
-            <Text
-              className="font-normal font-PlusJakartaSans-Bold"
-              style={{ color: backgroundColor }}
-            >
-              Next
-            </Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </SafeAreaView>
+          )}
+        </View>
+      </SafeAreaView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    minHeight: hp("100%"),
   },
 });

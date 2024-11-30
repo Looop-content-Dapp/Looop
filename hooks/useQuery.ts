@@ -202,33 +202,20 @@ export const useQuery = () => {
         return response?.data;
       } catch (error) {
         console.error("Error creating account:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
       }
     },
     []
   );
 
-  const getUserByEmail = useCallback(
-    async (email: string): Promise<UserData> => {
-      try {
-        const response = await axios.get(`/api/user/email/${email}`);
-        console.log("User data fetched by email successfully:", response.data);
-        return response.data;
-      } catch (error) {
-        console.error("Error fetching user by email:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
-      }
-    },
-    []
-  );
+  const getUserByEmail = useCallback(async (email: string) => {
+    try {
+      const response = await axios.get(`/api/user/email/${email}`);
+      console.log("User data fetched by email successfully:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user by email:", error);
+    }
+  }, []);
 
   // Store User ID
   const storeUserId = async (userId: string) => {
@@ -283,14 +270,7 @@ export const useQuery = () => {
         });
         console.log("Response from saving user preferences:", response.data);
         return true;
-      } catch (error) {
-        console.error("Error saving user Preferences:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
-      }
+      } catch (error) {}
     },
     []
   );
@@ -313,11 +293,6 @@ export const useQuery = () => {
         return true;
       } catch (error) {
         console.error("Error save User Favorite Artists:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
       }
     },
     []
@@ -338,11 +313,6 @@ export const useQuery = () => {
         return true;
       } catch (error) {
         console.error("Error subscribe To Artist:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
       }
     },
     []
@@ -358,11 +328,6 @@ export const useQuery = () => {
       return true;
     } catch (error) {
       console.error("Error follow Artist:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -375,11 +340,6 @@ export const useQuery = () => {
       return response.data.bool; // Assuming the endpoint returns a boolean
     } catch (error) {
       console.error("Error checking isFollowing Artist:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   };
 
@@ -392,11 +352,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error getArtistBasedOnGenre:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -409,41 +364,26 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error getUserSubscriptions:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
   // Fetch Artists the User is Following
   const fetchFollowingArtists = async (userId: string) => {
     try {
-      const response = await axios.get(`/api/artist/follow/${userId}`);
+      const response = await api.get(`/api/artist/follow/${userId}`);
       return response.data;
     } catch (error) {
       console.error("Error fetchFollowingArtists:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   };
 
   const getArtistDetails = async (artistId: string) => {
     try {
-      const response = await axios.get(`/api/artist/${artistId}`);
+      const response = await api.get(`/api/artist/${artistId}`);
       // console.log("Artist details fetched successfully:", response.data);
       return response.data;
     } catch (error) {
-      console.error("Error fetching artist details: --->>>", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      return null;
+      console.log("Error fetching artist details: --->>>", error);
     }
   };
 
@@ -454,59 +394,39 @@ export const useQuery = () => {
   // Get All Releases
   const getAllReleases = useCallback(async () => {
     try {
-      const response = await axios.get(`/api/song/releases/all`);
+      const response = await api.get(`/api/song/releases/all`);
       return response.data;
     } catch (error) {
-      console.error("Error getting all releases:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
+      console.log("Error getting all releases:", error);
     }
   }, []);
 
   // Get All Artists
   const getAllArtists = useCallback(async () => {
     try {
-      const response = await axios.get(`/api/artist`);
+      const response = await api.get(`/api/artist`);
       return response.data;
     } catch (error) {
-      console.error("Error getting all artists:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
+      console.log("Error getting all artists:", error);
     }
   }, []);
 
   // Get Genres
   const getGenres = useCallback(async () => {
     try {
-      const response = await axios.get(`/api/genre/getgenres`);
+      const response = await api.get(`/api/genre/getgenres`);
       return response.data;
     } catch (error) {
-      console.error("Error getting genres:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
+      console.log("Error getting genres:", error);
     }
   }, []);
 
   const getTracksFromId = useCallback(async (albumId: string) => {
     try {
-      const response = await axios.get(`/api/song/releases/${albumId}/tracks`);
+      const response = await api.get(`/api/song/releases/${albumId}/tracks`);
       return response.data;
     } catch (error) {
-      console.error("Error getting genres:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
+      console.log("Error getting genres:", error);
     }
   }, []);
 
@@ -526,11 +446,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error saving album:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -546,11 +461,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error fetching saved albums:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -568,11 +478,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error liking song:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data: liking song", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -590,11 +495,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error fetching liked songs:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -607,11 +507,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error searching songs:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -624,11 +519,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error fetching top songs for artist:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -640,11 +530,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error fetching songs for user:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -655,11 +540,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error fetching singles for artist:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -674,11 +554,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error fetching albums and EPs:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -691,11 +566,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error getting releases based on genres:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -724,11 +594,6 @@ export const useQuery = () => {
         return response.data;
       } catch (error) {
         console.error("Error streaming song:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        // Don't throw the error to prevent playback interruption
         return null;
       }
     },
@@ -742,11 +607,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error getting user preference:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -759,11 +619,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error getting song artist featured on:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -776,11 +631,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error getting last played songs:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -791,11 +641,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error getting top 100 songs:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -807,11 +652,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error following artist by ID:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -835,11 +675,6 @@ export const useQuery = () => {
         return response.data;
       } catch (error) {
         console.error("Error creating playlist:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
       }
     },
     []
@@ -865,11 +700,6 @@ export const useQuery = () => {
         return response.data;
       } catch (error) {
         console.error("Error adding song to playlist:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
       }
     },
     []
@@ -886,11 +716,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error getting all playlists for user:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -906,11 +731,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error pinning playlist:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -918,11 +738,6 @@ export const useQuery = () => {
   // New User Data Function
   // -----------------------------
 
-  /**
-   * Fetch user details by user ID.
-   * @param userId - The ID of the user to fetch.
-   * @returns The user data from the backend.
-   */
   const getUserById = useCallback(async (userId: string) => {
     try {
       const response = await axios.get(
@@ -930,21 +745,9 @@ export const useQuery = () => {
       );
       console.log("User data fetched successfully:", response.data);
       return response.data;
-    } catch (error: any) {
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
-    }
+    } catch (error: any) {}
   }, []);
 
-  /**
-   * Change the premium state of a user.
-   * @param userId - The ID of the user.
-   * @param isPremium - Boolean indicating the desired premium state.
-   * @returns The updated user data or a success message.
-   */
   const changePremiumState = useCallback(
     async (userId: string, isPremium: boolean) => {
       try {
@@ -954,13 +757,7 @@ export const useQuery = () => {
         );
         console.log("Premium state changed successfully:", response.data);
         return response.data;
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
-      }
+      } catch (error) {}
     },
     []
   );
@@ -979,7 +776,7 @@ export const useQuery = () => {
         switch (action) {
           case "add":
             if (!friendId)
-              throw new Error("Friend ID is required to add a friend.");
+              console.log("Friend ID is required to add a friend.");
             response = await axios.post(`/api/user/friend/${userId}`, {
               friendId,
             });
@@ -987,7 +784,7 @@ export const useQuery = () => {
             break;
           case "remove":
             if (!friendId)
-              throw new Error("Friend ID is required to remove a friend.");
+              console.log("Friend ID is required to remove a friend.");
             response = await axios.delete(
               `/api/user/friend/${userId}/${friendId}`
             );
@@ -998,7 +795,6 @@ export const useQuery = () => {
             console.log("Fetched friends successfully:", response.data);
             return response.data;
           default:
-            throw new Error("Invalid action for manageFriend.");
         }
         return response.data;
       } catch (error: any) {
@@ -1014,7 +810,6 @@ export const useQuery = () => {
             error.message
           );
         }
-        throw error;
       }
     },
     []
@@ -1026,11 +821,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error getting user friends:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -1049,11 +839,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error fetching all communities:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -1074,11 +859,6 @@ export const useQuery = () => {
         return response.data;
       } catch (error) {
         console.error("Error joining community:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
       }
     },
     []
@@ -1099,11 +879,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error creating community:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -1123,11 +898,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error creating post:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -1143,11 +913,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error adding comment:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -1163,11 +928,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error adding like:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -1183,11 +943,6 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error fetching posts:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, []);
 
@@ -1205,12 +960,7 @@ export const useQuery = () => {
         );
         return response.data;
       } catch (error) {
-        console.error("Error fetching dashboard recommendations:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
+        console.log("Error fetching dashboard recommendations:", error);
       }
     },
     []
@@ -1225,18 +975,15 @@ export const useQuery = () => {
   const getFollowedArtistsReleases = useCallback(
     async (userId: string, days: number = 30, limit: number = 20) => {
       try {
-        const response = await axios.get(
+        const response = await api.get(
           `/api/song/recommendations/followed/${userId}`,
           { params: { days, limit } }
         );
-        return response.data;
+
+        const artistyoufollow: ArtistsYouFollowResponse = response.data;
+        return artistyoufollow;
       } catch (error) {
-        console.error("Error fetching followed artists releases:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
+        console.log("Error fetching followed artists releases:", error);
       }
     },
     []
@@ -1251,18 +998,14 @@ export const useQuery = () => {
   const getDailyMixes = useCallback(
     async (userId: string, mixCount: number = 6, songsPerMix: number = 25) => {
       try {
-        const response = await axios.get(
+        const response = await api.get(
           `/api/song/recommendations/daily-mix/${userId}`,
           { params: { mixCount, songsPerMix } }
         );
-        return response.data;
+        const dailymixesResponse: DailyMixesResponse = response.data;
+        return dailymixesResponse;
       } catch (error) {
-        console.error("Error fetching daily mixes:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
+        console.log("Error fetching daily mixes:", error);
       }
     },
     []
@@ -1277,11 +1020,6 @@ export const useQuery = () => {
         return response.data;
       } catch (error) {
         console.error("Error getting artist communities by genre:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
       }
     },
     []
@@ -1299,11 +1037,6 @@ export const useQuery = () => {
         return response.data;
       } catch (error) {
         console.error("Error getting trending artists by genre:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
       }
     },
     []
@@ -1333,11 +1066,6 @@ export const useQuery = () => {
         return response.data;
       } catch (error) {
         console.error("Error performing search:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
       }
     },
     []
@@ -1349,28 +1077,19 @@ export const useQuery = () => {
       return response.data;
     } catch (error) {
       console.error("Error fetching recent searches:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      throw error;
     }
   }, [retrieveUserId]);
 
   const clearRecentSearches = useCallback(async () => {
     try {
       const userId = await retrieveUserId();
-      if (!userId) throw new Error("User not authenticated");
+      if (!userId) return;
 
       const response = await axios.delete(`/api/search/recent`);
       console.log("recent search", response);
       return response.data;
     } catch (error) {
       console.error("Error clearing recent searches:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-      }
-      throw error;
     }
   }, [retrieveUserId]);
 
@@ -1383,10 +1102,6 @@ export const useQuery = () => {
         return response.data;
       } catch (error) {
         console.error("Error fetching trending searches:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-        }
-        throw error;
       }
     },
     []
@@ -1410,11 +1125,6 @@ export const useQuery = () => {
         return response.data;
       } catch (error) {
         console.error("Error fetching location-based tracks:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
       }
     },
     []
@@ -1437,11 +1147,6 @@ export const useQuery = () => {
         return response.data;
       } catch (error) {
         console.error("Error fetching worldwide top songs:", error);
-        if (axios.isAxiosError(error)) {
-          console.error("Response data:", error.response?.data);
-          console.error("Response status:", error.response?.status);
-        }
-        throw error;
       }
     },
     []
