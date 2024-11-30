@@ -1,8 +1,5 @@
-import { configureStore, combineReducers } from "@reduxjs/toolkit";
+import { configureStore } from "@reduxjs/toolkit";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { persistStore, persistReducer } from "redux-persist";
-import authReducer from "./slices/auth";
-import playerReducer from "./slices/PlayerSlice";
 import {
   FLUSH,
   REHYDRATE,
@@ -11,26 +8,38 @@ import {
   PURGE,
   REGISTER,
 } from "redux-persist";
+import { persistStore, persistReducer } from "redux-persist";
 
-// Combine reducers
-const rootReducer = combineReducers({
-  auth: authReducer,
-  player: playerReducer,
-});
+import authReducer from "./slices/auth";
+import playerReducer from "./slices/PlayerSlice";
+import miscReducer from "./slices/miscelleaneous";
 
-// Persist configuration
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
-  whitelist: ["player"], // Persist only the player slice
+  whitelist: ["player"],
 };
 
-// Create a persisted reducer
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+const persistAuthConfig = {
+  key: "authentication",
+  storage: AsyncStorage,
+};
 
-// Configure the store
+const persistMiscConfig = {
+  key: "misc",
+  storage: AsyncStorage,
+};
+
+const persistedReducer = persistReducer(persistConfig, playerReducer);
+const persistedAuthReducer = persistReducer(persistAuthConfig, authReducer);
+const persistedMiscReducer = persistReducer(persistMiscConfig, miscReducer);
+
 const store = configureStore({
-  reducer: persistedReducer,
+  reducer: {
+    auth: persistedAuthReducer,
+    player: persistedReducer,
+    misc: persistedMiscReducer,
+  },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
@@ -39,11 +48,9 @@ const store = configureStore({
     }),
 });
 
-// Persistor
 export const persistor = persistStore(store);
 
-// TypeScript types
-export type RootState = ReturnType<typeof rootReducer>;
+export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
 export default store;
