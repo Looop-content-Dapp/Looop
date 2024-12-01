@@ -10,7 +10,7 @@ import { MotiView } from "moti";
 import { account } from "../../appWrite";
 
 const SecureAccount = () => {
-  const { secrets } = useLocalSearchParams();
+  const { secrets, name } = useLocalSearchParams();
   const { createAccount, storeUserId, deleteUserId } = useQuery();
   const navigation = useNavigation();
 
@@ -24,6 +24,8 @@ const SecureAccount = () => {
   const [showFinalStep, setShowFinalStep] = useState(false);
   const [creationFailed, setCreationFailed] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  
 
   useEffect(() => {
     const handleCreateAccount = async () => {
@@ -44,7 +46,7 @@ const SecureAccount = () => {
         }
 
         // Call createAccount endpoint
-        const accountRes = await createAccount(user.email, secrets as string);
+        const accountRes = await createAccount(user.email, secrets as string, name as string);
 
         console.log("Account creation response:", accountRes);
 

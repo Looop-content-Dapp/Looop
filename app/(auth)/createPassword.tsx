@@ -1,5 +1,5 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput } from "react-native-gesture-handler";
 import {
@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 
 const CreatePassword = () => {
   const [password, setPassword] = useState("");
+  const [username, setUsername]= useState("")
   const [passwordView, setPasswordView] = useState(false);
   const [validation, setValidation] = useState({
     hasLetter: false,
@@ -21,6 +22,7 @@ const CreatePassword = () => {
     isLongEnough: false,
   });
   const router = useRouter();
+  const { checkUsername} = useQuery()
 
   // Function to validate the password
   const validatePassword = (input) => {
@@ -42,6 +44,17 @@ const CreatePassword = () => {
     validatePassword(text);
   };
 
+
+  const handleUsername = async() => {
+    const res =  await checkUsername(username)
+        console.log("check", res)
+ }
+
+ useEffect(() => {
+    handleUsername()
+ }, [username])
+
+
   const handleAccount = async () => {
     try {
       if (
@@ -55,6 +68,7 @@ const CreatePassword = () => {
           pathname: "/(auth)/secureAccount",
           params: {
             secrets: password,
+            name: username
           },
         });
       }
@@ -91,7 +105,21 @@ const CreatePassword = () => {
           </Text>
         </View>
 
-        <View className="gap-y-3">
+
+          <Text className="text-lg text-gray-200 font-PlusJakartaSansBold">
+            Choose a username
+          </Text>
+          <View className="flex-row items-center bg-Grey/07 rounded-full pr-5">
+            <TextInput
+              placeholderTextColor="#787A80"
+              placeholder="Enter your password"
+              className="h-16 text-sm font-PlusJakartaSansRegular text-Grey/06 flex-1 px-8"
+              value={username}
+              onChangeText={setUsername}
+            />
+          </View>
+
+          <View className="gap-y-3">
           <Text className="text-lg text-gray-200 font-PlusJakartaSansBold">
             Choose a password
           </Text>

@@ -192,20 +192,36 @@ export const useQuery = () => {
 
   // Create Account
   const createAccount = useCallback(
-    async (_email: string, password: string) => {
+    async (_email: string, password: string, _username: string) => {
       try {
         const response = await api.post(`/api/user/createuser`, {
           email: _email,
           password: password,
+          username: _username
         });
 
         return response?.data;
-      } catch (error) {
-        console.error("Error creating account:", error);
+      } catch (error: any) {
+        console.error("Error creating account:", error.message);
       }
     },
     []
   );
+
+  const checkUsername = useCallback(
+   async (_username: string) => {
+     try {
+        const response = await api.post(`/api/user/check`, {
+          username: _username
+        })
+        return response?.data
+     } catch (error: any) {
+       console.log("error cheecking if username exist", error.message)
+     }
+    },
+    [],
+  )
+
 
   const getUserByEmail = useCallback(async (email: string) => {
     try {
@@ -1253,5 +1269,6 @@ export const useQuery = () => {
     getTrendingSearches,
     getLocationBasedTracks,
     getWorldwideTopSongs,
+    checkUsername
   };
 };
