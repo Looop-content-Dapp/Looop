@@ -5,7 +5,7 @@ import store from "@/redux/store";
 
 const api = axios.create({
   baseURL: "https://looop-backend.onrender.com",
-  timeout: 10000, // timeout after 10 seconds
+  // timeout: 10000, // timeout after 10 seconds
   headers: {
     "Content-Type": "application/json",
   },
