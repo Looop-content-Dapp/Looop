@@ -812,7 +812,6 @@ export const useQuery = () => {
             return response.data;
           default:
         }
-        return response.data;
       } catch (error: any) {
         if (error.response) {
           console.error(
