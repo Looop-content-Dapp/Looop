@@ -6,6 +6,7 @@ import { Provider } from "react-redux";
 import { SplashScreen, Stack } from "expo-router";
 import { GiphySDK } from "@giphy/react-native-sdk";
 import { PersistGate } from "redux-persist/integration/react";
+import { AlertNotificationRoot } from "react-native-alert-notification";
 
 import { useFonts } from "expo-font";
 import "../global.css";
@@ -81,9 +82,11 @@ export default function _RootLayout() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <KeyboardProvider>
-          <AppContent />
-        </KeyboardProvider>
+        <AlertNotificationRoot>
+          <KeyboardProvider>
+            <AppContent />
+          </KeyboardProvider>
+        </AlertNotificationRoot>
       </PersistGate>
     </Provider>
   );

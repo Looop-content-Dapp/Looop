@@ -207,6 +207,15 @@ export const useQuery = () => {
     []
   );
 
+  const checkUsername = async (param: any) => {
+    try {
+      const response = await api.post(`/api/user/check`, param);
+      return response.data;
+    } catch (error) {
+      console.log("Error checking username:", error);
+    }
+  };
+
   const getUserByEmail = useCallback(async (email: string) => {
     try {
       const response = await axios.get(`/api/user/email/${email}`);
@@ -1163,6 +1172,7 @@ export const useQuery = () => {
     retrieveUserId,
     deleteUserId,
     getUserByEmail,
+    checkUsername,
 
     // -----------------------------
     // User Preferences
