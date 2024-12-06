@@ -208,20 +208,14 @@ export const useQuery = () => {
     []
   );
 
-  const checkUsername = useCallback(
-   async (_username: string) => {
-     try {
-        const response = await api.post(`/api/user/check`, {
-          username: _username
-        })
-        return response?.data
-     } catch (error: any) {
-       console.log("error cheecking if username exist", error.message)
-     }
-    },
-    [],
-  )
-
+  const checkUsername = async (param: any) => {
+    try {
+      const response = await api.post(`/api/user/check`, param);
+      return response.data;
+    } catch (error) {
+      console.log("Error checking username:", error);
+    }
+  };
 
   const getUserByEmail = useCallback(async (email: string) => {
     try {
@@ -681,7 +675,7 @@ export const useQuery = () => {
    * @returns Response data from the API.
    */
   const createPlaylist = useCallback(
-    async (_title: string, _userId: string): Promise<PlaylistResponse> => {
+    async (_title: string, _userId: string) => {
       try {
         const response = await axios.post(`/api/playlist/create`, {
           title: _title,
@@ -1027,7 +1021,7 @@ export const useQuery = () => {
   );
 
   const getArtistCommunitiesByGenre = useCallback(
-    async (userId: string): Promise<ArtistCommunitiesResponse> => {
+    async (userId: string) => {
       try {
         const response = await axios.get(
           `/api/community/artists-by-genre/${userId}`
@@ -1178,6 +1172,7 @@ export const useQuery = () => {
     retrieveUserId,
     deleteUserId,
     getUserByEmail,
+    checkUsername,
 
     // -----------------------------
     // User Preferences
@@ -1268,6 +1263,5 @@ export const useQuery = () => {
     getTrendingSearches,
     getLocationBasedTracks,
     getWorldwideTopSongs,
-    checkUsername
   };
 };
