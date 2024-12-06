@@ -13,6 +13,7 @@ import { useClerkAuthentication } from "../../hooks/useClerkAuthentication";
 import { ViewIcon, ViewOffIcon } from "@hugeicons/react-native";
 import { AppButton } from "@/components/app-components/button";
 import { StatusBar } from "expo-status-bar";
+import { router } from "expo-router";
 
 const Signin = () => {
   const [emailAddress, setEmailAddress] = React.useState("");
@@ -20,9 +21,6 @@ const Signin = () => {
   const [passwordView, setPasswordView] = useState(true);
 
   const {
-    handleAppleSignUp,
-    handleEmailSignUp,
-    handleGoogleSignUp,
     handleEmailSignIn,
     loading,
   } = useClerkAuthentication();
@@ -127,13 +125,15 @@ const Signin = () => {
           </View>
 
           <View className="flex-row items-center justify-center gap-x-[2px] absolute bottom-12 left-0 right-0">
-            <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[16px]">
-              Powered by
+            <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[14px]">
+              You dont have an account
             </Text>
-            <Image source={require("../../assets/images/starknet.png")} />
-            <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[16px]">
-              Starknet
+            <TouchableOpacity onPress={() => router.navigate("/(auth)/")}>
+            <Text className="text-Orange/08 underline pl- font-PlusJakartaSansMedium text-[14px]">
+             SignUp
             </Text>
+            </TouchableOpacity>
+
           </View>
         </View>
       </SafeAreaView>

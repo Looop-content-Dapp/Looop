@@ -1,5 +1,12 @@
-import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput } from "react-native-gesture-handler";
 import {
@@ -11,39 +18,62 @@ import {
 } from "@hugeicons/react-native";
 import { useQuery } from "../../hooks/useQuery";
 import { useRouter } from "expo-router";
-import { AppButton } from "@/components/app-components/button";
+
+const debounce = (func, delay) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      func(...args);
+    }, delay);
+  };
+};
 
 const CreatePassword = () => {
   const [_username, setUsername] = useState("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState("");
   const [passwordView, setPasswordView] = useState(false);
-  const [showMessage, setShowMessage] = useState<string>("");
+  const [showMessage, setShowMessage] = useState("");
   const [validation, setValidation] = useState({
     hasLetter: false,
     hasNumber: false,
     hasSpecialChar: false,
     isLongEnough: false,
   });
+
   const router = useRouter();
   const { checkUsername } = useQuery();
 
-  const validateUsername = async () => {
-    const payload = {
-      username: _username,
-    };
+  const validateUsername = async (username) => {
+    if (!username) {
+      setShowMessage("");
+      return;
+    }
     setLoading(true);
-    const response = await checkUsername(payload);
-    if (response?.data?.existingUser === null) {
+    const payload = { username };
+    try {
+      const response = await checkUsername(payload);
+      if (response?.data?.existingUser === null) {
+        setShowMessage("username is available");
+      } else {
+        setShowMessage("username is not available");
+      }
+    } catch (error) {
+      setShowMessage("Error checking username");
+    } finally {
       setLoading(false);
-      setShowMessage("username is available");
-    } else {
-      setLoading(false);
-      setShowMessage("username is not available");
     }
   };
 
-  // Function to validate the password
+  const debouncedValidateUsername = debounce(validateUsername, 500);
+
+  useEffect(() => {
+   if(_username.length > 5){
+    debouncedValidateUsername(_username);
+   }
+  }, [_username]);
+
   const validatePassword = (input) => {
     const hasLetter = /[a-zA-Z]/.test(input);
     const hasNumber = /[0-9]/.test(input);
@@ -76,6 +106,7 @@ const CreatePassword = () => {
           pathname: "/(auth)/secureAccount",
           params: {
             secrets: password,
+            name: _username,
           },
         });
       }
@@ -122,18 +153,28 @@ const CreatePassword = () => {
               className="h-16 text-sm font-PlusJakartaSansRegular text-Grey/06 px-8 bg-Grey/07 rounded-full"
               value={_username}
               onChangeText={setUsername}
-              onSubmitEditing={validateUsername}
-              onBlur={validateUsername}
             />
-            {showMessage.length !== 0 && (
-              <View className="flex flex-row items-center gap-2">
-                <CheckmarkCircle02Icon
-                  color="#22c55e"
-                  size={18}
-                  variant="solid"
-                />
-                <Text className="text-green-500">{showMessage}</Text>
-              </View>
+            {loading ? (
+              <ActivityIndicator size="small" color="#FFA500" />
+            ) : (
+              showMessage.length !== 0 && (
+                <View className="flex flex-row items-center gap-2">
+                  <CheckmarkCircle02Icon
+                    color={
+                      showMessage === "username is available" ? "#22c55e" : "#ff0000"
+                    }
+                    size={18}
+                    variant="solid"
+                  />
+                  <Text
+                    className={`text-${
+                      showMessage === "username is available" ? "green-500" : "red-500"
+                    }`}
+                  >
+                    {showMessage}
+                  </Text>
+                </View>
+              )
             )}
           </View>
 
@@ -145,11 +186,10 @@ const CreatePassword = () => {
               <TextInput
                 placeholderTextColor="#787A80"
                 placeholder="Enter your password"
-                secureTextEntry={passwordView}
+                secureTextEntry={!passwordView}
                 className="h-16 text-sm font-PlusJakartaSansRegular text-Grey/06 flex-1 px-8"
                 value={password}
                 onChangeText={handlePasswordChange}
-                editable={loading}
               />
               <TouchableOpacity onPress={() => setPasswordView(!passwordView)}>
                 {passwordView ? (
@@ -160,7 +200,6 @@ const CreatePassword = () => {
               </TouchableOpacity>
             </View>
 
-            {/* Password requirements */}
             <View className="gap-6">
               <View className="mt-4">
                 <View className="flex-row items-center">
@@ -240,7 +279,7 @@ const CreatePassword = () => {
                 </View>
               </View>
               <View className="bg-[#2A1708] p-[12px] flex-row items-start gap-[12px] max-w-full rounded-[12px] overflow-hidden">
-                <View className="">
+                <View>
                   <InformationCircleIcon
                     size={24}
                     color="#EC6519"
@@ -265,7 +304,8 @@ const CreatePassword = () => {
               !validation.hasLetter ||
               !validation.hasNumber ||
               !validation.hasSpecialChar ||
-              !validation.isLongEnough
+              !validation.isLongEnough ||
+              showMessage != "username is available"
             }
             className={`${
               validation.hasLetter &&

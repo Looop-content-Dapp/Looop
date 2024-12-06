@@ -192,16 +192,17 @@ export const useQuery = () => {
 
   // Create Account
   const createAccount = useCallback(
-    async (_email: string, password: string) => {
+    async (_email: string, password: string, _username: string) => {
       try {
         const response = await api.post(`/api/user/createuser`, {
           email: _email,
           password: password,
+          username: _username
         });
 
         return response?.data;
-      } catch (error) {
-        console.error("Error creating account:", error);
+      } catch (error: any) {
+        console.error("Error creating account:", error.message);
       }
     },
     []
@@ -273,7 +274,7 @@ export const useQuery = () => {
     async (id: string, genre: string[]) => {
       try {
         console.log("Sending data:", { userId: id, genres: genre });
-        const response = await axios.post(`/api/user/creategenresforuser`, {
+        const response = await api.post(`/api/user/creategenresforuser`, {
           userId: id,
           preferences: genre,
         });
@@ -315,7 +316,7 @@ export const useQuery = () => {
   const subscribeToArtist = useCallback(
     async (userId: string, artistId: string) => {
       try {
-        const response = await axios.post(
+        const response = await api.post(
           `/api/user/subcribetoartist/${userId}/${artistId}`
         );
         console.log("The response from subscribing to artist", response.data);
@@ -330,7 +331,7 @@ export const useQuery = () => {
   // Follow Artist
   const followArtist = useCallback(async (userId: string, artistId: string) => {
     try {
-      const response = await axios.post(
+      const response = await api.post(
         `/api/artist/follow/${userId}/${artistId}`
       );
       console.log("Response from following artist:", response.data);
@@ -343,7 +344,7 @@ export const useQuery = () => {
   // Check if User is Following an Artist
   const isFollowingArtist = async (userId: string, artistId: string) => {
     try {
-      const response = await axios.get(
+      const response = await api.get(
         `/api/user/isfollowing/${userId}/${artistId}`
       );
       return response.data.bool; // Assuming the endpoint returns a boolean
@@ -355,7 +356,7 @@ export const useQuery = () => {
   // Get Artists Based on User Genre
   const getArtistBasedOnGenre = useCallback(async (id: string) => {
     try {
-      const response = await axios.get(
+      const response = await api.get(
         `/api/user/getartistbasedonusergenre/${id}`
       );
       return response.data;
@@ -367,7 +368,7 @@ export const useQuery = () => {
   // Get User Subscriptions
   const getUserSubscriptions = useCallback(async (id: string) => {
     try {
-      const response = await axios.get(
+      const response = await api.get(
         `/api/user/getartistusersubcribedto/${id}`
       );
       return response.data;
@@ -522,7 +523,7 @@ export const useQuery = () => {
   // Get Top Songs for Artist
   const getTopSongsForArtist = useCallback(async (artistId: string) => {
     try {
-      const response = await axios.get(
+      const response = await api.get(
         `/api/song/artist/${artistId}/top-songs`
       );
       return response.data;
@@ -535,7 +536,7 @@ export const useQuery = () => {
   const getSongsForUser = useCallback(async () => {
     try {
       const uId = await retrieveUserId();
-      const response = await axios.get(`/api/song/artisttheyfollow/${uId}`);
+      const response = await api.get(`/api/song/artisttheyfollow/${uId}`);
       return response.data;
     } catch (error) {
       console.error("Error fetching songs for user:", error);
@@ -545,7 +546,7 @@ export const useQuery = () => {
   // Get Singles for Artist
   const getSinglesForArtist = useCallback(async (artistId: string) => {
     try {
-      const response = await axios.get(`/api/song/artist/${artistId}/singles`);
+      const response = await api.get(`/api/song/artist/${artistId}/singles`);
       return response.data;
     } catch (error) {
       console.error("Error fetching singles for artist:", error);
@@ -559,7 +560,7 @@ export const useQuery = () => {
    */
   const getAlbumsAndEP = useCallback(async (id: string) => {
     try {
-      const response = await axios.get(`/api/song/artist/${id}/albums-eps`);
+      const response = await api.get(`/api/song/artist/${id}/albums-eps`);
       return response.data;
     } catch (error) {
       console.error("Error fetching albums and EPs:", error);
@@ -674,7 +675,7 @@ export const useQuery = () => {
    * @returns Response data from the API.
    */
   const createPlaylist = useCallback(
-    async (_title: string, _userId: string): Promise<PlaylistResponse> => {
+    async (_title: string, _userId: string) => {
       try {
         const response = await axios.post(`/api/playlist/create`, {
           title: _title,
@@ -805,7 +806,6 @@ export const useQuery = () => {
             return response.data;
           default:
         }
-        return response.data;
       } catch (error: any) {
         if (error.response) {
           console.error(
@@ -1021,7 +1021,7 @@ export const useQuery = () => {
   );
 
   const getArtistCommunitiesByGenre = useCallback(
-    async (userId: string): Promise<ArtistCommunitiesResponse> => {
+    async (userId: string) => {
       try {
         const response = await axios.get(
           `/api/community/artists-by-genre/${userId}`
