@@ -7,11 +7,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#FF6D1B"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.looop.Looop",

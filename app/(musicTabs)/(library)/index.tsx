@@ -29,7 +29,7 @@ const index = () => {
     },
     {
       image: require("../../../assets/images/savedAlbums.png"),
-      title: "Saved Albums",
+      title: "My Downloads",
       route: "/savedAlbums",
     },
     {
@@ -92,7 +92,7 @@ const index = () => {
               source={item.image}
               className="w-[160px] h-[140px]"
             >
-              <Text className="absolute bottom-9 left-3 text-[20px] font-PlusJakartaSansBold w-[83px]">
+              <Text className="absolute bottom-4 left-3 text-[20px] font-PlusJakartaSansBold w-[83px]">
                 {item.title}
               </Text>
             </ImageBackground>

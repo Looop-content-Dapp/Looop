@@ -8,11 +8,14 @@ import AnimatedLock from "../../components/animated/AnimatedLock";
 import { useQuery } from "../../hooks/useQuery";
 import { MotiView } from "moti";
 import { account } from "../../appWrite";
+import { setUserData } from "@/redux/slices/auth";
+import { useAppDispatch } from "@/redux/hooks";
 
 const SecureAccount = () => {
   const { secrets, name } = useLocalSearchParams();
   const { createAccount, storeUserId, deleteUserId } = useQuery();
   const navigation = useNavigation();
+  console.log("username is", name)
 
   const steps = [
     "Creating wallet",
@@ -24,8 +27,8 @@ const SecureAccount = () => {
   const [showFinalStep, setShowFinalStep] = useState(false);
   const [creationFailed, setCreationFailed] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const dispatch = useAppDispatch();
 
-  
 
   useEffect(() => {
     const handleCreateAccount = async () => {
@@ -59,6 +62,7 @@ const SecureAccount = () => {
         ) {
           await deleteUserId();
           await storeUserId(accountRes.data.user._id);
+          dispatch(setUserData(accountRes.data.user));
           setShowFinalStep(true); // Show "Wallet Created" message
         } else {
           throw new Error("Invalid response from server");
@@ -72,7 +76,7 @@ const SecureAccount = () => {
       }
     };
 
-    if (secrets) {
+    if (secrets && name) {
       handleCreateAccount();
     } else {
       setCreationFailed(true);

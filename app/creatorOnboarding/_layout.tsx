@@ -4,11 +4,15 @@ import { Stack } from "expo-router";
 export default function _CreatorOnboardingLayout() {
   return (
     <Stack
-      screenOptions={{
+    screenOptions={{
         headerShown: false,
         contentStyle: {
+          backgroundColor: "#000000",
+        },
+        headerStyle: {
           backgroundColor: "#040405",
         },
+        title: "",
       }}
     >
       <Stack.Screen name="index" />

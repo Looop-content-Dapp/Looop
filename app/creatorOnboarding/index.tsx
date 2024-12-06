@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,14 +10,33 @@ import {
   StatusBar,
 } from "react-native";
 import { router } from "expo-router";
+import UnderReview from "@/components/CreatorOnboarding/UnderReview";
+import Welcome from "@/components/CreatorOnboarding/Welcome";
+import ContractSigning from "@/components/CreatorOnboarding/ContractSigning";
+import ConnectSocial from "@/components/CreatorOnboarding/ConnectSocial";
 
 const CreatorModeWelcome = () => {
+  const creatorFlow = ["WELCOME", "NOT SUBMITTED", "UNDER REVIEW", "CONTRACT PENDING", "CONTRACT SIGNED"];
   const { width, height } = useWindowDimensions();
+  const [currentFlow, setCurrentFlow] = useState(creatorFlow[0]);
+
+  const handleNext = () => {
+    const currentIndex = creatorFlow.indexOf(currentFlow);
+    if (currentIndex < creatorFlow.length - 1) {
+      setCurrentFlow(creatorFlow[currentIndex + 1]);
+    }
+  };
+
+  const handlePrev = () => {
+    const currentIndex = creatorFlow.indexOf(currentFlow);
+    if (currentIndex > 0) {
+      setCurrentFlow(creatorFlow[currentIndex - 1]);
+    }
+  };
 
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      // backgroundColor: "#000",
     },
     headerContainer: {
       alignItems: "center",
@@ -61,17 +80,36 @@ const CreatorModeWelcome = () => {
     button: {
       backgroundColor: "#A187B5",
       alignItems: "center",
-      marginTop: height * 0.06,
+    //   marginTop: height * 0.06,
       marginHorizontal: width * 0.05,
       paddingVertical: height * 0.02,
       borderRadius: 56,
+      position: "absolute",
+      bottom: 50,
+      right: 0,
+      left: 0
     },
     buttonText: {
-      color: "#fff",
+      color: "#0a0b0f",
       fontSize: width * 0.045,
       fontFamily: "PlusJakartaSans-Bold",
     },
   });
+
+  const handleFlow = () => {
+    switch (currentFlow) {
+      case "WELCOME":
+        return <Welcome />;
+      case "NOT SUBMITTED":
+        return <ConnectSocial setCurrentFlow={setCurrentFlow} />;
+      case "UNDER REVIEW":
+        return <UnderReview />;
+      case "CONTRACT PENDING":
+        return <ContractSigning />;
+      default:
+        return <Welcome />;
+    }
+  };
 
   return (
     <>
@@ -81,37 +119,26 @@ const CreatorModeWelcome = () => {
           translucent={true}
           barStyle="light-content"
         />
-        <View style={styles.headerContainer}>
-          <Image
-            source={require("../../assets/images/creatormode.png")}
-            style={styles.image}
-            resizeMode="contain"
-          />
-          <Text style={styles.title}>
-            Welcome to{"\n"}
-            <Text style={styles.purpleText}>Creator mode</Text>
-          </Text>
-        </View>
+        {handleFlow()}
 
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoTitle}>What you can do</Text>
-          <Text style={styles.infoText}>Upload and manage your music</Text>
-          <Text style={styles.infoText}>
-            Build and connect with your fanbase
-          </Text>
-          <Text style={styles.infoText}>Interact with your community</Text>
-          <Text style={styles.infoText}>Create your own collectibles</Text>
-        </View>
+        {currentFlow !== "NOT SUBMITTED" && currentFlow !== "CONTRACT PENDING" && (
+             <TouchableOpacity
+             onPress={handleNext}
+             style={styles.button}
+           >
+             <Text style={styles.buttonText}>Start creating</Text>
+           </TouchableOpacity>
+        )}
 
-        <TouchableOpacity
-          onPress={() => router.push("/creatorOnboarding/connectProfile")}
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>Start creating</Text>
-        </TouchableOpacity>
       </SafeAreaView>
     </>
   );
 };
 
 export default CreatorModeWelcome;
+
+
+
+/**
+ *
+ */

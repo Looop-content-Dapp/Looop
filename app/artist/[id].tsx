@@ -45,7 +45,7 @@ const ArtistDetails = () => {
   const scrollY = useRef(new Animated.Value(0)).current;
   const [isMember, setIsMember] = useState(false);
   const router = useRouter();
-  const { getTopSongsForArtist, getAlbumsAndEP, getAllCommunities, joinCommunity, retrieveUserId } = useQuery();
+  const {getAllCommunities,  retrieveUserId } = useQuery();
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
   console.log("isVerified", isVerified)
 
