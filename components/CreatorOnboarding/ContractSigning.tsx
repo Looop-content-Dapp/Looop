@@ -4,6 +4,7 @@ import Intro from './ContractFlow/Intro';
 import ContractIntro from './ContractFlow/ContractIntro';
 
 import ContractAgreement from './ContractFlow/ContractAgreement';
+import SignContract from './ContractFlow/SignContract';
 
 const ContractSigning = () => {
     const [currentFlow, setCurrentFlow] = useState("Reviewed");
@@ -18,6 +19,8 @@ const ContractSigning = () => {
                 return <ContractIntro />
                 case "Contract":
                     return <ContractAgreement />
+                    case "Sign":
+                        return <SignContract />
             default:
                 return <Intro />
         }
@@ -33,10 +36,15 @@ const ContractSigning = () => {
                 setButtonText("Next Step")
                 break;
             case "Contract":
+                setCurrentFlow("Sign")
+                setButtonText("Sign & Continue")
+                // You can navigate to the next screen here
+                case "Sign":
+                setCurrentFlow("Sign")
+                setButtonText("Sign & Continue")
                 Alert.alert("Contract Signed!", "Thank you for signing the contract.", [
                     { text: "OK", onPress: () => console.log("Contract signed successfully") }
                 ]);
-                setButtonText("Sign & Continue")
                 // You can navigate to the next screen here
                 break;
             default:
