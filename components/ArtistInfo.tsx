@@ -5,6 +5,7 @@ import { CheckmarkBadge01Icon } from '@hugeicons/react-native';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import { useQuery } from '../hooks/useQuery';
 import axios from 'axios';
+import { useAppSelector } from '@/redux/hooks';
 
 type Props = {
   image: any;
@@ -25,15 +26,13 @@ const ArtistInfo = ({ follow, name, desc, follower, isVerfied, index }: Props) =
     retrieveUserId,
     isFollowingArtist, // Make sure this is part of your useQuery hook
   } = useQuery();
+  const { userdata } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     const checkFollowStatus = async () => {
       try {
-        const userId = await retrieveUserId();
-        console.log('Retrieved userID at profile:', userId);
-
-        if (userId) {
-          const isFollowing = await isFollowingArtist(userId, index);
+        if (userdata?._id) {
+          const isFollowing = await isFollowingArtist(userdata?._id as string , index);
           console.log(`isFollowingArtist returned: ${isFollowing}`);
 
           setFollowed(isFollowing);
@@ -54,14 +53,9 @@ const ArtistInfo = ({ follow, name, desc, follower, isVerfied, index }: Props) =
   // Function to handle following an artist
   const handleFollowArtist = async () => {
     try {
-      const userId = await retrieveUserId();
-      if (!userId) {
-        console.error('User ID is not available.');
-        return;
-      }
 
-      await followArtist(userId, index);
-      console.log(`Successfully followed artist with ID: ${index}`);
+    const res =  await followArtist(userdata?._id as string, index);
+      console.log(`Successfully followed artist with ID: ${index}`, res);
       setFollowed(true);
     } catch (error) {
       if (axios.isAxiosError(error)) {

@@ -1,20 +1,25 @@
 import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Alert } from 'react-native'
 import React, { useState } from 'react'
-import Intro from './ContractFlow/Intro';
-import ContractIntro from './ContractFlow/ContractIntro';
+import Intro from '../../components/CreatorOnboarding/ContractFlow/Intro';
+import ContractIntro from '../../components/CreatorOnboarding/ContractFlow/ContractIntro';
 
-import ContractAgreement from './ContractFlow/ContractAgreement';
-import SignContract from './ContractFlow/SignContract';
+import ContractAgreement from '../../components/CreatorOnboarding/ContractFlow/ContractAgreement';
+import SignContract from '../../components/CreatorOnboarding/ContractFlow/SignContract';
+import { useRouter } from 'expo-router';
+// import CreateProfile from './CreateProfile';
 
 const ContractSigning = () => {
     const [currentFlow, setCurrentFlow] = useState("Reviewed");
     const [buttonText, setButtonText] = useState("Continue")
     const { width, height } = useWindowDimensions();
+    const { navigate } = useRouter()
 
     const handleFlow = () => {
         switch (currentFlow) {
             case "Reviewed":
                return <Intro />
+            //    case "Create Profile":
+            //     return <CreateProfile />
              case "intro":
                 return <ContractIntro />
                 case "Contract":
@@ -42,9 +47,7 @@ const ContractSigning = () => {
                 case "Sign":
                 setCurrentFlow("Sign")
                 setButtonText("Sign & Continue")
-                Alert.alert("Contract Signed!", "Thank you for signing the contract.", [
-                    { text: "OK", onPress: () => console.log("Contract signed successfully") }
-                ]);
+                navigate("/(artisteTabs)/(dashboard)")
                 // You can navigate to the next screen here
                 break;
             default:
@@ -75,11 +78,12 @@ const ContractSigning = () => {
     <View className='flex-1'>
      {handleFlow()}
      <TouchableOpacity
-             onPress={handleNext}
-             style={styles.button}
-           >
-             <Text style={styles.buttonText}>{buttonText}</Text>
-           </TouchableOpacity>
+        onPress={handleNext}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>{buttonText}</Text>
+      </TouchableOpacity>
+
     </View>
   )
 }

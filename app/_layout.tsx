@@ -73,6 +73,9 @@ function AppContent() {
           }}
         />
         <Stack.Screen name="communityDetails" />
+        <Stack.Screen name="uploadMusic" options={{
+            presentation: "fullScreenModal"
+        }} />
       </Stack>
     </GestureHandlerRootView>
   );

@@ -12,11 +12,8 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft02Icon } from '@hugeicons/react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Artist } from '../../utils/types';
 import ArtistInfo from '../../components/ArtistInfo';
-import Hottest from '../../components/cards/Hottest';
-import AlbumsAndEps from '../../components/cards/AlbumsAndEps';
 import { useQuery } from '../../hooks/useQuery';
 import JoinCommunity from '../../components/cards/JoinCommunity';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';

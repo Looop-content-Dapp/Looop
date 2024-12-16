@@ -11,7 +11,6 @@ type Props = {
 const AlbumsAndEps: React.FC<Props> = ({ songs, isLoading }) => {
     const router = useRouter()
   const renderItem = ({ item }: { item: any }) => {
-    console.log("albums and ep", item)
     return (
         <Pressable
         onPress={() =>
