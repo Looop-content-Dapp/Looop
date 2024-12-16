@@ -13,7 +13,7 @@ import {
   Wallet01Icon,
   CheckmarkBadge01Icon,
   HeadphonesIcon,
-} from "@hugeicons/react-native";
+} from "@hugeicons/react-native"
 import React, { useRef, useState } from "react";
 import BottomSheet, { BottomSheetModal } from "@gorhom/bottom-sheet";
 import Ellipse from "../../../components/Ellipse";

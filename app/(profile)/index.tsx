@@ -6,7 +6,7 @@ import {
   Share,
   Alert,
 } from "react-native";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { MoreHorizontalIcon, Share05Icon } from "@hugeicons/react-native";
 import { Avatar } from "react-native-elements";
 import {
@@ -14,7 +14,7 @@ import {
   ProfileTribes,
   StarSpotLight,
 } from "../../components/profile";
-import { router, useNavigation } from "expo-router";
+import { router, useFocusEffect, useNavigation, useRouter } from "expo-router";
 import { useQuery } from "../../hooks/useQuery";
 import { formatNumber } from "../../utils/ArstsisArr";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
@@ -28,6 +28,7 @@ const profile = () => {
 
   const { userdata } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
+  const router = useRouter()
 
 
   const { getUserById } = useQuery();
@@ -42,23 +43,26 @@ const profile = () => {
     });
   }, [navigation]);
 
-  useEffect(() => {
-    const fetchSubscriptions = async () => {
-      try {
-        setLoading(true);
+  const fetchSubscriptions = useCallback(async () => {
+    try {
+      setLoading(true);
 
-        if (userdata) {
-          const res: SignInResponse = await getUserById(userdata._id);
-          dispatch(setUserData(res.data));
-        }
-      } catch (error) {
-        console.error("Error fetching genres:", error);
-      } finally {
-        setLoading(false);
+      if (userdata) {
+        const res: SignInResponse = await getUserById(userdata._id);
+        dispatch(setUserData(res.data));
       }
-    };
-    fetchSubscriptions();
-  }, []);
+    } catch (error) {
+      console.error("Error fetching genres:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [userdata, dispatch, getUserById]);
+
+
+useEffect(() => {
+    fetchSubscriptions()
+}, [])
+
 
   // Function to generate a shareable link for the user
   const getAlbumShareLink = (albumId: any) => {

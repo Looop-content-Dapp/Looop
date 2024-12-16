@@ -26,7 +26,7 @@ export default function _TabsLayout() {
       <DraggableButton
         color="#8D4FB4"
         icon={UserGroupIcon}
-        route="/(communityTabs)/(feed)"
+        route="/(communityTabs)"
         initialPosition={{
           x: 16,
           y: screenHeight - tabBarHeight - insets.bottom - 0, // Ensures the button stays above the tab bar

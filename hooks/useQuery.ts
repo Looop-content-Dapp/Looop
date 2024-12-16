@@ -334,8 +334,8 @@ export const useQuery = () => {
       const response = await api.post(
         `/api/artist/follow/${userId}/${artistId}`
       );
-      console.log("Response from following artist:", response.data);
-      return true;
+      console.log("Response from following artist:", response);
+      return response.data;
     } catch (error) {
       console.error("Error follow Artist:", error);
     }
@@ -1062,7 +1062,7 @@ export const useQuery = () => {
       try {
         const endpoint = category ? `/api/search/category` : `/api/search`;
 
-        const response = await axios.get(endpoint, {
+        const response = await api.get(endpoint, {
           params: {
             query,
             page,
@@ -1082,7 +1082,7 @@ export const useQuery = () => {
 
   const getRecentSearches = useCallback(async () => {
     try {
-      const response = await axios.get(`/api/search/recent`);
+      const response = await api.get(`/api/search/recent`);
       return response.data;
     } catch (error) {
       console.error("Error fetching recent searches:", error);
@@ -1094,7 +1094,7 @@ export const useQuery = () => {
       const userId = await retrieveUserId();
       if (!userId) return;
 
-      const response = await axios.delete(`/api/search/recent`);
+      const response = await api.delete(`/api/search/recent`);
       console.log("recent search", response);
       return response.data;
     } catch (error) {
@@ -1105,7 +1105,7 @@ export const useQuery = () => {
   const getTrendingSearches = useCallback(
     async (timeframe: "24h" | "7d" | "30d" = "24h", limit = 10) => {
       try {
-        const response = await axios.get(`/api/search/trending`, {
+        const response = await api.get(`/api/search/trending`, {
           params: { timeframe, limit },
         });
         return response.data;
@@ -1123,7 +1123,7 @@ export const useQuery = () => {
       timeframe: "24h" | "7d" | "30d" = "7d"
     ) => {
       try {
-        const response = await axios.get(`/api/song/discover/location`, {
+        const response = await api.get(`/api/song/discover/location`, {
           params: {
             countryCode,
             limit,
@@ -1146,7 +1146,7 @@ export const useQuery = () => {
       includeRegionalStats: boolean = false
     ) => {
       try {
-        const response = await axios.get(`/api/song/discover/worldwide`, {
+        const response = await api.get(`/api/song/discover/worldwide`, {
           params: {
             timeframe,
             limit,

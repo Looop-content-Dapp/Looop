@@ -11,7 +11,7 @@ export const AppBackButton = ({
   return (
     <Pressable className="flex flex-row gap-3 items-center" onPress={onBackPress}>
       <ArrowLeft02Icon size={32} color="#FFFFFF" />
-      <Text className="text-xl text-[#f4f4f4] font-PlusJakartaSansBold">
+      <Text className="text-[20px] text-[#f4f4f4] font-PlusJakartaSansBold">
         {name}
       </Text>
     </Pressable>

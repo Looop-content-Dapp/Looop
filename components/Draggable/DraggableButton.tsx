@@ -86,9 +86,7 @@ const DraggableButton = ({ icon: Icon, route, initialPosition, color }) => {
   ).current;
 
   const handlePress = () => {
-    if (route) {
-      router.navigate(route);
-    }
+    router.push(route);
   };
 
   // Calculate initial position

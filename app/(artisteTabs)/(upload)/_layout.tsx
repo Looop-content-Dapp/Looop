@@ -6,7 +6,7 @@ export default function HomeLayout() {
   return (
     <Stack
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         contentStyle: {
           backgroundColor: "#000000",
         },
@@ -14,10 +14,6 @@ export default function HomeLayout() {
             backgroundColor: "#040405",
           },
       }}
-    >
-        <Stack.Screen name="index" options={{
-              headerShown: false
-        }} />
-    </Stack>
+    />
   );
 };

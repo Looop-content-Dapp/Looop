@@ -8,22 +8,36 @@ import {
   StyleSheet,
   useWindowDimensions,
   StatusBar,
+  Alert,
 } from "react-native";
-import { router } from "expo-router";
+import { router, useRouter } from "expo-router";
 import UnderReview from "@/components/CreatorOnboarding/UnderReview";
 import Welcome from "@/components/CreatorOnboarding/Welcome";
-import ContractSigning from "@/components/CreatorOnboarding/ContractSigning";
+import ContractSigning from "@/app/creatorOnboarding/ContractSigning";
 import ConnectSocial from "@/components/CreatorOnboarding/ConnectSocial";
 
 const CreatorModeWelcome = () => {
-  const creatorFlow = ["WELCOME", "NOT SUBMITTED", "UNDER REVIEW", "CONTRACT PENDING", "CONTRACT SIGNED"];
+  const creatorFlow = ["WELCOME", "NOT SUBMITTED", "UNDER REVIEW", "REVIWED", "CREATE PROFILE", "PROFILE SUCCESSFUL", "CONTRACT PENDING", "CONTRACT SIGNED"];
   const { width, height } = useWindowDimensions();
   const [currentFlow, setCurrentFlow] = useState(creatorFlow[0]);
+  const { navigate, push} = useRouter()
 
   const handleNext = () => {
-    const currentIndex = creatorFlow.indexOf(currentFlow);
-    if (currentIndex < creatorFlow.length - 1) {
-      setCurrentFlow(creatorFlow[currentIndex + 1]);
+    switch (currentFlow) {
+      case "WELCOME":
+        setCurrentFlow("NOT SUBMITTED");
+        break;
+      case "NOT SUBMITTED":
+        setCurrentFlow("UNDER REVIEW");
+        break;
+      case "UNDER REVIEW":
+
+         push({
+            pathname: "/creatorOnboarding/createProfile",
+         })
+        break;
+      default:
+        setCurrentFlow("WELCOME");
     }
   };
 
@@ -136,9 +150,3 @@ const CreatorModeWelcome = () => {
 };
 
 export default CreatorModeWelcome;
-
-
-
-/**
- *
- */

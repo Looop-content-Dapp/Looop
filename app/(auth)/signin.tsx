@@ -91,6 +91,7 @@ const Signin = () => {
             </View>
 
             <AppButton.Primary
+            color="#FF6D1B"
               text="Continue"
               loading={loading}
               disabled={loading}

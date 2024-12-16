@@ -10,7 +10,6 @@ type Props = {
 const Hottest: React.FC<Props> = ({ songs, isLoading }) => {
 
     const renderItem = ({ item, index }: { item: any; index: number }) => {
-       console.log("item", item)
         return (
           <View style={styles.itemContainer}>
             <View style={styles.imageContainer}>

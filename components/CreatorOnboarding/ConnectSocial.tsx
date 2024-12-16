@@ -2,6 +2,8 @@ import { View, Text, TextInput, TouchableOpacity, useWindowDimensions, StyleShee
 import React, { useLayoutEffect, useState } from 'react'
 import { router, useNavigation } from "expo-router";
 import { AppBackButton } from "@/components/app-components/back-btn";
+import { InformationCircleIcon } from '@hugeicons/react-native';
+import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 
 type Props ={
     setCurrentFlow: React.Dispatch<React.SetStateAction<string>>
@@ -26,6 +28,22 @@ const ConnectSocial = ({setCurrentFlow}: Props) => {
       ),
     });
   }, [navigation]);
+
+  const social = [
+    {
+      title: "X (Formerly Twitter)",
+      socialIcon: <FontAwesome6 name="x-twitter" size={18} color="#FFFFFF" />
+    },
+    {
+      title: "Instagram",
+      socialIcon: <FontAwesome name="instagram" size={18} color="#ffffff"/>
+    },
+    {
+      title: "TikTok",
+      socialIcon:<FontAwesome6 name="tiktok" size={18} color="#ffffff" />
+
+    }
+  ];
 
     const styles = StyleSheet.create({
         container: {
@@ -92,7 +110,7 @@ const ConnectSocial = ({setCurrentFlow}: Props) => {
           paddingVertical: height * 0.02,
           borderRadius: 56,
           position: "absolute",
-          bottom: 150,
+          bottom: 100,
           right: 0,
           left: 0
         },
@@ -101,6 +119,12 @@ const ConnectSocial = ({setCurrentFlow}: Props) => {
           fontSize: width * 0.045,
           fontFamily: "PlusJakartaSans-Bold",
         },
+        socialIconContainer: {
+            width: 40,
+            height: 40,
+            justifyContent: 'center',
+            alignItems: 'center',
+          },
       });
 
       return (
@@ -110,15 +134,24 @@ const ConnectSocial = ({setCurrentFlow}: Props) => {
             <Text style={styles.subtitle}>
             In order to give creators a thriving environment to share their art, we need to ensure that only creators have access to creator profiles, as such, we need to manually confirm that you’re a music artiste or creator by confirming through your social media profiles.
             </Text>
+
+            <View className='bg-[#12141B] gap-y-[12px] p-[16px]  rounded-[24px] w-full mx-auto'>
+                <View className='flex-row items-center gap-x-[4px]'>
+                    <InformationCircleIcon size={13} color='#A5A6AA' />
+                    <Text className='text-[14px] text-[#A5A6AA] font-PlusJakartaSansBold'>Quick note</Text>
+                </View>
+                <Text className='text-[16px] font-PlusJakartaSansRegular text-[#D2D3D5]'>We do not collect your data, we only get access to look at your public social profiles.</Text>
+            </View>
           </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Your main social profile link</Text>
-            <TextInput
-              placeholder="Ex: https://x.com/looop_music"
-              placeholderTextColor="#787A80"
-              style={styles.input}
-            />
+    <View className='flex-row flex-wrap items-center gap-y-[24px] gap-x-[12px] w-[90%] mx-auto'>
+        <Text className='text-[16px] md:text-[20px] font-PlusJakartaSansRegular text-[#A5A6AA]'>Connect your social media accounts</Text>
+     {social.map((item) => (
+       <TouchableOpacity key={item.title} className='flex-row p-[12px] items-center gap-x-[8px] bg-[#12141B] rounded-[12px]'>
+         {item.socialIcon}
+        <Text className='text-[16px] font-PlusJakartaSansMedium text-[#A5A6AA]'>{item.title}</Text>
+       </TouchableOpacity>
+))}
           </View>
 
           <TouchableOpacity

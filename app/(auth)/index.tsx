@@ -161,6 +161,7 @@ const EmailSignupFlow = () => {
         </View>
 
         <AppButton.Primary
+        color="#FF6D1B"
           text="Continue"
           loading={isLoading}
           onPress={handleEmailSubmit}

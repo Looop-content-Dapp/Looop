@@ -13,7 +13,6 @@ const Singles: React.FC<Props> = ({ songs, isLoading }) => {
   const router = useRouter()
 
   const renderItem = ({ item }: { item: any }) => {
-    console.log("singles", item)
     return (
         <Pressable
         onPress={() => router.push({ pathname: "/musicDetails",  params: {
