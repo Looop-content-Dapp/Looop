@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router'
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window')
 
-const baseWidth = 390
+const baseWidth = 391
 const scale = Math.min(SCREEN_WIDTH / baseWidth, 1.2)
 const responsiveSize = (size: number) => {
   const scaledSize = Math.round(size * scale)
