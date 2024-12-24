@@ -41,20 +41,20 @@ interface PickerFieldProps {
 }
 
 interface MultiSelectOption {
-    label: string;
-    value: string;
-  }
+  label: string;
+  value: string;
+}
 
-  interface MultiSelectFieldProps {
-    label: string;
-    placeholder?: string;
-    selectedValues: MultiSelectOption[];
-    onSelect: (values: MultiSelectOption[]) => void;
-    options: MultiSelectOption[];
-    error?: string;
-  }
+interface MultiSelectFieldProps {
+  label: string;
+  placeholder?: string;
+  selectedValues: MultiSelectOption[];
+  onSelect: (values: MultiSelectOption[]) => void;
+  options: MultiSelectOption[];
+  error?: string;
+}
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const TextField = ({
   label,
@@ -74,7 +74,7 @@ const TextField = ({
         style={[
           styles.input,
           error && styles.errorInput,
-          multiline && { height: numberOfLines * 50, textAlignVertical: 'top' }
+          multiline && { height: numberOfLines * 50, textAlignVertical: "top" },
         ]}
         placeholder={placeholder}
         placeholderTextColor="#787A80"
@@ -101,7 +101,7 @@ const PickerField = ({
   const [modalVisible, setModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredOptions = options.filter(option =>
+  const filteredOptions = options.filter((option) =>
     option.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -114,9 +114,9 @@ const PickerField = ({
         onPress={() => setModalVisible(true)}
       >
         <View style={styles.selectedValueContainer}>
-          {value && options.find(opt => opt.label === value)?.icon && (
+          {value && options.find((opt) => opt.label === value)?.icon && (
             <Image
-              source={{ uri: options.find(opt => opt.label === value)?.icon }}
+              source={{ uri: options.find((opt) => opt.label === value)?.icon }}
               style={styles.selectedIcon}
             />
           )}
@@ -180,110 +180,111 @@ const PickerField = ({
 };
 
 const MultiSelectField = ({
-    label,
-    placeholder = "Type genre and press Enter",
-    selectedValues,
-    onSelect,
-    options = [],
-    error,
-  }: MultiSelectFieldProps) => {
-    const [searchText, setSearchText] = useState("");
+  label,
+  placeholder = "Type genre and press Enter",
+  selectedValues,
+  onSelect,
+  options = [],
+  error,
+}: MultiSelectFieldProps) => {
+  const [searchText, setSearchText] = useState("");
 
-    const handleAdd = () => {
-      const trimmedText = searchText.trim();
-      if (!trimmedText) return;
+  const handleAdd = () => {
+    const trimmedText = searchText.trim();
+    if (!trimmedText) return;
 
-      // Check if the entered text matches any option from the predefined list
-      const matchingOption = options.find(
-        option => option.label.toLowerCase() === trimmedText.toLowerCase()
+    // Check if the entered text matches any option from the predefined list
+    const matchingOption = options.find(
+      (option) => option.label.toLowerCase() === trimmedText.toLowerCase()
+    );
+
+    if (matchingOption) {
+      // Check if the genre is already selected
+      const alreadySelected = selectedValues.some(
+        (item) => item.value === matchingOption.value
       );
 
-      if (matchingOption) {
-        // Check if the genre is already selected
-        const alreadySelected = selectedValues.some(
-          item => item.value === matchingOption.value
-        );
-
-        if (!alreadySelected) {
-          const newSelection = [...selectedValues, matchingOption];
-          onSelect(newSelection);
-        }
+      if (!alreadySelected) {
+        const newSelection = [...selectedValues, matchingOption];
+        onSelect(newSelection);
       }
+    }
 
-      setSearchText("");
-    };
-
-    const handleRemove = (value: string) => {
-      const updatedValues = selectedValues.filter((item) => item.value !== value);
-      onSelect(updatedValues);
-    };
-
-    // Filter suggestions based on current input
-    const filteredSuggestions = options.filter(
-      option =>
-        !selectedValues.find(item => item.value === option.value) &&
-        option.label.toLowerCase().includes(searchText.toLowerCase())
-    ).slice(0, 4);
-
-    return (
-      <View style={styles.container}>
-        <Text style={styles.label}>{label}</Text>
-
-        {/* Selected Genres Display */}
-        <ScrollView
-          horizontal={false}
-          style={styles.selectedScrollView}
-          contentContainerStyle={styles.selectedContainer}
-        >
-          {selectedValues.map((item) => (
-            <View key={item.value} style={styles.selectedItem}>
-              <Text style={styles.selectedText}>{item.label}</Text>
-              <TouchableOpacity
-                style={styles.removeButton}
-                onPress={() => handleRemove(item.value)}
-              >
-                <Text style={styles.removeIcon}>×</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-
-        {/* Input Field */}
-        <View style={[styles.inputContainer, error && styles.errorInput]}>
-          <TextInput
-            style={styles.textInput}
-            placeholder={placeholder}
-            placeholderTextColor="#787A80"
-            value={searchText}
-            onChangeText={setSearchText}
-            onSubmitEditing={handleAdd}
-          />
-        </View>
-
-        {/* Error Message */}
-        {error && <Text style={styles.error}>{error}</Text>}
-
-        {/* Suggestions Dropdown */}
-        {searchText.length > 0 && filteredSuggestions.length > 0 && (
-          <View style={styles.suggestionsContainer}>
-            {filteredSuggestions.map((suggestion) => (
-              <TouchableOpacity
-                key={suggestion.value}
-                style={styles.suggestionItem}
-                onPress={() => {
-                  setSearchText(suggestion.label);
-                  handleAdd();
-                }}
-              >
-                <Text style={styles.suggestionText}>{suggestion.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </View>
-    );
+    setSearchText("");
   };
 
+  const handleRemove = (value: string) => {
+    const updatedValues = selectedValues.filter((item) => item.value !== value);
+    onSelect(updatedValues);
+  };
+
+  // Filter suggestions based on current input
+  const filteredSuggestions = options
+    .filter(
+      (option) =>
+        !selectedValues.find((item) => item.value === option.value) &&
+        option.label.toLowerCase().includes(searchText.toLowerCase())
+    )
+    .slice(0, 4);
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.label}>{label}</Text>
+
+      {/* Selected Genres Display */}
+      <ScrollView
+        horizontal={false}
+        style={styles.selectedScrollView}
+        contentContainerStyle={styles.selectedContainer}
+      >
+        {selectedValues.map((item) => (
+          <View key={item.value} style={styles.selectedItem}>
+            <Text style={styles.selectedText}>{item.label}</Text>
+            <TouchableOpacity
+              style={styles.removeButton}
+              onPress={() => handleRemove(item.value)}
+            >
+              <Text style={styles.removeIcon}>×</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+      </ScrollView>
+
+      {/* Input Field */}
+      <View style={[styles.inputContainer, error && styles.errorInput]}>
+        <TextInput
+          style={styles.textInput}
+          placeholder={placeholder}
+          placeholderTextColor="#787A80"
+          value={searchText}
+          onChangeText={setSearchText}
+          onSubmitEditing={handleAdd}
+        />
+      </View>
+
+      {/* Error Message */}
+      {error && <Text style={styles.error}>{error}</Text>}
+
+      {/* Suggestions Dropdown */}
+      {searchText.length > 0 && filteredSuggestions.length > 0 && (
+        <View style={styles.suggestionsContainer}>
+          {filteredSuggestions.map((suggestion) => (
+            <TouchableOpacity
+              key={suggestion.value}
+              style={styles.suggestionItem}
+              onPress={() => {
+                setSearchText(suggestion.label);
+                handleAdd();
+              }}
+            >
+              <Text style={styles.suggestionText}>{suggestion.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+};
 
 export const FormField = {
   TextField,
@@ -297,7 +298,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    color: "#333",
+    color: "#F4F4F4",
     marginBottom: 8,
     fontWeight: "600",
   },
@@ -310,10 +311,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 14,
     paddingHorizontal: 16,
-    fontSize: 16,
-    color: "#333",
+    fontSize: 14,
+    color: "white",
     borderWidth: 1,
-    borderColor: "#12141B",
+    borderColor: "gray",
   },
   inputContainer: {
     flexDirection: "row",
@@ -323,7 +324,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: "#12141B",
+    borderColor: "gray",
   },
   errorInput: {
     borderColor: "#FF4D4F",
@@ -349,7 +350,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "gray",
     borderRadius: 8,
     padding: 10,
     marginBottom: 10,
@@ -398,7 +399,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 14,
     color: "#333",
   },
   suggestionsContainer: {
@@ -423,8 +424,8 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     backgroundColor: "#12141B",
@@ -434,9 +435,9 @@ const styles = StyleSheet.create({
     height: SCREEN_HEIGHT * 0.7,
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 20,
     marginBottom: 16,
   },
@@ -446,8 +447,8 @@ const styles = StyleSheet.create({
     fontFamily: "PlusJakartaSans-Bold",
   },
   optionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#1E1F25",
@@ -459,8 +460,8 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   selectedValueContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   selectedIcon: {

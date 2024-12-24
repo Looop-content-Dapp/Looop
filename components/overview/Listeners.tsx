@@ -1,5 +1,4 @@
 import { View, Text } from "react-native";
-import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import {} from "@hugeicons/react-native";
 import React from "react";
 import AnalyticsCard from "../Analytics/AnalyticsCard";
@@ -13,12 +12,10 @@ const Listeners = () => {
     { label: "25-45", percentage: 12.15, totalValue: 989657908 },
     { label: "45 & up", percentage: 9.23, totalValue: 989657908 },
   ];
+
   return (
-    <View style={{ flex: 1, minHeight: "100%" }}>
-      <View
-        style={{ width: wp("100%") }}
-        className="bg-[#0A0B0F] py-[20px] pl-[24px] rounded-[10px] pr-[26px] flex-row items-center gap-x-[14px]"
-      >
+    <View style={{ flex: 1, gap: 15 }}>
+      <View className="bg-[#0A0B0F] py-[20px] rounded-[10px] flex-row items-center gap-x-[14px]">
         <MiniAudioWaveform />
         <View>
           <Text className="text-[20px] font-PlusJakartaSansBold text-[#A187B5]">
@@ -30,23 +27,28 @@ const Listeners = () => {
         </View>
       </View>
 
-      <View className="flex-row items-center gap-x-[16px] my-[16px]">
-        <AnalyticsCard
-          title="Unique Audience"
-          value="1.09M"
-          backgroundImage={require("../../assets/images/totalStreams.png")}
-          changePercentage={23.85}
-          positive={true}
-          cardStyle={{ backgroundColor: "#0A0B0F", height: 183, width: 183 }}
-        />
-        <AnalyticsCard
-          title="New Audience"
-          value="8.5Bn"
-          backgroundImage={require("../../assets/images/totalStreams.png")}
-          changePercentage={43.85}
-          positive={false}
-          cardStyle={{ backgroundColor: "#0A0B0F", height: 183, width: 183 }}
-        />
+      <View className="flex-row gap-x-[12px] items-center justify-center">
+        <View className="flex flex-1">
+          <AnalyticsCard
+            title="Unique Audience"
+            value="1.09M"
+            backgroundImage={require("../../assets/images/totalStreams.png")}
+            changePercentage={23.85}
+            positive={true}
+            cardStyle={{ backgroundColor: "#0A0B0F", height: 183 }}
+          />
+        </View>
+
+        <View className="flex flex-1">
+          <AnalyticsCard
+            title="New Audience"
+            value="8.5Bn"
+            backgroundImage={require("../../assets/images/totalStreams.png")}
+            changePercentage={43.85}
+            positive={false}
+            cardStyle={{ backgroundColor: "#0A0B0F", height: 183 }}
+          />
+        </View>
       </View>
 
       <AnalyticsCard
@@ -55,15 +57,15 @@ const Listeners = () => {
             <Text className="text-[20px] font-PlusJakartaSansMedium text-[#787A80]">
               Age distribution
             </Text>
-            <View className="mt-[40px]">
-              <Text className="text-[32px] font-PlusJakartaSansMedium text-[#F4F4F4]">
+            <View className="mt-[25px]">
+              <Text className="text-[24px] font-PlusJakartaSansBold text-[#F4F4F4]">
                 22
               </Text>
               <Text className="text-[14px] font-PlusJakartaSansMedium text-[#787A80]">
                 Avg. age of listeners
               </Text>
             </View>
-            <View className="mt-[22px]">
+            <View className="mt-[25px]">
               {streamData.map((item, index) => (
                 <ProgressBar
                   key={`age-group-${index}`}
@@ -81,7 +83,7 @@ const Listeners = () => {
           </View>
         }
         backgroundImage={require("../../assets/images/agedistribution.png")}
-        cardStyle={{ height: 300, width: wp("100%") }}
+        cardStyle={{ height: 280 }}
       />
 
       <AnalyticsCard
@@ -107,11 +109,8 @@ const Listeners = () => {
             </View>
           </View>
         }
-        // backgroundImage={require('../../../assets/images/agedistribution.png')}
+        backgroundImage={require("../../assets/images/agedistribution.png")}
         cardStyle={{
-          width: wp("100%"),
-          paddingHorizontal: 24,
-          paddingVertical: 20,
           height: 215,
         }}
       />
@@ -122,8 +121,8 @@ const Listeners = () => {
             <Text className="text-[20px] font-PlusJakartaSansMedium text-[#787A80]">
               Age distribution
             </Text>
-            <View className="mt-[40px]">
-              <Text className="text-[32px] font-PlusJakartaSansMedium text-[#F4F4F4]">
+            <View className="mt-[20px]">
+              <Text className="text-[24px] font-PlusJakartaSansMedium text-[#F4F4F4]">
                 22
               </Text>
               <Text className="text-[14px] font-PlusJakartaSansMedium text-[#787A80]">
@@ -148,7 +147,7 @@ const Listeners = () => {
           </View>
         }
         backgroundImage={require("../../assets/images/agedistribution.png")}
-        cardStyle={{ height: 323, width: wp("100%") }}
+        cardStyle={{ height: 280 }}
       />
     </View>
   );

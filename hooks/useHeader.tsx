@@ -4,7 +4,7 @@ import { Text, View } from 'react-native';
 import { Avatar } from 'react-native-elements';
 import { router } from 'expo-router';
 
-export const useHeader = ({title}) => {
+export const useHeader = ({title}: {title: string}) => {
   const { userdata } = useAppSelector((state) => state.auth);
 
   const getGreeting = () => {
@@ -30,7 +30,7 @@ export const useHeader = ({title}) => {
       </View>
     ),
     headerRight: () => (
-      <View className="flex-row items-center gap-x-[30px]">
+      <View className="flex-row bg-red-400 items-center gap-x-[30px]">
         <Notification02Icon
           size={24}
           color="#787A80"

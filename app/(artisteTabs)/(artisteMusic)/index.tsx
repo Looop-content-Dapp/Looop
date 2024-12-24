@@ -1,87 +1,93 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
-  SafeAreaView,
   TouchableOpacity,
-  FlatList,
   StyleSheet,
   useWindowDimensions,
   Platform,
-  Animated
-} from 'react-native';
-import Releases from '../../../components/overview/music/Releases';
-import Songs from '../../../components/overview/music/Songs';
-import Playlists from '../../../components/overview/music/Playlists';
+  Animated,
+  ScrollView,
+} from "react-native";
+import Releases from "../../../components/overview/music/Releases";
+import Songs from "../../../components/overview/music/Songs";
+import Playlists from "../../../components/overview/music/Playlists";
 
 const tabs = ["Releases", "Songs", "Playlists"];
 
 const MyMusic = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const { width, height } = useWindowDimensions();
-  const [tabPositions, setTabPositions] = useState(tabs.map(() => ({ x: 0, width: 0 })));
+  const [tabPositions, setTabPositions] = useState(
+    tabs.map(() => ({ x: 0, width: 0 }))
+  );
   const animatedValue = useState(new Animated.Value(0))[0];
 
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#000',
+      backgroundColor: "#000",
+      marginTop: 50,
+      paddingHorizontal: 12,
+      gap: 25,
+      paddingBottom: 35,
     },
     header: {
-      marginLeft: width * 0.06,
-      marginTop: Platform.OS === 'ios' ? height * 0.06 : height * 0.02,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
     },
     title: {
-      fontSize: width * 0.07,
-      color: '#fff',
-      fontFamily: 'PlusJakartaSansMedium',
+      fontSize: 24,
+      color: "#fff",
+      fontFamily: "PlusJakartaSansMedium",
     },
     tabContainer: {
-      flexDirection: 'row',
-      marginTop: height * 0.03,
-      marginHorizontal: width * 0.06,
-      position: 'relative',
+      flexDirection: "row",
+      position: "relative",
+      justifyContent: "space-between",
     },
     tabButton: {
-      paddingVertical: height * 0.015,
+      paddingVertical: 5,
       paddingHorizontal: width * 0.04,
-      borderRadius: 24,
+      borderRadius: 5,
     },
     tabText: {
-      fontSize: width * 0.04,
-      fontFamily: 'PlusJakartaSansBold',
-      color: '#787A80',
+      fontSize: 14,
+      fontFamily: "PlusJakartaSansBold",
+      color: "#787A80",
     },
     activeTabText: {
-      color: '#f4f4f4',
+      color: "#f4f4f4",
     },
     tabIndicator: {
-      position: 'absolute',
-      height: '100%',
+      position: "absolute",
+      height: "100%",
       borderRadius: 24,
-      backgroundColor: '#12141B',
+      backgroundColor: "#12141B",
       bottom: 0,
     },
     content: {
       flex: 1,
-      marginTop: height * 0.03,
-      marginHorizontal: width * 0.06,
     },
   });
 
-  const handleTabPress = useCallback((index) => {
-    setSelectedTab(index);
-    Animated.spring(animatedValue, {
-      toValue: index,
-      useNativeDriver: true,
-      tension: 300,
-      friction: 30,
-    }).start();
-  }, [animatedValue]);
+  const handleTabPress = useCallback(
+    (index) => {
+      setSelectedTab(index);
+      Animated.spring(animatedValue, {
+        toValue: index,
+        useNativeDriver: true,
+        tension: 300,
+        friction: 30,
+      }).start();
+    },
+    [animatedValue]
+  );
 
   const measureTab = useCallback((event, index) => {
     const { x, width } = event.nativeEvent.layout;
-    setTabPositions(prev => {
+    setTabPositions((prev) => {
       const newPositions = [...prev];
       newPositions[index] = { x, width };
       return newPositions;
@@ -89,12 +95,14 @@ const MyMusic = () => {
   }, []);
 
   const indicatorStyle = {
-    transform: [{
-      translateX: animatedValue.interpolate({
-        inputRange: tabs.map((_, i) => i),
-        outputRange: tabPositions.map(({ x }) => x),
-      }),
-    }],
+    transform: [
+      {
+        translateX: animatedValue.interpolate({
+          inputRange: tabs.map((_, i) => i),
+          outputRange: tabPositions.map(({ x }) => x),
+        }),
+      },
+    ],
     width: tabPositions[selectedTab]?.width || 0,
   };
 
@@ -132,19 +140,21 @@ const MyMusic = () => {
             onLayout={(event) => measureTab(event, index)}
             style={styles.tabButton}
           >
-            <Text style={[
-              styles.tabText,
-              selectedTab === index && styles.activeTabText
-            ]}>
+            <Text
+              style={[
+                styles.tabText,
+                selectedTab === index && styles.activeTabText,
+              ]}
+            >
               {tab}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         {renderContent()}
-      </View>
+      </ScrollView>
     </View>
   );
 };
