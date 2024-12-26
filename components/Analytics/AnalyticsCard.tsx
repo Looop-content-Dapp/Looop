@@ -1,18 +1,25 @@
-import React from 'react';
-import { View, Text, StyleSheet, ImageBackground, ImageSourcePropType, ViewStyle, TextStyle } from 'react-native';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ImageBackground,
+  ViewStyle,
+  TextStyle,
+} from "react-native";
 
 interface AnalyticsCardProps {
-    title?: string;
-    value?: string | number;
-    changePercentage?: number;
-    positive?: boolean;
-    backgroundImage?: ImageSourcePropType;
-    cardStyle?: ViewStyle;
-    titleStyle?: TextStyle;
-    valueStyle?: TextStyle;
-    percentageStyle?: TextStyle;
-    customContent?: React.ReactNode;
-  }
+  title?: string;
+  value?: string | number;
+  changePercentage?: number | any;
+  positive?: boolean;
+  backgroundImage?: any;
+  cardStyle?: ViewStyle;
+  titleStyle?: TextStyle;
+  valueStyle?: TextStyle;
+  percentageStyle?: TextStyle;
+  customContent?: React.ReactNode;
+}
 
 const AnalyticsCard = ({
   title,
@@ -27,11 +34,7 @@ const AnalyticsCard = ({
   customContent,
 }: AnalyticsCardProps) => {
   return (
-    <ImageBackground
-      source={backgroundImage}
-      style={[styles.card, cardStyle]}
-      imageStyle={{ borderRadius: 12 }}
-    >
+    <ImageBackground source={backgroundImage} style={[styles.card, cardStyle]}>
       <View style={styles.overlay}>
         {/* <CustomShape /> */}
         {customContent ? (
@@ -46,14 +49,17 @@ const AnalyticsCard = ({
                 positive ? styles.positive : styles.negative,
               ]}
             >
-              {positive ? '+' : '-'}
+              {positive ? "+" : "-"}
               {Math?.abs(changePercentage)}%
             </Text>
             <View style={styles.valueContainer}>
-              <Text style={[styles.value, valueStyle]} className="font-PlusJakartaSansBold">
+              <Text
+                style={[styles.value, valueStyle]}
+                className="font-PlusJakartaSansBold"
+              >
                 {value}
               </Text>
-              <Text className="font-PlusJakartaSansRegular text-[24px] text-[#f4f4f4]">
+              <Text className="font-PlusJakartaSansRegular text-[20px] text-[#f4f4f4]">
                 Streams
               </Text>
             </View>
@@ -66,30 +72,31 @@ const AnalyticsCard = ({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
-    marginBottom: 16,
-    overflow: 'hidden',
+    borderRadius: 25,
+    borderWidth: 1,
+    overflow: "hidden",
     height: 150,
-    justifyContent: 'center',
+    justifyContent: "center",
+    borderColor: "gray",
   },
   overlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     flex: 1,
     padding: 16,
     borderRadius: 12,
   },
   title: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
   valueContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 16,
     zIndex: 30,
-    paddingLeft: 16
+    paddingLeft: 16,
   },
   value: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 32,
   },
   percentage: {
@@ -97,10 +104,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   positive: {
-    color: '#4cd964',
+    color: "#4cd964",
   },
   negative: {
-    color: '#ff3b30',
+    color: "#ff3b30",
   },
 });
 

@@ -10,12 +10,11 @@ export default function HomeLayout() {
           backgroundColor: "#000000",
         },
         headerStyle: {
-            backgroundColor: "#040405",
-          },
+          backgroundColor: "#040405",
+        },
       }}
     >
-        <Stack.Screen name="index" options={{
-        }} />
+      <Stack.Screen name="index" options={{}} />
     </Stack>
   );
-};
+}

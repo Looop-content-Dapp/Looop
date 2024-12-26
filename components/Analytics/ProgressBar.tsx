@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Svg, Rect } from 'react-native-svg';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { Svg, Rect } from "react-native-svg";
 
 interface ProgressBarProps {
   label?: string;
@@ -8,33 +8,42 @@ interface ProgressBarProps {
   totalValue?: string | number;
   barColor?: string;
   backgroundColor?: string;
-  labelPosition?: 'left' | 'right' | 'center';
+  labelPosition?: "left" | "right" | "center";
   height?: number;
-  variant?: 'default' | 'compact';
-  totalStreams?: string | number
+  variant?: "default" | "compact";
+  totalStreams?: string | number;
 }
 
 const ProgressBar: React.FC<ProgressBarProps> = ({
   label,
   percentage,
   totalValue,
-  barColor = '#7e57c2',
-  backgroundColor = '#2e2e2e',
-  labelPosition = 'right',
+  barColor = "#7e57c2",
+  backgroundColor = "#2e2e2e",
+  labelPosition = "right",
   height = 8,
-  variant = 'default',
-  totalStreams
+  variant = "default",
+  totalStreams,
 }) => {
-  if (variant === 'compact') {
+  if (variant === "compact") {
     return (
       <View style={styles.compactContainer}>
         <Text style={styles.compactLabel}>{label}</Text>
         <View style={[styles.progressBarCompact, { backgroundColor }]}>
           <Svg width={`${percentage}%`} height={height}>
-            <Rect x={0} y={0} width="100%" height="100%" fill={barColor} rx={height / 2} />
+            <Rect
+              x={0}
+              y={0}
+              width="100%"
+              height="100%"
+              fill={barColor}
+              rx={height / 2}
+            />
           </Svg>
         </View>
-        <Text style={styles.compactPercentage}>{totalValue}%</Text>
+        <View style={{ flexGrow: 1, alignItems: "flex-end" }}>
+          <Text style={styles.compactPercentage}>{totalValue}</Text>
+        </View>
       </View>
     );
   }
@@ -42,18 +51,39 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   return (
     <View style={styles.defaultContainer}>
       <View style={styles.labelContainer}>
-        {label && <Text style={styles.label} className='text-[16px] font-PlusJakartaSansMedium'>{label}</Text>}
-        {labelPosition === 'right' && totalValue !== undefined && (
-          <Text className='text-[14px] text-[#787A80] font-PlusJakartaSansMedium'>{totalValue}</Text>
+        {label && (
+          <Text
+            style={styles.label}
+            className="text-[16px] font-PlusJakartaSansMedium"
+          >
+            {label}
+          </Text>
+        )}
+        {labelPosition === "right" && totalValue !== undefined && (
+          <Text className="text-[14px] text-[#787A80] font-PlusJakartaSansMedium">
+            {totalValue}
+          </Text>
         )}
       </View>
       <View style={[styles.progressBar, { backgroundColor, height }]}>
         <Svg width={`${percentage}%`} height={height}>
-          <Rect x={0} y={0} width="100%" height="100%" fill={barColor} rx={height / 2} />
+          <Rect
+            x={0}
+            y={0}
+            width="100%"
+            height="100%"
+            fill={barColor}
+            rx={height / 2}
+          />
         </Svg>
       </View>
-      {labelPosition === 'right' && totalValue !== undefined && (
-        <Text style={styles.totalValueLeft} className='text-[16px] font-PlusJakartaSansMedium text-Grey/06'>{totalStreams?.toLocaleString()} Streams</Text>
+      {labelPosition === "right" && totalValue !== undefined && (
+        <Text
+          style={styles.totalValueLeft}
+          className="text-[16px] font-PlusJakartaSansMedium text-Grey/06"
+        >
+          {totalStreams?.toLocaleString()} Streams
+        </Text>
       )}
     </View>
   );
@@ -64,49 +94,48 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   labelContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 4,
   },
   label: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
   },
   totalValue: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
   },
   totalValueLeft: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
     marginTop: 4,
   },
   progressBar: {
     borderRadius: 4,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   // Styles for compact variant
   compactContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
-    marginVertical: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-evenly",
+    marginVertical: 6,
+    gap: 10,
   },
   compactLabel: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    flex: 1,
   },
   progressBarCompact: {
-    flex: 2,
-    marginHorizontal: 4,
+    flex: 14,
     borderRadius: 4,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   compactPercentage: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    flex: 0.5,
+    textAlign: "right",
   },
 });
 
