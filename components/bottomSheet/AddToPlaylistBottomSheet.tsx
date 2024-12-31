@@ -17,7 +17,7 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }) => {
 
   const fetchPlaylists = async () => {
     setIsLoading(true);
-    setError(null);
+    setError("");
     try {
         const userId = await retrieveUserId()
       const response = await getAllPlaylistsForUser(userId as string);
@@ -110,7 +110,7 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }) => {
     return (
       <FlatList
         data={playlists}
-        keyExtractor={(item) => item._id}
+        keyExtractor={(item: any) => item._id}
         renderItem={({ item }) => (
           <TouchableOpacity
             className="flex-row items-center mb-3"
@@ -122,7 +122,7 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }) => {
             />
             <View className="ml-3">
               <Text className="text-white">{item.title}</Text>
-              <Text className="text-gray-400">{item.songs.length} Songs</Text>
+              <Text className="text-gray-400">{item.songs?.length} Songs</Text>
             </View>
           </TouchableOpacity>
         )}

@@ -4,9 +4,8 @@
     "slug": "Looop",
     "scheme": "looop",
     "version": "1.0.0",
-    "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.looop.music",
@@ -49,8 +48,8 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash.png",
-          "imageWidth": 500,
-          "resizeMode": "cover",
+          "imageWidth": 200,
+          "resizeMode": "contain",
           "backgroundColor": "#FF6D1B"
         }
       ],

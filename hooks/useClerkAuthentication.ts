@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { Account, ID } from "react-native-appwrite";
+import { ID, OAuthProvider } from "react-native-appwrite";
 import { account } from "@/appWrite";
 import store from "@/redux/store";
 import { setUserData } from "@/redux/slices/auth";
 import api from "@/config/apiConfig";
+import { Alert } from "react-native";
 
 const ENDPOINT = "https://looop-backend.onrender.com";
 export type UserRole = "user" | "admin" | "artist";
@@ -71,53 +72,53 @@ export const useClerkAuthentication = () => {
    * Handles Google OAuth sign-up/sign-in using Clerk.
    */
   const handleGoogleSignUp = async () => {
-    // try {
-    //   const response = await googleOAuth.startOAuthFlow();
-    //   if (response.createdSessionId) {
-    //     if (setActiveSignUp) {
-    //       await setActiveSignUp({ session: response.createdSessionId });
-    //       // After successful sign-up, set default role
-    //       await setUserRole("user");
-    //       router.navigate("/(musicTabs)");
-    //     }
-    //   }
-    // } catch (err) {
-    //   console.error("Google Sign Up Error:", err);
-    //   setError("Google Sign Up Error");
-    // }
+    try {
+        // Create OAuth2 session for Google
+        const session = account.createOAuth2Session(
+            OAuthProvider.Google,
+            'YOUR_SUCCESS_URL',  // URL to redirect after successful sign in
+            'YOUR_FAILURE_URL',  // URL to redirect after failed sign in
+            ['profile', 'email'] // Requested scopes
+        );
+        console.log("session", session)
+        return session;
+    } catch (error) {
+        console.error('Google Sign In Error:', error);
+        throw error;
+    }
   };
 
   /**
    * Handles Apple OAuth sign-up/sign-in using Clerk.
    */
   const handleAppleSignUp = async () => {
-    // try {
-    //   const response = await appleOAuth.startOAuthFlow();
-    //   if (response.createdSessionId) {
-    //     if (setActiveSignUp) {
-    //       await setActiveSignUp({ session: response.createdSessionId });
-    //       // After successful sign-up, set default role
-    //       await setUserRole("user");
-    //       router.navigate("/(musicTabs)");
-    //     }
-    //   }
-    // } catch (err) {
-    //   console.error("Apple Sign Up Error:", err);
-    //   setError("Apple Sign Up Error");
-    // }
+    try {
+        // Create OAuth2 session for Google
+        const session = await account.createOAuth2Session(
+            OAuthProvider.Apple,
+            'YOUR_SUCCESS_URL',  // URL to redirect after successful sign in
+            'YOUR_FAILURE_URL',  // URL to redirect after failed sign in
+            ['profile', 'email'] // Requested scopes
+        );
+
+        return session;
+    } catch (error) {
+        console.error('Google Sign In Error:', error);
+        throw error;
+    }
   };
 
   /**
    * Handles user sign-out.
    */
   const handleSignOut = async () => {
-    // try {
-    //   await signOut();
-    //   router.navigate("/(auth)");
-    // } catch (err) {
-    //   console.error("Sign Out Error:", err);
-    //   setError("Error signing out.");
-    // }
+    try {
+        await account.deleteSession('current');
+        return true;
+    } catch (error) {
+        console.error('Sign Out Error:', error);
+        throw error;
+    }
   };
 
   /**

@@ -1,66 +1,79 @@
-import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native'
 import React, { useState } from 'react'
-import Intro from '../../components/CreatorOnboarding/ContractFlow/Intro';
-import ContractIntro from '../../components/CreatorOnboarding/ContractFlow/ContractIntro';
-
-import ContractAgreement from '../../components/CreatorOnboarding/ContractFlow/ContractAgreement';
-import SignContract from '../../components/CreatorOnboarding/ContractFlow/SignContract';
 import { useRouter } from 'expo-router';
-// import CreateProfile from './CreateProfile';
+import Intro from '@/components/CreatorOnboarding/ContractFlow/Intro';
+import ContractIntro from '@/components/CreatorOnboarding/ContractFlow/ContractIntro';
+import ContractAgreement from '@/components/CreatorOnboarding/ContractFlow/ContractAgreement';
+import SignContract from '@/components/CreatorOnboarding/ContractFlow/SignContract';
+
+type ContractFlowState =
+  | "REVIEWED"
+  | "INTRO"
+  | "CONTRACT"
+  | "SIGN"
+  | "COMPLETED";
 
 const ContractSigning = () => {
-    const [currentFlow, setCurrentFlow] = useState("Reviewed");
-    const [buttonText, setButtonText] = useState("Continue")
+    const [currentFlow, setCurrentFlow] = useState<ContractFlowState>("REVIEWED");
     const { width, height } = useWindowDimensions();
-    const { navigate } = useRouter()
+    const { push } = useRouter();
+
+    const getButtonText = (flow: ContractFlowState) => {
+      switch (flow) {
+        case "REVIEWED":
+        case "INTRO":
+          return "Continue";
+        case "CONTRACT":
+          return "Next Step";
+        case "SIGN":
+          return "Sign & Continue";
+        default:
+          return "Continue";
+      }
+    };
 
     const handleFlow = () => {
         switch (currentFlow) {
-            case "Reviewed":
-               return <Intro />
-            //    case "Create Profile":
-            //     return <CreateProfile />
-             case "intro":
-                return <ContractIntro />
-                case "Contract":
-                    return <ContractAgreement />
-                    case "Sign":
-                        return <SignContract />
+            case "REVIEWED":
+                return <Intro />;
+            case "INTRO":
+                return <ContractIntro />;
+            case "CONTRACT":
+                return <ContractAgreement />;
+            case "SIGN":
+                return <SignContract />;
             default:
-                return <Intro />
+                return <Intro />;
         }
     }
 
     const handleNext = () => {
         switch (currentFlow) {
-            case "Reviewed":
-                setCurrentFlow("intro");
+            case "REVIEWED":
+                setCurrentFlow("INTRO");
                 break;
-            case "intro":
-                setCurrentFlow("Contract");
-                setButtonText("Next Step")
+            case "INTRO":
+                setCurrentFlow("CONTRACT");
                 break;
-            case "Contract":
-                setCurrentFlow("Sign")
-                setButtonText("Sign & Continue")
-                // You can navigate to the next screen here
-                case "Sign":
-                setCurrentFlow("Sign")
-                setButtonText("Sign & Continue")
-                navigate("/(artisteTabs)/(dashboard)")
-                // You can navigate to the next screen here
+            case "CONTRACT":
+                setCurrentFlow("SIGN");
                 break;
-            default:
-                setCurrentFlow("Reviewed");
+            case "SIGN":
+                setCurrentFlow("COMPLETED");
+                push("/(artisteTabs)/(dashboard)");
+                break;
         }
     };
 
     const styles = StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: "#040405",
+        },
         button: {
           backgroundColor: "#A187B5",
           alignItems: "center",
-        //   marginTop: height * 0.06,
-          marginHorizontal: width *  0.05,
+          marginHorizontal: width * 0.05,
           paddingVertical: height * 0.02,
           borderRadius: 56,
           position: "absolute",
@@ -73,19 +86,21 @@ const ContractSigning = () => {
           fontSize: width * 0.045,
           fontFamily: "PlusJakartaSans-Bold",
         },
-      });
-  return (
-    <View className='flex-1'>
-     {handleFlow()}
-     <TouchableOpacity
-        onPress={handleNext}
-        style={styles.button}
-      >
-        <Text style={styles.buttonText}>{buttonText}</Text>
-      </TouchableOpacity>
+    });
 
-    </View>
-  )
+    return (
+        <View style={styles.container}>
+            {handleFlow()}
+            <TouchableOpacity
+                onPress={handleNext}
+                style={styles.button}
+            >
+                <Text style={styles.buttonText}>
+                    {getButtonText(currentFlow)}
+                </Text>
+            </TouchableOpacity>
+        </View>
+    );
 }
 
-export default ContractSigning
+export default ContractSigning;

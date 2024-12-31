@@ -38,7 +38,7 @@ const EmailSignupFlow = () => {
   const [isCorrect, setIsCorrect] = useState<boolean>();
   const [timer, setTimer] = useState(60);
   const [isLoading, setIsLoading] = useState(false);
-  const { handleEmailSignUp, userId } = useClerkAuthentication();
+  const { handleEmailSignUp, userId, handleAppleSignUp, handleGoogleSignUp } = useClerkAuthentication();
 
   // Verification code field setup
   const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
@@ -173,7 +173,7 @@ const EmailSignupFlow = () => {
       </View>
 
       <View className="mt-12 gap-y-4">
-        <TouchableOpacity className="bg-white py-4 rounded-full flex-row items-center justify-center">
+        <TouchableOpacity onPress={handleGoogleSignUp} className="bg-white py-4 rounded-full flex-row items-center justify-center">
           <Image
             source={require("../../assets/images/google.png")}
             className="w-8 h-8"
@@ -183,7 +183,7 @@ const EmailSignupFlow = () => {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity className="bg-white py-4 rounded-full flex-row items-center justify-center">
+        <TouchableOpacity onPress={handleAppleSignUp} className="bg-white py-4 rounded-full flex-row items-center justify-center">
           <Image
             source={require("../../assets/images/apple.png")}
             className="w-8 h-8"

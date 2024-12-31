@@ -3,7 +3,6 @@ import {
   Text,
   Image,
   TouchableOpacity,
-  ScrollView,
   StyleSheet,
 } from "react-native";
 import React, { useState } from "react";
