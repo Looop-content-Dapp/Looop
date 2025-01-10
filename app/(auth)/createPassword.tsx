@@ -15,9 +15,11 @@ import {
   InformationCircleIcon,
   ViewIcon,
   ViewOffIcon,
+  XVariableCircleIcon,
 } from "@hugeicons/react-native";
 import { useQuery } from "../../hooks/useQuery";
 import { useRouter } from "expo-router";
+import { AxiosError } from 'axios';
 
 const debounce = (func, delay) => {
   let timeout;
@@ -41,26 +43,47 @@ const CreatePassword = () => {
     hasSpecialChar: false,
     isLongEnough: false,
   });
+  console.log(showMessage, "showMessage");
 
   const router = useRouter();
   const { checkUsername } = useQuery();
 
-  const validateUsername = async (username) => {
+  const validateUsername = async (username: string) => {
     if (!username) {
       setShowMessage("");
       return;
     }
+
+    // Check username length
+    if (username.length < 3) {
+      setShowMessage("Username must be at least 3 characters");
+      return;
+    }
+
+    // Check username format - only allow letters, numbers, dots and underscores
+    const validUsernameRegex = /^[a-zA-Z0-9._]+$/;
+    if (!validUsernameRegex.test(username)) {
+      setShowMessage("Username can only contain letters, numbers, dots and underscores");
+      return;
+    }
+
     setLoading(true);
     const payload = { username };
+
     try {
       const response = await checkUsername(payload);
       if (response?.data?.existingUser === null) {
-        setShowMessage("username is available");
+        setShowMessage("✓ Username is available");
       } else {
-        setShowMessage("username is not available");
+        setShowMessage("Username is already taken");
       }
     } catch (error) {
-      setShowMessage("Error checking username");
+        if ((error as AxiosError).response?.status === 429) {
+            setShowMessage("Too many requests, please try again later");
+          } else {
+        setShowMessage("Error checking username availability");
+      }
+      console.error("Username check error:", error);
     } finally {
       setLoading(false);
     }
@@ -69,9 +92,11 @@ const CreatePassword = () => {
   const debouncedValidateUsername = debounce(validateUsername, 500);
 
   useEffect(() => {
-   if(_username.length > 5){
-    debouncedValidateUsername(_username);
-   }
+    if (_username.length > 2) { // Reduced minimum length check
+      debouncedValidateUsername(_username);
+    } else {
+      setShowMessage(""); // Clear message when username is too short
+    }
   }, [_username]);
 
   const validatePassword = (input) => {
@@ -147,35 +172,34 @@ const CreatePassword = () => {
             <Text className="text-lg text-gray-200 font-PlusJakartaSansBold">
               Choose a username
             </Text>
-            <TextInput
-              placeholderTextColor="#787A80"
-              placeholder="Enter your username"
-              className="h-16 text-sm font-PlusJakartaSansRegular text-Grey/06 px-8 bg-Grey/07 rounded-full"
-              value={_username}
-              onChangeText={setUsername}
-            />
-            {loading ? (
-              <ActivityIndicator size="small" color="#FFA500" />
-            ) : (
-              showMessage.length !== 0 && (
-                <View className="flex flex-row items-center gap-2">
-                  <CheckmarkCircle02Icon
-                    color={
-                      showMessage === "username is available" ? "#22c55e" : "#ff0000"
-                    }
-                    size={18}
-                    variant="solid"
-                  />
-                  <Text
-                    className={`text-${
-                      showMessage === "username is available" ? "green-500" : "red-500"
-                    }`}
-                  >
-                    {showMessage}
-                  </Text>
-                </View>
-              )
-            )}
+            <View className="flex-row items-center bg-Grey/07 rounded-full pr-5">
+              <TextInput
+                placeholderTextColor="#787A80"
+                placeholder="Enter your username"
+                className="h-16 text-sm font-PlusJakartaSansRegular text-Grey/06 flex-1 px-8"
+                value={_username}
+                onChangeText={setUsername}
+              />
+              {loading ? (
+                <ActivityIndicator size="small" color="#FFA500" />
+              ) : (
+                _username.length > 0 && (
+                  showMessage === "✓ Username is available" ? (
+                    <CheckmarkCircle02Icon
+                      color="#22c55e"
+                      size={18}
+                      variant="solid"
+                    />
+                  ) : (
+                    <XVariableCircleIcon
+                      color="#ef4444"
+                      size={18}
+                      variant="solid"
+                    />
+                  )
+                )
+              )}
+            </View>
           </View>
 
           <View className="gap-y-4">
@@ -289,7 +313,7 @@ const CreatePassword = () => {
                 <View className="flex-1">
                   <Text className="text-[14px] text-[#EC6519] font-PlusJakartaSansRegular flex-shrink">
                     Your password is encrypted and used to create a local backup
-                    of your private key to your device so you don’t lose access
+                    of your private key to your device so you don't lose access
                     to your account. Think of private keys as a pin to access
                     your account/wallet.
                   </Text>
@@ -305,13 +329,14 @@ const CreatePassword = () => {
               !validation.hasNumber ||
               !validation.hasSpecialChar ||
               !validation.isLongEnough ||
-              showMessage != "username is available"
+              showMessage !== "✓ Username is available"
             }
             className={`${
               validation.hasLetter &&
               validation.hasNumber &&
               validation.hasSpecialChar &&
-              validation.isLongEnough
+              validation.isLongEnough &&
+              showMessage === "✓ Username is available"
                 ? "bg-orange-500"
                 : "bg-gray-500"
             } items-center py-4 rounded-full`}

@@ -23,6 +23,7 @@ const Signin = () => {
   const {
     handleEmailSignIn,
     loading,
+    handleOAuthSignIn,
   } = useClerkAuthentication();
   return (
     <>
@@ -104,7 +105,10 @@ const Signin = () => {
           </View>
 
           <View className="gap-y-4 flex flex-row gap-x-4">
-            <TouchableOpacity className="bg-white flex-1 py-4 rounded-full flex-row items-center justify-center">
+            <TouchableOpacity
+              className="bg-white flex-1 py-4 rounded-full flex-row items-center justify-center"
+              onPress={() => handleOAuthSignIn('google')}
+            >
               <Image
                 source={require("../../assets/images/google.png")}
                 className="w-8 h-8"
@@ -114,7 +118,10 @@ const Signin = () => {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity className="bg-white flex-1 py-4 rounded-full flex-row items-center justify-center">
+            <TouchableOpacity
+              className="bg-white flex-1 py-4 rounded-full flex-row items-center justify-center"
+              onPress={() => handleOAuthSignIn('apple')}
+            >
               <Image
                 source={require("../../assets/images/apple.png")}
                 className="w-8 h-8"
