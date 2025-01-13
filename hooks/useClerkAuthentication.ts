@@ -81,15 +81,15 @@ export const useClerkAuthentication = () => {
     setError(null);
 
     try {
-      const response = await api.post(`/api/user/signin`, {
-        email: emailAddress,
-        password: password,
-      });
-      setLoading(false);
-      store.dispatch(setUserData(response.data.data));
-      showToast('Successfully signed in', 'success');
+      // const response = await api.post(`/api/user/signin`, {
+      //   email: emailAddress,
+      //   password: password,
+      // });
+      // setLoading(false);
+      // store.dispatch(setUserData(response.data.data));
+      // showToast('Successfully signed in', 'success');
       router.push("../(musicTabs)/(home)/");
-      return response.data;
+      // return response.data;
     } catch (err) {
       setLoading(false);
       console.error("Error during sign-in:", err);

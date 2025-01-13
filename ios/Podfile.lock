@@ -233,8 +233,6 @@ PODS:
     - ExpoModulesCore
   - ExpoContacts (14.0.2):
     - ExpoModulesCore
-  - ExpoCrypto (14.0.1):
-    - ExpoModulesCore
   - ExpoDevice (7.0.1):
     - ExpoModulesCore
   - ExpoDocumentPicker (13.0.1):
@@ -2090,7 +2088,6 @@ DEPENDENCIES:
   - ExpoBattery (from `../node_modules/expo-battery/ios`)
   - ExpoBlur (from `../node_modules/expo-blur/ios`)
   - ExpoContacts (from `../node_modules/expo-contacts/ios`)
-  - ExpoCrypto (from `../node_modules/expo-crypto/ios`)
   - ExpoDevice (from `../node_modules/expo-device/ios`)
   - ExpoDocumentPicker (from `../node_modules/expo-document-picker/ios`)
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
@@ -2232,8 +2229,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-blur/ios"
   ExpoContacts:
     :path: "../node_modules/expo-contacts/ios"
-  ExpoCrypto:
-    :path: "../node_modules/expo-crypto/ios"
   ExpoDevice:
     :path: "../node_modules/expo-device/ios"
   ExpoDocumentPicker:
@@ -2445,7 +2440,6 @@ SPEC CHECKSUMS:
   ExpoBattery: 71bb388c37c3bcd0e87077e06e95780ea34fa6c8
   ExpoBlur: 562b3da84d3cd79016c411671eaf71a404266415
   ExpoContacts: 209f0739c712bf808413c691722ce1bb1e2ea0af
-  ExpoCrypto: 8465f71eb3798c194c0a509d4a76e5c429656d83
   ExpoDevice: e24dd19a43065182eb246bc0e7f84186862f1e83
   ExpoDocumentPicker: 4a89fd8a0cb90010214a416c858d7dece1c1eb10
   ExpoFileSystem: dc2679a2b5d4c465ca881129074da95faee943d5
@@ -2547,4 +2541,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 8155d26748eb4dbf505dcb56adf91943d7345048
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.14.3
