@@ -4,9 +4,10 @@ import { router, useNavigation } from "expo-router";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { InformationCircleIcon } from '@hugeicons/react-native';
 import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
+import { CreatorFlowState } from '@/app/creatorOnboarding';
 
 type Props ={
-    setCurrentFlow: React.Dispatch<React.SetStateAction<string>>
+    setCurrentFlow: React.Dispatch<React.SetStateAction<CreatorFlowState>>
 }
 
 const ConnectSocial = ({setCurrentFlow}: Props) => {
@@ -155,7 +156,7 @@ const ConnectSocial = ({setCurrentFlow}: Props) => {
           </View>
 
           <TouchableOpacity
-        onPress={() => setCurrentFlow("UNDER REVIEW")}
+        onPress={() => setCurrentFlow("UNDER_REVIEW")}
         style={styles.button}
       >
         <Text style={styles.buttonText}>Continue</Text>
