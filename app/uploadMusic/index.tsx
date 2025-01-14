@@ -61,12 +61,7 @@ const index = () => {
       text: "Single",
       route: "uploadMusic/uploadSingle"
     },
-    {
-      id: "EP",
-      icon: Playlist02Icon,
-      text: "EP",
-      route: "uploadMusic/uploadEp"
-    },
+
     {
       id: "EP",
       icon: Playlist02Icon,
