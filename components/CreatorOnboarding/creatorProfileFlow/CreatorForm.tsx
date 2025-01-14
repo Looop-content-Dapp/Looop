@@ -7,9 +7,9 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { ImageAdd02Icon } from "@hugeicons/react-native";
-import { FormField } from "@/components/app-components/formField";
 import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import { countries, genres } from "@/data/data";
+import { FormField } from "@/components/app-components/formField copy";
 
 const social = [
   {
@@ -32,7 +32,7 @@ type MultiSelectOption = {
 };
 
 const CreatorForm = () => {
-  const [selectedGenres, setSelectedGenres] = useState<MultiSelectOption[]>([]);
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [cities, setCities] = useState<string[]>([]);
@@ -52,10 +52,15 @@ const CreatorForm = () => {
   });
 
   const handleCountrySelect = (countryValue: string) => {
-    const selected = countries.find((c) => c.value === countryValue);
+    const selected = countries.find((country) => country.value === countryValue);
     if (selected) {
-      setSelectedCountry(selected.label);
-      setCities(selected.cities);
+      setSelectedCountry(countryValue); // Store the value instead of label
+      setCities(selected.cities || []); // Handle case where cities may be undefined
+      setSelectedCity(""); // Reset selected city when country changes
+    } else {
+      // Handle invalid country selection
+      setSelectedCountry("");
+      setCities([]);
       setSelectedCity("");
     }
   };
@@ -94,9 +99,10 @@ const CreatorForm = () => {
             onChangeText={(text) => setFormData({ ...formData, email: text })}
           />
           <FormField.MultiSelectField
+          description="Search and add main genres you create songs in. Don’t worry, you could always change your style later"
             label="Select Genres"
-            placeholder="Search and add main genres you create songs in"
-            selectedValues={selectedGenres}
+            placeholder="Try “HipHop” or “Afrobeats”"
+            values={selectedGenres}
             onSelect={(values) => setSelectedGenres(values)}
             options={genres}
           />

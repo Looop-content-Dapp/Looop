@@ -68,6 +68,12 @@ const index = () => {
       route: "uploadMusic/uploadEp"
     },
     {
+      id: "EP",
+      icon: Playlist02Icon,
+      text: "EP",
+      route: "uploadMusic/uploadEp"
+    },
+    {
       id: "Album",
       icon: Vynil03Icon,
       text: "Album",
@@ -162,8 +168,14 @@ const index = () => {
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
 
-          <Text style={styles.title}>Upload Type</Text>
-          <Text style={styles.subtitle}>Select from the upload types</Text>
+          <Text style={styles.title} className="font-PlusJakartaSansBold">
+            Upload Type
+          </Text>
+          <Text
+            style={styles.subtitle}
+            className="font-PlusJakartaSansRegular text-[16px]">
+            Select from the upload types
+          </Text>
 
           <View style={styles.uploadTypeGrid}>
             {uploadTypes.map((item, index) => {
@@ -216,7 +228,12 @@ const index = () => {
             ]}
             onPress={handleContinue}
             disabled={!selectedType}>
-            <Text style={styles.buttonText}>Continue</Text>
+            <Text
+              style={
+                styles.buttonText && !selectedType && styles.disabledButton
+              }>
+              Continue
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -288,7 +305,6 @@ const styles = StyleSheet.create({
     marginTop: responsiveSize(16)
   },
   subtitle: {
-    fontSize: responsiveSize(14),
     color: "#AAAAAA",
     marginTop: responsiveSize(4),
     lineHeight: responsiveSize(20)
@@ -366,24 +382,15 @@ const styles = StyleSheet.create({
   selectedText: {
     color: "#57E09A"
   },
-  //   buttonWrapper: {
-  //     paddingHorizontal: 16,
-  //     paddingBottom: Platform.OS === 'ios' ? 40 : 24,
-  //     paddingTop: 8,
-  //     backgroundColor: 'transparent',
-  //     position: 'absolute',
-  //     bottom: 0,
-  //     left: 0,
-  //     right: 0,
-  //   },
   buttonText: {
     fontSize: 16,
     fontFamily: "PlusJakartaSans-SemiBold",
-    color: "#000000",
+    color: "#787A80",
     letterSpacing: 0.2
   },
   disabledButton: {
-    opacity: 0.5
+    opacity: 0.5,
+    backgroundColor: "#12141B"
   }
 });
 
