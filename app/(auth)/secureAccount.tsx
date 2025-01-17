@@ -15,7 +15,6 @@ const SecureAccount = () => {
   const { secrets, name } = useLocalSearchParams();
   const { createAccount, storeUserId, deleteUserId } = useQuery();
   const navigation = useNavigation();
-  console.log("username is", name)
 
   const steps = [
     "Creating wallet",
@@ -62,7 +61,6 @@ const SecureAccount = () => {
         ) {
           await deleteUserId();
           await storeUserId(accountRes.data.user._id);
-          dispatch(setUserData(accountRes.data.user));
           setShowFinalStep(true); // Show "Wallet Created" message
         } else {
           throw new Error("Invalid response from server");

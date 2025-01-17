@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { View } from "react-native";
-import { MotiView } from "moti";
 import { useQuery } from "../../../hooks/useQuery";
 import BuildTribeForm from "../../../components/buildTribe/BuildTribeForm";
 import WelcomeScreen from "../../../components/buildTribe/WelcomScreen";

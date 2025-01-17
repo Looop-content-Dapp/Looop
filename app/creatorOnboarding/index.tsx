@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   SafeAreaView,
@@ -7,16 +7,15 @@ import {
   useWindowDimensions,
   StatusBar,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import UnderReview from "@/components/CreatorOnboarding/UnderReview";
 import Welcome from "@/components/CreatorOnboarding/Welcome";
 import ConnectSocial from "@/components/CreatorOnboarding/ConnectSocial";
 import { Text } from "react-native";
+import api from "@/config/apiConfig";
 
 export type CreatorFlowState =
   | "WELCOME"
-  | "NOT_SUBMITTED"
-  | "UNDER_REVIEW"
   | "REVIEWED"
   | "CREATE_PROFILE"
   | "PROFILE_SUCCESSFUL"
@@ -24,23 +23,42 @@ export type CreatorFlowState =
   | "CONTRACT_SIGNED";
 
 const CreatorModeWelcome = () => {
-  const [currentFlow, setCurrentFlow] = useState<CreatorFlowState>("WELCOME");
+  const [currentFlow, setCurrentFlow] = useState("NOT_SUBMITTED");
   const { width, height } = useWindowDimensions();
-  const { push } = useRouter();
+  const { navigate,  } = useRouter();
+
+  const checkArtistClaimStatus = async() => {
+    //6789049be992488c1469306e
+    try {
+        const response  = await api.get("/api/artistclaim/status/")
+        setCurrentFlow(response.data.data.status)
+    } catch (error) {
+     console.log("error checking status", error)
+     setCurrentFlow("NOT_SUBMITTED")
+    }
+   }
+  useEffect(() => {
+
+   checkArtistClaimStatus()
+  }, [currentFlow])
 
   const handleNext = () => {
     switch (currentFlow) {
-      case "WELCOME":
-        setCurrentFlow("NOT_SUBMITTED");
-        break;
       case "NOT_SUBMITTED":
-        setCurrentFlow("UNDER_REVIEW");
+        navigate({
+            pathname: "/creatorOnboarding/createProfile",
+            params: {
+                flow: currentFlow
+            }
+        })
         break;
-      case "UNDER_REVIEW":
-        push("/creatorOnboarding/createProfile");
-        break;
-      case "REVIEWED":
-        push("/creatorOnboarding/ContractSigning");
+      case "approved":
+        navigate({
+            pathname: "/creatorOnboarding/ContractSigning",
+            params: {
+                flow: currentFlow
+            }
+        });
         break;
       default:
         setCurrentFlow("WELCOME");
@@ -72,11 +90,9 @@ const CreatorModeWelcome = () => {
 
   const handleFlow = () => {
     switch (currentFlow) {
-      case "WELCOME":
-        return <Welcome />;
       case "NOT_SUBMITTED":
-        return <ConnectSocial setCurrentFlow={setCurrentFlow} />;
-      case "UNDER_REVIEW":
+        return <Welcome />;
+       case "pending":
         return <UnderReview />;
       default:
         return <Welcome />;
@@ -92,16 +108,14 @@ const CreatorModeWelcome = () => {
       />
       {handleFlow()}
 
-      {currentFlow !== "NOT_SUBMITTED" && (
-        <TouchableOpacity
+      <TouchableOpacity
           onPress={handleNext}
           style={styles.button}
         >
           <Text style={styles.buttonText}>
-            {currentFlow === "WELCOME" ? "Start creating" : "Continue"}
+            {"Continue"}
           </Text>
         </TouchableOpacity>
-      )}
     </SafeAreaView>
   );
 };

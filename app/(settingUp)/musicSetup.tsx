@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
   FlatList,
+  Alert,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,7 +16,7 @@ import { useQuery } from "../../hooks/useQuery";
 
 const MusicOnboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedGenres, setSelectedGenres] = useState([]);
+  const [selectedInterests, setSelectedGenres] = useState([]);
   const [genres, setGenres] = useState([]);
   const [artistes, setArtistes] = useState([]);
   const [followingArtists, setFollowingArtists] = useState([]);
@@ -49,6 +50,20 @@ const MusicOnboarding = () => {
       console.error("Error fetching genres:", error);
     } finally {
       setLoading(false);
+    }
+  };
+  const handleContinueWithInterests = async () => {
+    if (selectedInterests.length > 0 && userID) {
+      try {
+        await saveUserPreference(userID, selectedInterests);
+        setCurrentStep(2);
+      } catch (error) {
+        console.error("Error saving preferences:", error);
+        Alert.alert(
+          "Error",
+          "Failed to save your preferences. Please try again."
+        );
+      }
     }
   };
 
@@ -148,7 +163,7 @@ const MusicOnboarding = () => {
       <FlatList
         data={loading ? Array(22).fill({}) : genres}
         renderItem={({ item }) => {
-          const selected = selectedGenres.includes(item?._id);
+          const selected = selectedInterests.includes(item?._id);
           return loading ? (
             <SkeletonGenre />
           ) : (
@@ -186,12 +201,7 @@ const MusicOnboarding = () => {
         keyExtractor={(item, index) => item?._id || index.toString()}
       />
       <TouchableOpacity
-        onPress={async () => {
-          if (selectedGenres.length > 0 && userID) {
-            await saveUserPreference(userID, selectedGenres);
-            setCurrentStep(2);
-          }
-        }}
+        onPress={handleContinueWithInterests}
         style={{
           backgroundColor: "#FF6D1B",
           width: "90%",

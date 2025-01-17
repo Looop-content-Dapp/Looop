@@ -40,7 +40,7 @@ export const useHeader = ({title}: {title: string}) => {
         <Avatar
           source={{
             uri:
-              userdata?.profileImage.length === 0
+              userdata?.profileImage?.length === 0
                 ? "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg"
                 : userdata?.profileImage,
           }}

@@ -22,6 +22,7 @@ export default function Page() {
       } else {
         router.replace("/(musicTabs)/(home)/");
       }
+    // router.replace("/(musicTabs)");
     }, 3000);
 
     return () => clearTimeout(timer);
