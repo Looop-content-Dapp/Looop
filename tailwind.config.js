@@ -7,11 +7,11 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        PlusJakartaSansBold: ["PlusJakartaSansBold"],
+        PlusJakartaSansBold: ["PlusJakartaSans-Bold"],
         "PlusJakartaSans-Light": ["PlusJakartaSans-Light"],
         PlusJakartaSansExtraBold: ["PlusJakartaSans-ExtraBold"],
         PlusJakartaSansMedium: ["PlusJakartaSans-Medium"],
-        PlusJakartaSansRegular: ["PlusJakartaSans-Regular"],
+        PlusJakartaSansRegular: ["PlusJakartaSans-Regular"]
       },
       colors: {
         "Orange/08": "#FF6D1B",
@@ -28,9 +28,9 @@ module.exports = {
         "Grey/06": "#787A80",
         "Grey/07": "#12141B",
         "Grey/08": "#ffffff30",
-        "Grey/04": "#D2D3D5",
-      },
-    },
+        "Grey/04": "#D2D3D5"
+      }
+    }
   },
-  plugins: [],
+  plugins: []
 };

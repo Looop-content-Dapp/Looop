@@ -19,15 +19,15 @@ export const useClerkAuthentication = () => {
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState("");
 
-  const handleOAuthSignIn = async (provider: 'google' | 'apple') => {
+  const handleOAuthSignIn = async (provider: "google" | "apple") => {
     setLoading(true);
     setError(null);
     try {
       const session = await account.createOAuth2Session(
-        provider === 'google' ? OAuthProvider.Google : OAuthProvider.Apple,
-        'https://example.com/success',
-        'https://example.com/failure',
-        ['email', 'profile']
+        provider === "google" ? OAuthProvider.Google : OAuthProvider.Apple,
+        "https://example.com/success",
+        "https://example.com/failure",
+        ["email", "profile"]
       );
 
       if (session) {
@@ -42,15 +42,14 @@ export const useClerkAuthentication = () => {
         });
 
         store.dispatch(setUserData(response.data.data));
-        showToast(`Successfully signed in with ${provider}`, 'success');
+        showToast(`Successfully signed in with ${provider}`, "success");
         router.push("../(musicTabs)/(home)/");
         return response.data;
       }
-
     } catch (err: any) {
       console.error(`Error during ${provider} sign-in:`, err);
       setError(`${provider} sign-in failed`);
-      showToast('Failed to sign in with ' + provider, 'error');
+      showToast("Failed to sign in with " + provider, "error");
     } finally {
       setLoading(false);
     }
@@ -66,13 +65,13 @@ export const useClerkAuthentication = () => {
       const userId = sessionToken.userId;
       if (userId) {
         setUserId(userId);
-        showToast('Verification email sent successfully', 'success');
+        showToast("Verification email sent successfully", "success");
       }
     } catch (err: any) {
       console.error("Error during email sign-up:", err.message);
       console.error(JSON.stringify(err, null, 2));
       setError("Error during email sign-up.");
-      showToast('Failed to send verification email', 'error');
+      showToast("Failed to send verification email", "error");
     }
   };
 
@@ -81,19 +80,19 @@ export const useClerkAuthentication = () => {
     setError(null);
 
     try {
-    //   const response = await api.post(`/api/user/signin`, {
-    //     email: emailAddress,
-    //     password: password,
-    //   });
-    //   setLoading(false);
-    //   store.dispatch(setUserData(response.data.data));
-    //   showToast('Successfully signed in', 'success');
+      //   const response = await api.post(`/api/user/signin`, {
+      //     email: emailAddress,
+      //     password: password,
+      //   });
+      //   setLoading(false);
+      //   store.dispatch(setUserData(response.data.data));
+      //   showToast('Successfully signed in', 'success');
       router.push("../(musicTabs)/(home)/");
-    //   return response.data;
+      //   return response.data;
     } catch (err) {
       setLoading(false);
       console.error("Error during sign-in:", err);
-      showToast('Invalid email or password', 'error');
+      showToast("Invalid email or password", "error");
     }
   };
 
@@ -103,6 +102,6 @@ export const useClerkAuthentication = () => {
     handleEmailSignIn,
     handleOAuthSignIn,
     userId,
-    loading,
+    loading
   };
 };
