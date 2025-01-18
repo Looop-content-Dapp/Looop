@@ -6,62 +6,75 @@ import {
   StyleSheet,
   useWindowDimensions,
   StatusBar,
+  ActivityIndicator,
 } from "react-native";
-import { useNavigation, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import UnderReview from "@/components/CreatorOnboarding/UnderReview";
 import Welcome from "@/components/CreatorOnboarding/Welcome";
-import ConnectSocial from "@/components/CreatorOnboarding/ConnectSocial";
 import { Text } from "react-native";
 import api from "@/config/apiConfig";
+import { ClaimStatus } from "@/types/index";
+import Celebration from "@/assets/svg/Celebration";
 
-export type CreatorFlowState =
-  | "WELCOME"
-  | "REVIEWED"
-  | "CREATE_PROFILE"
-  | "PROFILE_SUCCESSFUL"
-  | "CONTRACT_PENDING"
-  | "CONTRACT_SIGNED";
+const LoadingScreen = () => (
+    <View style={{
+      flex: 1,
+      backgroundColor: "#040405",
+      justifyContent: 'flex-end',
+      alignItems: 'flex-start',
+      paddingBottom: 64,
+      paddingLeft: 49
+    }}>
+      <Text className="text-[40px] text-[#fff] font-PlusJakartaSansBold">Looop</Text>
+      <Text className="text-[40px] text-[#fff] font-PlusJakartaSansBold">For Creators</Text>
+    </View>
+  );
 
 const CreatorModeWelcome = () => {
-  const [currentFlow, setCurrentFlow] = useState("NOT_SUBMITTED");
+  const [claimStatus, setClaimStatus] = useState<ClaimStatus>("NOT_SUBMITTED");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { width, height } = useWindowDimensions();
-  const { navigate,  } = useRouter();
+  const { push } = useRouter();
 
-  const checkArtistClaimStatus = async() => {
-    //6789049be992488c1469306e
+  const checkArtistClaimStatus = async () => {
     try {
-        const response  = await api.get("/api/artistclaim/status/")
-        setCurrentFlow(response.data.data.status)
+      setIsLoading(true);
+      const response = await api.get("/api/artistclaim/status/");
+      setClaimStatus(response.data.data.status);
     } catch (error) {
-     console.log("error checking status", error)
-     setCurrentFlow("NOT_SUBMITTED")
+      console.error("Error checking claim status:", error);
+      setClaimStatus("NOT_SUBMITTED");
+    } finally {
+      setIsLoading(false);
     }
-   }
+  };
+
   useEffect(() => {
+    checkArtistClaimStatus();
+  }, []);
 
-   checkArtistClaimStatus()
-  }, [currentFlow])
+  const handleNext = async () => {
+    if (isSubmitting) return;
 
-  const handleNext = () => {
-    switch (currentFlow) {
+    switch (claimStatus) {
       case "NOT_SUBMITTED":
-        navigate({
-            pathname: "/creatorOnboarding/createProfile",
-            params: {
-                flow: currentFlow
-            }
-        })
-        break;
-      case "approved":
-        navigate({
-            pathname: "/creatorOnboarding/ContractSigning",
-            params: {
-                flow: currentFlow
-            }
+      case "rejected":
+        push({
+          pathname: "/creatorOnboarding/createProfile",
+          params: { flow: claimStatus }
         });
         break;
-      default:
-        setCurrentFlow("WELCOME");
+      case "approved":
+        push({
+          pathname: "/creatorOnboarding/ContractSigning",
+          params: { flow: claimStatus }
+        });
+        break;
+      case "pending":
+        setIsLoading(true);
+        await checkArtistClaimStatus();
+        break;
     }
   };
 
@@ -86,14 +99,74 @@ const CreatorModeWelcome = () => {
       fontSize: width * 0.045,
       fontFamily: "PlusJakartaSans-Bold",
     },
+    disabledButton: {
+      opacity: 0.6,
+    },
+    buttonContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+    },
+    congratsContainer: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 16,
+      marginTop: '20%',
+    },
+    congratsTitle: {
+      fontSize: 24,
+      color: '#F4F4F4',
+      textAlign: 'center',
+      marginBottom: 16,
+      fontFamily: "PlusJakartaSans-Bold",
+    },
+    congratsText: {
+      fontSize: 16,
+      color: '#D2D3D5',
+      textAlign: 'center',
+      fontFamily: "PlusJakartaSans-Regular",
+    },
   });
 
-  const handleFlow = () => {
-    switch (currentFlow) {
+  const getButtonText = () => {
+    switch (claimStatus) {
       case "NOT_SUBMITTED":
+        return "Get Started";
+      case "pending":
+        return "Check Status";
+      case "approved":
+        return "Continue to Contract";
+      case "rejected":
+        return "Try Again";
+      default:
+        return "Continue";
+    }
+  };
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  const renderContent = () => {
+    switch (claimStatus) {
+      case "NOT_SUBMITTED":
+      case "rejected":
         return <Welcome />;
-       case "pending":
+      case "pending":
         return <UnderReview />;
+      case "approved":
+        return (
+          <View style={styles.congratsContainer}>
+             <Celebration />
+            <Text style={styles.congratsTitle}>
+              Congratulations!
+            </Text>
+            <Text style={styles.congratsText}>
+              Your creator profile has been approved. Continue to review and sign your contract.
+            </Text>
+          </View>
+        );
       default:
         return <Welcome />;
     }
@@ -106,16 +179,27 @@ const CreatorModeWelcome = () => {
         translucent={true}
         barStyle="light-content"
       />
-      {handleFlow()}
+      {renderContent()}
 
       <TouchableOpacity
-          onPress={handleNext}
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>
-            {"Continue"}
-          </Text>
-        </TouchableOpacity>
+        onPress={handleNext}
+        style={[
+          styles.button,
+          (isSubmitting || (claimStatus === "pending" && !isLoading)) && styles.disabledButton
+        ]}
+        disabled={isSubmitting || (claimStatus === "pending" && !isLoading)}
+      >
+        <View style={styles.buttonContent}>
+          {isSubmitting ? (
+            <>
+              <ActivityIndicator size="small" color="#0a0b0f" />
+              <Text style={styles.buttonText}>Processing...</Text>
+            </>
+          ) : (
+            <Text style={styles.buttonText}>{getButtonText()}</Text>
+          )}
+        </View>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };

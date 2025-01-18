@@ -35,7 +35,6 @@ const ContractSigning = () => {
     const handleFlow = () => {
         switch (currentFlow) {
             case "REVIEWED":
-                return <Intro />;
             case "INTRO":
                 return <ContractIntro />;
             case "CONTRACT":

@@ -26,31 +26,6 @@ export default function HomeLayout() {
         name="index"
         options={{
           ...headerConfig,
-          headerRight: () => (
-            <View className="flex-row  items-center gap-x-[10px]">
-              <Notification02Icon
-                size={24}
-                color="#787A80"
-                variant="stroke"
-                onPress={() => router.navigate("/notification")}
-              />
-              <Avatar
-                source={{
-                  uri:
-                    userdata?.profileImage?.length === 0
-                      ? "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg"
-                      : userdata?.profileImage,
-                }}
-                size={40}
-                rounded
-                onPress={() => router.push("/(profile)")}
-                avatarStyle={{
-                  borderWidth: 2,
-                  borderColor: "#FF7700",
-                }}
-              />
-            </View>
-          ),
         }}
       />
       <Stack.Screen

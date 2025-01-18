@@ -11,7 +11,7 @@ import { ImageAdd02Icon } from "@hugeicons/react-native";
 import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import { countries, genres } from "@/data/data";
 import { FormField } from "@/components/app-components/formField copy";
-import { CreatorFormData } from "@/app/creatorOnboarding/createProfile";
+import { CreatorFormData } from "@/types/index";
 
 const social = [
   {
@@ -60,7 +60,7 @@ interface CreatorFormProps {
     onCitySelect: (city: string) => void;
     onProfileImageUpload: () => Promise<void>;
     onSocialAccountChange: (platform: "twitter" | "instagram" | "tiktok", value: string) => void
-    continue : () => Promise<any>
+    // continue : () => Promise<any>
   }
 
 const CreatorForm = ({

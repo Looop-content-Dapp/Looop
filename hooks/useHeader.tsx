@@ -30,7 +30,7 @@ export const useHeader = ({title}: {title: string}) => {
       </View>
     ),
     headerRight: () => (
-      <View className="flex-row bg-red-400 items-center gap-x-[30px]">
+      <View className="flex-row items-center gap-x-10">
         <Notification02Icon
           size={24}
           color="#787A80"
@@ -40,9 +40,9 @@ export const useHeader = ({title}: {title: string}) => {
         <Avatar
           source={{
             uri:
-              userdata?.profileImage?.length === 0
-                ? "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg"
-                : userdata?.profileImage,
+              userdata?.profileImage
+                ? userdata?.profileImage
+                : "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
           }}
           size={40}
           rounded

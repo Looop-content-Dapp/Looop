@@ -14,7 +14,7 @@ export default function CommunityTab() {
         tabBarInactiveTintColor: "#787A80",
         tabBarHideOnKeyboard: true,
         tabBarStyle: {
-          backgroundColor: "#0A0B0F",
+          backgroundColor: "#040405",
           borderTopColor: "#040405"
         },
         tabBarShowLabel: false,
@@ -23,9 +23,6 @@ export default function CommunityTab() {
           height: 109,
           borderBottomColor: "#1D2029"
         },
-      }}
-      sceneContainerStyle={{
-        backgroundColor: "#040405",
       }}
       initialRouteName="(feed)"
     >

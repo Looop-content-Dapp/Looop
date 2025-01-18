@@ -1,5 +1,5 @@
 // index.js
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, Text } from "react-native";
 import React, { useState, useEffect } from "react";
 
 import NewlyReleased from "../../../components/home/newlyRelease";
@@ -99,35 +99,37 @@ const Index = () => {
             title="Your Daily Mixes"
           />
 
+          <Text className="text-[#ffffff] text-[20px] font-PlusJakartaSansBold">Coming Soon</Text>
+
           {/* New Releases Section */}
-          <NewlyReleased
+          {/* <NewlyReleased
             musicData={newReleases}
             isLoading={loading}
             title="New Releases"
-          />
+          /> */}
 
           {/* Followed Artists' New Releases */}
-          {followedArtistReleases.length !== 0 && (
+          {/* {followedArtistReleases.length !== 0 && (
             <NewlyReleased
               musicData={followedArtistReleases}
               isLoading={loading}
               title="New From Artists You Follow"
             />
-          )}
+          )} */}
 
           {/* Personalized Recommendations */}
-          <RecommededMusic
+          {/* <RecommededMusic
             data={recommendedMusic}
             isLoading={loading}
             title="Recommended For You"
-          />
+          /> */}
 
           {/* Artists to Explore */}
-          <BasedOnSubscription
+          {/* <BasedOnSubscription
             data={allArtists}
             isLoading={loading}
             title="New Discographies to Explore"
-          />
+          /> */}
         </ScrollView>
       </View>
     </>

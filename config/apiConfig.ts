@@ -21,7 +21,7 @@ const API_TIMEOUT = process.env.API_TIMEOUT || 30000;
 
 const api = axios.create({
   baseURL: API_URL,
-  timeout: API_TIMEOUT,
+//   timeout: API_TIMEOUT,
   headers: {
     "Content-Type": "application/json",
     "Accept": "application/json",

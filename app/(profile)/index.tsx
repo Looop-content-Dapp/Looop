@@ -106,9 +106,9 @@ useEffect(() => {
             <Avatar
               source={{
                 uri:
-                  userdata?.profileImage?.length !== 0
-                    ? userdata?.profileImage
-                    : "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
+                userdata?.profileImage
+                  ? userdata?.profileImage
+                  : "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
               }}
               size={64}
               rounded
