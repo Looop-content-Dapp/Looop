@@ -75,6 +75,15 @@ function AppContent() {
         <Stack.Screen name="uploadMusic" options={{
             presentation: "fullScreenModal"
         }} />
+        <Stack.Screen
+         name="withdrawFundsScreen"
+        options={{
+            presentation: "fullScreenModal"
+        }} />
+        <Stack.Screen name="connectedAccountsScreen"
+         options={{
+              presentation: "fullScreenModal"
+        }} />
       </Stack>
     </GestureHandlerRootView>
   );

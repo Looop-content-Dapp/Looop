@@ -8,6 +8,8 @@ import useFileUpload, { FileType } from "@/hooks/useFileUpload";
 import { countries } from "@/data/data";
 import api from "@/config/apiConfig";
 import { CreatorFormData } from "@/types/index";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { setArtistId, setClaimId } from "@/redux/slices/auth";
 
 type ProfileFlowState = "INTRO" | "CREATE_PROFILE";
 
@@ -38,6 +40,8 @@ const CreateProfile = () => {
   const { flow } = useLocalSearchParams();
   const navigation = useNavigation();
   const { back } = useRouter();
+  const dispatch = useAppDispatch()
+    const { userdata } = useAppSelector((state) => state.auth);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -151,15 +155,25 @@ const CreateProfile = () => {
         address2: formData.addressLine2,
         postalcode: formData.postalCode,
         websiteurl: formData.websiteUrl,
-        twitter: formData.socialAccounts.twitter,
-        tiktok: formData.socialAccounts.tiktok,
-        instagram: formData.socialAccounts.instagram
+        twitter: "https://x.com/looop_music",
+        tiktok: "https://x.com/looop_music",
+        instagram: "https://x.com/looop_music",
+        "id": userdata?._id
       };
 
       const response = await api.post('/api/artist/createartist', formPayload);
-
+      console.log(JSON.stringify(response))
       if (response.data.status === "success") {
-        back();
+        dispatch(setArtistId(response?.data?.data?.artist?._id))
+      if(response?.data?.data?.claimresult?.isPending === false){
+        // console.log(response?.data?.data?.claimresult?.data.id)
+        Alert.alert(response?.data?.data?.claimresult?.message)
+        dispatch(setClaimId(response?.data?.data?.claimresult?.data?.id))
+
+        back()
+      }else{
+        Alert.alert(response?.data?.data?.claimresult?.message)
+      }
       } else {
         throw new Error(response.data.message || 'Failed to create profile');
       }

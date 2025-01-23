@@ -15,6 +15,7 @@ import { Text } from "react-native";
 import api from "@/config/apiConfig";
 import { ClaimStatus } from "@/types/index";
 import Celebration from "@/assets/svg/Celebration";
+import { useAppSelector } from "@/redux/hooks";
 
 const LoadingScreen = () => (
     <View style={{
@@ -32,15 +33,21 @@ const LoadingScreen = () => (
 
 const CreatorModeWelcome = () => {
   const [claimStatus, setClaimStatus] = useState<ClaimStatus>("NOT_SUBMITTED");
+  const [showLoadingScreen, setShowLoadingScreen] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { width, height } = useWindowDimensions();
+  const { claimId } = useAppSelector((state) => state.auth);
   const { push } = useRouter();
-
+  
   const checkArtistClaimStatus = async () => {
+    if (!claimId){
+        setClaimStatus("NOT_SUBMITTED")
+    }
+
     try {
       setIsLoading(true);
-      const response = await api.get("/api/artistclaim/status/");
+      const response = await api.get(`/api/artistclaim/status/${claimId}`);
       setClaimStatus(response.data.data.status);
     } catch (error) {
       console.error("Error checking claim status:", error);
@@ -52,7 +59,17 @@ const CreatorModeWelcome = () => {
 
   useEffect(() => {
     checkArtistClaimStatus();
+    const timer = setTimeout(() => {
+      setShowLoadingScreen(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, []);
+
+  // Show loading screen if either the data is loading or we're within the minimum display time
+  if (isLoading || showLoadingScreen) {
+    return <LoadingScreen />;
+  }
 
   const handleNext = async () => {
     if (isSubmitting) return;
@@ -143,10 +160,6 @@ const CreatorModeWelcome = () => {
         return "Continue";
     }
   };
-
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
 
   const renderContent = () => {
     switch (claimStatus) {

@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, ScrollView, Platform, Keyboard } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, Platform, Keyboard, Alert } from 'react-native';
 import React, { useState, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -7,13 +7,17 @@ import BasicInformation from './formFlow/BasicInformation';
 import Preview from './formFlow/Preview';
 import Members from './formFlow/Members';
 import StepIndicator from './StepIndicator';
-import { useQuery } from '../../hooks/useQuery';
+import { useAppSelector } from '@/redux/hooks';
+import api from '@/config/apiConfig';
+import { useRouter } from 'expo-router';
+import TribeSuccessScreen from './TribeSuccessScreen';
 
 const STEPS = {
-  BASIC: 'basic',
-  MEMBERSHIP: 'membership',
-  PREVIEW: 'preview'
-};
+    BASIC: 'basic',
+    MEMBERSHIP: 'membership',
+    PREVIEW: 'preview',
+    SUCCESS: 'success'
+  };
 
 const STEP_COLORS = {
   [STEPS.BASIC]: '#A187B5',
@@ -21,8 +25,10 @@ const STEP_COLORS = {
   [STEPS.PREVIEW]: '#87B5A1'
 };
 
-const BuildTribeForm = ({ navigation }) => {
+const BuildTribeForm = () => {
   const [currentStep, setCurrentStep] = useState(STEPS.BASIC);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const { back } = useRouter()
   const [formData, setFormData] = useState({
     tribeName: '',
     description: '',
@@ -30,24 +36,41 @@ const BuildTribeForm = ({ navigation }) => {
     collectibleName: '',
     CollectibleDescription: '',
     collectibleMedia: undefined,
+    collectibleType: "",
+    communitySymbol: ""
   });
   const scrollViewRef = useRef(null);
-  const { createCommunity } = useQuery()
+  const { userdata, artistId } = useAppSelector((state) => state.auth);
 
   const handleCreateCommunity =  async() => {
-     const data = {
-         name: formData.tribeName,
-         description: formData.description,
-         artistId: "66f25fc08ceaa671b0d73a5d",
-         coverImage: formData?.coverImage?.uri,
-         collectibleName: formData.collectibleName,
-         collectibleImage: formData?.collectibleMedia?.uri,
-     }
-     console.log("formdat", data)
-     //  createCommunity(data)
+     const payload = {
+    "communityName": formData?.tribeName,
+    "description": formData?.description,
+    "coverImage": formData?.coverImage,
+    "collectibleName": formData?.collectibleName,
+    "collectibleDescription":formData?.CollectibleDescription,
+    "collectibleImage": formData?.collectibleMedia,
+    "collectibleType": formData?.collectibleType,
+    "artistId": artistId,
+    "artistAddress": userdata?.wallets?.xion,
+    "communitySymbol":formData?.communitySymbol
+    }
+    console.log(payload)
+     try {
+        const response = await api.post("/api/community/createcommunity", payload)
+        console.log(JSON.stringify(response))
+        if(response.data.status === "success"){
+            setCurrentStep(STEPS.SUCCESS);
+        }else{
+            Alert.alert("Error", "Failed to create community. Please try again.");
+        }
+      } catch (error) {
+       console.log("error creating community", error)
+       Alert.alert("Error", "Something went wrong. Please try again.");
+      }
   }
 
-  const updateFormData = (field, value) => {
+  const updateFormData = (field: any, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -67,6 +90,8 @@ const BuildTribeForm = ({ navigation }) => {
         />;
       case STEPS.PREVIEW:
         return <Preview formData={formData}/>;
+        case STEPS.SUCCESS:
+            return <TribeSuccessScreen tribeName={formData} />;
       default:
         return <BasicInformation
         formData={formData}
@@ -89,9 +114,7 @@ const BuildTribeForm = ({ navigation }) => {
         }
         break;
       case STEPS.PREVIEW:
-        // Handle form submission
         handleCreateCommunity()
-        console.log('Form submitted:', formData);
         break;
     }
   };
@@ -105,7 +128,7 @@ const BuildTribeForm = ({ navigation }) => {
         setCurrentStep(STEPS.MEMBERSHIP);
         break;
       default:
-        navigation.goBack();
+        back();
     }
   };
 
@@ -144,9 +167,9 @@ const BuildTribeForm = ({ navigation }) => {
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        enableOnAndroid={true}
-        enableAutomaticScroll={Platform.OS === 'ios'}
-        extraScrollHeight={Platform.OS === 'ios' ? 120 : 80}
+        // enableOnAndroid={true}
+        // enableAutomaticScroll={Platform.OS === 'ios'}
+        // extraScrollHeight={Platform.OS === 'ios' ? 120 : 80}
         style={{ flex: 1 }}
       >
         <View style={{ flex: 1, paddingHorizontal: 16 }}>

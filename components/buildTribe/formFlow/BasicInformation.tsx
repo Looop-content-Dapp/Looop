@@ -19,8 +19,9 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ formData, updateFor
 
   const handleCoverImagePick = async () => {
     const result = await pickFile(FileType.IMAGE);
-    if (result && result.success && result.file) {
-      updateFormData('coverImage', result.file);
+    if (result && result.file) {
+        console.log(result.file.uri)
+      updateFormData('coverImage', result.file.uri);
     }
   };
 
@@ -57,7 +58,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({ formData, updateFor
         {formData.coverImage ? (
           <>
             <Image
-              source={{ uri: formData.coverImage.uri }}
+              source={{ uri: formData.coverImage }}
               style={{
                 width: '100%',
                 height: '100%',

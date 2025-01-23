@@ -14,18 +14,21 @@ import {
   CheckmarkBadge01Icon,
   HeadphonesIcon,
 } from "@hugeicons/react-native"
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import BottomSheet, { BottomSheetModal } from "@gorhom/bottom-sheet";
 import Ellipse from "../../../components/Ellipse";
 import { useRouter } from "expo-router";
 import ArtistReleases from "../../../components/ArtistProfile/ArtistReleases";
 import ArtistCollectible from "../../../components/ArtistProfile/ArtistCollectible";
 import ArtistAbout from "../../../components/ArtistProfile/ArtistAbout";
-import WalletEarningSheet from "../../../components/bottomSheet/WalletEarningSheet";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
+import WalletEarningSheet from "@/components/bottomSheet/WalletEarningSheet";
+import api from "@/config/apiConfig";
+import { useAppSelector } from "@/redux/hooks";
+import { Artist } from "@/types/index";
 
 interface Community {
   _id: string;
@@ -40,22 +43,38 @@ interface ArtistCommunityDetailProps {
   community: Community;
 }
 
+export type SheetType = 'main' | 'linkBank' | 'transfer' | 'password';
+
+
+
 const index = ({ community }: ArtistCommunityDetailProps) => {
   const [activeTab, setActiveTab] = useState("releases");
   const scrollY = useRef(new Animated.Value(0)).current;
   const [showStickyTabs, setShowStickyTabs] = useState(false);
+  const [artistProfile, setArtistProfile] = useState<Artist>()
+  const { artistId } = useAppSelector((state) => state.auth)
   const { navigate } = useRouter();
+  const [activeSheet, setActiveSheet] = useState<SheetType | null>(null);
 
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const [isWalletSheetVisible, setIsWalletSheetVisible] = useState(false);
+
+  const retriveArtistInfo = async() => {
+    try {
+        const response = await api.get(`/api/artist/${artistId}`)
+        setArtistProfile(response.data.data)
+    } catch (error) {
+
+    }
+  }
+ useEffect(() => {
+    if(artistId){
+        retriveArtistInfo()
+    }
+ }, [])
 
   // Add this to your component
   const handleOpenWalletSheet = () => {
-    setIsWalletSheetVisible(true);
-  };
-
-  const handleCloseWalletSheet = () => {
-    setIsWalletSheetVisible(false);
+    setActiveSheet("main");
   };
 
   // Interpolate values for animations with minimal platform adjustments
@@ -96,7 +115,7 @@ const index = ({ community }: ArtistCommunityDetailProps) => {
       <Animated.View style={{ height: headerHeight, opacity: imageOpacity }}>
         <ImageBackground
           source={{
-            uri: "https://i.pinimg.com/564x/64/19/30/641930ec1d900889da248ebe6ad7144d.jpg",
+            uri: artistProfile?.profileImage,
           }}
           style={{
             height: hp("27.9%"),
@@ -105,23 +124,25 @@ const index = ({ community }: ArtistCommunityDetailProps) => {
         >
           <View className="flex-row items-center justify-between w-full mt-[40%] px-[12px]">
             <View>
-              <View className="flex-row items-center">
+              <View className="flex-row gap-x-[8px] items-center">
                 <Text className="text-[24px] font-PlusJakartaSansBold text-[#f4f4f4]">
-                  Rema
+                  {artistProfile?.name}
                 </Text>
-                <CheckmarkBadge01Icon
-                  size={20}
-                  variant="solid"
-                  color="#2DD881"
-                />
+               {artistProfile?.verified === true && (
+                   <CheckmarkBadge01Icon
+                   size={20}
+                   variant="solid"
+                   color="#2DD881"
+                 />
+               )}
               </View>
               <View className="flex-row items-center gap-x-[4px]">
                 <Text className="text-[14px] font-PlusJakartaSansMedium text-[#A5A6AA]">
-                  500M Followers
+                  {artistProfile?.followers.toLocaleString()} Followers
                 </Text>
                 <Ellipse />
                 <Text className="text-[14px] font-PlusJakartaSansMedium text-[#A5A6AA]">
-                  180 Subscribers
+                  {artistProfile?.monthlyListeners.toLocaleString()} Monthly Listeners
                 </Text>
               </View>
             </View>
@@ -143,7 +164,7 @@ const index = ({ community }: ArtistCommunityDetailProps) => {
           {
             useNativeDriver: false,
             listener: (event) => {
-              const offsetY = event.nativeEvent.contentOffset.y;
+              const offsetY = event?.nativeEvent?.contentOffset.y;
               if (offsetY > 200) {
                 setShowStickyTabs(true);
               } else {
@@ -154,39 +175,29 @@ const index = ({ community }: ArtistCommunityDetailProps) => {
         )}
         scrollEventThrottle={16}
       >
-        <View className="px-[24px] mt-[24px] gap-y-[24px]">
-          <View className="flex-row items-center gap-x-[16px] w-full">
+        <View className="px-[2px] mt-[10px] gap-y-[24px]">
+          <View className="flex-row items-center gap-x-[10px] mx-auto w-full">
             <TouchableOpacity
               onPress={() => navigate("/(musicTabs)")}
-              className="rounded-lg overflow-hidden h-[89px] w-[50%] border-2 border-[#FF8A49]"
+              className="items-center justify-center rounded-lg overflow-hidden h-[89px] w-[50%] border-2 bg-[#12141B]"
             >
-              <ImageBackground
-                source={require("../../../assets/images/listenMode.png")}
-                className="w-full px-4 py-3 h-full"
-              >
-                <View className=" gap-2">
+             <View className=" gap-2">
                   <HeadphonesIcon size={24} color="#FF8A49" variant="solid" />
                   <Text className="text-[#f4f4f4] text-[14px] font-PlusJakartaSansMedium">
                     Back to Listen Mode
                   </Text>
                 </View>
-              </ImageBackground>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={handleOpenWalletSheet}
-              className="rounded-lg overflow-hidden w-[50%] h-[89px] border-2 border-[#A187B5]"
+              className="items-center justify-center rounded-lg overflow-hidden w-[50%] h-[89px] bg-[#12141B]"
             >
-              <ImageBackground
-                source={require("../../../assets/images/listenMode.png")}
-                className="w-full px-4 py-3 h-full"
-              >
                 <View className="gap-2">
                   <Wallet01Icon size={20} color="#A187B5" variant="stroke" />
                   <Text className="text-[#f4f4f4] text-[14px] font-PlusJakartaSansMedium">
                     Wallet & Earnings
                   </Text>
                 </View>
-              </ImageBackground>
             </TouchableOpacity>
           </View>
         </View>
@@ -242,9 +253,9 @@ const index = ({ community }: ArtistCommunityDetailProps) => {
       </Animated.ScrollView>
 
       <WalletEarningSheet
-        isVisible={isWalletSheetVisible}
-        closeSheet={handleCloseWalletSheet}
-      />
+     activeSheet={activeSheet}
+     onSheetChange={setActiveSheet}
+    />
     </View>
   );
 };

@@ -89,6 +89,7 @@ api.interceptors.response.use(
 
       case 409:
         errorMessage = error.response.data?.message || 'Conflict occurred';
+        // return error.response.data
         break;
 
       case 429:
@@ -96,6 +97,8 @@ api.interceptors.response.use(
         break;
 
       case 500:
+        errorMessage = error.response.data?.message || 'Server error occurred';
+        break;
       case 502:
       case 503:
         errorMessage = error.response.data?.message || 'Server error occurred';

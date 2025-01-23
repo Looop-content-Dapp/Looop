@@ -39,11 +39,11 @@ const ArtistReleases = ({artistId}: Props) => {
         fetchData();
       }, []);
   return (
-    <>
+    <View className='gap-y-[30px] items-start'>
          <Hottest songs={topSongs} isLoading={isLoading} />
          <AlbumsAndEps songs={artistAlbums} isLoading={isLoading} />
          <Singles songs={artistSingles} isLoading={isLoading} />
-    </>
+    </View>
   )
 }
 

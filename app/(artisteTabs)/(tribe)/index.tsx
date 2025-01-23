@@ -4,6 +4,8 @@ import BuildTribeForm from "../../../components/buildTribe/BuildTribeForm";
 import WelcomeScreen from "../../../components/buildTribe/WelcomScreen";
 import ArtistCommunityDetails from "../../../components/buildTribe/ArtistCommunityDetails";
 import CommunityLoading from "../../../components/CommunityLoading";
+import { useAppSelector } from "@/redux/hooks";
+import api from "@/config/apiConfig";
 
 interface Community {
   _id: string;
@@ -19,10 +21,11 @@ interface CommunityResponse {
   data: Community[];
 }
 
-const OnboardingFlow = ({ artistId }: { artistId: string }) => {
+const OnboardingFlow = () => {
   const [currentStep, setCurrentStep] = useState('welcome');
   const [loading, setLoading] = useState(true);
   const [artistCommunity, setArtistCommunity] = useState<Community | null>(null);
+  const { artistId } = useAppSelector((state) => state.auth);
 
   const { getAllCommunities } = useQuery();
 
@@ -30,16 +33,8 @@ const OnboardingFlow = ({ artistId }: { artistId: string }) => {
     const fetchArtistCommunity = async () => {
       try {
         setLoading(true);
-        const response = await getAllCommunities() as CommunityResponse;
-
-        // Find community where createdBy matches artistId
-        const community = response.data.find(
-          (community) => community.createdBy === "66f25f518ceaa671b0d73a58"
-        );
-
-        if (community) {
-          setArtistCommunity(community);
-        }
+        const response = await api.get(`/api/community/${artistId}`)
+        setArtistCommunity(response?.data?.data);
       } catch (error) {
         console.error('Error fetching artist community:', error);
       } finally {

@@ -58,7 +58,6 @@ const ContractSigning = () => {
                 setCurrentFlow("SIGN");
                 break;
             case "SIGN":
-                setCurrentFlow("COMPLETED");
                 push("/(artisteTabs)/(dashboard)");
                 break;
         }

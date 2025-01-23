@@ -341,6 +341,214 @@ export const countries = [
   },
 ];
 
+export const banks = [
+    {
+      label: "Access Bank",
+      value: "ACCESS",
+      logo: "https://images.seeklogo.com/logo-png/49/1/access-bank-plc-logo-png_seeklogo-492413.png?v=1957912203070170616", // Replace with the actual logo URL
+      branches: [
+        "Lagos",
+        "Abuja",
+        "Port Harcourt",
+        "Kano",
+        "Ibadan",
+        "Enugu",
+        "Jos",
+        "Benin City",
+        "Abeokuta",
+        "Calabar",
+      ],
+    },
+    {
+      label: "Zenith Bank",
+      value: "ZENITH",
+      logo: "https://via.placeholder.com/150", // Replace with the actual logo URL
+      branches: [
+        "Lagos",
+        "Abuja",
+        "Port Harcourt",
+        "Onitsha",
+        "Kano",
+        "Ibadan",
+        "Warri",
+        "Abeokuta",
+        "Calabar",
+        "Kaduna",
+      ],
+    },
+    {
+      label: "Guaranty Trust Bank (GTBank)",
+      value: "GTB",
+      logo: "https://via.placeholder.com/150", // Replace with the actual logo URL
+      branches: [
+        "Lagos",
+        "Abuja",
+        "Port Harcourt",
+        "Kano",
+        "Ibadan",
+        "Enugu",
+        "Jos",
+        "Owerri",
+        "Onitsha",
+        "Aba",
+      ],
+    },
+    {
+      label: "First Bank of Nigeria",
+      value: "FIRST",
+      logo: "https://via.placeholder.com/150", // Replace with the actual logo URL
+      branches: [
+        "Lagos",
+        "Abuja",
+        "Port Harcourt",
+        "Kano",
+        "Ibadan",
+        "Abeokuta",
+        "Benin City",
+        "Enugu",
+        "Jos",
+        "Onitsha",
+      ],
+    },
+    {
+      label: "United Bank for Africa (UBA)",
+      value: "UBA",
+      logo: "https://via.placeholder.com/150", // Replace with the actual logo URL
+      branches: [
+        "Lagos",
+        "Abuja",
+        "Port Harcourt",
+        "Kano",
+        "Ibadan",
+        "Enugu",
+        "Jos",
+        "Benin City",
+        "Onitsha",
+        "Calabar",
+      ],
+    },
+    {
+      label: "Ecobank Nigeria",
+      value: "ECOBANK",
+      logo: "https://via.placeholder.com/150", // Replace with the actual logo URL
+      branches: [
+        "Lagos",
+        "Abuja",
+        "Port Harcourt",
+        "Kano",
+        "Ibadan",
+        "Enugu",
+        "Onitsha",
+        "Aba",
+        "Warri",
+        "Calabar",
+      ],
+    },
+    {
+      label: "Stanbic IBTC Bank",
+      value: "STANBIC",
+      logo: "https://via.placeholder.com/150", // Replace with the actual logo URL
+      branches: [
+        "Lagos",
+        "Abuja",
+        "Port Harcourt",
+        "Kano",
+        "Ibadan",
+        "Enugu",
+        "Onitsha",
+        "Jos",
+        "Abeokuta",
+        "Benin City",
+      ],
+    },
+    {
+      label: "Union Bank of Nigeria",
+      value: "UNION",
+      logo: "https://via.placeholder.com/150", // Replace with the actual logo URL
+      branches: [
+        "Lagos",
+        "Abuja",
+        "Port Harcourt",
+        "Kano",
+        "Ibadan",
+        "Benin City",
+        "Onitsha",
+        "Aba",
+        "Calabar",
+        "Kaduna",
+      ],
+    },
+    {
+      label: "Fidelity Bank",
+      value: "FIDELITY",
+      logo: "https://via.placeholder.com/150", // Replace with the actual logo URL
+      branches: [
+        "Lagos",
+        "Abuja",
+        "Port Harcourt",
+        "Onitsha",
+        "Ibadan",
+        "Warri",
+        "Enugu",
+        "Jos",
+        "Abeokuta",
+        "Calabar",
+      ],
+    },
+    {
+      label: "Polaris Bank",
+      value: "POLARIS",
+      logo: "https://via.placeholder.com/150", // Replace with the actual logo URL
+      branches: [
+        "Lagos",
+        "Abuja",
+        "Port Harcourt",
+        "Kano",
+        "Ibadan",
+        "Enugu",
+        "Jos",
+        "Benin City",
+        "Onitsha",
+        "Abeokuta",
+      ],
+    },
+    {
+      label: "Heritage Bank",
+      value: "HERITAGE",
+      logo: "https://via.placeholder.com/150", // Replace with the actual logo URL
+      branches: [
+        "Lagos",
+        "Abuja",
+        "Port Harcourt",
+        "Onitsha",
+        "Ibadan",
+        "Warri",
+        "Enugu",
+        "Jos",
+        "Benin City",
+        "Abeokuta",
+      ],
+    },
+    {
+      label: "Keystone Bank",
+      value: "KEYSTONE",
+      logo: "https://via.placeholder.com/150", // Replace with the actual logo URL
+      branches: [
+        "Lagos",
+        "Abuja",
+        "Port Harcourt",
+        "Ibadan",
+        "Benin City",
+        "Onitsha",
+        "Enugu",
+        "Jos",
+        "Abeokuta",
+        "Kano",
+      ],
+    },
+  ];
+
+
 export const genres = [
   { label: "Pop", value: "pop" },
   { label: "Rock", value: "rock" },

@@ -8,7 +8,7 @@ const Preview = ({ formData }) => {
       {/* Header */}
       <View style={{ height: 200 }}>
         <Image
-          source={{ uri: formData?.coverImage?.uri }}
+          source={{ uri: formData?.coverImage }}
           style={{
             width: '100%',
             height: '100%',
@@ -55,7 +55,7 @@ const Preview = ({ formData }) => {
           marginBottom: 30
         }}>
           <Image
-            source={{ uri: formData?.collectibleMedia?.uri }}
+            source={{ uri: formData?.collectibleMedia }}
             style={{
               width: '100%',
               height: 300,
