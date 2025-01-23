@@ -4,12 +4,16 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  Image,
+  ActivityIndicator,
 } from "react-native";
-import React, { useState } from "react";
-import { ImageAdd02Icon } from "@hugeicons/react-native";
+import React, { useEffect, useState } from "react";
+import { CheckmarkCircle02Icon, ImageAdd02Icon, XVariableCircleIcon } from "@hugeicons/react-native";
 import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import { countries, genres } from "@/data/data";
 import { FormField } from "@/components/app-components/formField copy";
+import { CreatorFormData } from "@/types/index";
+import api from "@/config/apiConfig";
 
 const social = [
   {
@@ -31,39 +35,117 @@ type MultiSelectOption = {
   value: string;
 };
 
-const CreatorForm = () => {
-  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
-  const [cities, setCities] = useState<string[]>([]);
-  const [formData, setFormData] = useState({
-    stageName: "",
-    email: "",
-    bio: "",
-    addressLine1: "",
-    addressLine2: "",
-    postalCode: "",
-    websiteUrl: "",
-    socialAccounts: {
-      twitter: "",
-      instagram: "",
-      tiktok: "",
-    },
-  });
+interface CreatorFormProps {
+    formData: {
+      stageName: string;
+      email: string;
+      bio: string;
+      addressLine1: string;
+      addressLine2: string;
+      postalCode: string;
+      websiteUrl: string;
+      socialAccounts: {
+        twitter: string;
+        instagram: string;
+        tiktok: string;
+      };
+      profileImage?: string;
+    };
+    selectedGenres: string[];
+    selectedCountry: string;
+    selectedCity: string;
+    cities: string[];
+    isLoading: boolean;
+    onFormChange: (field: keyof CreatorFormData, value: any) => void
+    onGenresChange: (genres: string[]) => void;
+    onCountrySelect: (country: string) => void;
+    onCitySelect: (city: string) => void;
+    onProfileImageUpload: () => Promise<void>;
+    onSocialAccountChange: (platform: "twitter" | "instagram" | "tiktok", value: string) => void
+    // continue : () => Promise<any>
+  }
 
-  const handleCountrySelect = (countryValue: string) => {
-    const selected = countries.find((country) => country.value === countryValue);
-    if (selected) {
-      setSelectedCountry(countryValue); // Store the value instead of label
-      setCities(selected.cities || []); // Handle case where cities may be undefined
-      setSelectedCity(""); // Reset selected city when country changes
-    } else {
-      // Handle invalid country selection
-      setSelectedCountry("");
-      setCities([]);
-      setSelectedCity("");
-    }
-  };
+const CreatorForm = ({
+    formData,
+    selectedGenres,
+    selectedCountry,
+    selectedCity,
+    cities,
+    isLoading,
+    onFormChange,
+    onGenresChange,
+    onCountrySelect,
+    onCitySelect,
+    onProfileImageUpload,
+    onSocialAccountChange,
+}: CreatorFormProps) => {
+    const [isValidating, setIsValidating] = useState(false);
+    const [validationStatus, setValidationStatus] = useState(null);
+    const [type, setType] = useState("");
+    const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout>();
+
+    const verifyField = async (fieldType: string, value: string) => {
+        if (!value) {
+            setValidationStatus(null);
+            return;
+        }
+
+        setIsValidating(true);
+
+        try {
+            const payload = fieldType === 'email'
+                ? { email: value, name: '' }
+                : { email: '', name: value };
+            const response = await fetch("https://looop-backend-vu20.onrender.com/api/artist/verify-artist-email", {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+            console.log(data);
+            setValidationStatus(data?.exists);
+        } catch (error) {
+            console.log(`error verifying artist ${fieldType}`, error);
+        } finally {
+            setIsValidating(false);
+        }
+    };
+
+    useEffect(() => {
+        if (debounceTimeout) {
+            clearTimeout(debounceTimeout);
+        }
+
+        if (type === 'email' && formData.email) {
+            const newTimeout = setTimeout(() => verifyField('email', formData.email), 500);
+            setDebounceTimeout(newTimeout);
+        } else if (type === 'name' && formData.stageName) {
+            const newTimeout = setTimeout(() => verifyField('name', formData.stageName), 500);
+            setDebounceTimeout(newTimeout);
+        }
+
+        return () => {
+            if (debounceTimeout) {
+                clearTimeout(debounceTimeout);
+            }
+        };
+    }, [formData.email, formData.stageName, type]);
+
+    const getStatusIcon = () => {
+        if (isValidating) {
+            return <ActivityIndicator size="small" color="#787A80" />;
+        }
+        if (validationStatus === false) {
+            return <CheckmarkCircle02Icon size={18} variant="solid" color="#32BD76" />;
+        }
+        if (validationStatus === true) {
+            return <XVariableCircleIcon size={18} color="red" variant="solid"/>;
+        }
+        return null;
+    };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -73,8 +155,18 @@ const CreatorForm = () => {
 
         {/* Profile Image Upload */}
         <View style={{ alignItems: "center", marginBottom: 40 }}>
-          <TouchableOpacity style={styles.imageUpload}>
-            <ImageAdd02Icon size={40} color="#787A80" />
+          <TouchableOpacity
+            style={styles.imageUpload}
+            onPress={onProfileImageUpload}
+          >
+            {formData.profileImage ? (
+              <Image
+                source={{ uri: formData.profileImage || formData.profileImage}}
+               className="h-[183px] w-[183px] rounded-full"
+              />
+            ) : (
+              <ImageAdd02Icon size={40} color="#787A80" />
+            )}
           </TouchableOpacity>
           <View style={{ marginTop: 12, alignItems: "center" }}>
             <Text style={styles.uploadTitle}>Upload Profile Image</Text>
@@ -84,26 +176,51 @@ const CreatorForm = () => {
 
         {/* Basic Fields */}
         <View style={{ gap: 16 }}>
-          <FormField.TextField
-            label="Stage Name / Alias"
-            placeholder="Enter fullname"
-            value={formData.stageName}
-            onChangeText={(text) =>
-              setFormData({ ...formData, stageName: text })
-            }
-          />
-          <FormField.TextField
-            label="Business email address"
-            placeholder="example@email.com"
-            value={formData.email}
-            onChangeText={(text) => setFormData({ ...formData, email: text })}
-          />
+        <View className="relative w-full">
+                        <FormField.TextField
+                            label="Stage Name / Alias"
+                            placeholder="Enter fullname"
+                            value={formData.stageName}
+                            onChangeText={(text) => {
+                                onFormChange("stageName", text);
+                                setType("name");
+                                // Reset validation status when switching fields
+                                setValidationStatus(null);
+                            }}
+                        />
+                        {type === 'name' && (
+                            <View className="absolute right-3 top-14 -translate-y-1/2">
+                                {getStatusIcon()}
+                            </View>
+                        )}
+                    </View>
+
+                    <View className="relative w-full">
+                        <FormField.TextField
+                            label="Business email address"
+                            placeholder="example@email.com"
+                            value={formData.email}
+                            onChangeText={(text) => {
+                                onFormChange("email", text);
+                                setType("email");
+                                // Reset validation status when switching fields
+                                setValidationStatus(null);
+                            }}
+                        />
+                        {type === 'email' && (
+                            <View className="absolute right-3 top-14 -translate-y-1/2">
+                                {getStatusIcon()}
+                            </View>
+                        )}
+                    </View>
+
+
           <FormField.MultiSelectField
           description="Search and add main genres you create songs in. Don’t worry, you could always change your style later"
             label="Select Genres"
             placeholder="Try “HipHop” or “Afrobeats”"
             values={selectedGenres}
-            onSelect={(values) => setSelectedGenres(values)}
+            onSelect={onGenresChange}
             options={genres}
           />
         </View>
@@ -117,7 +234,7 @@ const CreatorForm = () => {
             label="Bio"
             placeholder="Tell us about yourself"
             value={formData.bio}
-            onChangeText={(text) => setFormData({ ...formData, bio: text })}
+            onChangeText={(text) => onFormChange("bio", text)}
             multiline={true}
             numberOfLines={4}
           />
@@ -125,23 +242,19 @@ const CreatorForm = () => {
             label="Address Line 1"
             placeholder="Your house address"
             value={formData.addressLine1}
-            onChangeText={(text) =>
-              setFormData({ ...formData, addressLine1: text })
-            }
+            onChangeText={(text) => onFormChange("addressLine1", text)}
           />
           <FormField.TextField
             label="Address Line 2 (Optional)"
             placeholder="Your house address"
             value={formData.addressLine2}
-            onChangeText={(text) =>
-              setFormData({ ...formData, addressLine2: text })
-            }
+            onChangeText={(text) => onFormChange("addressLine2", text)}
           />
           <FormField.PickerField
             label="Country"
             placeholder="Select a country"
             value={selectedCountry}
-            onSelect={handleCountrySelect}
+            onSelect={onCountrySelect}
             options={countries}
           />
           {cities.length > 0 && (
@@ -149,7 +262,7 @@ const CreatorForm = () => {
               label="City"
               placeholder="Select a city"
               value={selectedCity}
-              onSelect={(city) => setSelectedCity(city)}
+              onSelect={onCitySelect}
               options={cities.map((city) => ({ label: city, value: city }))}
             />
           )}
@@ -157,9 +270,7 @@ const CreatorForm = () => {
             label="Postal Code"
             placeholder="100100"
             value={formData.postalCode}
-            onChangeText={(text) =>
-              setFormData({ ...formData, postalCode: text })
-            }
+            onChangeText={(text) => onFormChange("postalCode", text)}
           />
         </View>
       </View>
@@ -172,9 +283,7 @@ const CreatorForm = () => {
             label="Website URL"
             placeholder="www.artiste.com"
             value={formData.websiteUrl}
-            onChangeText={(text) =>
-              setFormData({ ...formData, websiteUrl: text })
-            }
+            onChangeText={(text) => onFormChange("websiteUrl", text)}
           />
         </View>
       </View>

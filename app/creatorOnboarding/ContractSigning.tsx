@@ -35,7 +35,6 @@ const ContractSigning = () => {
     const handleFlow = () => {
         switch (currentFlow) {
             case "REVIEWED":
-                return <Intro />;
             case "INTRO":
                 return <ContractIntro />;
             case "CONTRACT":
@@ -59,7 +58,6 @@ const ContractSigning = () => {
                 setCurrentFlow("SIGN");
                 break;
             case "SIGN":
-                setCurrentFlow("COMPLETED");
                 push("/(artisteTabs)/(dashboard)");
                 break;
         }

@@ -5,14 +5,31 @@ import CreatePostModal from "../modals/CreatePostModal";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { heightPercentageToDP as hp, widthPercentageToDP as wp} from 'react-native-responsive-screen'
 
-interface Community {
-  _id: string;
-  name: string;
-  description: string;
-  createdBy: string;
-  createdAt: string;
-  __v: number;
-}
+// Types for the Tribe Pass NFT details
+interface TribePass {
+    collectibleDescription: string;
+    collectibleImage: string;
+    collectibleName: string;
+    collectibleType: 'PNG' | 'JPG' | 'WEBP' | 'GIF';
+    communitySymbol: string;
+    contractAddress: string;
+    transactionHash: string;
+  }
+
+  // Main Community interface
+  interface Community {
+    __v: number;
+    _id: string;
+    communityName: string;
+    coverImage: string;
+    createdAt: string;  // ISO date string
+    createdBy: string;
+    description: string;
+    memberCount: number;
+    status: 'active' | 'inactive';  // Add other possible status values if they exist
+    tribePass: TribePass;
+    updatedAt: string;  // ISO date string
+  }
 
 interface ArtistCommunityDetailProps {
   community: Community;
@@ -23,6 +40,7 @@ const ArtistCommunityDetails = ({ community }: ArtistCommunityDetailProps) => {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
   const [showStickyTabs, setShowStickyTabs] = useState(false);
+  console.log(community)
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
@@ -86,7 +104,7 @@ const ArtistCommunityDetails = ({ community }: ArtistCommunityDetailProps) => {
       <Animated.View style={{ height: headerHeight, opacity: imageOpacity }}>
         <ImageBackground
           source={{
-            uri: "https://i.pinimg.com/564x/64/19/30/641930ec1d900889da248ebe6ad7144d.jpg"
+            uri: community?.coverImage
           }}
           style={{
             height: hp("27.9%"),
@@ -166,7 +184,7 @@ const ArtistCommunityDetails = ({ community }: ArtistCommunityDetailProps) => {
           {
             useNativeDriver: false,
             listener: (event) => {
-              const offsetY = event.nativeEvent.contentOffset.y;
+              const offsetY = event?.nativeEvent?.contentOffset.y;
               if (offsetY > 200) {
                 setShowStickyTabs(true);
               } else {
@@ -177,9 +195,9 @@ const ArtistCommunityDetails = ({ community }: ArtistCommunityDetailProps) => {
         )}
         scrollEventThrottle={16}
       >
-        <View className="px-[24px] mt-[24px] gap-y-[12px]">
+        <View className="px-[24px] gap-y-[12px]">
           <View className="flex-row items-center justify-between">
-            <Text className="text-[24px] font-PlusJakartaSansBold text-[#f4f4f4]">{community?.name}</Text>
+            <Text className="text-[24px] font-PlusJakartaSansBold text-[#f4f4f4]">{community.communityName}</Text>
             <TouchableOpacity className="border border-[#787A80] py-[12px] px-[16px] gap-x-[8px] rounded-[24px] flex-row items-center">
               <PencilEdit02Icon size={16} color="#787A80" />
               <Text className="text-[14px] font-PlusJakartaSansMedium text-[#D2D3D5]">Edit</Text>
@@ -215,18 +233,6 @@ const ArtistCommunityDetails = ({ community }: ArtistCommunityDetailProps) => {
               Announcements
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveTab('events')}
-            className={`py-[16px] ${activeTab === 'events' ? 'border-b-2 border-Orange/08' : ''}`}
-          >
-            <Text
-              className={`text-[16px] font-PlusJakartaSansMedium ${
-                activeTab === 'events' ? 'text-white' : 'text-gray-400'
-              }`}
-            >
-              Events
-            </Text>
-          </TouchableOpacity>
         </View>
 
         {/* Tab Content */}
@@ -236,7 +242,7 @@ const ArtistCommunityDetails = ({ community }: ArtistCommunityDetailProps) => {
       {/* Floating Action Button */}
       <TouchableOpacity
        onPress={() => setShowCreatePost(true)}
-        className="absolute bottom-[85px] right-6 z-30 bg-[#A187B5] w-[72px] h-[72px] rounded-[24px] items-center justify-center shadow-lg"
+        className="absolute bottom-[105px] right-6 z-30 bg-[#A187B5] w-[72px] h-[72px] rounded-[24px] items-center justify-center shadow-lg"
         style={{
           elevation: 5, // for Android shadow
           shadowColor: '#000', // for iOS shadow

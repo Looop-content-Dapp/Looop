@@ -1,16 +1,47 @@
-import { View, Text, Image, SafeAreaView } from "react-native";
+import { View, Text, Image, SafeAreaView, Alert } from "react-native";
 import React, { useLayoutEffect, useState } from "react";
-import { useNavigation, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import CreatorForm from "@/components/CreatorOnboarding/creatorProfileFlow/CreatorForm";
 import { AppButton } from "@/components/app-components/button";
+import useFileUpload, { FileType } from "@/hooks/useFileUpload";
+import { countries } from "@/data/data";
+import api from "@/config/apiConfig";
+import { CreatorFormData } from "@/types/index";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { setArtistId, setClaimId } from "@/redux/slices/auth";
 
 type ProfileFlowState = "INTRO" | "CREATE_PROFILE";
 
 const CreateProfile = () => {
   const [currentFlow, setCurrentFlow] = useState<ProfileFlowState>("INTRO");
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
+  const [cities, setCities] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<CreatorFormData>({
+    stageName: "",
+    email: "",
+    bio: "",
+    addressLine1: "",
+    addressLine2: "",
+    postalCode: "",
+    websiteUrl: "",
+    socialAccounts: {
+      twitter: "",
+      instagram: "",
+      tiktok: "",
+    },
+    profileImage: ""
+  });
+
+  const { pickFile, isLoading: isUploading } = useFileUpload();
+  const { flow } = useLocalSearchParams();
   const navigation = useNavigation();
-  const { back, push } = useRouter();
+  const { back } = useRouter();
+  const dispatch = useAppDispatch()
+    const { userdata } = useAppSelector((state) => state.auth);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -30,6 +61,134 @@ const CreateProfile = () => {
       headerRight: () => null,
     });
   }, [navigation, currentFlow]);
+
+  const validateForm = () => {
+    const requiredFields = {
+      'Stage name': formData.stageName,
+      'Email': formData.email,
+      'Profile image': formData.profileImage,
+      'Genres': selectedGenres.length,
+      'Country': selectedCountry
+    };
+
+    for (const [field, value] of Object.entries(requiredFields)) {
+      if (!value) {
+        Alert.alert("Required Field Missing", `${field} is required`);
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const handleProfileImageUpload = async () => {
+    try {
+      if (isUploading) return;
+
+      const result = await pickFile(FileType.IMAGE);
+
+      if (result?.success && result.file) {
+        setFormData(prev => ({
+          ...prev,
+          profileImage: result?.file?.uri
+        }));
+      } else if (result?.error) {
+        Alert.alert("Upload Failed", result.error);
+      }
+    } catch (error) {
+      console.error('Error uploading profile image:', error);
+      Alert.alert(
+        "Upload Error",
+        "Failed to upload profile image. Please try again."
+      );
+    }
+  };
+
+  const handleCountrySelect = (countryValue: string) => {
+    const selected = countries?.find((country) => country.value === countryValue);
+    if (selected) {
+      setSelectedCountry(countryValue);
+      setCities(selected.cities || []);
+      setSelectedCity("");
+    } else {
+      setSelectedCountry("");
+      setCities([]);
+      setSelectedCity("");
+    }
+  };
+
+  const handleFormChange = (field: keyof CreatorFormData, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSocialAccountChange = (
+    platform: keyof typeof formData.socialAccounts,
+    value: string
+  ) => {
+    setFormData(prev => ({
+      ...prev,
+      socialAccounts: {
+        ...prev.socialAccounts,
+        [platform]: value
+      }
+    }));
+  };
+
+  const handleSubmitArtistProfile = async () => {
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const formPayload = {
+        artistname: formData.stageName,
+        email: formData.email,
+        profileImage: formData.profileImage,
+        bio: formData.bio,
+        genres: selectedGenres,
+        city: selectedCity,
+        country: selectedCountry,
+        address1: formData.addressLine1,
+        address2: formData.addressLine2,
+        postalcode: formData.postalCode,
+        websiteurl: formData.websiteUrl,
+        twitter: "https://x.com/looop_music",
+        tiktok: "https://x.com/looop_music",
+        instagram: "https://x.com/looop_music",
+        "id": userdata?._id
+      };
+
+      const response = await api.post('/api/artist/createartist', formPayload);
+      console.log(JSON.stringify(response))
+      if (response.data.status === "success") {
+        dispatch(setArtistId(response?.data?.data?.artist?._id))
+      if(response?.data?.data?.claimresult?.isPending === false){
+        // console.log(response?.data?.data?.claimresult?.data.id)
+        Alert.alert(response?.data?.data?.claimresult?.message)
+        dispatch(setClaimId(response?.data?.data?.claimresult?.data?.id))
+
+        back()
+      }else{
+        Alert.alert(response?.data?.data?.claimresult?.message)
+      }
+      } else {
+        throw new Error(response.data.message || 'Failed to create profile');
+      }
+    } catch (error) {
+      console.error("Error submitting artist profile:", error);
+      Alert.alert(
+        "Submission Error",
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const renderIntro = () => (
     <View>
@@ -55,7 +214,22 @@ const CreateProfile = () => {
       case "INTRO":
         return renderIntro();
       case "CREATE_PROFILE":
-        return <CreatorForm />;
+        return (
+          <CreatorForm
+            formData={formData}
+            selectedGenres={selectedGenres}
+            selectedCountry={selectedCountry}
+            selectedCity={selectedCity}
+            cities={cities}
+            isLoading={isUploading}
+            onFormChange={handleFormChange}
+            onGenresChange={setSelectedGenres}
+            onCountrySelect={handleCountrySelect}
+            onCitySelect={setSelectedCity}
+            onProfileImageUpload={handleProfileImageUpload}
+            onSocialAccountChange={handleSocialAccountChange}
+          />
+        );
       default:
         return null;
     }
@@ -67,7 +241,7 @@ const CreateProfile = () => {
         setCurrentFlow("CREATE_PROFILE");
         break;
       case "CREATE_PROFILE":
-        push("/creatorOnboarding/ContractSigning");
+        handleSubmitArtistProfile();
         break;
     }
   };
@@ -77,9 +251,9 @@ const CreateProfile = () => {
       {handleFlow()}
       <View style={{ position: "absolute", bottom: 60, right: 24, left: 24 }}>
         <AppButton.Primary
-          text="Continue"
+          text={currentFlow === "CREATE_PROFILE" ? "Submit Profile" : "Continue"}
           color="#A187B5"
-          loading={false}
+          loading={isSubmitting || isUploading}
           onPress={handleNext}
         />
       </View>

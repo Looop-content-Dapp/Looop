@@ -2,17 +2,20 @@ import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, Pressable, Image } from 'react-native';
 import { ImageAdd02Icon } from '@hugeicons/react-native';
 import useFileUpload, { FileType, UploadedFile } from '../../../hooks/useFileUpload';
-import { Video } from 'expo-av';
+import { ResizeMode, Video } from 'expo-av';
+import { CollectibleFileType, getFileTypeFromUri } from '@/types/index';
 
 // Define interface for the file object
 interface FileObject extends UploadedFile {}
 
 // Define interface for the form data
 interface FormData {
-  collectibleName: string;
-  CollectibleDescription: string;
-  collectibleMedia?: FileObject;
-}
+    collectibleName: string;
+    CollectibleDescription: string;
+    collectibleMedia: string;
+    collectibleType: CollectibleFileType | "";
+    communitySymbol: string;
+  }
 
 interface MembersProps {
   formData: FormData;
@@ -26,8 +29,11 @@ const Members: React.FC<MembersProps> = ({ formData, updateFormData }) => {
   const handleMediaPick = async (type: FileType) => {
     setMediaType(type);
     const result = await pickFile(type);
-    if (result && result.success && result.file) {
-      updateFormData('collectibleMedia', result.file);
+    if (result && result?.success && result?.file) {
+      updateFormData('collectibleMedia', result?.file?.uri);
+      const fileType = getFileTypeFromUri(result.file.uri);
+      console.log(fileType)
+      updateFormData("collectibleType", fileType);
     }
   };
 
@@ -41,7 +47,7 @@ const Members: React.FC<MembersProps> = ({ formData, updateFormData }) => {
   const renderMediaPreview = () => {
     if (!formData.collectibleMedia) return null;
 
-    return formData.collectibleMedia.type.startsWith('video') ? (
+    return formData?.collectibleMedia?.type?.startsWith('video') ? (
       <Video
         source={{ uri: formData.collectibleMedia.uri }}
         style={{
@@ -49,14 +55,14 @@ const Members: React.FC<MembersProps> = ({ formData, updateFormData }) => {
           height: '100%',
           position: 'absolute',
         }}
-        resizeMode="cover"
+        resizeMode={ResizeMode.COVER}
         shouldPlay={false}
         isLooping={false}
         useNativeControls
       />
     ) : (
       <Image
-        source={{ uri: formData.collectibleMedia.uri }}
+        source={{ uri: formData.collectibleMedia }}
         style={{
           width: '100%',
           height: '100%',
@@ -174,6 +180,30 @@ const Members: React.FC<MembersProps> = ({ formData, updateFormData }) => {
         value={formData.collectibleName}
         onChangeText={(value) => updateFormData('collectibleName', value)}
         placeholder="Ex: Rema Ravers"
+        placeholderTextColor="#6B7280"
+        style={{
+          backgroundColor: '#12141B',
+          borderRadius: 12,
+          padding: 16,
+          color: '#f4f4f4',
+          fontSize: 16,
+          fontFamily: 'PlusJakartaSansRegular',
+          marginBottom: 24,
+        }}
+      />
+
+<Text style={{
+        color: '#f4f4f4',
+        fontSize: 16,
+        fontFamily: 'PlusJakartaSansMedium',
+        marginBottom: 8,
+      }}>
+        Token Symbol
+      </Text>
+      <TextInput
+        value={formData.communitySymbol}
+        onChangeText={(value) => updateFormData('communitySymbol', value)}
+        placeholder="Ex: REV"
         placeholderTextColor="#6B7280"
         style={{
           backgroundColor: '#12141B',

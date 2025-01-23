@@ -9,6 +9,7 @@ import { Audio, Video } from 'expo-av';
 import useFileUpload, { FileType, UploadedFile } from '../../hooks/useFileUpload';
 import AudioWaveform from '../animated/AudioWaveForm';
 import { useQuery } from '../../hooks/useQuery';
+import { Portal } from "@gorhom/portal";
 
 interface CreatePostBottomSheetProps {
   isVisible: boolean;
@@ -63,7 +64,7 @@ const CreatePostModal = ({ isVisible, onClose, community, defaultCategory = 'oth
       url: file.uri,
       mimeType: file.type,
       size: file.size,
-      ...(file.width && { width: file.width }),
+      ...(file?.width && { width: file.width }),
       ...(file.height && { height: file.height }),
       ...(file?.duration && { duration: file.duration })
     }));
@@ -355,7 +356,8 @@ const CreatePostModal = ({ isVisible, onClose, community, defaultCategory = 'oth
   }, [isVisible]);
 
   return (
-    <BottomSheet
+  <Portal>
+      <BottomSheet
       ref={bottomSheetRef}
       index={-1}
       snapPoints={snapPoints}
@@ -380,7 +382,7 @@ const CreatePostModal = ({ isVisible, onClose, community, defaultCategory = 'oth
         {/* User Info */}
         <View className="flex-row items-center px-4 py-3">
           <Image
-            source={{ uri: "https://example.com/placeholder.jpg" }}
+            source={{ uri: community.coverImage }}
             className="w-10 h-10 rounded-full bg-gray-700"
           />
           <View className="ml-3">
@@ -457,6 +459,7 @@ const CreatePostModal = ({ isVisible, onClose, community, defaultCategory = 'oth
         </View>
       </BottomSheetView>
     </BottomSheet>
+  </Portal>
   );
 };
 

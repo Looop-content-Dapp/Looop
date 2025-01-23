@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import React, { useEffect, useState, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft02Icon } from "@hugeicons/react-native";
+import { ArrowLeft02Icon, CheckmarkCircle02Icon } from "@hugeicons/react-native";
 import { MotiView } from "moti";
 import { router } from "expo-router";
 import { useQuery } from "../../hooks/useQuery";
@@ -75,6 +75,21 @@ const CommunityOnboarding = () => {
     saveUserPreference,
   } = useQuery();
 
+  const benefit = [
+    {
+        text: "Get exclusive updates and announcements."
+    },
+    {
+        text: "Get sneak peeks and demos of unreleased music."
+    },
+    {
+        text: "Access exclusive content and perks just for Tribestars."
+    },
+    {
+        text: "Be part of a community on your terms and connect with other fans who share your passion."
+    },
+  ]
+
   // Effect Hooks for data fetching
   useEffect(() => {
     if (currentStep === 1) {
@@ -88,7 +103,6 @@ const CommunityOnboarding = () => {
   const fetchInterests = async () => {
     try {
       setLoading(true);
-      await retrieveUserId();
       const data = await getGenres();
       setInterests(data.data);
     } catch (error) {
@@ -205,18 +219,51 @@ const CommunityOnboarding = () => {
 
   const renderSetup = () => (
     <ScrollView contentContainerStyle={styles.setupContainer}>
-      <Image
-        source={require("../../assets/images/audioOrange.png")}
-        style={styles.setupImage}
-      />
+           <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                width: '100%',
+                marginTop: 71
+              }}>
+                <Image
+                  source={require("../../assets/images/musicNote.png")}
+                  style={{
+                    width: 106,
+                    height: 106,
+                    resizeMode: 'cover',
+                    marginRight: -40
+                  }}
+                />
+                <Image
+                  source={require("../../assets/images/userGroup.png")}
+                  style={{
+                    width: 106,
+                    height: 106,
+                    resizeMode: 'cover',
+                    zIndex: 1
+                  }}
+                />
+     </View>
       <View style={styles.setupTextContainer}>
-        <View style={styles.setupBadge}>
-          <Text style={styles.setupBadgeText}>Discovering Communities</Text>
-        </View>
-        <Text style={styles.setupDescription}>
-          Let's find the perfect artist communities for you based on your
-          interests and preferences.
-        </Text>
+      <Text style={styles.setupBadgeText}>What’s Tribes?</Text>
+      <View></View>
+     <Text style={styles.setupDescription}>
+        Tribes are an exciting way to connect with your favorite artist or creator on a whole new level.
+    </Text>
+    <Text style={styles.setupDescription}>
+       By joining a Tribe, you can:
+    </Text>
+    <View className="gap-y-[7px]">
+       {benefit.map((text) => (
+         <View className="bg-[#12141B] flex-row items-center gap-2 rounded-lg p-[12px]">
+         <CheckmarkCircle02Icon size={16} color="#12141B" variant="stroke" />
+         <Text className="text-gray-300 font-PlusJakartaSansRegular text-base break-words">{text.text}</Text>
+       </View>
+
+       ))}
+    </View>
       </View>
       <TouchableOpacity
         onPress={() => setCurrentStep(1)}
@@ -412,7 +459,7 @@ const styles = StyleSheet.create({
   },
   setupTextContainer: {
     gap: 16,
-    alignItems: "center",
+    alignItems: "flex-start",
     width: "90%",
     marginTop: "10%",
   },
@@ -423,15 +470,15 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   setupBadgeText: {
-    fontSize: 16,
-    color: "#808080",
-    fontFamily: "PlusJakartaSansBold",
+    fontSize: 28,
+    color: "#ffffff",
+    fontFamily: "PlusJakartaSansMedium",
   },
   setupDescription: {
-    fontSize: 24,
-    color: "#f4f4f4",
-    textAlign: "center",
-    fontFamily: "PlusJakartaSansMedium",
+    fontSize: 16,
+    color: "#D2D3D5",
+    textAlign: "left",
+    fontFamily: "PlusJakartaSansRegular",
   },
   continueButton: {
     backgroundColor: "#FF6D1B",

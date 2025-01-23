@@ -5,7 +5,6 @@ import { user } from "../../../utils/ArstsisArr";
 import { Avatar } from "react-native-elements";
 import { useHeader } from "@/hooks/useHeader";
 
-const defaultImage = 'https://i.pinimg.com/564x/61/eb/84/61eb846a2795466215c64c0e97aa13c3.jpg';
 export default () => {
     const headerConfig = useHeader({title: "Library"})
   return (
@@ -21,7 +20,10 @@ export default () => {
         headerBackTitle: ""
       }}
     >
-        <Stack.Screen name="index" options={headerConfig} />
+        <Stack.Screen name="index"
+        options={{
+          ...headerConfig,
+        }} />
         <Stack.Screen name="favouriteSongs"
          options={{
             headerShown: false

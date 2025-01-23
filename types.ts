@@ -3,19 +3,32 @@ interface SignInResponse {
   data: SignInUserData;
 }
 
+interface Wallets {
+    starknet: string;
+    xion: string;
+  }
+
 interface SignInUserData {
-  _id: string;
-  email: string;
-  username: string;
-  profileImage: string;
-  bio: string;
-  isPremium: boolean;
-  following: number;
-  friendsCount: number;
-  artistPlayed: number;
-  faveArtists: any[];
-  preferences: any[];
-}
+    _id: string;
+    email: string;
+    username: string;
+    password: string;
+    profileImage: string | null;
+    bio: string | null;
+    isPremium: boolean;
+    tel: string | null;
+    role: 'LISTENER' | string;
+    wallets: Wallets;
+    oauthTokens: any[];
+    following: number;
+    friendsCount: number;
+    artistPlayed: number;
+    faveArtists: any[];
+    preferences: any[];
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+  }
 
 // following artist
 interface IFollowing {

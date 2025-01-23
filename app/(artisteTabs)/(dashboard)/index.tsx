@@ -13,13 +13,15 @@ import { ArrowDown01Icon } from "@hugeicons/react-native";
 import Streams from "../../../components/overview/Streams";
 import Listeners from "../../../components/overview/Listeners";
 import Tribes from "../../../components/overview/Tribes";
+import FilterButton from "@/components/app-components/FilterButton";
 
 const tabs = ["Streams", "Listeners", "Tribes"];
 
 const Overview = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState("30 Days");
+  const [selectedFilter, setSelectedFilter] = useState<string>('30 Days');
+  const filterOptions: string[] = ['30 Days', '3 Months', '6 Months', 'All Time'];
   const { width } = useWindowDimensions();
   const filterButtonRef = useRef(null);
   const [modalPosition, setModalPosition] = useState({ top: 0, right: 0 });
@@ -27,8 +29,6 @@ const Overview = () => {
     tabs.map(() => ({ x: 0, width: 0 }))
   );
   const animatedValue = useState(new Animated.Value(0))[0];
-
-  const filterOptions = ["30 Days", "3 Months", "6 Months", "All Time"];
 
   const handleFilterPress = () => {
     filterButtonRef.current.measure((fx, fy, width, height, px, py) => {
@@ -112,7 +112,7 @@ const Overview = () => {
       color: "#787A80",
       fontFamily: "PlusJakartaSansMedium",
     },
-    dateButton: {
+    customButton: {
       flexDirection: "row",
       alignItems: "center",
       borderWidth: 2,
@@ -156,7 +156,7 @@ const Overview = () => {
       flexGrow: 1,
       paddingBottom: 35,
     },
-    modalContainer: {
+    customModal: {
       position: "absolute",
       backgroundColor: "#0A0B0F",
       borderRadius: 10,
@@ -206,14 +206,13 @@ const Overview = () => {
           <Text style={styles.title}>Overview</Text>
           <Text style={styles.subtitle}>Overall stats</Text>
         </View>
-        <TouchableOpacity
-          style={styles.dateButton}
-          onPress={handleFilterPress}
-          ref={filterButtonRef}
-        >
-          <Text style={styles.dateButtonText}>{selectedFilter}</Text>
-          <ArrowDown01Icon size={width * 0.06} color="#787A80" />
-        </TouchableOpacity>
+        <FilterButton
+      options={filterOptions}
+      selectedOption={selectedFilter}
+      onOptionSelect={setSelectedFilter}
+      buttonStyle={styles.customButton}
+      modalStyle={styles.customModal}
+    />
       </View>
 
       <View style={styles.tabContainer}>
@@ -240,37 +239,6 @@ const Overview = () => {
       <ScrollView contentContainerStyle={styles.content}>
         {renderContent()}
       </ScrollView>
-
-      <Modal
-        visible={isModalVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setIsModalVisible(false)}
-      >
-        <TouchableOpacity
-          style={{ flex: 1 }}
-          activeOpacity={1}
-          onPress={() => setIsModalVisible(false)}
-        >
-          <View style={[styles.modalContainer, modalPosition]}>
-            {filterOptions.map((option) => (
-              <TouchableOpacity
-                key={option}
-                style={[
-                  styles.filterOption,
-                  selectedFilter === option && styles.selectedFilterOption,
-                ]}
-                onPress={() => {
-                  setSelectedFilter(option);
-                  setIsModalVisible(false);
-                }}
-              >
-                <Text style={styles.filterOptionText}>{option}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </TouchableOpacity>
-      </Modal>
     </View>
   );
 };

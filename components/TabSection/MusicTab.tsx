@@ -21,7 +21,7 @@ export default function MusicTab() {
         tabBarInactiveTintColor: "#787A80",
         tabBarHideOnKeyboard: true,
         tabBarStyle: {
-          backgroundColor: "transparent",
+          backgroundColor: "#040405",
           height: Platform.OS === "android" ? 70 : 80,
           borderTopWidth: 0,
         },

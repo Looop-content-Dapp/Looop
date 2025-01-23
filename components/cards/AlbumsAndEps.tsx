@@ -47,7 +47,10 @@ const AlbumsAndEps: React.FC<Props> = ({ songs, isLoading }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Albums & EPs</Text>
+         {songs.length > 0 && (
+             <Text style={styles.header}>Albums & EPs</Text>
+         )}
+
       {isLoading ? (
         <FlatList
           data={[1, 2, 3]} // Placeholder array to render skeletons

@@ -68,35 +68,7 @@ export const showToast = (message: string, type: 'success' | 'error') => {
   const ToastMessage = () => {
     const colors = TOAST_TYPES[type];
 
-    return (
-      <Animated.View
-        style={[
-          styles.container,
-          {
-            opacity,
-            transform: [{ translateY }],
-            borderLeftColor: colors.border,
-          }
-        ]}
-      >
-        <Text style={[
-          styles.icon,
-          { color: colors.text }
-        ]}>
-          {colors.icon}
-        </Text>
-        <Text
-          style={styles.message}
-          numberOfLines={2}
-          ellipsizeMode="tail"
-        >
-          {message}
-        </Text>
-      </Animated.View>
-    );
-  };
-
-  // Animate toast with spring for more natural feel
+      // Animate toast with spring for more natural feel
   Animated.parallel([
     Animated.spring(opacity, {
       toValue: 1,
@@ -125,6 +97,36 @@ export const showToast = (message: string, type: 'success' | 'error') => {
       })
     ]).start();
   }, TOAST_DURATION);
+
+    return (
+      <Animated.View
+        style={[
+          styles.container,
+          {
+            opacity,
+            transform: [{ translateY }],
+            borderLeftColor: colors.border,
+          }
+        ]}
+      >
+        <Text style={[
+          styles.icon,
+          { color: colors.text }
+        ]}>
+          {colors.icon}
+        </Text>
+        <Text
+          style={styles.message}
+          numberOfLines={2}
+          ellipsizeMode="tail"
+        >
+          {message}
+        </Text>
+      </Animated.View>
+    );
+  };
+
+
 
   return ToastMessage;
 };

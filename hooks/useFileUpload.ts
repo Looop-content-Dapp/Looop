@@ -3,12 +3,9 @@ import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { Alert, Linking, Platform } from "react-native";
-import * as MediaLibrary from "expo-media-library";
 import {
   GiphyDialog,
-  GiphyDialogEvent,
   GiphyMedia,
-  GiphySDK
 } from "@giphy/react-native-sdk";
 import { GiphyGridViewMediaSelectEvent } from "@giphy/react-native-sdk/lib/typescript/GiphyGridView";
 
@@ -22,8 +19,8 @@ export interface CloudinaryResponse {
 }
 
 const CLOUDINARY_CONFIG = {
-  uploadPreset: "foodhunt", // TODO: Please @joeephwild replace wwith Looop upload preset
-  cloudName: "khervie00", // TODO: Please @joeephwild replace wwith Looop cloud name
+  uploadPreset: 'Looop_preset', // TODO: Please @joeephwild replace wwith Looop upload preset
+  cloudName: process.env.EXPO_CLOUD_NAME || 'dx8jul61w', // TODO: Please @joeephwild replace wwith Looop cloud name
   apiBaseUrl: "https://api.cloudinary.com/v1_1"
 } as const;
 
@@ -380,6 +377,7 @@ const useFileUpload = (): UseFileUploadReturn => {
     async (type: FileType = FileType.IMAGE): Promise<UploadResult | null> => {
       setError(null);
       setProgress(0);
+      setIsLoading(true);
 
       try {
         let result;
@@ -399,17 +397,12 @@ const useFileUpload = (): UseFileUploadReturn => {
           return null;
         }
 
-        setIsLoading(true);
-
         // Upload to Cloudinary
         const uploadedFile = await uploadToCloudinary(
           result.file,
           result.file.uri,
           type
         );
-
-        console.log(uploadedFile);
-        console.log("uploadedFile");
 
         setFiles((prevFiles) => [...prevFiles, uploadedFile]);
 
@@ -475,59 +468,65 @@ const useFileUpload = (): UseFileUploadReturn => {
     fileType: FileType
   ): Promise<UploadedFile> => {
     try {
-      // Create file data
-      const fileName = fileUri.split("/").pop();
-      if (!fileName) {
-        throw new Error("Invalid file URI");
-      }
+      // Read the file as base64
+      const base64 = await FileSystem.readAsStringAsync(fileUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
 
-      // Prepare form data
+      // Create form data
       const formData = new FormData();
 
-      formData.append("file", file);
+      // Append file as blob with correct mime type
+      const blob = {
+        uri: fileUri,
+        type: file.type,
+        name: file.name,
+      };
+      formData.append('file', blob as any);
 
-      formData.append("upload_preset", CLOUDINARY_CONFIG.uploadPreset);
-      formData.append("cloud_name", CLOUDINARY_CONFIG.cloudName);
+      // Add upload preset and cloud name
+      formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
+      formData.append('cloud_name', CLOUDINARY_CONFIG.cloudName);
 
-      // Make upload request
+      // Set resource type based on file type
+      const resourceType = fileType === FileType.VIDEO ? 'video' :
+                          fileType === FileType.AUDIO ? 'raw' : 'image';
+
+      // Make upload request with correct resource type
       const response = await fetch(
-        `${CLOUDINARY_CONFIG.apiBaseUrl}/${CLOUDINARY_CONFIG.cloudName}/image/upload`,
+        `${CLOUDINARY_CONFIG.apiBaseUrl}/${CLOUDINARY_CONFIG.cloudName}/${resourceType}/upload`,
         {
-          method: "POST",
-          body: formData
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
         }
       );
 
-      console.log(response);
-
-      // console.log(response);
-      const result = (await response.json()) as CloudinaryResponse;
-
-      // Handle errors
       if (!response.ok) {
-        throw new Error("Upload failed: Network error");
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Upload failed');
       }
 
-      if (result.error) {
-        throw new Error(`Upload failed: ${result.error.message}`);
-      }
+      const result = await response.json() as CloudinaryResponse;
 
-      // Return formatted response
       return {
         uri: result.secure_url,
         name: result.public_id,
-        type: fileType,
+        type: file.type as SupportedMimeType,
         size: result.bytes
       };
     } catch (error) {
-      console.error("Cloudinary upload error:", error);
+      console.error('Cloudinary upload error:', error);
       throw new Error(
         error instanceof Error
           ? `Cloudinary upload failed: ${error.message}`
-          : "Cloudinary upload failed: Unknown error"
+          : 'Cloudinary upload failed: Unknown error'
       );
     }
   };
+
 
   return {
     files,

@@ -58,9 +58,6 @@ const AlbumBasicInfo = () => {
           placeholder="Select genre"
         />
 
-        {/* Add Quick Note Component */}
-        {/* <QuickNote /> */}
-
         <FormField.ImageUploadField
           label="Cover art"
           description="Upload your song/album art."
