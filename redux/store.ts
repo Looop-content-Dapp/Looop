@@ -13,6 +13,7 @@ import { persistStore, persistReducer } from "redux-persist";
 import authReducer from "./slices/auth";
 import playerReducer from "./slices/PlayerSlice";
 import miscReducer from "./slices/miscelleaneous";
+import reactotron from "@/ReactotronConfig";
 
 const persistConfig = {
   key: "root",
@@ -46,6 +47,13 @@ const store = configureStore({
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     }),
+  enhancers: (getDefaultEnhancers) => {
+    if (__DEV__) {
+      const enhancer = reactotron.createEnhancer!();
+      return getDefaultEnhancers().concat(enhancer);
+    }
+    return getDefaultEnhancers();
+  },
 });
 
 export const persistor = persistStore(store);
