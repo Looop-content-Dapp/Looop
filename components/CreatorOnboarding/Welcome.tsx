@@ -67,7 +67,7 @@ const Welcome = () => {
           <Image
             source={require("../../assets/images/creatormode.png")}
             style={styles.image}
-            resizeMode="contain"
+            resizeMode="cover"
           />
           <Text style={styles.title}>
             Welcome to{"\n"}

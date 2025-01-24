@@ -10,7 +10,7 @@ import {
 } from '@hugeicons/react-native';
 import { router } from 'expo-router';
 import { banks } from '@/data/data';
-import { FormField } from '@/components/app-components/formField copy';
+import { FormField } from '@/components/app-components/formField';
 
 type ScreenType = 'main' | 'addAccount' | 'accountDetails';
 

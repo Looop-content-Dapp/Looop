@@ -39,7 +39,7 @@ const CreatorModeWelcome = () => {
   const { width, height } = useWindowDimensions();
   const { claimId } = useAppSelector((state) => state.auth);
   const { push } = useRouter();
-  
+
   const checkArtistClaimStatus = async () => {
     if (!claimId){
         setClaimStatus("NOT_SUBMITTED")
@@ -48,6 +48,7 @@ const CreatorModeWelcome = () => {
     try {
       setIsLoading(true);
       const response = await api.get(`/api/artistclaim/status/${claimId}`);
+      console.log(response.data)
       setClaimStatus(response.data.data.status);
     } catch (error) {
       console.error("Error checking claim status:", error);

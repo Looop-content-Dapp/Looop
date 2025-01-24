@@ -280,7 +280,9 @@ export const useQuery = () => {
         });
         console.log("Response from saving user preferences:", response.data);
         return true;
-      } catch (error) {}
+      } catch (error) {
+        console.log("error saving genre")
+      }
     },
     []
   );

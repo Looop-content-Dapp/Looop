@@ -10,6 +10,7 @@ import { MotiView } from "moti";
 import { account } from "../../appWrite";
 import { setUserData } from "@/redux/slices/auth";
 import { useAppDispatch } from "@/redux/hooks";
+import store from "@/redux/store";
 
 const SecureAccount = () => {
   const { secrets, name } = useLocalSearchParams();
@@ -50,8 +51,6 @@ const SecureAccount = () => {
         // Call createAccount endpoint
         const accountRes = await createAccount(user.email, secrets as string, name as string);
 
-        console.log("Account creation response:", accountRes);
-
         // Proceed only if account creation is successful
         if (
           accountRes &&
@@ -59,8 +58,7 @@ const SecureAccount = () => {
           accountRes.data.user &&
           accountRes.data.user._id
         ) {
-          await deleteUserId();
-          await storeUserId(accountRes.data.user._id);
+        store.dispatch(setUserData(accountRes.data.user))
           setShowFinalStep(true); // Show "Wallet Created" message
         } else {
           throw new Error("Invalid response from server");

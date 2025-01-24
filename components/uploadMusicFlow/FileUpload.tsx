@@ -9,7 +9,7 @@ import {
   View
 } from "react-native";
 import { Text } from "react-native";
-import { FormField } from "../app-components/formField copy";
+import { FormField } from "../app-components/formField";
 import useFileUpload, { FileType } from "@/hooks/useFileUpload";
 
 const FileUpload = () => {

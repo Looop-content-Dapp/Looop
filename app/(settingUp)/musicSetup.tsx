@@ -13,6 +13,8 @@ import { ArrowLeft02Icon } from "@hugeicons/react-native";
 import { MotiView } from "moti";
 import { router } from "expo-router";
 import { useQuery } from "../../hooks/useQuery";
+import { useAppSelector } from "@/redux/hooks";
+import ArtistSectionList from "@/components/settingUp/ArtistSectionList";
 
 const MusicOnboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -21,6 +23,8 @@ const MusicOnboarding = () => {
   const [artistes, setArtistes] = useState([]);
   const [followingArtists, setFollowingArtists] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { userdata } = useAppSelector((state) => state.auth)
+  console.log(userdata?._id , "userdata")
 
   const {
     getGenres,
@@ -29,8 +33,8 @@ const MusicOnboarding = () => {
     fetchFollowingArtists,
     saveUserPreference,
     userID,
-    retrieveUserId,
   } = useQuery();
+  console.log(artistes)
 
   useEffect(() => {
     if (currentStep === 1) {
@@ -38,12 +42,12 @@ const MusicOnboarding = () => {
     } else if (currentStep === 2) {
       fetchArtists();
     }
-  }, [currentStep]);
+  }, []);
+
 
   const fetchGenres = async () => {
     try {
       setLoading(true);
-      await retrieveUserId();
       const data = await getGenres();
       setGenres(data.data);
     } catch (error) {
@@ -52,10 +56,13 @@ const MusicOnboarding = () => {
       setLoading(false);
     }
   };
+
+
+
   const handleContinueWithInterests = async () => {
-    if (selectedInterests.length > 0 && userID) {
+    if (selectedInterests.length > 0 && userdata?._id) {
       try {
-        await saveUserPreference(userID, selectedInterests);
+        await saveUserPreference(userdata?._id, selectedInterests);
         setCurrentStep(2);
       } catch (error) {
         console.error("Error saving preferences:", error);
@@ -68,15 +75,15 @@ const MusicOnboarding = () => {
   };
 
   const fetchArtists = async () => {
+    if (!userdata?._id) return;
     try {
       setLoading(true);
-      if (userID) {
-        const artistData = await getArtistBasedOnGenre(userID);
-        console.log("artist", artistData);
-        setArtistes(artistData.data.artists);
-        const followedArtistsResponse = await fetchFollowingArtists(userID);
-        setFollowingArtists(followedArtistsResponse?.data?.artists || []);
+      const artistData = await getArtistBasedOnGenre(userdata?._id as string);
+      if(artistData.data){
+        setArtistes(artistData.data || []);
       }
+    //   const followedArtistsResponse = await fetchFollowingArtists(userdata?._id);
+    //   setFollowingArtists(followedArtistsResponse?.data?.artists || []);
     } catch (error) {
       console.error("Error fetching artists:", error);
     } finally {
@@ -84,11 +91,15 @@ const MusicOnboarding = () => {
     }
   };
 
-  const handleFollowArtist = async (artistId) => {
+  const handleFollowArtist = async (artistId: string) => {
     try {
-      if (!userID) return;
+      if (!userdata?._id) return;
       await followArtist(userID, artistId);
-      setFollowingArtists((prev) => [...prev, artistId]);
+      setFollowingArtists(prev =>
+        prev.includes(artistId)
+          ? prev.filter(id => id !== artistId)
+          : [...prev, artistId]
+      );
     } catch (error) {
       console.error(`Error following artist: ${error}`);
     }
@@ -169,7 +180,7 @@ const MusicOnboarding = () => {
           ) : (
             <TouchableOpacity
               onPress={() => {
-                setSelectedGenres((prev) =>
+                setSelectedGenres((prev: any) =>
                   prev.includes(item._id)
                     ? prev.filter((id) => id !== item._id)
                     : [...prev, item._id]
@@ -199,6 +210,10 @@ const MusicOnboarding = () => {
         }}
         numColumns={3}
         keyExtractor={(item, index) => item?._id || index.toString()}
+        contentContainerStyle={{
+            paddingHorizontal: 16,
+            gap: 8
+        }}
       />
       <TouchableOpacity
         onPress={handleContinueWithInterests}
@@ -210,86 +225,6 @@ const MusicOnboarding = () => {
           borderRadius: 56,
           alignItems: "center",
           marginTop: 20,
-        }}
-      >
-        <Text style={{ color: "#ffffff", fontSize: 16 }}>Continue</Text>
-      </TouchableOpacity>
-    </>
-  );
-
-  const renderArtists = () => (
-    <>
-      <TouchableOpacity
-        style={{ padding: 16 }}
-        onPress={() => setCurrentStep(1)}
-      >
-        <ArrowLeft02Icon size={32} color="#fff" />
-      </TouchableOpacity>
-      <View style={{ padding: 24 }}>
-        <Text style={{ fontSize: 24, color: "#f4f4f4", fontWeight: "bold" }}>
-          Based on your selections
-        </Text>
-        <Text style={{ fontSize: 16, color: "#A0A0A0", marginTop: 4 }}>
-          Alright! Let's follow some artistes to start exploring their
-          discographies
-        </Text>
-      </View>
-      <FlatList
-        data={loading ? Array(6).fill({}) : artistes}
-        renderItem={({ item }) => {
-          const followed = followingArtists.includes(item?._id);
-          return loading ? (
-            <SkeletonArtist />
-          ) : (
-            <View style={{ width: "50%", padding: 10 }}>
-              <View
-                style={{
-                  backgroundColor: "#1E1E1E",
-                  borderRadius: 24,
-                  padding: 16,
-                  alignItems: "center",
-                }}
-              >
-                <Image
-                  source={{ uri: item.images[0].url }}
-                  style={{ width: 80, height: 80, borderRadius: 40 }}
-                />
-                <Text style={{ fontSize: 20, color: "#ffffff", marginTop: 8 }}>
-                  {item.name}
-                </Text>
-                <Text style={{ fontSize: 14, color: "#A0A0A0", marginTop: 4 }}>
-                  {item.genre}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => handleFollowArtist(item._id)}
-                  disabled={followed}
-                  style={{
-                    backgroundColor: followed ? "#555555" : "#8e44ad",
-                    padding: 8,
-                    paddingHorizontal: 20,
-                    borderRadius: 20,
-                    marginTop: 16,
-                  }}
-                >
-                  <Text style={{ color: "#ffffff", fontSize: 16 }}>
-                    {followed ? "Following" : "Follow"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          );
-        }}
-        numColumns={2}
-        keyExtractor={(item, index) => item?._id || index.toString()}
-      />
-      <TouchableOpacity
-        onPress={() => router.navigate("/loadingScreen")}
-        style={{
-          backgroundColor: "#FF6D1B",
-          padding: 16,
-          borderRadius: 56,
-          margin: 16,
-          alignItems: "center",
         }}
       >
         <Text style={{ color: "#ffffff", fontSize: 16 }}>Continue</Text>
@@ -312,63 +247,17 @@ const MusicOnboarding = () => {
     </View>
   );
 
-  const SkeletonArtist = () => (
-    <View style={{ width: "50%", padding: 10 }}>
-      <MotiView
-        style={{
-          backgroundColor: "#1E1E1E",
-          borderRadius: 24,
-          padding: 16,
-          alignItems: "center",
-        }}
-        from={{ opacity: 0.5 }}
-        animate={{ opacity: 1 }}
-        transition={{ loop: true, duration: 1000 }}
-      >
-        <MotiView
-          style={{
-            width: 80,
-            height: 80,
-            borderRadius: 40,
-            backgroundColor: "#2e2e2e",
-          }}
-        />
-        <MotiView
-          style={{
-            height: 20,
-            width: "60%",
-            backgroundColor: "#2e2e2e",
-            borderRadius: 4,
-            marginTop: 8,
-          }}
-        />
-        <MotiView
-          style={{
-            height: 14,
-            width: "40%",
-            backgroundColor: "#2e2e2e",
-            borderRadius: 4,
-            marginTop: 8,
-          }}
-        />
-        <MotiView
-          style={{
-            height: 32,
-            width: "80%",
-            backgroundColor: "#2e2e2e",
-            borderRadius: 16,
-            marginTop: 16,
-          }}
-        />
-      </MotiView>
-    </View>
-  );
-
   return (
     <SafeAreaView style={{ flex: 1 }}>
       {currentStep === 0 && renderSetup()}
       {currentStep === 1 && renderGenres()}
-      {currentStep === 2 && renderArtists()}
+      {currentStep === 2 && (
+        <ArtistSectionList
+        sections={artistes}
+        onFollow={handleFollowArtist}
+        followingArtists={followingArtists}
+      />
+      )}
     </SafeAreaView>
   );
 };

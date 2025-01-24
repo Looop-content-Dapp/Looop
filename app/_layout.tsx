@@ -11,6 +11,7 @@ import { useFonts } from "expo-font";
 import "../global.css";
 
 import store, { persistor } from "../redux/store";
+import { Pressable, Text } from "react-native";
 
 GiphySDK.configure({ apiKey: "R25Je48LLUMFnuTOGV2kibJO2xFGSR6i" });
 SplashScreen.preventAutoHideAsync();
@@ -93,6 +94,11 @@ export default function _RootLayout() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
+        <Pressable className="bg-Orange/08 absolute bottom-[120px] right-[12px] z-[1000px] h-[60px] w-[60px]  items-center justify-center rounded-full" onPress={async () => {
+          persistor.purge();
+        }}>
+            <Text className="text-[#fff]">Reset</Text>
+        </Pressable>
         <KeyboardProvider>
           <AppContent />
         </KeyboardProvider>

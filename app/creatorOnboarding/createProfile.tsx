@@ -194,8 +194,8 @@ const CreateProfile = () => {
     <View>
       <Image
         source={require("../../assets/images/createProfile.png")}
-        resizeMode="cover"
-        style={{ width: "90%", alignSelf: "center", marginTop: "20%" }}
+        resizeMode="contain"
+        style={{ width: "100%", alignSelf: "center", marginTop: "20%", height: "50%" }}
       />
       <View style={{ marginTop: "30%", alignSelf: "center", gap: 12 }}>
         <Text style={{ fontSize: 28, fontWeight: "bold", color: "#FFFFFF" }}>

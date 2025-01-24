@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
 import { Text } from "react-native";
-import { FormField } from "../../app-components/formField copy";
+import { FormField } from "../../app-components/formField";
 
 interface Track {
   trackName: string;
