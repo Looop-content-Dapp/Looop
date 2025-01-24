@@ -20,11 +20,10 @@ const MusicOnboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedInterests, setSelectedGenres] = useState([]);
   const [genres, setGenres] = useState([]);
-  const [artistes, setArtistes] = useState([]);
+  const [artistes, setArtistes] = useState<any[]>([]);
   const [followingArtists, setFollowingArtists] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { userdata } = useAppSelector((state) => state.auth)
-  console.log(userdata?._id , "userdata")
+  const { userdata } = useAppSelector((state) => state.auth);
 
   const {
     getGenres,
@@ -34,7 +33,6 @@ const MusicOnboarding = () => {
     saveUserPreference,
     userID,
   } = useQuery();
-  console.log(artistes)
 
   useEffect(() => {
     if (currentStep === 1) {
@@ -42,13 +40,13 @@ const MusicOnboarding = () => {
     } else if (currentStep === 2) {
       fetchArtists();
     }
-  }, []);
-
+  }, [currentStep]);
 
   const fetchGenres = async () => {
     try {
       setLoading(true);
       const data = await getGenres();
+      console.log(data.data, "genres");
       setGenres(data.data);
     } catch (error) {
       console.error("Error fetching genres:", error);
@@ -56,8 +54,6 @@ const MusicOnboarding = () => {
       setLoading(false);
     }
   };
-
-
 
   const handleContinueWithInterests = async () => {
     if (selectedInterests.length > 0 && userdata?._id) {
@@ -79,11 +75,17 @@ const MusicOnboarding = () => {
     try {
       setLoading(true);
       const artistData = await getArtistBasedOnGenre(userdata?._id as string);
-      if(artistData.data){
-        setArtistes(artistData.data || []);
+      if (artistData.data) {
+        if (artistData?.status === "success") {
+          if (artistData?.data?.length > 0 && Array.isArray(artistData.data)) {
+            setArtistes(artistData?.data ?? []);
+          } else {
+            setArtistes([]);
+          }
+        }
       }
-    //   const followedArtistsResponse = await fetchFollowingArtists(userdata?._id);
-    //   setFollowingArtists(followedArtistsResponse?.data?.artists || []);
+      //   const followedArtistsResponse = await fetchFollowingArtists(userdata?._id);
+      //   setFollowingArtists(followedArtistsResponse?.data?.artists || []);
     } catch (error) {
       console.error("Error fetching artists:", error);
     } finally {
@@ -95,9 +97,9 @@ const MusicOnboarding = () => {
     try {
       if (!userdata?._id) return;
       await followArtist(userID, artistId);
-      setFollowingArtists(prev =>
+      setFollowingArtists((prev) =>
         prev.includes(artistId)
-          ? prev.filter(id => id !== artistId)
+          ? prev.filter((id) => id !== artistId)
           : [...prev, artistId]
       );
     } catch (error) {
@@ -211,8 +213,8 @@ const MusicOnboarding = () => {
         numColumns={3}
         keyExtractor={(item, index) => item?._id || index.toString()}
         contentContainerStyle={{
-            paddingHorizontal: 16,
-            gap: 8
+          paddingHorizontal: 16,
+          gap: 8,
         }}
       />
       <TouchableOpacity
@@ -253,10 +255,10 @@ const MusicOnboarding = () => {
       {currentStep === 1 && renderGenres()}
       {currentStep === 2 && (
         <ArtistSectionList
-        sections={artistes}
-        onFollow={handleFollowArtist}
-        followingArtists={followingArtists}
-      />
+          sections={artistes ? artistes : []}
+          onFollow={handleFollowArtist}
+          followingArtists={followingArtists}
+        />
       )}
     </SafeAreaView>
   );

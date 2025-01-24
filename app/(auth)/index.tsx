@@ -38,7 +38,8 @@ const EmailSignupFlow = () => {
   const [isCorrect, setIsCorrect] = useState<boolean>();
   const [timer, setTimer] = useState(60);
   const [isLoading, setIsLoading] = useState(false);
-  const { handleEmailSignUp, userId, handleOAuthSignIn } = useClerkAuthentication();
+  const { handleEmailSignUp, userId, handleOAuthSignIn } =
+    useClerkAuthentication();
 
   // Verification code field setup
   const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
@@ -95,9 +96,11 @@ const EmailSignupFlow = () => {
           Alert.alert("confirmed");
         }, 1000);
       } else {
+        await account.deleteSession(session?.$id);
         setIsCorrect(false);
       }
     } catch (err) {
+      await account.deleteSession(session?.$id);
       console.error("Verification failed:", err);
       setIsCorrect(false);
     } finally {
@@ -161,7 +164,7 @@ const EmailSignupFlow = () => {
         </View>
 
         <AppButton.Primary
-        color="#FF6D1B"
+          color="#FF6D1B"
           text="Continue"
           loading={isLoading}
           onPress={handleEmailSubmit}
@@ -175,7 +178,7 @@ const EmailSignupFlow = () => {
       <View className="mt-12 gap-y-4">
         <TouchableOpacity
           className="bg-white py-4 rounded-full flex-row items-center justify-center"
-          onPress={() => handleOAuthSignIn('google')}
+          onPress={() => handleOAuthSignIn("google")}
         >
           <Image
             source={require("../../assets/images/google.png")}
@@ -188,7 +191,7 @@ const EmailSignupFlow = () => {
 
         <TouchableOpacity
           className="bg-white py-4 rounded-full flex-row items-center justify-center"
-          onPress={() => handleOAuthSignIn('apple')}
+          onPress={() => handleOAuthSignIn("apple")}
         >
           <Image
             source={require("../../assets/images/apple.png")}

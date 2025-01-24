@@ -11,8 +11,6 @@ export default function Page() {
   const { userdata } = useAppSelector((state) => state.auth);
   const { onBoarded } = useAppSelector((state) => state.misc);
 
-  console.log(userdata, "userdata");
-
   useEffect(() => {
     const timer = setTimeout(() => {
       if (onBoarded === false && userdata === null) {
@@ -21,8 +19,8 @@ export default function Page() {
         router.replace("/(auth)/signin");
       } else {
         router.replace("/(musicTabs)/(home)/");
+        // router.replace("/(settingUp)/");
       }
-    // router.replace("/(musicTabs)");
     }, 3000);
 
     return () => clearTimeout(timer);

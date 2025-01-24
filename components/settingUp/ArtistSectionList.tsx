@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -8,46 +8,52 @@ import {
   FlatList,
   StyleSheet,
   Dimensions,
-} from 'react-native';
+} from "react-native";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
-const ArtistCard = ({ artist, onFollow, isFollowing }) => (
+const ArtistCard = ({
+  artist,
+  onFollow,
+  isFollowing,
+}: {
+  artist: any;
+  onFollow: any;
+  isFollowing: any;
+}) => (
   <View style={styles.card}>
-    <Image
-      source={{ uri: artist.profileImage }}
-      style={styles.artistImage}
-    />
-    <Text style={styles.artistName}>{artist.name}</Text>
+    <Image source={{ uri: artist.profileImage }} style={styles.artistImage} />
+    <Text style={styles.artistName}>{artist?.name}</Text>
     <View style={styles.statsContainer}>
-      <Text style={styles.statsText}>{artist.tribestars} Tribestars</Text>
-      <Text style={styles.tribeText}>{artist.tribeName}</Text>
+      <Text style={styles.statsText}>{artist?.tribestars} Tribestars</Text>
+      <Text style={styles.tribeText}>{artist?.tribeName}</Text>
     </View>
     <TouchableOpacity
-      style={[
-        styles.followButton,
-        isFollowing && styles.followingButton
-      ]}
+      style={[styles.followButton, isFollowing && styles.followingButton]}
       onPress={() => onFollow(artist.id)}
     >
       <Text style={styles.followButtonText}>
-        {isFollowing ? 'Following' : 'Join Tribe'}
+        {isFollowing ? "Following" : "Join Tribe"}
       </Text>
     </TouchableOpacity>
   </View>
 );
 
-const ArtistSection = ({ section, onFollow, followingArtists }) => {
-  if (!section?.artists?.length) return null;
-
+const ArtistSection = ({
+  section,
+  onFollow,
+  followingArtists,
+}: {
+  section: any;
+  onFollow: any;
+  followingArtists: any;
+}) => {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{section.genreName}</Text>
       <FlatList
         horizontal
-        data={section.artists}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
+        data={section}
+        keyExtractor={(item, index) => index.toString() + Date.now()}
         renderItem={({ item }) => (
           <ArtistCard
             artist={item}
@@ -61,25 +67,42 @@ const ArtistSection = ({ section, onFollow, followingArtists }) => {
   );
 };
 
-const ArtistSectionList = ({ sections = [], onFollow, followingArtists = [] }) => (
-  <SectionList
-    sections={sections}
-    keyExtractor={(item, index) => item?.id || index.toString()}
-    renderSectionHeader={({ section }) => (
-   <>
-      {/* <ArtistSection
-        section={section}
-        onFollow={onFollow}
-        followingArtists={followingArtists}
-      /> */}
-      <Text className='text-[20px] text-[#fff]'>Hello world</Text>
-   </>
-    )}
-    renderItem={() => null}
-    stickySectionHeadersEnabled={false}
-    showsVerticalScrollIndicator={false}
-  />
-);
+const ArtistSectionList = ({
+  sections = [],
+  onFollow,
+  followingArtists = [],
+}: {
+  sections: any[];
+  onFollow?: any;
+  followingArtists?: any[];
+}) => {
+  const listsections = sections.map((item: any) => ({
+    title: item.genreName,
+    data: item.artists,
+  }));
+
+  return (
+    <SectionList
+      sections={listsections}
+      keyExtractor={(item, index) => index.toString() + Date.now()}
+      renderSectionHeader={({ section }) => (
+        <>
+          <Text style={styles.sectionTitle}>{section.title}</Text>
+          <ArtistSection
+            section={section.data}
+            onFollow={onFollow}
+            followingArtists={followingArtists}
+          />
+        </>
+      )}
+      renderItem={() => null}
+      stickySectionHeadersEnabled={false}
+      showsVerticalScrollIndicator={false}
+      disableVirtualization={true}
+      contentContainerStyle={{ flexGrow: 1 }}
+    />
+  );
+};
 
 const styles = StyleSheet.create({
   section: {
@@ -87,21 +110,22 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontWeight: "bold",
+    color: "#ffffff",
     marginBottom: 16,
     paddingHorizontal: 16,
   },
   artistList: {
     paddingHorizontal: 8,
+    flexGrow: 1,
   },
   card: {
     width: width * 0.4,
     marginHorizontal: 8,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: "#1A1A1A",
     borderRadius: 16,
     padding: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   artistImage: {
     width: 100,
@@ -111,36 +135,36 @@ const styles = StyleSheet.create({
   },
   artistName: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#ffffff',
+    fontWeight: "600",
+    color: "#ffffff",
     marginBottom: 8,
   },
   statsContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 12,
   },
   statsText: {
     fontSize: 14,
-    color: '#A0A0A0',
+    color: "#A0A0A0",
     marginBottom: 4,
   },
   tribeText: {
     fontSize: 12,
-    color: '#808080',
+    color: "#808080",
   },
   followButton: {
-    backgroundColor: '#FF6D1B',
+    backgroundColor: "#FF6D1B",
     paddingVertical: 8,
     paddingHorizontal: 24,
     borderRadius: 20,
   },
   followingButton: {
-    backgroundColor: '#555555',
+    backgroundColor: "#555555",
   },
   followButtonText: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });
 
