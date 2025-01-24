@@ -9,7 +9,7 @@ import {
 } from '@hugeicons/react-native';
 import BottomSheet, { BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Portal } from "@gorhom/portal";
-import { FormField } from '../app-components/formField copy';
+import { FormField } from '../app-components/formField';
 import { banks } from '@/data/data';
 
 type ConnectedAccountsSheetType = 'main' | 'addAccount' | 'accountDetails' | null;

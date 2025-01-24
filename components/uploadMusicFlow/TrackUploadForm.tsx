@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { FormField } from "../app-components/formField copy";
+import { FormField } from "../app-components/formField";
 import useFileUpload from "@/hooks/useFileUpload";
 
 const TrackUploadForm = () => {

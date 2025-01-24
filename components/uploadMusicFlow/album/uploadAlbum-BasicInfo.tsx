@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FormField } from "../../app-components/formField copy";
+import { FormField } from "../../app-components/formField";
 import { Text, View } from "react-native";
 
 const AlbumBasicInfo = () => {

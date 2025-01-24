@@ -2,20 +2,12 @@ import { View, Text, Image, TouchableOpacity, SafeAreaView } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { CheckmarkBadge01Icon } from '@hugeicons/react-native';
+import { FormData } from './formFlow/TribeForm';
 
-interface Props  {
-    tribeName: string;
-    description: string;
-    coverImage: undefined;
-    collectibleName: string;
-    CollectibleDescription: string;
-    collectibleMedia: undefined;
-    collectibleType: string;
-    communitySymbol: string;
-}
+
 
 type Prop = {
-  tribeName: Props
+  tribeName: FormData
 }
 
 

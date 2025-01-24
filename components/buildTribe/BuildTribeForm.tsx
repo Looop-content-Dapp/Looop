@@ -3,25 +3,22 @@ import React, { useState, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
-import BasicInformation from './formFlow/BasicInformation';
 import Preview from './formFlow/Preview';
-import Members from './formFlow/Members';
 import StepIndicator from './StepIndicator';
 import { useAppSelector } from '@/redux/hooks';
 import api from '@/config/apiConfig';
 import { useRouter } from 'expo-router';
 import TribeSuccessScreen from './TribeSuccessScreen';
+import TribeForm, { FormData } from './formFlow/TribeForm';
 
 const STEPS = {
     BASIC: 'basic',
-    MEMBERSHIP: 'membership',
     PREVIEW: 'preview',
     SUCCESS: 'success'
   };
 
 const STEP_COLORS = {
   [STEPS.BASIC]: '#A187B5',
-  [STEPS.MEMBERSHIP]: '#B9A5C8',
   [STEPS.PREVIEW]: '#87B5A1'
 };
 
@@ -29,7 +26,7 @@ const BuildTribeForm = () => {
   const [currentStep, setCurrentStep] = useState(STEPS.BASIC);
   const [isSuccess, setIsSuccess] = useState(false);
   const { back } = useRouter()
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     tribeName: '',
     description: '',
     coverImage: undefined,
@@ -77,13 +74,7 @@ const BuildTribeForm = () => {
   const renderCurrentStep = () => {
     switch (currentStep) {
       case STEPS.BASIC:
-        return <BasicInformation
-        formData={formData}
-        updateFormData={updateFormData}
-        // errors={errors}
-        />;
-      case STEPS.MEMBERSHIP:
-        return <Members
+        return <TribeForm
         formData={formData}
         updateFormData={updateFormData}
         // errors={errors}
@@ -93,7 +84,7 @@ const BuildTribeForm = () => {
         case STEPS.SUCCESS:
             return <TribeSuccessScreen tribeName={formData} />;
       default:
-        return <BasicInformation
+        return<TribeForm
         formData={formData}
         updateFormData={updateFormData}
         // errors={errors}
@@ -104,13 +95,8 @@ const BuildTribeForm = () => {
   const handleNext = () => {
     switch (currentStep) {
       case STEPS.BASIC:
-        if (formData.tribeName && formData.description && formData.coverImage) {
-          setCurrentStep(STEPS.MEMBERSHIP);
-        }
-        break;
-      case STEPS.MEMBERSHIP:
-        if (formData.collectibleName  && formData.CollectibleDescription && formData.collectibleMedia) {
-          setCurrentStep(STEPS.PREVIEW);
+        if (formData.tribeName && formData.description && formData.coverImage && formData.collectibleName  && formData.CollectibleDescription && formData.collectibleMedia) {
+            setCurrentStep(STEPS.PREVIEW);
         }
         break;
       case STEPS.PREVIEW:
@@ -121,11 +107,8 @@ const BuildTribeForm = () => {
 
   const handleBack = () => {
     switch (currentStep) {
-      case STEPS.MEMBERSHIP:
-        setCurrentStep(STEPS.BASIC);
-        break;
       case STEPS.PREVIEW:
-        setCurrentStep(STEPS.MEMBERSHIP);
+        setCurrentStep(STEPS.BASIC);
         break;
       default:
         back();
@@ -167,9 +150,6 @@ const BuildTribeForm = () => {
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        // enableOnAndroid={true}
-        // enableAutomaticScroll={Platform.OS === 'ios'}
-        // extraScrollHeight={Platform.OS === 'ios' ? 120 : 80}
         style={{ flex: 1 }}
       >
         <View style={{ flex: 1, paddingHorizontal: 16 }}>
