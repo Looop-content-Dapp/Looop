@@ -150,11 +150,3 @@ const Signin = () => {
 };
 
 export default Signin;
-
-const styles = StyleSheet.create({
-  container: {
-    // paddingBottom: 25,
-    flex: 1,
-    gap: 40,
-  },
-});

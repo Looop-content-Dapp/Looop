@@ -15,6 +15,8 @@ import { MotiView } from "moti";
 import { router } from "expo-router";
 import { useQuery } from "../../hooks/useQuery";
 import PaymentBottomSheet from "../../components/Subscribe/PaymentBottomsheet";
+import CommunitySectionList from "@/components/settingUp/CommunitySectionList";
+import { useAppSelector } from "@/redux/hooks";
 
 // Types and Interfaces
 interface Genre {
@@ -57,7 +59,7 @@ const CommunityOnboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [interests, setInterests] = useState<Genre[]>([]);
-  const [artistsWithCommunities, setArtistsWithCommunities] = useState<
+  const [communities, setCommunities] = useState<
     Artist[]
   >([]);
   const [loading, setLoading] = useState(true);
@@ -66,14 +68,14 @@ const CommunityOnboarding = () => {
     null
   );
   const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
+  const { userdata } = useAppSelector((state) => state.auth);
 
   const {
     getGenres,
     getArtistCommunitiesByGenre,
-    userID,
-    retrieveUserId,
     saveUserPreference,
   } = useQuery();
+
 
   const benefit = [
     {
@@ -116,10 +118,17 @@ const CommunityOnboarding = () => {
   const fetchArtistCommunities = async () => {
     try {
       setLoading(true);
-      if (!userID) throw new Error("User ID not found");
-
-      const response = await getArtistCommunitiesByGenre(userID);
-      setArtistsWithCommunities(response.data.artists);
+      if (!userdata?._id) throw new Error("User ID not found");
+      const response = await getArtistCommunitiesByGenre(userdata?._id as string);
+      if(response.data){
+        if(response?.status === "success"){
+            if (response?.data?.length > 0 && Array.isArray(response.data)) {
+                setCommunities(response?.data ?? []);
+              } else {
+                setCommunities([]);
+              }
+        }
+      }
     } catch (error) {
       console.error("Error fetching artist communities:", error);
       Alert.alert("Error", "Failed to load communities. Please try again.");
@@ -138,7 +147,7 @@ const CommunityOnboarding = () => {
   const handlePaymentComplete = useCallback(async () => {
     try {
       // Update the local state to reflect the joined status
-      setArtistsWithCommunities((prevArtists) =>
+      setCommunities((prevArtists) =>
         prevArtists.map((artist) => ({
           ...artist,
           communities: artist.communities.map((community) =>
@@ -172,9 +181,9 @@ const CommunityOnboarding = () => {
   };
 
   const handleContinueWithInterests = async () => {
-    if (selectedInterests.length > 0 && userID) {
+    if (selectedInterests.length > 0 && userdata?._id) {
       try {
-        await saveUserPreference(userID, selectedInterests);
+        await saveUserPreference(userdata?._id, selectedInterests);
         setCurrentStep(2);
       } catch (error) {
         console.error("Error saving preferences:", error);
@@ -187,35 +196,6 @@ const CommunityOnboarding = () => {
   };
 
   // Render Functions
-  const renderCommunityCard = (community: Community, artist: Artist) => (
-    <View key={community._id} style={styles.communityCard}>
-      <View style={styles.communityHeader}>
-        <Image
-          source={{ uri: community.coverImage }}
-          style={styles.communityImage}
-        />
-        <View style={styles.communityInfo}>
-          <Text style={styles.communityName}>{community.name}</Text>
-          <Text style={styles.memberCount}>
-            {community.memberCount} members
-          </Text>
-        </View>
-      </View>
-      <Text style={styles.communityDescription}>{community.description}</Text>
-      {community.isJoined ? (
-        <View style={styles.joinedButton}>
-          <Text style={styles.joinedButtonText}>Joined ✓</Text>
-        </View>
-      ) : (
-        <TouchableOpacity
-          onPress={() => handleJoinCommunity(community, artist._id)}
-          style={styles.joinButton}
-        >
-          <Text style={styles.joinButtonText}>Join Community</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
 
   const renderSetup = () => (
     <ScrollView contentContainerStyle={styles.setupContainer}>
@@ -333,66 +313,6 @@ const CommunityOnboarding = () => {
     </>
   );
 
-  const renderCommunities = () => (
-    <>
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => setCurrentStep(1)}
-      >
-        <ArrowLeft02Icon size={32} color="#fff" />
-      </TouchableOpacity>
-      <View style={styles.communitiesHeader}>
-        <Text style={styles.communitiesTitle}>Recommended Communities</Text>
-        <Text style={styles.communitiesSubtitle}>
-          Join these communities to connect with your favorite artists
-        </Text>
-      </View>
-      <FlatList
-        data={loading ? Array(6).fill({}) : artistsWithCommunities}
-        renderItem={({ item: artist }) => {
-          return loading ? (
-            <SkeletonCommunity />
-          ) : (
-            <View style={styles.artistSection}>
-              <View style={styles.artistHeader}>
-                <Image
-                  source={{ uri: artist.profileImage }}
-                  style={styles.artistImage}
-                />
-                <View style={styles.artistInfo}>
-                  <View style={styles.artistNameContainer}>
-                    <Text style={styles.artistName}>{artist.name}</Text>
-                    {artist.verified && (
-                      <View style={styles.verifiedBadge}>
-                        <Text style={styles.verifiedText}>Verified</Text>
-                      </View>
-                    )}
-                  </View>
-                  <Text style={styles.communityCount}>
-                    {artist.communities.length}{" "}
-                    {artist.communities.length === 1
-                      ? "Community"
-                      : "Communities"}
-                  </Text>
-                </View>
-              </View>
-              {artist.communities.map((community) =>
-                renderCommunityCard(community, artist)
-              )}
-            </View>
-          );
-        }}
-        keyExtractor={(item, index) => item?._id || index.toString()}
-      />
-      <TouchableOpacity
-        onPress={() => router.navigate("/(communityTabs)")}
-        style={styles.homeButton}
-      >
-        <Text style={styles.buttonText}>Continue to Home</Text>
-      </TouchableOpacity>
-    </>
-  );
-
   // Skeleton Components
   const SkeletonInterest = () => (
     <View style={styles.skeletonInterestContainer}>
@@ -405,32 +325,23 @@ const CommunityOnboarding = () => {
     </View>
   );
 
-  const SkeletonCommunity = () => (
-    <View style={styles.skeletonCommunityContainer}>
-      <MotiView
-        style={styles.skeletonCommunityCard}
-        from={{ opacity: 0.5 }}
-        animate={{ opacity: 1 }}
-        transition={{ loop: true, duration: 1000 }}
-      >
-        <View style={styles.skeletonHeader}>
-          <MotiView style={styles.skeletonImage} />
-          <View style={styles.skeletonInfo}>
-            <MotiView style={styles.skeletonTitle} />
-            <MotiView style={styles.skeletonSubtitle} />
-          </View>
-        </View>
-        <MotiView style={styles.skeletonDescription} />
-        <MotiView style={styles.skeletonButton} />
-      </MotiView>
-    </View>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       {currentStep === 0 && renderSetup()}
       {currentStep === 1 && renderInterests()}
-      {currentStep === 2 && renderCommunities()}
+      {currentStep === 2 && (
+        <>
+        <View className="gap-y-8px]">
+            <Text className="text-[24px] text-[#f4f4f4] font-PlusJakartaSansBold">Based on your selections</Text>
+            <Text className="text-[14px] font-PlusJakartaSansRegular text-[#D2D3D5]">Alright! Let’s follow some artistes to start exploring their discographies</Text>
+        </View>
+        <CommunitySectionList
+         sections={communities ? communities : []}
+         onFollow={handleJoinCommunity}
+          followingArtists={selectedCommunity ? [selectedCommunity] : []}
+         />
+        </>
+      )}
       {showPaymentSheet && (
         <PaymentBottomSheet
           isVisible={showPaymentSheet}

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Looop",
-    "slug": "Looop",
+    "slug": "looop",
     "scheme": "looop",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,7 +19,10 @@
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location to provide location-based services and show relevant content based on where you are.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location to provide location-based services and show relevant content based on where you are, even when the app is in the background.",
         "NSLocationAlwaysUsageDescription": "This app needs access to your location to provide location-based services and show relevant content based on where you are, even when the app is in the background.",
-        "UIBackgroundModes": ["location", "fetch"]
+        "UIBackgroundModes": [
+          "location",
+          "fetch"
+        ]
       }
     },
     "android": {
@@ -33,9 +36,12 @@
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.ACCESS_MEDIA_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_BACKGROUND_LOCATION"
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.WRITE_CONTACTS"
       ]
     },
     "web": {
@@ -105,8 +111,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "cb90d7d7-2b0f-4020-b3d9-088ef6f0e2f1"
+        "projectId": "1d164336-acca-4487-8db1-3188eb5d89fb"
       }
-    }
+    },
+    "owner": "josephweb3"
   }
 }

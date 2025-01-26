@@ -15,6 +15,8 @@ import { router } from "expo-router";
 import { useQuery } from "../../hooks/useQuery";
 import { useAppSelector } from "@/redux/hooks";
 import ArtistSectionList from "@/components/settingUp/ArtistSectionList";
+import api from "@/config/apiConfig";
+import { showToast } from "@/config/ShowMessage";
 
 const MusicOnboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -28,10 +30,8 @@ const MusicOnboarding = () => {
   const {
     getGenres,
     getArtistBasedOnGenre,
-    followArtist,
     fetchFollowingArtists,
     saveUserPreference,
-    userID,
   } = useQuery();
 
   useEffect(() => {
@@ -78,14 +78,15 @@ const MusicOnboarding = () => {
       if (artistData.data) {
         if (artistData?.status === "success") {
           if (artistData?.data?.length > 0 && Array.isArray(artistData.data)) {
+            console.log("artist", artistData?.data)
             setArtistes(artistData?.data ?? []);
           } else {
             setArtistes([]);
           }
         }
       }
-      //   const followedArtistsResponse = await fetchFollowingArtists(userdata?._id);
-      //   setFollowingArtists(followedArtistsResponse?.data?.artists || []);
+      const followedArtistsResponse = await fetchFollowingArtists(userdata?._id);
+      setFollowingArtists(followedArtistsResponse?.data?.artists || []);
     } catch (error) {
       console.error("Error fetching artists:", error);
     } finally {
@@ -93,19 +94,52 @@ const MusicOnboarding = () => {
     }
   };
 
-  const handleFollowArtist = async (artistId: string) => {
-    try {
-      if (!userdata?._id) return;
-      await followArtist(userID, artistId);
-      setFollowingArtists((prev) =>
-        prev.includes(artistId)
-          ? prev.filter((id) => id !== artistId)
-          : [...prev, artistId]
-      );
-    } catch (error) {
-      console.error(`Error following artist: ${error}`);
+const handleFollowArtist = async (artistId: string) => {
+  try {
+    if (!userdata?._id) {
+      showToast("Please login to follow artists", "error");
+      return;
     }
-  };
+
+    // Update UI state immediately
+    setArtistes(prevArtists => 
+      prevArtists.map(section => ({
+        ...section,
+        artists: section.artists.map(artist => 
+          artist.id === artistId 
+            ? { ...artist, isFavourite: !artist.isFavourite }
+            : artist
+        )
+      }))
+    );
+
+    const payload = {
+      userId: userdata._id,
+      faveArtist: [artistId]
+    };
+
+    const response = await api.post("/api/user/createuserfaveartistbasedongenres", payload);
+
+    if (response?.data?.status !== "success") {
+      // Revert UI state if API call fails
+      setArtistes(prevArtists => 
+        prevArtists.map(section => ({
+          ...section,
+          artists: section.artists.map(artist => 
+            artist.id === artistId 
+              ? { ...artist, isFavourite: !artist.isFavourite }
+              : artist
+          )
+        }))
+      );
+      const errorMessage = response?.data?.message || "Failed to follow artist";
+      throw new Error(errorMessage);
+    }
+  } catch (error) {
+    console.error("Error following artist:", error);
+    showToast("Failed to follow artist", "error");
+  }
+};
 
   const renderSetup = () => (
     <ScrollView
@@ -175,8 +209,8 @@ const MusicOnboarding = () => {
       </View>
       <FlatList
         data={loading ? Array(22).fill({}) : genres}
-        renderItem={({ item }) => {
-          const selected = selectedInterests.includes(item?._id);
+        renderItem={({ item }: {item: any}) => {
+          const selected = selectedInterests.includes(item?._id as never);
           return loading ? (
             <SkeletonGenre />
           ) : (
@@ -184,7 +218,7 @@ const MusicOnboarding = () => {
               onPress={() => {
                 setSelectedGenres((prev: any) =>
                   prev.includes(item._id)
-                    ? prev.filter((id) => id !== item._id)
+                    ? prev.filter((id: any) => id !== item._id)
                     : [...prev, item._id]
                 );
               }}
@@ -254,11 +288,16 @@ const MusicOnboarding = () => {
       {currentStep === 0 && renderSetup()}
       {currentStep === 1 && renderGenres()}
       {currentStep === 2 && (
-        <ArtistSectionList
+      <View className="p-[24px]">
+        <View className="gap-y-8px]">
+            <Text className="text-[24px] text-[#f4f4f4] font-PlusJakartaSansBold">Based on your selections</Text>
+            <Text className="text-[14px] font-PlusJakartaSansRegular text-[#D2D3D5]">Alright! Let's follow some artistes to start exploring their discographies</Text>
+        </View>
+          <ArtistSectionList
           sections={artistes ? artistes : []}
           onFollow={handleFollowArtist}
-          followingArtists={followingArtists}
         />
+      </View>
       )}
     </SafeAreaView>
   );

@@ -15,38 +15,41 @@ const { width } = Dimensions.get("window");
 const ArtistCard = ({
   artist,
   onFollow,
-  isFollowing,
 }: {
   artist: any;
   onFollow: any;
-  isFollowing: any;
-}) => (
-  <View style={styles.card}>
-    <Image source={{ uri: artist.profileImage }} style={styles.artistImage} />
-    <Text style={styles.artistName}>{artist?.name}</Text>
-    <View style={styles.statsContainer}>
-      <Text style={styles.statsText}>{artist?.tribestars} Tribestars</Text>
-      <Text style={styles.tribeText}>{artist?.tribeName}</Text>
+}) => {
+  return (
+    <View style={styles.card}>
+      <Image source={{ uri: artist.profileImage }} style={styles.artistImage} />
+      <Text style={styles.artistName}>{artist?.name}</Text>
+      <View style={styles.statsContainer}>
+        <Text style={styles.statsText}>{artist?.tribestars} Tribestars</Text>
+      </View>
+      <TouchableOpacity
+        style={[
+          styles.followButton, 
+          artist.isFavourite && styles.followingButton
+        ]}
+        onPress={() => onFollow(artist.id)}
+      >
+        <Text style={[
+          styles.followButtonText,
+          artist.isFavourite && { color: '#ffffff' }
+        ]}>
+          {artist.isFavourite ? "Following" : "Follow"}
+        </Text>
+      </TouchableOpacity>
     </View>
-    <TouchableOpacity
-      style={[styles.followButton, isFollowing && styles.followingButton]}
-      onPress={() => onFollow(artist.id)}
-    >
-      <Text style={styles.followButtonText}>
-        {isFollowing ? "Following" : "Join Tribe"}
-      </Text>
-    </TouchableOpacity>
-  </View>
-);
+  );
+};
 
 const ArtistSection = ({
   section,
   onFollow,
-  followingArtists,
 }: {
   section: any;
   onFollow: any;
-  followingArtists: any;
 }) => {
   return (
     <View style={styles.section}>
@@ -58,7 +61,6 @@ const ArtistSection = ({
           <ArtistCard
             artist={item}
             onFollow={onFollow}
-            isFollowing={followingArtists.includes(item.id)}
           />
         )}
         contentContainerStyle={styles.artistList}
@@ -70,30 +72,31 @@ const ArtistSection = ({
 const ArtistSectionList = ({
   sections = [],
   onFollow,
-  followingArtists = [],
 }: {
   sections: any[];
   onFollow?: any;
-  followingArtists?: any[];
 }) => {
   const listsections = sections.map((item: any) => ({
     title: item.genreName,
     data: item.artists,
   }));
 
+  const hasFollowedArtists = sections.some(section => 
+    section.artists.some((artist: any) => artist.isFavourite)
+  );
+
   return (
     <SectionList
       sections={listsections}
       keyExtractor={(item, index) => index.toString() + Date.now()}
       renderSectionHeader={({ section }) => (
-        <>
+        <View className="mt-[44px]">
           <Text style={styles.sectionTitle}>{section.title}</Text>
           <ArtistSection
             section={section.data}
             onFollow={onFollow}
-            followingArtists={followingArtists}
           />
-        </>
+        </View>
       )}
       renderItem={() => null}
       stickySectionHeadersEnabled={false}
@@ -113,16 +116,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#ffffff",
     marginBottom: 16,
-    paddingHorizontal: 16,
   },
   artistList: {
-    paddingHorizontal: 8,
     flexGrow: 1,
   },
   card: {
     width: width * 0.4,
     marginHorizontal: 8,
-    backgroundColor: "#1A1A1A",
+    backgroundColor: "#12141B",
     borderRadius: 16,
     padding: 12,
     alignItems: "center",
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     color: "#808080",
   },
   followButton: {
-    backgroundColor: "#FF6D1B",
+    backgroundColor: "#fff",
     paddingVertical: 8,
     paddingHorizontal: 24,
     borderRadius: 20,
@@ -162,8 +163,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#555555",
   },
   followButtonText: {
-    color: "#ffffff",
+    color: "#040405",
     fontSize: 14,
+    fontWeight: "500",
+  },
+
+  continueButton: {
+    backgroundColor: "#FF6D1B",
+    width: "90%",
+    alignSelf: "center",
+    padding: 16,
+    borderRadius: 56,
+    alignItems: "center",
+    position: "absolute",
+    bottom: 20,
+  },
+  continueButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
     fontWeight: "500",
   },
 });
