@@ -17,7 +17,6 @@ export default function _Setttingslayout() {
       }}
     >
       <Stack.Screen name="index" />
-      <Stack.Screen name='(account-info)' />
     </Stack>
   )
 }

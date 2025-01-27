@@ -915,8 +915,8 @@ const styles = StyleSheet.create({
   },
   // Image upload styles
   imagePreviewContainer: {
-    width: 120,
-    height: 120,
+    width: 400,
+    height: 240,
     borderRadius: 8,
     overflow: "hidden",
     position: "relative"

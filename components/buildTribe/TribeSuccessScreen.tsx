@@ -15,11 +15,11 @@ const TribeSuccessScreen = ({ tribeName  }: Prop) => {
   const { push } = useRouter();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#12141B' }}>
+    <SafeAreaView style={{ flex: 1, }}>
       <StatusBar style="light" />
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <CheckmarkBadge01Icon
-                   size={40}
+                   size={71}
                    variant="solid"
                    color="#2DD881"
                  />
@@ -43,17 +43,18 @@ const TribeSuccessScreen = ({ tribeName  }: Prop) => {
         </Text>
 
         <View style={{
-          backgroundColor: '#1C1F2A',
+          backgroundColor: '#0A0B0F',
           borderRadius: 16,
-          padding: 16,
+          padding: 8,
           width: '100%',
-          marginBottom: 32
+          marginBottom: 32,
+          height: 448
         }}>
           <Image
             source={{ uri: tribeName?.coverImage }}
             style={{
               width: '100%',
-              height: 200,
+              height: 320,
               borderRadius: 12,
               marginBottom: 16
             }}

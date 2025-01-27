@@ -58,17 +58,25 @@ const index = ({ community }: ArtistCommunityDetailProps) => {
 
   const bottomSheetRef = useRef<BottomSheet>(null);
 
-  const retriveArtistInfo = async() => {
-    try {
-        const response = await api.get(`/api/artist/${artistId}`)
-        setArtistProfile(response.data.data)
-    } catch (error) {
-
+const retrieveArtistInfo = async () => {
+  try {
+    const response = await api.get(`/api/artist/${artistId}`);
+    if (!response?.data?.data) {
+      throw new Error('Invalid artist data received');
     }
+    setArtistProfile(response.data.data.artist);
+    console.log(response.data.data.artist)
+  } catch (error) {
+    console.error('Failed to fetch artist info:', error);
+    // Consider adding error handling logic here, such as:
+    // - Setting an error state
+    // - Showing an error message to the user
+    // - Retrying the request
   }
+};
  useEffect(() => {
     if(artistId){
-        retriveArtistInfo()
+      retrieveArtistInfo()
     }
  }, [])
 
@@ -138,7 +146,7 @@ const index = ({ community }: ArtistCommunityDetailProps) => {
               </View>
               <View className="flex-row items-center gap-x-[4px]">
                 <Text className="text-[14px] font-PlusJakartaSansMedium text-[#A5A6AA]">
-                  {artistProfile?.followers.toLocaleString()} Followers
+                  {artistProfile?.followers?.toLocaleString()} Followers
                 </Text>
                 <Ellipse />
                 <Text className="text-[14px] font-PlusJakartaSansMedium text-[#A5A6AA]">

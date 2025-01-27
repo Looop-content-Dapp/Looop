@@ -1,6 +1,6 @@
 import { View, Text, Pressable, TouchableOpacity, TextInput } from 'react-native'
 import React, { useLayoutEffect, useState } from 'react'
-import { AccessIcon, ArrowRight01Icon, Notification02Icon, Settings01Icon, Shield02Icon, UserCircleIcon, Search01Icon } from '@hugeicons/react-native'
+import { AccessIcon, ArrowRight01Icon, Notification02Icon, Settings01Icon, Shield02Icon, UserCircleIcon, Search01Icon, Delete01Icon } from '@hugeicons/react-native'
 import { router, useNavigation } from 'expo-router'
 import { AppBackButton } from '@/components/app-components/back-btn'
 import { MaterialIcons } from '@expo/vector-icons'
@@ -22,27 +22,32 @@ const index = () => {
         {
             title: "Account Info",
             description: "Update your account details, change your password, or deactivate your account.",
-            icon: <UserCircleIcon size={24} color='#787A80' variant='stroke' />
+            icon: <UserCircleIcon size={24} color='#787A80' variant='stroke' />,
+            route: "/settings/accountInfo"
         },
         {
             title: "Account Security",
             description: "Protect your account with 2FA, manage logged-in devices, and customize security settings to keep your data safe.",
-            icon: <Shield02Icon size={24} color='#787A80' variant='stroke' />
+            icon: <Shield02Icon size={24} color='#787A80' variant='stroke' />,
+             route: "/settings/(account-info)"
         },
         {
             title: "Notification",
             description: "Decide how and when you receive alerts. Customize email, push, and in-app notifications to stay updated.",
-            icon: <Notification02Icon size={24} color='#787A80' variant='stroke' />
+            icon: <Notification02Icon size={24} color='#787A80' variant='stroke' />,
+             route: "/settings/(notification)"
         },
         {
             title: "Languages & Display",
             description: "Adjust your preferred language, text size, and display settings to improve usability.",
-            icon: <MaterialIcons name="accessibility" size={24} color="#787A80" />
+            icon: <MaterialIcons name="accessibility" size={24} color="#787A80" />,
+             route: "/settings/(languages&display)"
         },
         {
             title: "Preferences",
             description: "Customize your app experience with personal preferences and default settings.",
-            icon: <Settings01Icon size={24} color='#787A80' variant='stroke' />
+            icon: <Settings01Icon size={24} color='#787A80' variant='stroke' />,
+             route: "/settings/(preference)"
         },
     ]
 
@@ -68,7 +73,7 @@ const index = () => {
             <View className='gap-y-[12px]'>
                 {
                     filteredSettings.map((menu, key) => (
-                        <TouchableOpacity key={key} className='bg-[#0A0B0F] border-2 border-[#12141B] flex-row items-center justify-between p-[16px] gap-x-[16px] '>
+                        <TouchableOpacity onPress={() => router.navigate(menu.route)} key={key} className='bg-[#0A0B0F] border-2 border-[#12141B] flex-row items-center justify-between p-[16px] gap-x-[16px] '>
                             <View className='w-[24px]'>
                                 {menu.icon}
                             </View>
@@ -83,9 +88,9 @@ const index = () => {
                     ))
                 }
 
-                <Pressable className='bg-[#12141B] items-center justify-center mx-auto p-[10px] rounded-[10px]'>
+                 <TouchableOpacity className='bg-[#12141B] items-center justify-center mx-auto p-[10px] rounded-[10px]'>
                     <Text className='text-[14px] font-PlusJakartaSansMedium text-[#787A80]'>Log Out</Text>
-                </Pressable>
+                </TouchableOpacity>
             </View>
         </View>
     )

@@ -69,7 +69,7 @@ const CreatorModeWelcome = () => {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [claimStatus]);
 
   // Show loading screen if either the data is loading or we're within the minimum display time
   if (isLoading || showLoadingScreen) {
