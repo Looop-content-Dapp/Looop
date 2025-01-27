@@ -5,13 +5,13 @@ import { TouchableOpacity } from 'react-native'
 import { router, useNavigation } from 'expo-router'
 import { AppBackButton } from '@/components/app-components/back-btn'
 
-const preference = () => {
+const accounSecurity = () => {
     const navigation = useNavigation()
 
     useLayoutEffect(() => {
       navigation.setOptions((
         {
-          headerLeft: () =><AppBackButton name='Preference' onBackPress={() => router.back()} />,
+          headerLeft: () =><AppBackButton name='Account Security' onBackPress={() => router.back()} />,
           headerRight: () => null
         }
       ))
@@ -21,13 +21,13 @@ const preference = () => {
             title: "Personal Details",
             description: "Update your account details to ensure everything stays current.",
             icon: <UserCircleIcon size={24} color='#787A80' variant='stroke' />,
-            route: "/settings/accountInfo"
+            route: "/settings/index"
         },
         {
             title: "Change  your password",
             description: "Ensure your account stays protected by resetting your password.",
             icon: <LockPasswordIcon size={24} color='#787A80' variant='stroke' />,
-             route: "/settings/accountInfo"
+             route: "/settings/index"
         },
     ]
   return (
@@ -59,4 +59,4 @@ const preference = () => {
   )
 }
 
-export default preference
+export default accounSecurity

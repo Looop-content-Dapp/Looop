@@ -23,13 +23,13 @@ const index = () => {
             title: "Account Info",
             description: "Update your account details, change your password, or deactivate your account.",
             icon: <UserCircleIcon size={24} color='#787A80' variant='stroke' />,
-            route: "/settings/accountInfo"
+            route: "/settings/(account-info)"
         },
         {
             title: "Account Security",
             description: "Protect your account with 2FA, manage logged-in devices, and customize security settings to keep your data safe.",
             icon: <Shield02Icon size={24} color='#787A80' variant='stroke' />,
-             route: "/settings/(account-info)"
+             route: "/settings/(accountSecurity)"
         },
         {
             title: "Notification",

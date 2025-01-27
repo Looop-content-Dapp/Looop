@@ -5,13 +5,13 @@ import { TouchableOpacity } from 'react-native'
 import { router, useNavigation } from 'expo-router'
 import { AppBackButton } from '@/components/app-components/back-btn'
 
-const accountInfo = () => {
+const languagesandDisplay = () => {
     const navigation = useNavigation()
 
     useLayoutEffect(() => {
       navigation.setOptions((
         {
-          headerLeft: () =><AppBackButton name='Account Info' onBackPress={() => router.back()} />,
+          headerLeft: () =><AppBackButton name='Languages & Display' onBackPress={() => router.back()} />,
           headerRight: () => null
         }
       ))
@@ -59,4 +59,4 @@ const accountInfo = () => {
   )
 }
 
-export default accountInfo
+export default languagesandDisplay

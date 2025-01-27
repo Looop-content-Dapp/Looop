@@ -11,7 +11,7 @@ const accountInfo = () => {
     useLayoutEffect(() => {
       navigation.setOptions((
         {
-          headerLeft: () =><AppBackButton name='Account Info' onBackPress={() => router.back()} />,
+          headerLeft: () =><AppBackButton name='Personal Details' onBackPress={() => router.back()} />,
           headerRight: () => null
         }
       ))
