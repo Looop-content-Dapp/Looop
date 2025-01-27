@@ -14,6 +14,7 @@ import { countries, genres } from "@/data/data";
 import { FormField } from "@/components/app-components/formField";
 import { CreatorFormData } from "@/types/index";
 import api from "@/config/apiConfig";
+import { useQuery } from "@/hooks/useQuery";
 
 const social = [
   {
@@ -62,7 +63,6 @@ interface CreatorFormProps {
     onCitySelect: (city: string) => void;
     onProfileImageUpload: () => Promise<void>;
     onSocialAccountChange: (platform: "twitter" | "instagram" | "tiktok", value: string) => void
-    // continue : () => Promise<any>
   }
 
 const CreatorForm = ({
@@ -81,8 +81,24 @@ const CreatorForm = ({
 }: CreatorFormProps) => {
     const [isValidating, setIsValidating] = useState(false);
     const [validationStatus, setValidationStatus] = useState(null);
+    const [genres, setGenres]= useState<any[]>([])
     const [type, setType] = useState("");
     const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout>();
+    const { getGenres }= useQuery()
+
+    const handleFetchGenres = async() => {
+      try {
+        const res = await getGenres()
+        console.log("genres", res?.data)
+        setGenres(res?.data)
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    useEffect(() => {
+      handleFetchGenres()
+    }, [])
 
     const verifyField = async (fieldType: string, value: string) => {
         if (!value) {
@@ -221,7 +237,7 @@ const CreatorForm = ({
             placeholder="Try “HipHop” or “Afrobeats”"
             values={selectedGenres}
             onSelect={onGenresChange}
-            options={genres}
+            options={genres || []}
           />
         </View>
       </View>

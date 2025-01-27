@@ -3,6 +3,7 @@ import { View, ScrollView } from 'react-native';
 import useFileUpload, { FileType } from '../../../hooks/useFileUpload';
 import { CollectibleFileType, getFileTypeFromUri } from '@/types/index';
 import { FormField } from '@/components/app-components/formField';
+import { Text } from 'react-native';
 
 export interface FormData {
   tribeName: string;
@@ -41,18 +42,14 @@ const TribeForm: React.FC<TribeFormProps> = ({ formData, updateFormData }) => {
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: '#000000' }}
+      style={{ flex: 1 }}
       showsVerticalScrollIndicator={false}
     >
-      <View style={{ padding: 16 }}>
+      <View className='gap-y-[32px]'>
         {/* Basic Information Section */}
-        <FormField.TextField
-          label="Basic Information"
-          value={formData.tribeName}
-          onChangeText={(value) => updateFormData('tribeName', value)}
-          required
-        />
-
+        <View className='p-[10px] gap-y-[42px]'>
+        <Text className='text-[24px] font-PlusJakartaSansBold text-[#A5A6AA]'>Basic Community Info</Text>
+        <View>
         <FormField.ImageUploadField
           value={formData.coverImage}
           onUpload={handleCoverImagePick}
@@ -77,16 +74,14 @@ const TribeForm: React.FC<TribeFormProps> = ({ formData, updateFormData }) => {
           maxLength={150}
           required
         />
+        </View>
+        </View>
+     
 
-        <>
+      <View className='p-[10px] gap-y-[42px]'>
+        <Text className='text-[24px] font-PlusJakartaSansBold text-[#A5A6AA]'>Collectible Info</Text>
          {/* Membership Section */}
-         <FormField.TextField
-          label="Create your first collectible"
-          description="Your membership NFT collectible gives your fans access to your tribe as well as other future perks you choose."
-          value=""
-          onChangeText={() => {}}
-        />
-
+         <View>
         <FormField.ImageUploadField
           value={formData.collectibleMedia}
           onUpload={handleCollectibleMediaPick}
@@ -118,7 +113,9 @@ const TribeForm: React.FC<TribeFormProps> = ({ formData, updateFormData }) => {
           numberOfLines={4}
           maxLength={150}
         />
-        </>
+         </View>
+       
+        </View>
 
 
       </View>

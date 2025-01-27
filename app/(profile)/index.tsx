@@ -7,7 +7,7 @@ import {
   Alert,
 } from "react-native";
 import React, { useCallback, useEffect, useLayoutEffect, useState } from "react";
-import { MoreHorizontalIcon, Share05Icon } from "@hugeicons/react-native";
+import { MoreHorizontalIcon, Setting06Icon, Settings02Icon, Share05Icon, Wallet02Icon } from "@hugeicons/react-native";
 import { Avatar } from "react-native-elements";
 import {
   ProfilePlaylist,
@@ -27,6 +27,7 @@ const profile = () => {
   const navigation = useNavigation();
 
   const { userdata } = useAppSelector((state) => state.auth);
+  console.log(userdata?.artist)
   const dispatch = useAppDispatch();
   const router = useRouter()
 
@@ -39,7 +40,18 @@ const profile = () => {
       headerLeft: () => (
         <AppBackButton name="Profile" onBackPress={() => router.back()} />
       ),
-      headerRight: () => <MoreHorizontalIcon size={32} color="#787A80" />,
+      headerRight: () => {
+        return (
+          <View className="flex-row items-center gap-x-[16px] mr-4">
+            <TouchableOpacity>
+              <Wallet02Icon size={24} color="#787A80" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.navigate("/settings")}>
+              <Settings02Icon size={24} color="#787A80" />
+            </TouchableOpacity>
+          </View>
+        )
+      },
     });
   }, [navigation]);
 
@@ -48,7 +60,7 @@ const profile = () => {
       setLoading(true);
 
       if (userdata) {
-        const res: SignInResponse = await getUserById(userdata._id);
+        const res = await getUserById(userdata._id);
         dispatch(setUserData(res.data));
       }
     } catch (error) {
@@ -135,7 +147,7 @@ useEffect(() => {
             className="items-center "
           >
             <Text className="text-[20px] font-PlusJakartaSansBold text-[#f4f4f4]">
-              {formatNumber(userdata?.following ?? 0)}
+              {formatNumber(userdata?.favouriteArtists?.length as number)}
             </Text>
             <Text className="text-[12px] font-PlusJakartaSansBold text-[#D2D3D5]">
               Following
@@ -169,7 +181,7 @@ useEffect(() => {
         </View>
 
         <TouchableOpacity
-          onPress={() => router.push("/creatorOnboarding")}
+          onPress={() => userdata?.artist !== null ? router.push("/(artisteTabs)/(dashboard)"): router.push("/creatorOnboarding")}
           className="border border-[#787A80] rounded-[10px] my-6 items-center py-[14px]"
         >
           <Text className="text-[14px] font-PlusJakartaSansMedium text-Grey/04">

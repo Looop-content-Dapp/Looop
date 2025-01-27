@@ -1,11 +1,12 @@
-import React from "react";
-import { Stack } from "expo-router";
+import { View, Text } from 'react-native'
+import React from 'react'
+import { Stack } from 'expo-router'
 
-export default function _CreatorOnboardingLayout() {
+export default function _Setttingslayout() {
   return (
     <Stack
     screenOptions={{
-        headerShown: false,
+        headerShown: true,
         contentStyle: {
           backgroundColor: "#040405",
         },
@@ -17,5 +18,5 @@ export default function _CreatorOnboardingLayout() {
     >
       <Stack.Screen name="index" />
     </Stack>
-  );
+  )
 }

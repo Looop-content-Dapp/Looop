@@ -37,7 +37,6 @@ const CreateProfile = () => {
   });
 
   const { pickFile, isLoading: isUploading } = useFileUpload();
-  const { flow } = useLocalSearchParams();
   const navigation = useNavigation();
   const { back } = useRouter();
   const dispatch = useAppDispatch()
@@ -137,58 +136,61 @@ const CreateProfile = () => {
     }));
   };
 
-  const handleSubmitArtistProfile = async () => {
-    if (!validateForm()) return;
+const handleSubmitArtistProfile = async () => {
+  if (!validateForm()) return;
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
 
-    try {
-      const formPayload = {
-        artistname: formData.stageName,
-        email: formData.email,
-        profileImage: formData.profileImage,
-        bio: formData.bio,
-        genres: selectedGenres,
-        city: selectedCity,
-        country: selectedCountry,
-        address1: formData.addressLine1,
-        address2: formData.addressLine2,
-        postalcode: formData.postalCode,
-        websiteurl: formData.websiteUrl,
-        twitter: "https://x.com/looop_music",
-        tiktok: "https://x.com/looop_music",
-        instagram: "https://x.com/looop_music",
-        "id": userdata?._id
-      };
+  try {
+    // Construct form payload with social media handles from form data
+    const formPayload = {
+      artistname: formData.stageName,
+      email: formData.email,
+      profileImage: formData.profileImage,
+      bio: formData.bio,
+      genres: selectedGenres,
+      city: selectedCity,
+      country: selectedCountry,
+      address1: formData.addressLine1,
+      address2: formData.addressLine2,
+      postalcode: formData.postalCode,
+      websiteurl: formData.websiteUrl,
+      twitter: formData.socialAccounts.twitter || "https://x.com/looop_music",
+      tiktok: formData.socialAccounts.tiktok || "https://x.com/looop_music", 
+      instagram: formData.socialAccounts.instagram || "https://x.com/looop_music",
+      id: userdata?._id
+    };
 
-      const response = await api.post('/api/artist/createartist', formPayload);
-      console.log(JSON.stringify(response))
-      if (response.data.status === "success") {
-        dispatch(setArtistId(response?.data?.data?.artist?._id))
-      if(response?.data?.data?.claimresult?.isPending === false){
-        // console.log(response?.data?.data?.claimresult?.data.id)
-        Alert.alert(response?.data?.data?.claimresult?.message)
-        dispatch(setClaimId(response?.data?.data?.claimresult?.data?.id))
+    // Make API request to create artist profile
+    const { data } = await api.post('/api/artist/createartist', formPayload);
 
-        back()
-      }else{
-        Alert.alert(response?.data?.data?.claimresult?.message)
-      }
-      } else {
-        throw new Error(response.data.message || 'Failed to create profile');
-      }
-    } catch (error) {
-      console.error("Error submitting artist profile:", error);
-      Alert.alert(
-        "Submission Error",
-        error instanceof Error
-          ? error.message
-          : "Something went wrong. Please try again."
-      );
-    } finally {
-      setIsSubmitting(false);
+    if (data.status === "success") {
+      const { artist, claimresult } = data.data;
+      
+      // Update redux store with new artist and claim IDs
+      dispatch(setArtistId(artist?._id));
+      dispatch(setClaimId(claimresult?.data?.id));
+      
+      // Show success message and navigate back
+      Alert.alert("Success", claimresult?.message);
+      back();
+    } else {
+      throw new Error(data.message || 'Failed to create profile');
     }
-  };
+  } catch (error) {
+    console.error("Error submitting artist profile:", error);
+    
+    // Show user-friendly error message
+    Alert.alert(
+      "Profile Creation Failed",
+      error instanceof Error 
+        ? error.message
+        : "Unable to create profile. Please try again later."
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const renderIntro = () => (
     <View>

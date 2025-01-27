@@ -100,7 +100,7 @@ interface MultiSelectFieldProps extends BaseFieldProps {
   placeholder?: string;
   values: string[];
   onSelect: (values: string[]) => void;
-  options: MultiSelectOption[];
+  options: any[];
   searchPlaceholder?: string;
   maxSelections?: number;
 }
@@ -571,10 +571,10 @@ const MultiSelectField = ({
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredOptions = options.filter((option) =>
-    option.label.toLowerCase().includes(searchQuery.toLowerCase())
+    option?.name?.toLowerCase()?.includes(searchQuery.toLowerCase())
   );
 
-  const selectedOptions = options.filter((opt) => values.includes(opt.value));
+  const selectedOptions = options?.filter((opt) => values?.includes(opt._id));
 
   const handleSelect = (value: string) => {
     if (values.includes(value)) {
@@ -608,14 +608,14 @@ const MultiSelectField = ({
               showsHorizontalScrollIndicator={false}
               style={styles.selectedValuesScroll}>
               {selectedOptions.map((option) => (
-                <View key={option.value} style={styles.selectedValueChip}>
+                <View key={option._id} style={styles.selectedValueChip}>
                   {option.icon && (
                     <Image
                       source={{ uri: option.icon }}
                       style={styles.selectedValueIcon}
                     />
                   )}
-                  <Text style={styles.selectedValueText}>{option.label}</Text>
+                  <Text style={styles.selectedValueText}>{option.name}</Text>
                 </View>
               ))}
             </ScrollView>
@@ -654,14 +654,14 @@ const MultiSelectField = ({
 
             <FlatList
               data={filteredOptions}
-              keyExtractor={(item) => item.value}
+              keyExtractor={(item) => item._id}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={[
                     styles.optionItem,
-                    values.includes(item.value) && styles.optionItemSelected
+                    values.includes(item._id) && styles.optionItemSelected
                   ]}
-                  onPress={() => handleSelect(item.value)}>
+                  onPress={() => handleSelect(item._id)}>
                   <View style={styles.optionContent}>
                     {item.icon && (
                       <Image
@@ -669,15 +669,15 @@ const MultiSelectField = ({
                         style={styles.optionIcon}
                       />
                     )}
-                    <Text
-                      style={[
-                        styles.optionText,
-                        values.includes(item.value) && styles.optionTextSelected
-                      ]}>
-                      {item.label}
-                    </Text>
+                     <Text
+                        style={[
+                          styles.optionText,
+                          values.includes(item._id) && styles.optionTextSelected
+                        ]}>
+                        {item.name}
+                      </Text>
                   </View>
-                  {values.includes(item.value) && (
+                  {values.includes(item._id) && (
                     <Ionicons name="checkmark" size={24} color="#9B6AD4" />
                   )}
                 </TouchableOpacity>
@@ -934,10 +934,10 @@ const styles = StyleSheet.create({
     padding: 4
   },
   uploadContainer: {
-    width: 240,
+    width: 440,
     height: 240,
     borderRadius: 8,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: "#12141B",
     justifyContent: "center",
     alignItems: "center"

@@ -9,8 +9,57 @@ import {
   StyleSheet,
   Dimensions,
 } from "react-native";
+import { MotiView } from "moti";
 
 const { width } = Dimensions.get("window");
+
+const SkeletonArtistCard = () => {
+  return (
+    <View style={styles.card}>
+      <MotiView
+        from={{ opacity: 0.5 }}
+        animate={{ opacity: 1 }}
+        transition={{ loop: true, duration: 1000 }}
+        style={[styles.artistImage, { backgroundColor: '#2e2e2e' }]}
+      />
+      <MotiView
+        from={{ opacity: 0.5 }}
+        animate={{ opacity: 1 }}
+        transition={{ loop: true, duration: 1000 }}
+        style={{
+          height: 20,
+          width: '80%',
+          backgroundColor: '#2e2e2e',
+          borderRadius: 4,
+          marginBottom: 8,
+        }}
+      />
+      <MotiView
+        from={{ opacity: 0.5 }}
+        animate={{ opacity: 1 }}
+        transition={{ loop: true, duration: 1000 }}
+        style={{
+          height: 16,
+          width: '60%',
+          backgroundColor: '#2e2e2e',
+          borderRadius: 4,
+          marginBottom: 12,
+        }}
+      />
+      <MotiView
+        from={{ opacity: 0.5 }}
+        animate={{ opacity: 1 }}
+        transition={{ loop: true, duration: 1000 }}
+        style={{
+          height: 36,
+          width: '80%',
+          backgroundColor: '#2e2e2e',
+          borderRadius: 20,
+        }}
+      />
+    </View>
+  );
+};
 
 const ArtistCard = ({
   artist,
@@ -47,21 +96,27 @@ const ArtistCard = ({
 const ArtistSection = ({
   section,
   onFollow,
+  loading,
 }: {
   section: any;
   onFollow: any;
+  loading?: boolean;
 }) => {
   return (
     <View style={styles.section}>
       <FlatList
         horizontal
-        data={section}
+        data={loading ? Array(3).fill({}) : section}
         keyExtractor={(item, index) => index.toString() + Date.now()}
         renderItem={({ item }) => (
-          <ArtistCard
-            artist={item}
-            onFollow={onFollow}
-          />
+          loading ? (
+            <SkeletonArtistCard />
+          ) : (
+            <ArtistCard
+              artist={item}
+              onFollow={onFollow}
+            />
+          )
         )}
         contentContainerStyle={styles.artistList}
       />
@@ -72,18 +127,18 @@ const ArtistSection = ({
 const ArtistSectionList = ({
   sections = [],
   onFollow,
+  loading,
 }: {
   sections: any[];
   onFollow?: any;
+  loading?: boolean;
 }) => {
-  const listsections = sections.map((item: any) => ({
-    title: item.genreName,
-    data: item.artists,
-  }));
-
-  const hasFollowedArtists = sections.some(section => 
-    section.artists.some((artist: any) => artist.isFavourite)
-  );
+  const listsections = loading 
+    ? [{ title: 'Loading...', data: [] }] 
+    : sections.map((item: any) => ({
+        title: item.genreName,
+        data: item.artists,
+      }));
 
   return (
     <SectionList
@@ -95,6 +150,7 @@ const ArtistSectionList = ({
           <ArtistSection
             section={section.data}
             onFollow={onFollow}
+            loading={loading}
           />
         </View>
       )}

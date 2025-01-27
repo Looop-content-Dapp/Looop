@@ -85,6 +85,7 @@ function AppContent() {
          options={{
               presentation: "fullScreenModal"
         }} />
+        <Stack.Screen name="settings" />
       </Stack>
     </GestureHandlerRootView>
   );

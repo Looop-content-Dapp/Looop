@@ -17,6 +17,9 @@ import { useAppSelector } from "@/redux/hooks";
 import ArtistSectionList from "@/components/settingUp/ArtistSectionList";
 import api from "@/config/apiConfig";
 import { showToast } from "@/config/ShowMessage";
+import { setUserData } from "@/redux/slices/auth";
+import { useAppDispatch } from "@/redux/hooks";
+import store from "@/redux/store";
 
 const MusicOnboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -26,12 +29,14 @@ const MusicOnboarding = () => {
   const [followingArtists, setFollowingArtists] = useState([]);
   const [loading, setLoading] = useState(true);
   const { userdata } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
 
   const {
     getGenres,
     getArtistBasedOnGenre,
     fetchFollowingArtists,
     saveUserPreference,
+    getUserById
   } = useQuery();
 
   useEffect(() => {
@@ -55,18 +60,26 @@ const MusicOnboarding = () => {
     }
   };
 
-  const handleContinueWithInterests = async () => {
-    if (selectedInterests.length > 0 && userdata?._id) {
-      try {
-        await saveUserPreference(userdata?._id, selectedInterests);
-        setCurrentStep(2);
-      } catch (error) {
-        console.error("Error saving preferences:", error);
-        Alert.alert(
-          "Error",
-          "Failed to save your preferences. Please try again."
-        );
+  const handleNext = async () => {
+    if (currentStep === 1) {
+      if (selectedInterests.length > 0 && userdata?._id) {
+        try {
+          await saveUserPreference(userdata?._id, selectedInterests);
+          setCurrentStep(2);
+        } catch (error) {
+          console.error("Error saving preferences:", error);
+          Alert.alert(
+            "Error",
+            "Failed to save your preferences. Please try again."
+          );
+        }
       }
+    } else if (currentStep === 2) {
+      if (userdata) {
+        const res: SignInResponse = await getUserById(userdata._id);
+        dispatch(setUserData(res.data));
+      }
+      router.push("/(musicTabs)");
     }
   };
 
@@ -101,7 +114,6 @@ const handleFollowArtist = async (artistId: string) => {
       return;
     }
 
-    // Update UI state immediately
     setArtistes(prevArtists => 
       prevArtists.map(section => ({
         ...section,
@@ -121,7 +133,6 @@ const handleFollowArtist = async (artistId: string) => {
     const response = await api.post("/api/user/createuserfaveartistbasedongenres", payload);
 
     if (response?.data?.status !== "success") {
-      // Revert UI state if API call fails
       setArtistes(prevArtists => 
         prevArtists.map(section => ({
           ...section,
@@ -252,7 +263,7 @@ const handleFollowArtist = async (artistId: string) => {
         }}
       />
       <TouchableOpacity
-        onPress={handleContinueWithInterests}
+        onPress={handleNext}
         style={{
           backgroundColor: "#FF6D1B",
           width: "90%",
@@ -293,10 +304,25 @@ const handleFollowArtist = async (artistId: string) => {
             <Text className="text-[24px] text-[#f4f4f4] font-PlusJakartaSansBold">Based on your selections</Text>
             <Text className="text-[14px] font-PlusJakartaSansRegular text-[#D2D3D5]">Alright! Let's follow some artistes to start exploring their discographies</Text>
         </View>
-          <ArtistSectionList
+        <ArtistSectionList
           sections={artistes ? artistes : []}
           onFollow={handleFollowArtist}
+          loading={loading}
         />
+        <TouchableOpacity
+          onPress={handleNext}
+          style={{
+            backgroundColor: "#FF6D1B",
+            width: "90%",
+            alignSelf: "center",
+            padding: 16,
+            borderRadius: 56,
+            alignItems: "center",
+            marginTop: 20,
+          }}
+        >
+          <Text style={{ color: "#ffffff", fontSize: 16 }}>Finish</Text>
+        </TouchableOpacity>
       </View>
       )}
     </SafeAreaView>
