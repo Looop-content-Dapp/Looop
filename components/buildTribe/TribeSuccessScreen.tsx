@@ -85,6 +85,11 @@ const TribeSuccessScreen = ({ tribeName  }: Prop) => {
                 fontFamily: 'PlusJakartaSansMedium',
                 marginRight: 4
               }}>
+               <CheckmarkBadge01Icon
+                   size={24}
+                   variant="solid"
+                   color="#2DD881"
+                 />
                 Minted
               </Text>
             </View>
