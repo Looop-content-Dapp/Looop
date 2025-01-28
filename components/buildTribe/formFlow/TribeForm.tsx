@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, ScrollView, Image } from 'react-native';
 import useFileUpload, { FileType } from '../../../hooks/useFileUpload';
 import { CollectibleFileType, getFileTypeFromUri } from '@/types/index';
 import { FormField } from '@/components/app-components/formField';

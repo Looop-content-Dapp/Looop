@@ -44,11 +44,28 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
         router.push({
           pathname: `/artist/${item?._id}`,
           params: {
-            index: item?._id,
-            image: item?.images[0]?.url,
+            id: item?._id,
+            artistId: item?.artistId,
+            image: item?.profileImage,
             name: item?.name,
-            bio: `${item?.biography}`,
-            isVerfied: item?.verified,
+            bio: item?.biography,
+            isVerified: item?.verified,
+            email: item?.email,
+            websiteUrl: item?.websiteurl,
+            address1: item?.address1,
+            address2: item?.address2,
+            city: item?.city,
+            country: item?.country,
+            postalCode: item?.postalcode,
+            followers: item?.followers,
+            monthlyListeners: item?.monthlyListeners,
+            popularity: item?.popularity,
+            genres: item?.genres,
+            labels: item?.labels,
+            topTracks: item?.topTracks,
+            createdAt: item?.createdAt,
+            updatedAt: item?.updatedAt,
+            isActive: item?.isActive
           },
         })
       }
@@ -60,9 +77,9 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
         width={140}
         show={loading || isImageLoading}
       >
-        {item?.images && (
+        {item?.profileImage && (
           <Image
-            source={{ uri: item?.images["2"].url }}
+            source={{ uri: item?.profileImage }}
             className="w-[140px] h-[140px] m-[8px] rounded-full"
             onLoadStart={() => setIsImageLoading(true)}
             onLoadEnd={() => setIsImageLoading(false)}

@@ -20,35 +20,11 @@ type Props = {
 const ArtistInfo = ({ follow, name, desc, follower, isVerfied, index }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [followed, setFollowed] = useState(false);
-   console.log("verfied", isVerfied)
   const {
     followArtist,
-    retrieveUserId,
     isFollowingArtist, // Make sure this is part of your useQuery hook
   } = useQuery();
   const { userdata } = useAppSelector((state) => state.auth);
-
-  useEffect(() => {
-    const checkFollowStatus = async () => {
-      try {
-        if (userdata?._id) {
-          const isFollowing = await isFollowingArtist(userdata?._id as string , index);
-          console.log(`isFollowingArtist returned: ${isFollowing}`);
-
-          setFollowed(isFollowing);
-          console.log(`User is ${isFollowing ? '' : 'not '}following artist with ID: ${index}`);
-        }
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.error('Axios error while checking follow status:', error.response?.data);
-        } else {
-          console.error('Unexpected error while checking follow status:', error);
-        }
-      }
-    };
-
-    checkFollowStatus();
-  }, [index]);
 
   // Function to handle following an artist
   const handleFollowArtist = async () => {

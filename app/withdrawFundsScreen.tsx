@@ -115,12 +115,7 @@ const WithdrawFundsScreen = ({ availableBalance = 32540.40 }: WithdrawFundsScree
                   <Text className="text-white text-2xl">⌫</Text>
                 ) : num ? (
                   <View>
-                    <Text className="text-white text-2xl text-center">{num}</Text>
-                    <Text className="text-[#787A80] text-xs text-center">
-                      {num === '2' ? 'ABC' : num === '3' ? 'DEF' : num === '4' ? 'GHI' :
-                       num === '5' ? 'JKL' : num === '6' ? 'MNO' : num === '7' ? 'PQRS' :
-                       num === '8' ? 'TUV' : num === '9' ? 'WXYZ' : ''}
-                    </Text>
+                    <Text className="text-white text-2xl font-PlusJakartaSansBold text-center">{num}</Text>
                   </View>
                 ) : null}
               </TouchableOpacity>
@@ -134,22 +129,25 @@ const WithdrawFundsScreen = ({ availableBalance = 32540.40 }: WithdrawFundsScree
   const renderAmountInput = () => (
     <View className="flex-1">
       <View className="items-center mt-12">
-        <Text className="text-[56px] font-PlusJakartaSansExtraBold text-white font-medium">
-          ${Number(amount).toLocaleString()}
+        <Text className="text-[56px] font-PlusJakartaSansExtraBold font-medium">
+          <Text className="text-white">$</Text>
+          <Text className={amount === '0' ? 'text-[#787A80]' : 'text-white'}>
+            {Number(amount).toLocaleString()}
+          </Text>
         </Text>
-        <Text className="text-[#787A80] text-lg mt-2">
+        <Text className="text-[#787A80] font-PlusJakartaSansMedium text-lg mt-2">
           {Number(amount)} USDT
         </Text>
       </View>
 
       <View className="mt-[179px] mx-4">
-        <View className="flex-row justify-between items-center bg-[#0A0B0F] p-[20px] rounded-lg">
+        <View className="flex-row justify-between items-center bg-[#0A0B0F] border border-[#12141B] p-[20px] rounded-lg">
           <View className="fitems-center">
-            <Text className="text-[#787A80]">Available balance</Text>
-            <Text className="text-white text-lg">${availableBalance.toLocaleString()}</Text>
+            <Text className="text-[#787A80] text-[14px] font-PlusJakartaSansMedium">Available balance</Text>
+            <Text className="text-[#f4f4f4] text-[20px] font-PlusJakartaSansBold">${availableBalance.toLocaleString()}</Text>
           </View>
           <TouchableOpacity
-            className="ml-2 bg-[#12141B] p-[12px] rounded-[24px]"
+            className="ml-2 bg-[#12141B] p-[12px] border border-[#12141B] rounded-[24px]"
             onPress={() => setAmount(availableBalance.toString())}
           >
             <Text className="text-white">Withdraw max</Text>
@@ -201,7 +199,7 @@ const WithdrawFundsScreen = ({ availableBalance = 32540.40 }: WithdrawFundsScree
       {accounts.map((account) => (
         <TouchableOpacity
           key={account.id}
-          className={`flex-row items-center px-[16px] py-[19px] rounded-lg mb-3 bg-[#0A0B0F]`}
+          className={`flex-row items-center px-[16px] py-[19px] rounded-lg border-1 border-[#12141B] mb-3 bg-[#0A0B0F]`}
           onPress={() => setSelectedAccount(account.id)}
         >
           <View className="h-6 w-6 rounded-full border border-[#FF8A49] mr-3 items-center justify-center">
@@ -269,7 +267,7 @@ const WithdrawFundsScreen = ({ availableBalance = 32540.40 }: WithdrawFundsScree
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1">
       <StatusBar style="light" />
       <View className="flex-1">
         {/* Header */}

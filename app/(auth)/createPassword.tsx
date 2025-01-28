@@ -21,9 +21,9 @@ import { useQuery } from "../../hooks/useQuery";
 import { useRouter } from "expo-router";
 import { AxiosError } from 'axios';
 
-const debounce = (func, delay) => {
-  let timeout;
-  return (...args) => {
+const debounce = <T extends (...args: any[]) => void>(func: T, delay: number) => {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => {
       func(...args);
@@ -99,7 +99,7 @@ const CreatePassword = () => {
     }
   }, [_username]);
 
-  const validatePassword = (input) => {
+  const validatePassword = (input: any) => {
     const hasLetter = /[a-zA-Z]/.test(input);
     const hasNumber = /[0-9]/.test(input);
     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(input);
@@ -113,30 +113,27 @@ const CreatePassword = () => {
     });
   };
 
-  const handlePasswordChange = (text) => {
+  const handlePasswordChange = (text: string) => {
     setPassword(text);
     validatePassword(text);
   };
 
-  const handleAccount = async () => {
-    try {
-      if (
-        password &&
-        validation.hasLetter &&
-        validation.hasNumber &&
-        validation.hasSpecialChar &&
-        validation.isLongEnough
-      ) {
-        router.navigate({
-          pathname: "/(auth)/secureAccount",
-          params: {
-            secrets: password,
-            name: _username,
-          },
-        });
-      }
-    } catch (error) {
-      console.error(error);
+  const handleAccount = () => {
+    if (
+      password &&
+      validation.hasLetter &&
+      validation.hasNumber &&
+      validation.hasSpecialChar &&
+      validation.isLongEnough &&
+      showMessage === "✓ Username is available"
+    ) {
+      router.replace({
+        pathname: "/(auth)/secureAccount",
+        params: {
+          secrets: password,
+          name: _username,
+        },
+      });
     }
   };
 

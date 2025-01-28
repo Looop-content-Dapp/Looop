@@ -15,7 +15,7 @@ import { useRouter } from 'expo-router';
 
 interface CommunityData {
   _id: string;
-  name: string;
+  communityName: string;
   description: string;
   createdBy: string;
   createdAt: string;
@@ -57,7 +57,7 @@ const JoinCommunity = ({ isLoading, communityData, onJoinPress, isMember = false
         pathname: '/communityDetails',
         params: {
           id: communityData._id,
-          name: communityData.name,
+          name: communityData.communityName,
           description: communityData.description,
           image: communityData.coverImage
         }
@@ -89,8 +89,8 @@ const JoinCommunity = ({ isLoading, communityData, onJoinPress, isMember = false
           </View>
           <View style={styles.communityContent}>
             <View style={styles.textContainer}>
-              <Text style={styles.communityName} numberOfLines={1}>
-                {communityData.name}
+              <Text style={styles.communityName} numberOfLines={1} className='captilize'>
+                {communityData.communityName}
               </Text>
               <Text style={styles.communityDescription} numberOfLines={2}>
                 {communityData.description}

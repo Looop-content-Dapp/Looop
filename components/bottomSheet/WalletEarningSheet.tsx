@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, Image } from 'react-native';
 import {
   ArrowDown01Icon,
   Copy01Icon,
@@ -35,12 +35,27 @@ interface Bank {
 
 const WalletEarningSheet = ({ activeSheet, onSheetChange }: WalletEarningSheetProps) => {
   const [timeFrame, setTimeFrame] = useState('Last 30 days');
-  const [selectedFilter, setSelectedFilter] = useState<string>('All');
-  const filterBalanceOptions: string[] = ['All', 'Xion', 'Starknet'];
-  const filterTimeFrame: string[] =  ["Last 30 days", "2 months", "1 year"]
+  const [selectedNetwork, setSelectedNetwork] = useState<string>('Xion');
+  const networkOptions: string[] = ['Xion', 'Starknet'];
+  const filterTimeFrame: string[] = ["Last 30 days", "2 months", "1 year"];
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [showConnectedAccounts, setShowConnectedAccounts] = useState(false);
+  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
   const { userdata } = useAppSelector((state) => state.auth);
+
+  // Add network-specific data
+  const networkData = {
+    Xion: {
+      balance: '$32,578.48',
+      walletAddress: userdata?.wallets?.xion || '',
+      icon: require('../../assets/images/xion.png')
+    },
+    Starknet: {
+      balance: '$15,234.92',
+      walletAddress: userdata?.wallets?.starknet || '',
+      icon: require('../../assets/images/starknet.png')
+    }
+  };
 
   useEffect(() => {
     if (activeSheet !== null) {
@@ -81,14 +96,32 @@ const WalletEarningSheet = ({ activeSheet, onSheetChange }: WalletEarningSheetPr
     >
       {/* Balance */}
       <View className="items-center mb-6">
-        <Text className="text-white text-[40px] font-PlusJakartaSansMedium font-bold">$32,578.48</Text>
+        <View className="flex-row items-center">
+          <Text className="text-white text-[40px] font-PlusJakartaSansMedium font-bold">
+            {isBalanceVisible 
+              ? networkData[selectedNetwork as keyof typeof networkData].balance
+              : '****'
+            }
+          </Text>
+          <TouchableOpacity 
+            onPress={() => setIsBalanceVisible(!isBalanceVisible)}
+            className="ml-2"
+          >
+            {isBalanceVisible 
+              ? <ViewIcon size={24} color="#787A80" />
+              : <ViewOffIcon size={24} color="#787A80" />
+            }
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Wallet Address */}
-      <View className="bg-[#0A0B0F] p-4 rounded-lg mb-4">
+      <View className="bg-[#0A0B0F] border border-[#12141B] p-4 rounded-lg mb-4">
         <Text className="text-[#787A80] mb-2">Wallet address</Text>
         <View className="flex-row items-center justify-between">
-          <Text className="text-white">{userdata?.wallets.xion.slice(0, 36)}...</Text>
+          <Text className="text-white">
+            {networkData[selectedNetwork as keyof typeof networkData].walletAddress.slice(0, 36)}...
+          </Text>
           <TouchableOpacity onPress={handleCopyAddress}>
             <Copy01Icon size={20} color="#787A80" />
           </TouchableOpacity>
@@ -132,7 +165,7 @@ const WalletEarningSheet = ({ activeSheet, onSheetChange }: WalletEarningSheetPr
               </Text>
             </View>
           </View>
-          <ArrowRight01Icon size={20} color="#FF8A49" />
+          <ArrowRight01Icon size={20} color="#787A80" variant='stroke' />
         </View>
       </TouchableOpacity>
 
@@ -192,6 +225,7 @@ const WalletEarningSheet = ({ activeSheet, onSheetChange }: WalletEarningSheetPr
         index={activeSheet !== null ? 0 : -1}
         snapPoints={['95%']}
         enablePanDownToClose={true}
+        enableContentPanningGesture={false}
         backgroundStyle={{ backgroundColor: '#040405' }}
         handleIndicatorStyle={{
           backgroundColor: '#787A80',
@@ -208,12 +242,17 @@ const WalletEarningSheet = ({ activeSheet, onSheetChange }: WalletEarningSheetPr
                 {activeSheet !== 'main' ? 'Back' : 'Close'}
               </Text>
             </TouchableOpacity>
-            <Text className="text-white text-xl font-bold">Wallet</Text>
             <FilterButton
-      options={filterBalanceOptions}
-      selectedOption={selectedFilter}
-      onOptionSelect={setSelectedFilter}
-    />
+              options={networkOptions}
+              selectedOption={selectedNetwork}
+              onOptionSelect={setSelectedNetwork}
+              icon={
+                <Image
+                  source={networkData[selectedNetwork as keyof typeof networkData].icon}
+                  className="w-5 h-5 mr-2"
+                />
+              }
+            />
           </View>
         </View>
 

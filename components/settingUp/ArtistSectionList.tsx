@@ -92,6 +92,7 @@ const ArtistCard = ({
     </View>
   );
 };
+//&& !item
 
 const ArtistSection = ({
   section,
@@ -109,7 +110,7 @@ const ArtistSection = ({
         data={loading ? Array(3).fill({}) : section}
         keyExtractor={(item, index) => index.toString() + Date.now()}
         renderItem={({ item }) => (
-          loading ? (
+          loading && !item  ? (
             <SkeletonArtistCard />
           ) : (
             <ArtistCard
