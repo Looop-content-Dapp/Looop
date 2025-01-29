@@ -23,11 +23,12 @@ interface SignInUserData {
     following: number;
     friendsCount: number;
     artistPlayed: number;
-    faveArtists: any[];
+    favouriteArtists: any[];
     preferences: any[];
     createdAt: string;
     updatedAt: string;
     __v: number;
+    artist: string | any
   }
 
 // following artist

@@ -4,7 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 const StepIndicator = ({ currentStep, STEPS }) => {
   const getStepStatus = (step) => {
-    const stepOrder = [STEPS.BASIC, STEPS.MEMBERSHIP, STEPS.PREVIEW];
+    const stepOrder = [STEPS.BASIC, STEPS.PREVIEW];
     const currentIndex = stepOrder.indexOf(currentStep);
     const stepIndex = stepOrder.indexOf(step);
 
@@ -121,20 +121,6 @@ const StepIndicator = ({ currentStep, STEPS }) => {
 
         {renderConnector(STEPS.BASIC)}
 
-        {/* Membership Step */}
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {renderStepIndicator(STEPS.MEMBERSHIP, 2)}
-          <Text style={{
-            marginLeft: 8,
-            fontSize: 14,
-            fontFamily: 'PlusJakartaSansMedium',
-            color: getStepTextColor(STEPS.MEMBERSHIP),
-          }}>
-            Membership
-          </Text>
-        </View>
-
-        {renderConnector(STEPS.MEMBERSHIP)}
 
         {/* Preview Step */}
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>

@@ -158,7 +158,7 @@ const ConnectedAccountsScreen = () => {
             />
 
             <TouchableOpacity
-                className={`bg-[#FF8A49] p-4 rounded-lg mt-6 ${
+                className={`bg-[#FF6D1B] py-[16px] rounded-lg mt-6 ${
                     !(newAccount.accountNumber && newAccount.bankName && newAccount.accountName)
                         ? 'opacity-50'
                         : ''

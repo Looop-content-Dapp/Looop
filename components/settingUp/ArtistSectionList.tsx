@@ -9,57 +9,115 @@ import {
   StyleSheet,
   Dimensions,
 } from "react-native";
+import { MotiView } from "moti";
 
 const { width } = Dimensions.get("window");
+
+const SkeletonArtistCard = () => {
+  return (
+    <View style={styles.card}>
+      <MotiView
+        from={{ opacity: 0.5 }}
+        animate={{ opacity: 1 }}
+        transition={{ loop: true, duration: 1000 }}
+        style={[styles.artistImage, { backgroundColor: '#2e2e2e' }]}
+      />
+      <MotiView
+        from={{ opacity: 0.5 }}
+        animate={{ opacity: 1 }}
+        transition={{ loop: true, duration: 1000 }}
+        style={{
+          height: 20,
+          width: '80%',
+          backgroundColor: '#2e2e2e',
+          borderRadius: 4,
+          marginBottom: 8,
+        }}
+      />
+      <MotiView
+        from={{ opacity: 0.5 }}
+        animate={{ opacity: 1 }}
+        transition={{ loop: true, duration: 1000 }}
+        style={{
+          height: 16,
+          width: '60%',
+          backgroundColor: '#2e2e2e',
+          borderRadius: 4,
+          marginBottom: 12,
+        }}
+      />
+      <MotiView
+        from={{ opacity: 0.5 }}
+        animate={{ opacity: 1 }}
+        transition={{ loop: true, duration: 1000 }}
+        style={{
+          height: 36,
+          width: '80%',
+          backgroundColor: '#2e2e2e',
+          borderRadius: 20,
+        }}
+      />
+    </View>
+  );
+};
 
 const ArtistCard = ({
   artist,
   onFollow,
-  isFollowing,
 }: {
   artist: any;
   onFollow: any;
-  isFollowing: any;
-}) => (
-  <View style={styles.card}>
-    <Image source={{ uri: artist.profileImage }} style={styles.artistImage} />
-    <Text style={styles.artistName}>{artist?.name}</Text>
-    <View style={styles.statsContainer}>
-      <Text style={styles.statsText}>{artist?.tribestars} Tribestars</Text>
-      <Text style={styles.tribeText}>{artist?.tribeName}</Text>
+}) => {
+  return (
+    <View style={styles.card}>
+      <Image source={{ uri: artist.profileImage }} style={styles.artistImage} />
+      <Text style={styles.artistName}>{artist?.name}</Text>
+      <View style={styles.statsContainer}>
+        <Text style={styles.statsText}>{artist?.tribestars} Tribestars</Text>
+      </View>
+      <TouchableOpacity
+        style={[
+          styles.followButton, 
+          artist.isFavourite && styles.followingButton
+        ]}
+        onPress={() => onFollow(artist.id)}
+      >
+        <Text style={[
+          styles.followButtonText,
+          artist.isFavourite && { color: '#ffffff' }
+        ]}>
+          {artist.isFavourite ? "Following" : "Follow"}
+        </Text>
+      </TouchableOpacity>
     </View>
-    <TouchableOpacity
-      style={[styles.followButton, isFollowing && styles.followingButton]}
-      onPress={() => onFollow(artist.id)}
-    >
-      <Text style={styles.followButtonText}>
-        {isFollowing ? "Following" : "Join Tribe"}
-      </Text>
-    </TouchableOpacity>
-  </View>
-);
+  );
+};
+//&& !item
 
 const ArtistSection = ({
   section,
   onFollow,
-  followingArtists,
+  loading,
 }: {
   section: any;
   onFollow: any;
-  followingArtists: any;
+  loading?: boolean;
 }) => {
   return (
     <View style={styles.section}>
       <FlatList
         horizontal
-        data={section}
+        data={loading ? Array(3).fill({}) : section}
         keyExtractor={(item, index) => index.toString() + Date.now()}
         renderItem={({ item }) => (
-          <ArtistCard
-            artist={item}
-            onFollow={onFollow}
-            isFollowing={followingArtists.includes(item.id)}
-          />
+          loading && !item  ? (
+            <SkeletonArtistCard />
+          ) : (
+            <ArtistCard
+              artist={item}
+              onFollow={onFollow}
+            />
+          )
         )}
         contentContainerStyle={styles.artistList}
       />
@@ -70,30 +128,32 @@ const ArtistSection = ({
 const ArtistSectionList = ({
   sections = [],
   onFollow,
-  followingArtists = [],
+  loading,
 }: {
   sections: any[];
   onFollow?: any;
-  followingArtists?: any[];
+  loading?: boolean;
 }) => {
-  const listsections = sections.map((item: any) => ({
-    title: item.genreName,
-    data: item.artists,
-  }));
+  const listsections = loading 
+    ? [{ title: 'Loading...', data: [] }] 
+    : sections.map((item: any) => ({
+        title: item.genreName,
+        data: item.artists,
+      }));
 
   return (
     <SectionList
       sections={listsections}
       keyExtractor={(item, index) => index.toString() + Date.now()}
       renderSectionHeader={({ section }) => (
-        <>
+        <View className="mt-[44px]">
           <Text style={styles.sectionTitle}>{section.title}</Text>
           <ArtistSection
             section={section.data}
             onFollow={onFollow}
-            followingArtists={followingArtists}
+            loading={loading}
           />
-        </>
+        </View>
       )}
       renderItem={() => null}
       stickySectionHeadersEnabled={false}
@@ -113,16 +173,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#ffffff",
     marginBottom: 16,
-    paddingHorizontal: 16,
   },
   artistList: {
-    paddingHorizontal: 8,
     flexGrow: 1,
   },
   card: {
     width: width * 0.4,
     marginHorizontal: 8,
-    backgroundColor: "#1A1A1A",
+    backgroundColor: "#12141B",
     borderRadius: 16,
     padding: 12,
     alignItems: "center",
@@ -153,7 +211,7 @@ const styles = StyleSheet.create({
     color: "#808080",
   },
   followButton: {
-    backgroundColor: "#FF6D1B",
+    backgroundColor: "#fff",
     paddingVertical: 8,
     paddingHorizontal: 24,
     borderRadius: 20,
@@ -162,8 +220,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#555555",
   },
   followButtonText: {
-    color: "#ffffff",
+    color: "#040405",
     fontSize: 14,
+    fontWeight: "500",
+  },
+
+  continueButton: {
+    backgroundColor: "#FF6D1B",
+    width: "90%",
+    alignSelf: "center",
+    padding: 16,
+    borderRadius: 56,
+    alignItems: "center",
+    position: "absolute",
+    bottom: 20,
+  },
+  continueButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
     fontWeight: "500",
   },
 });

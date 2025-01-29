@@ -15,6 +15,8 @@ type ContractFlowState =
 
 const ContractSigning = () => {
     const [currentFlow, setCurrentFlow] = useState<ContractFlowState>("REVIEWED");
+    const [fullName, setFullName] = useState<string>('') // Add type
+    const [isChecked, setIsChecked] = useState<boolean>(false) // Add type
     const { width, height } = useWindowDimensions();
     const { push } = useRouter();
 
@@ -40,7 +42,12 @@ const ContractSigning = () => {
             case "CONTRACT":
                 return <ContractAgreement />;
             case "SIGN":
-                return <SignContract />;
+                return <SignContract
+                fullName={fullName}
+                setFullName={setFullName}
+                isChecked={isChecked}
+                setIsChecked={setIsChecked}
+                 />;
             default:
                 return <Intro />;
         }
@@ -58,7 +65,9 @@ const ContractSigning = () => {
                 setCurrentFlow("SIGN");
                 break;
             case "SIGN":
+              if (fullName && isChecked) {
                 push("/(artisteTabs)/(dashboard)");
+            }
                 break;
         }
     };

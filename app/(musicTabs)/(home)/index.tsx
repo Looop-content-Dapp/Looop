@@ -32,15 +32,6 @@ const Index = () => {
   const [allArtists, setAllArtists] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Function to sort albums by date
-  // const sortAlbumsByDate = (albums: any) => {
-  //   return albums.sort((a, b) => {
-  //     const dateA = new Date(a.release_date);
-  //     const dateB = new Date(b.release_date);
-  //     return dateB - dateA; // Sort in descending order
-  //   });
-  // };
-
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -125,11 +116,11 @@ const Index = () => {
           /> */}
 
           {/* Artists to Explore */}
-          {/* <BasedOnSubscription
+          <BasedOnSubscription
             data={allArtists}
             isLoading={loading}
             title="New Discographies to Explore"
-          /> */}
+          />
         </ScrollView>
       </View>
     </>

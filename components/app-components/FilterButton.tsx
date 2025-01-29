@@ -21,12 +21,15 @@ export interface FilterButtonProps {
   selectedOption: string;
   /** Callback function when an option is selected */
   onOptionSelect: (option: string) => void;
+  /** Optional icon component to display before the text */
+  icon?: React.ReactNode;
 }
 
 const FilterButton: React.FC<FilterButtonProps> = ({
   options = [],
   selectedOption,
   onOptionSelect,
+  icon,
 }) => {
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [modalPosition, setModalPosition] = useState<ModalPosition>({ top: 0, right: 0 });
@@ -50,6 +53,7 @@ const FilterButton: React.FC<FilterButtonProps> = ({
         style={styles.button}
         onPress={handleFilterPress}
       >
+        {icon && <View style={styles.iconContainer}>{icon}</View>}
         <Text style={styles.buttonText}>
           {selectedOption}
         </Text>
@@ -74,7 +78,6 @@ const FilterButton: React.FC<FilterButtonProps> = ({
                 style={[
                   styles.option,
                   option === selectedOption && styles.selectedOption,
-                  // Remove bottom border from last item
                   option === options[options.length - 1] && styles.lastOption
                 ]}
                 onPress={() => {
@@ -105,6 +108,9 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingHorizontal: 10,
     gap: 4,
+  },
+  iconContainer: {
+    marginRight: 4,
   },
   buttonText: {
     fontSize: 12,

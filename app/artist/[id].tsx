@@ -20,10 +20,12 @@ import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import PaymentBottomSheet from '../../components/Subscribe/PaymentBottomsheet';
 import ArtistReleases from '../../components/ArtistProfile/ArtistReleases';
+import api from '@/config/apiConfig';
+import { useAppSelector } from '@/redux/hooks';
 
 interface CommunityData {
   _id: string;
-  name: string;
+  communityName: string;
   description: string;
   createdBy: string;
   createdAt: string;
@@ -32,51 +34,70 @@ interface CommunityData {
 }
 
 const ArtistDetails = () => {
-  const { index, image, name, bio, isVerified } = useLocalSearchParams();
-  const [artistSingles, setArtistSingles] = useState<Artist | null>(null);
+  const {
+    index,
+    artistId,
+    image,
+    name,
+    bio,
+    isVerified,
+    email,
+    websiteUrl,
+    address1,
+    address2,
+    city,
+    country,
+    postalCode,
+    followers,
+    monthlyListeners,
+    popularity,
+    genres,
+    labels,
+    topTracks,
+    createdAt,
+    updatedAt,
+    isActive,
+    id
+  } = useLocalSearchParams();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [topSongs, setTopSongs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [communityData, setCommunityData] = useState<CommunityData | null>(null);
+  const [communityData, setCommunityData] = useState<any | null>(null);
   const [showPaymentSheet, setShowPaymentSheet] = useState(false);
+  const { userdata } = useAppSelector((state) => state.auth)
   const scrollY = useRef(new Animated.Value(0)).current;
   const [isMember, setIsMember] = useState(false);
   const router = useRouter();
-  const {getAllCommunities,  retrieveUserId } = useQuery();
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
-  console.log("isVerified", isVerified)
 
   const toggleDescription = useCallback(() => {
     setIsExpanded((prev) => !prev);
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchArtistCommunity = async () => {
       try {
-        const [communitiesResponse] = await Promise.all([
-          getAllCommunities()
-        ]);
-
-        if (communitiesResponse.data && communitiesResponse.data.length > 0) {
-          const artistCommunity = communitiesResponse.data.find(
-            (community: CommunityData) => community.createdBy === index
-          );
-          if (artistCommunity) {
-            setCommunityData(artistCommunity);
-          }
-        }
+        setIsLoading(true);
+        const response = await api.get(`/api/community/${id as string}`)
+        setCommunityData(response?.data?.data);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching artist community:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchData();
-  }, [index]);
+    fetchArtistCommunity();
+  }, []);
 
   const handleJoinPress = () => {
-    setShowPaymentSheet(true);
+    // setShowPaymentSheet(true);
+     router.push({
+      pathname: "/payment",
+      params: {
+        name: communityData.tribePass.collectibleName,
+        image: communityData.tribePass.collectibleImage
+      }
+     })
   };
 
   const handleClosePaymentSheet = () => {
@@ -86,10 +107,7 @@ const ArtistDetails = () => {
   const handleJoinCommunity = async () => {
     if (communityData) {
       try {
-        const userId = await retrieveUserId();
-        if (userId) {
-        //   await joinCommunity(userId, communityData._id);
-          setIsMember(true); // Update membership status
+        if (userdata?._id) {
           handleClosePaymentSheet();
         }
       } catch (error) {

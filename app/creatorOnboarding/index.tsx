@@ -17,7 +17,8 @@ import { ClaimStatus } from "@/types/index";
 import Celebration from "@/assets/svg/Celebration";
 import { useAppSelector } from "@/redux/hooks";
 
-const LoadingScreen = () => (
+const LoadingScreen = () => {
+  return (
     <View style={{
       flex: 1,
       backgroundColor: "#040405",
@@ -30,6 +31,7 @@ const LoadingScreen = () => (
       <Text className="text-[40px] text-[#fff] font-PlusJakartaSansBold">For Creators</Text>
     </View>
   );
+}
 
 const CreatorModeWelcome = () => {
   const [claimStatus, setClaimStatus] = useState<ClaimStatus>("NOT_SUBMITTED");
@@ -37,18 +39,20 @@ const CreatorModeWelcome = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { width, height } = useWindowDimensions();
-  const { claimId } = useAppSelector((state) => state.auth);
+  const { claimId, userdata } = useAppSelector((state) => state.auth);
+  console.log("claimId", claimId);
   const { push } = useRouter();
 
   const checkArtistClaimStatus = async () => {
     if (!claimId){
         setClaimStatus("NOT_SUBMITTED")
+        setIsLoading(false);
+        return;
     }
-
     try {
       setIsLoading(true);
       const response = await api.get(`/api/artistclaim/status/${claimId}`);
-      console.log(response.data)
+      console.log(response)
       setClaimStatus(response.data.data.status);
     } catch (error) {
       console.error("Error checking claim status:", error);
@@ -65,7 +69,7 @@ const CreatorModeWelcome = () => {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [claimStatus]);
 
   // Show loading screen if either the data is loading or we're within the minimum display time
   if (isLoading || showLoadingScreen) {
@@ -167,7 +171,7 @@ const CreatorModeWelcome = () => {
       case "NOT_SUBMITTED":
       case "rejected":
         return <Welcome />;
-      case "pending":
+      case  "pending":
         return <UnderReview />;
       case "approved":
         return (

@@ -752,10 +752,9 @@ export const useQuery = () => {
 
   const getUserById = useCallback(async (userId: string) => {
     try {
-      const response = await axios.get(
-        `https://looop-backend.onrender.com/api/user/${userId}`
+      const response = await api.get(
+        `/api/user/${userId}`
       );
-      console.log("User data fetched successfully:", response.data);
       return response.data;
     } catch (error: any) {}
   }, []);

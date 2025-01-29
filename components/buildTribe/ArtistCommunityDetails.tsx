@@ -40,7 +40,6 @@ const ArtistCommunityDetails = ({ community }: ArtistCommunityDetailProps) => {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
   const [showStickyTabs, setShowStickyTabs] = useState(false);
-  console.log(community)
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 

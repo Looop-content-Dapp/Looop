@@ -7,7 +7,7 @@ export default function _CreatorOnboardingLayout() {
     screenOptions={{
         headerShown: false,
         contentStyle: {
-          backgroundColor: "#000000",
+          backgroundColor: "#040405",
         },
         headerStyle: {
           backgroundColor: "#040405",

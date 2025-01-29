@@ -27,8 +27,6 @@ const OnboardingFlow = () => {
   const [artistCommunity, setArtistCommunity] = useState<Community | null>(null);
   const { artistId } = useAppSelector((state) => state.auth);
 
-  const { getAllCommunities } = useQuery();
-
   useEffect(() => {
     const fetchArtistCommunity = async () => {
       try {
@@ -43,7 +41,7 @@ const OnboardingFlow = () => {
     };
 
     fetchArtistCommunity();
-  }, [getAllCommunities]);
+  }, []);
 
   // Show skeleton loader while fetching data
   if (loading) {
