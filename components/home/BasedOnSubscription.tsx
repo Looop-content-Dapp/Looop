@@ -2,6 +2,7 @@ import { View, ScrollView, Text, Pressable, Image } from "react-native";
 import React, { useState } from "react";
 import { Skeleton } from "moti/skeleton";
 import { useRouter } from "expo-router";
+import { useAppSelector } from "@/redux/hooks";
 
 const ExploreDiscographies = ({
   title,
@@ -37,7 +38,9 @@ export default ExploreDiscographies;
 
 const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
   const [isImageLoading, setIsImageLoading] = useState(true);
+  const { userdata } = useAppSelector((state) =>  state.auth)
   const router = useRouter();
+  const followers = item?.followers
   return (
     <Pressable
       onPress={() =>
@@ -57,7 +60,7 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
             city: item?.city,
             country: item?.country,
             postalCode: item?.postalcode,
-            followers: item?.followers,
+            followers: followers,
             monthlyListeners: item?.monthlyListeners,
             popularity: item?.popularity,
             genres: item?.genres,
@@ -65,7 +68,9 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
             topTracks: item?.topTracks,
             createdAt: item?.createdAt,
             updatedAt: item?.updatedAt,
-            isActive: item?.isActive
+            isActive: item?.isActive,
+           isFollowing:  followers?.includes(userdata?._id),
+           noOfFollowers: followers.length
           },
         })
       }

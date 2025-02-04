@@ -1,23 +1,31 @@
-import { View, Text, TouchableNativeFeedback } from "react-native";
 import React from "react";
-import { Slot, Stack, Tabs } from "expo-router";
+import { Stack } from "expo-router";
 
 export default () => {
   return (
     <Stack
-    screenOptions={{
-      headerShown: true,
-      contentStyle: {
-        backgroundColor: "#040405",
-      },
-      headerStyle: {
-        backgroundColor: "#040405",
-      },
-      title: "",
-    }}
+      screenOptions={{
+        headerShown: true,
+        contentStyle: {
+          backgroundColor: "#040405",
+        },
+        headerStyle: {
+          backgroundColor: "#040405",
+        },
+        title: "",
+      }}
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="payInCrypto" />
+      <Stack.Screen name="payWithCard" />
+      <Stack.Screen name="cardAuthentication" />
+      <Stack.Screen 
+        name="MintingSuccessful" 
+        options={{
+          headerShown: false,
+          gestureEnabled: false
+        }}
+      />
     </Stack>
   );
 };

@@ -23,7 +23,6 @@ const Signin = () => {
   const {
     handleEmailSignIn,
     loading,
-    handleOAuthSignIn,
   } = useClerkAuthentication();
   return (
     <>
@@ -99,12 +98,12 @@ const Signin = () => {
               onPress={() => handleEmailSignIn(emailAddress, password)}
             />
 
-            <Text className="mt-[10px] text-center text-gray-400 font-PlusJakartaSansRegular text-sm">
+            {/* <Text className="mt-[10px] text-center text-gray-400 font-PlusJakartaSansRegular text-sm">
               Or you can sign in with
-            </Text>
+            </Text> */}
           </View>
 
-          <View className="gap-y-4 flex flex-row gap-x-4">
+          {/* <View className="gap-y-4 flex flex-row gap-x-4">
             <TouchableOpacity
               className="bg-white flex-1 py-4 rounded-full flex-row items-center justify-center"
               onPress={() => handleOAuthSignIn('google')}
@@ -130,11 +129,11 @@ const Signin = () => {
                 Apple
               </Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
 
-          <View className="flex-row items-center justify-center gap-x-[2px] absolute bottom-12 left-0 right-0">
+          <View className="flex-row items-center justify-center gap-x-[4px] absolute bottom-12 left-0 right-0">
             <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[14px]">
-              You dont have an account
+              Dont have an account?
             </Text>
             <TouchableOpacity onPress={() => router.navigate("/(auth)/")}>
             <Text className="text-Orange/08 underline pl- font-PlusJakartaSansMedium text-[14px]">

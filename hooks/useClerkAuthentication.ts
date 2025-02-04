@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import { ID, Account, OAuthProvider } from "react-native-appwrite";
 import { account } from "@/appWrite";
 import store from "@/redux/store";
-import { setUserData } from "@/redux/slices/auth";
+import { setClaimId, setUserData } from "@/redux/slices/auth";
 import api from "@/config/apiConfig";
 import { showToast } from "@/config/ShowMessage";
 
@@ -80,19 +80,72 @@ export const useClerkAuthentication = () => {
     setError(null);
 
     try {
+        // // First authenticate with Appwrite
+        // await account.createEmailPasswordSession(emailAddress, password);
+
+        // Then authenticate with your backend
         const response = await api.post(`/api/user/signin`, {
           email: emailAddress,
           password: password,
         });
-        setLoading(false);
+
         store.dispatch(setUserData(response.data.data));
+        store.dispatch(setClaimId(response.data.data.artistClaim))
         showToast('Successfully signed in', 'success');
-      router.push("../(musicTabs)/(home)/");
+        router.push("/(musicTabs)/(home)");
         return response.data;
-    } catch (err) {
+    } catch (err: any) {
       setLoading(false);
       console.error("Error during sign-in:", err);
-      showToast("Invalid email or password", "error");
+      
+      // Show more specific error messages
+      if (err.type === 'user_invalid_credentials') {
+        showToast("Invalid email or password", "error");
+      } else {
+        showToast("Failed to sign in. Please try again.", "error");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const session = await account.getSession('current');
+      if (session) {
+          await account.deleteSession(session.$id);
+          router.replace('/');
+          showToast('Successfully logged out', 'success');
+      }
+  } catch (error) {
+      console.error('Error during logout:', error);
+      showToast('Failed to logout. Please try again.', 'error');
+  }
+  };
+
+  const handleDeleteAccount = async (userId: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Delete all sessions first
+      await account.deleteSessions();
+      
+      // Delete the account
+      await account.deleteIdentity(userId);
+      
+      // Clear local store
+      store.dispatch(setUserData(null));
+      
+      showToast('Account successfully deleted', 'success');
+      router.replace('/');
+    } catch (err: any) {
+      console.error('Error deleting account:', err);
+      setError('Failed to delete account');
+      showToast('Failed to delete account', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -101,6 +154,8 @@ export const useClerkAuthentication = () => {
     handleEmailSignUp,
     handleEmailSignIn,
     handleOAuthSignIn,
+    handleLogout,     // Add this
+    handleDeleteAccount, // Add this
     userId,
     loading
   };

@@ -170,11 +170,11 @@ const EmailSignupFlow = () => {
           onPress={handleEmailSubmit}
         />
 
-        <Text className="mt-14 text-center text-gray-400 font-PlusJakartaSansRegular text-sm">
+        {/* <Text className="mt-14 text-center text-gray-400 font-PlusJakartaSansRegular text-sm">
           Or you can sign up with
-        </Text>
+        </Text> */}
       </View>
-
+{/* 
       <View className="mt-12 gap-y-4">
         <TouchableOpacity
           className="bg-white py-4 rounded-full flex-row items-center justify-center"
@@ -201,7 +201,19 @@ const EmailSignupFlow = () => {
             Sign up with Apple
           </Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
+
+         <View className="flex-row items-center justify-center gap-x-[4px] absolute bottom-12 left-0 right-0">
+            <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[14px]">
+             Already have an account?
+            </Text>
+            <TouchableOpacity onPress={() => router.navigate("/(auth)/signin")}>
+            <Text className="text-Orange/08 underline pl- font-PlusJakartaSansMedium text-[14px]">
+             SignIn
+            </Text>
+            </TouchableOpacity>
+
+          </View>
     </>
   );
 

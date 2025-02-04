@@ -48,7 +48,7 @@ const ArtistDetails = () => {
     city,
     country,
     postalCode,
-    followers,
+    followers = [],
     monthlyListeners,
     popularity,
     genres,
@@ -57,7 +57,9 @@ const ArtistDetails = () => {
     createdAt,
     updatedAt,
     isActive,
-    id
+    id,
+    isFollowing,
+    noOfFollowers
   } = useLocalSearchParams();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -179,11 +181,12 @@ const ArtistDetails = () => {
             <ArtistInfo
               image={image as string}
               name={name as string}
-              follow={89000000}
+              follow={noOfFollowers as string}
               desc={bio as string}
-              follower={124590662}
+              follower={"12459"}
               isVerfied={isVerified as string}
               index={index as string}
+              isFollowing={isFollowing as boolean}
             />
 
 <JoinCommunity

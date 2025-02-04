@@ -913,16 +913,16 @@ export const fetchTracksByTitle = (title) => {
 
 
 
- export function formatNumber(num: number) {
-    if (num >= 1000000) {
-       return (num / 1000000).toFixed(1) + 'M';
-    } else if (num >= 1000) {
-       return (num / 1000).toFixed(1) + 'K';
+export function formatNumber(num: string) {
+    const numValue = parseInt(num);
+    if (numValue >= 1000000) {
+        return (numValue / 1000000).toFixed(1) + 'M';
+    } else if (numValue >= 1000) {
+        return (numValue / 1000).toFixed(1) + 'K';
     } else {
-       return num;
+        return numValue.toString();
     }
-   }
-
+}
 
 export const user = {
     name: 'Phenom',

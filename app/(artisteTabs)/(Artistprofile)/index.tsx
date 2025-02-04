@@ -5,7 +5,6 @@ import {
   ImageBackground,
   TouchableOpacity,
   Animated,
-  ScrollView,
 } from "react-native";
 import {
   ArrowLeft02Icon,
@@ -14,7 +13,6 @@ import {
   HeadphonesIcon,
 } from "@hugeicons/react-native"
 import React, { useEffect, useRef, useState } from "react";
-import BottomSheet from "@gorhom/bottom-sheet";
 import Ellipse from "../../../components/Ellipse";
 import { useRouter } from "expo-router";
 import ArtistReleases from "../../../components/ArtistProfile/ArtistReleases";
@@ -24,11 +22,9 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
-import WalletEarningSheet from "@/components/bottomSheet/WalletEarningSheet";
 import api from "@/config/apiConfig";
 import { useAppSelector } from "@/redux/hooks";
 import { Artist } from "@/types/index";
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Animatable from 'react-native-animatable';
 
 interface Community {
@@ -38,10 +34,6 @@ interface Community {
   createdBy: string;
   createdAt: string;
   __v: number;
-}
-
-interface ArtistCommunityDetailProps {
-  community: Community;
 }
 
 export type SheetType = 'main' | 'linkBank' | 'transfer' | 'password';
@@ -56,7 +48,7 @@ const SkeletonLoader = () => (
   </View>
 );
 
-const index = ({ community }: ArtistCommunityDetailProps) => {
+const index = () => {
   const [activeTab, setActiveTab] = useState("releases");
   const scrollY = useRef(new Animated.Value(0)).current;
   const [showStickyTabs, setShowStickyTabs] = useState(false);
@@ -64,9 +56,6 @@ const index = ({ community }: ArtistCommunityDetailProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const { artistId } = useAppSelector((state) => state.auth);
   const { navigate } = useRouter();
-  const [activeSheet, setActiveSheet] = useState<SheetType | null>(null);
-
-  const bottomSheetRef = useRef<BottomSheet>(null);
 
   const retrieveArtistInfo = async () => {
     setIsLoading(true);
@@ -88,10 +77,6 @@ const index = ({ community }: ArtistCommunityDetailProps) => {
       retrieveArtistInfo();
     }
   }, [artistId]);
-
-  const handleOpenWalletSheet = () => {
-    setActiveSheet("main");
-  };
 
   const headerHeight = scrollY.interpolate({
     inputRange: [0, 200],
@@ -211,7 +196,7 @@ const index = ({ community }: ArtistCommunityDetailProps) => {
               </View>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={handleOpenWalletSheet}
+              onPress={() =>  navigate("/wallet")}
               className="items-center justify-center rounded-lg overflow-hidden w-[50%] h-[89px] bg-[#12141B]"
             >
               <View className="gap-2">
@@ -271,11 +256,6 @@ const index = ({ community }: ArtistCommunityDetailProps) => {
 
         <View className="px-4 py-2">{renderTabContent()}</View>
       </Animated.ScrollView>
-
-      <WalletEarningSheet
-        activeSheet={activeSheet}
-        onSheetChange={setActiveSheet}
-      />
     </View>
   );
 };

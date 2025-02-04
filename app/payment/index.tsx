@@ -9,20 +9,65 @@ import React, { useLayoutEffect, useState } from "react";
 import { router, useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { AppButton } from "@/components/app-components/button";
-import { Apple01Icon, AppleIcon, CreditCardPosIcon } from "@hugeicons/react-native";
+import { AppleIcon, CreditCardPosIcon } from "@hugeicons/react-native";
+import { usePayment } from '@/hooks/useFlutterwavePayment';
+import { PayWithFlutterwave } from 'flutterwave-react-native';
+import { useAppSelector } from "@/redux/hooks";
 
 const Index = () => {
   const {name, image} = useLocalSearchParams();
   const navigation = useNavigation();
   const router = useRouter()
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const { userdata } = useAppSelector((state) => state.auth);
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerLeft: () => <AppBackButton name="Join Tribe" onBackPress={() => router.back()} />
     });
   }, [navigation]);
+  const { initializeFlutterwavePayment, initializeApplePay } = usePayment();
 
+  const handlePaymentComplete = (data: any) => {
+    // Close the modal first
+    setIsModalVisible(false);
+  
+    if (!data) {
+      console.log('No payment data received');
+      return;
+    }
+  
+    switch (data.status?.toLowerCase()) {
+      case 'successful':
+        // Navigate to success page with required params
+        router.push({
+          pathname: '/payment/MintingSuccess',
+          params: {
+            name: name,
+            image: image
+          }
+        });
+        break;
+      case 'cancelled':
+      case 'failed':
+      case 'closed':
+        console.log('Payment was cancelled or closed');
+        break;
+      default:
+        console.log('Payment status:', data.status || 'unknown');
+        break;
+    }
+  };
+
+  const { paymentOptions, handleOnRedirect } = initializeFlutterwavePayment({
+    amount: 2,
+    customerEmail: userdata?.email as string, 
+    customerName: name as string,
+    customerId: userdata?._id as string, 
+    txRef: `TX-${Date.now()}`,
+  });
+
+  // Update the PayWithFlutterwave component
   return (
     <View className="flex-1 px-[24px] gap-y-[24px]">
       <View className="mt-[24px] gap-y-[16px] items-start">
@@ -59,11 +104,6 @@ const Index = () => {
         loading={false} 
         onPress={() => setIsModalVisible(true)}
       />
-      {/* <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-        <Text className="text-[#D2D3D5] text-[14px] font-PlusJakartaSansMedium text-center mt-[16px]">
-          By continuing
-        </Text>
-      </TouchableOpacity> */}
 
       <Modal
         visible={isModalVisible}
@@ -110,23 +150,48 @@ const Index = () => {
             
             <Text className="text-gray-500 text-center my-4">Or</Text>
             <View className="w-full gap-y-[32px]">
-            <AppButton.Primary
-              color="#FFFFFF"
-              text="Pay using Apple pay"
-              loading={false}
-              icon={<AppleIcon size={24} color="black" variant="solid" />}
-              
-            />
-            
-            <AppButton.Primary
-              color="#FFFFFF"
-              text="Pay with Credit/Debit Card"
-              loading={false}
-              icon={<CreditCardPosIcon size={24} color="black" variant="solid" />}
-            />
+
+    {/* <PayWithFlutterwave
+       onRedirect={handlePaymentComplete}
+   options={{
+    ...PaymentRequest,
+    amount: 2,
+    authorization: process.env.EXPO_PUBLIC_FLUTTERWAVE_PUBLIC_KEY as string,
+    tx_ref: `TX-${Date.now()}`,
+    customer: {
+      email: userdata?.email as string,
+      name: name as string,
+    }
+  }}
+  onAbort={() => {
+    console.log("Payment aborted");
+    setIsModalVisible(false);
+  }}
+  customButton={(props) => (
+    <AppButton.Primary
+      color="#FFFFFF"
+      text="Pay using Apple pay"
+      loading={false}
+      icon={<AppleIcon size={24} color="black" variant="solid" />}
+      onPress={props.onPress}
+      disabled={props.disabled}
+    />
+  )}
+/> */}
+         
+         <AppButton.Primary
+            color="#FFFFFF"
+            text="Pay with Credit/Debit Card"
+            loading={false}
+            icon={<CreditCardPosIcon size={24} color="black" variant="solid" />}
+            onPress={() => {
+              setIsModalVisible(false)
+              router.navigate("/payment/payWithCard")
+            }}
+          />
             </View>
           
-          </TouchableOpacity>
+          </TouchableOpacity>  
         </TouchableOpacity>
       </Modal>
     </View>

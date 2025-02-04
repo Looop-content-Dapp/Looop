@@ -54,13 +54,11 @@ const CreatePassword = () => {
       return;
     }
 
-    // Check username length
     if (username.length < 3) {
       setShowMessage("Username must be at least 3 characters");
       return;
     }
 
-    // Check username format - only allow letters, numbers, dots and underscores
     const validUsernameRegex = /^[a-zA-Z0-9._]+$/;
     if (!validUsernameRegex.test(username)) {
       setShowMessage("Username can only contain letters, numbers, dots and underscores");
@@ -92,10 +90,10 @@ const CreatePassword = () => {
   const debouncedValidateUsername = debounce(validateUsername, 500);
 
   useEffect(() => {
-    if (_username.length > 2) { // Reduced minimum length check
+    if (_username.length > 2) {
       debouncedValidateUsername(_username);
     } else {
-      setShowMessage(""); // Clear message when username is too short
+      setShowMessage("");
     }
   }, [_username]);
 
@@ -155,13 +153,12 @@ const CreatePassword = () => {
         <View className="gap-y-6 mt-6">
           <View className="gap-y-2">
             <Text className="text-white text-2xl font-PlusJakartaSansBold">
-              Secure your account
+              Create your account
             </Text>
             <Text className="text-gray-400 text-base font-PlusJakartaSansRegular">
-              The safety of your account is important to us. Your password will
-              be used to secure your Looop account (wallet and private key). We
-              do not retain access to your private keys. Learn more about
-              private keys here.
+              The security of your account is important to us. Your password will
+              be used to protect your Looop account. We use industry-standard
+              encryption to keep your information safe.
             </Text>
           </View>
 
@@ -309,10 +306,9 @@ const CreatePassword = () => {
                 </View>
                 <View className="flex-1">
                   <Text className="text-[14px] text-[#EC6519] font-PlusJakartaSansRegular flex-shrink">
-                    Your password is encrypted and used to create a local backup
-                    of your private key to your device so you don't lose access
-                    to your account. Think of private keys as a pin to access
-                    your account/wallet.
+                    Your password is securely encrypted and stored locally on your device.
+                    This helps protect your account and ensures only you can access it.
+                    Think of it as your personal digital key.
                   </Text>
                 </View>
               </View>

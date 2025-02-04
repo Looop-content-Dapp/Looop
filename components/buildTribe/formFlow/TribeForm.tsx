@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, ScrollView, Image } from 'react-native';
 import useFileUpload, { FileType } from '../../../hooks/useFileUpload';
 import { CollectibleFileType, getFileTypeFromUri } from '@/types/index';
@@ -44,80 +44,97 @@ const TribeForm: React.FC<TribeFormProps> = ({ formData, updateFormData }) => {
     <ScrollView
       style={{ flex: 1 }}
       showsVerticalScrollIndicator={false}
+      className="bg-gray-50"
     >
-      <View className='gap-y-[32px]'>
-        {/* Basic Information Section */}
-        <View className='p-[10px] gap-y-[42px]'>
-        <Text className='text-[24px] font-PlusJakartaSansBold text-[#A5A6AA]'>Basic Community Info</Text>
-        <View>
-        <FormField.ImageUploadField
-          value={formData.coverImage}
-          onUpload={handleCoverImagePick}
-          acceptedFormats="PNG, GIF, WEBP"
-          maxSize="50MB"
-        />
+      <View className="gap-y-[32px] px-4 py-6">
+        {/* Community Setup Section */}
+        <View className="bg-white rounded-xl p-6 shadow-sm">
+          <Text className="text-2xl font-PlusJakartaSansBold text-gray-700 mb-6">
+            Create Your Community
+          </Text>
+          <View className="space-y-6">
+            <FormField.ImageUploadField
+              value={formData.coverImage}
+              onUpload={handleCoverImagePick}
+              acceptedFormats="PNG, GIF, WEBP"
+              maxSize="50MB"
+              label="Community Banner"
+              helperText="Add a banner image to represent your community"
+              className="rounded-lg border-2 border-dashed border-gray-300"
+            />
 
-        <FormField.TextField
-          label="What do you want to call your Tribe?"
-          value={formData.tribeName}
-          onChangeText={(value) => updateFormData('tribeName', value)}
-          placeholder="Ex: Rema Ravers"
-          required
-        />
+            <FormField.TextField
+              label="Community Name"
+              value={formData.tribeName}
+              onChangeText={(value) => updateFormData('tribeName', value)}
+              placeholder="Ex: Music Enthusiasts"
+              required
+              helperText="Choose a unique name for your community"
+              className="bg-gray-50 rounded-lg"
+            />
 
-        <FormField.TextField
-          label="Add a short description of your Tribe"
-          value={formData.description}
-          onChangeText={(value) => updateFormData('description', value)}
-          multiline
-          numberOfLines={4}
-          maxLength={150}
-          required
-        />
-        </View>
-        </View>
-     
-
-      <View className='p-[10px] gap-y-[42px]'>
-        <Text className='text-[24px] font-PlusJakartaSansBold text-[#A5A6AA]'>Collectible Info</Text>
-         {/* Membership Section */}
-         <View>
-        <FormField.ImageUploadField
-          value={formData.collectibleMedia}
-          onUpload={handleCollectibleMediaPick}
-          acceptedFormats="PNG, GIF, WEBP"
-          maxSize="50MB"
-        />
-
-        <FormField.TextField
-          label="Collectible name"
-          value={formData.collectibleName}
-          onChangeText={(value: any) => updateFormData('collectibleName', value)}
-          placeholder="Ex: Rema Ravers Pass"
-          required
-        />
-
-        <FormField.TextField
-          label="Token Symbol"
-          value={formData.communitySymbol}
-          onChangeText={(value: any) => updateFormData('communitySymbol', value)}
-          placeholder="Ex: REV"
-          required
-        />
-
-        <FormField.TextField
-          label="Description (Optional)"
-          value={formData.CollectibleDescription}
-          onChangeText={(value: any) => updateFormData('CollectibleDescription', value)}
-          multiline
-          numberOfLines={4}
-          maxLength={150}
-        />
-         </View>
-       
+            <FormField.TextField
+              label="Community Description"
+              value={formData.description}
+              onChangeText={(value) => updateFormData('description', value)}
+              multiline
+              numberOfLines={4}
+              maxLength={150}
+              required
+              helperText="Tell others what your community is about"
+              className="bg-gray-50 rounded-lg"
+            />
+          </View>
         </View>
 
+        {/* Membership Details Section */}
+        <View className="bg-white rounded-xl p-6 shadow-sm mt-4">
+          <Text className="text-2xl font-PlusJakartaSansBold text-gray-700 mb-6">
+            Membership Details
+          </Text>
+          <View className="space-y-6">
+            <FormField.ImageUploadField
+              value={formData.collectibleMedia}
+              onUpload={handleCollectibleMediaPick}
+              acceptedFormats="PNG, GIF, WEBP"
+              maxSize="50MB"
+              label="Membership Badge"
+              helperText="Upload an image that represents membership"
+              className="rounded-lg border-2 border-dashed border-gray-300"
+            />
 
+            <FormField.TextField
+              label="Membership Title"
+              value={formData.collectibleName}
+              onChangeText={(value) => updateFormData('collectibleName', value)}
+              placeholder="Ex: Premium Member"
+              required
+              helperText="Name for your membership badge"
+              className="bg-gray-50 rounded-lg"
+            />
+
+            <FormField.TextField
+              label="Community Code"
+              value={formData.communitySymbol}
+              onChangeText={(value) => updateFormData('communitySymbol', value)}
+              placeholder="Ex: PMM"
+              required
+              helperText="A short unique code for your community (3-5 characters)"
+              className="bg-gray-50 rounded-lg"
+            />
+
+            <FormField.TextField
+              label="Membership Benefits"
+              value={formData.CollectibleDescription}
+              onChangeText={(value) => updateFormData('CollectibleDescription', value)}
+              multiline
+              numberOfLines={4}
+              maxLength={150}
+              helperText="Describe what members get access to"
+              className="bg-gray-50 rounded-lg"
+            />
+          </View>
+        </View>
       </View>
     </ScrollView>
   );

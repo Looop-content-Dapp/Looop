@@ -2,7 +2,7 @@ import { View, Text } from 'react-native'
 import React from 'react'
 import { Stack } from 'expo-router'
 
-export default function _Setttingslayout() {
+export default function _WalletLayout() {
   return (
     <Stack
     screenOptions={{
@@ -16,8 +16,9 @@ export default function _Setttingslayout() {
         title: "",
       }}
     >
-      <Stack.Screen name="index" />
-      <Stack.Screen name="personalInfo" />
+        <Stack.Screen name="index" />
+        <Stack.Screen name="musicStreams" />
+        <Stack.Screen name="tribeSubscriptions" />
     </Stack>
   )
 }
