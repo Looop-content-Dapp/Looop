@@ -40,7 +40,7 @@ const WelcomeToLooop = () => {
             <ArrowRight02Icon size={24} color='#787A80' variant='solid' />
           </Pressable>
 
-          <Pressable  onPress={() => router.push("/(settingUp)/communityOnboarding")} className='py-[15px] px-[16px] flex-row items-center gap-x-[16px] bg-[#0A0B0F] justify-between w-full'>
+          {/* <Pressable  onPress={() => router.push("/(settingUp)/communityOnboarding")} className='py-[15px] px-[16px] flex-row items-center gap-x-[16px] bg-[#0A0B0F] justify-between w-full'>
             <UserGroupIcon size={24} color='#FF6D1B' variant='stroke' />
             <View className='flex-1'>
               <Text className='text-Grey/06 font-PlusJakartaSansBold text-[14px]'>
@@ -51,7 +51,7 @@ const WelcomeToLooop = () => {
               </Text>
             </View>
             <ArrowRight02Icon size={24} color='#787A80' variant='solid' />
-          </Pressable>
+          </Pressable> */}
         </View>
       </ScrollView>
     </SafeAreaView>

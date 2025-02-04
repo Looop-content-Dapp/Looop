@@ -119,8 +119,13 @@ const TextField = ({
   keyboardType = "default",
   multiline = false,
   numberOfLines = 1,
-  onSubmitEditing
-}: TextFieldProps) => {
+  onSubmitEditing,
+  maxLength,
+  autoCapitalize = "none"
+}: TextFieldProps & {
+  maxLength?: number;
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
+}) => {
   return (
     <View style={styles.container}>
       {label && (
@@ -145,6 +150,8 @@ const TextField = ({
         multiline={multiline}
         numberOfLines={numberOfLines}
         onSubmitEditing={onSubmitEditing}
+        maxLength={maxLength}
+        autoCapitalize={autoCapitalize}
       />
       {error && <Text style={styles.error}>{error}</Text>}
     </View>

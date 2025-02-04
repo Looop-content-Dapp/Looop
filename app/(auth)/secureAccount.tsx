@@ -162,7 +162,7 @@ const SecureAccount = () => {
           >
             <CheckmarkBadge01Icon size={20} variant="solid" color="#FF4D4D" />
             <Text className="text-[20px] font-PlusJakartaSansBold text-red-500 text-center mt-2">
-              Wallet Creation Failed
+              Account Creation Failed
             </Text>
             <Text className="text-[16px] font-PlusJakartaSansMedium text-red-400 text-center mt-2">
               {errorMessage}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,6 +11,8 @@ import {
 import { router } from 'expo-router';
 import { banks } from '@/data/data';
 import { FormField } from '@/components/app-components/formField';
+import { useFlutterwaveBanks } from '../hooks/useFlutterwaveBanks';
+import useUserInfo from '../hooks/useUserInfo';
 
 type ScreenType = 'main' | 'addAccount' | 'accountDetails';
 
@@ -27,6 +29,7 @@ interface BankAccount {
     accountNumber: string;
     accountName: string;
     bankLogo: string;
+    bankCode?: string; // Add this for Flutterwave integration
 }
 
 const ConnectedAccountsScreen = () => {
@@ -54,6 +57,9 @@ const ConnectedAccountsScreen = () => {
         bankName: '',
         accountName: ''
     });
+    const { location } = useUserInfo();
+    const { banks: flutterwaveBanks, isLoading: banksLoading, error: banksError } = 
+        useFlutterwaveBanks(location?.country || 'NG');
 
     const handleBackNavigation = () => {
         if (activeScreen !== 'main') {
@@ -78,16 +84,18 @@ const ConnectedAccountsScreen = () => {
     };
 
     const handleAddNewAccount = () => {
-        if (newAccount.accountNumber && newAccount.bankName && newAccount.accountName) {
+        if (newAccount.accountNumber && newAccount.bankName && newAccount.accountName && selectedBank) {
             const newBankAccount: BankAccount = {
                 id: Date.now().toString(),
                 bankName: newAccount.bankName,
                 accountNumber: newAccount.accountNumber,
                 accountName: newAccount.accountName,
-                bankLogo: '🏦'
+                bankLogo: '🏦',
+                bankCode: selectedBank.value
             };
             setAccounts([...accounts, newBankAccount]);
             setNewAccount({ accountNumber: '', bankName: '', accountName: '' });
+            setSelectedBank(undefined);
             setActiveScreen('main');
         }
     };
@@ -122,8 +130,9 @@ const ConnectedAccountsScreen = () => {
     );
 
     const renderAddAccount = () => (
-        <View className="px-4">
+        <View style={{ paddingHorizontal: 16 }}>
             <Text className="text-white text-xl font-bold mb-4">Add Your Account</Text>
+            
             <View className='flex-row items-start gap-x-[8px] p-[12px] bg-[#2A1708] my-[24px] rounded-[10px]'>
                 <InformationCircleIcon size={16} color='#EC6519' variant='stroke' />
                 <Text className="text-[#EC6519] mb-6 font-PlusJakartaSansRegular text-[14px]">
@@ -141,14 +150,35 @@ const ConnectedAccountsScreen = () => {
 
             <FormField.PickerField
                 label="Select Bank"
-                placeholder="Choose your bank"
+                placeholder={banksLoading ? "Loading banks..." : "Choose your bank"}
                 value={selectedBank?.label || ''}
                 onSelect={(value: any) => {
-                    const bank = banks.find(b => b.label === value);
-                    setSelectedBank(bank);
+                    const bank = flutterwaveBanks?.find(b => b.name === value);
+                    if (bank) {
+                        setSelectedBank({
+                            label: bank.name,
+                            value: bank.code,
+                            logo: '🏦',
+                            branches: []
+                        });
+                        setNewAccount(prev => ({ ...prev, bankName: bank.name }));
+                    }
                 }}
-                options={banks}
+                options={flutterwaveBanks?.map(bank => ({
+                    label: bank.name,
+                    value: bank.code
+                })) || []}
+                // disabled={banksLoading || !!banksError}
             />
+
+            {banksError && (
+                <View className='flex-row items-start gap-x-[8px] p-[12px] bg-[#2A1208] mt-2 rounded-[10px]'>
+                    <InformationCircleIcon size={16} color='#FF3B30' variant='stroke' />
+                    <Text className="text-[#FF3B30] font-PlusJakartaSansRegular text-[14px]">
+                        Failed to load banks. Please check your connection and try again.
+                    </Text>
+                </View>
+            )}
 
             <FormField.TextField
                 label="Account Name"

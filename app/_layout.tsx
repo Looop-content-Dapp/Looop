@@ -88,7 +88,12 @@ function AppContent() {
                 presentation: "fullScreenModal"
           }} />
           <Stack.Screen name="settings" />
-          <Stack.Screen name="payment" />
+          <Stack.Screen name="payment"
+           options={{
+            presentation: "fullScreenModal"
+           }}
+           />
+          <Stack.Screen name="wallet" />
         </Stack>
         </>
   );
@@ -96,7 +101,7 @@ function AppContent() {
 
 export default function _RootLayout() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+  <GestureHandlerRootView style={{ flex: 1 }}>
     <BottomSheetModalProvider>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>

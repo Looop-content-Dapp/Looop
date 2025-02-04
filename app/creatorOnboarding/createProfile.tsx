@@ -1,4 +1,4 @@
-import { View, Text, Image, SafeAreaView, Alert } from "react-native";
+import { View, Text, Image, SafeAreaView, Alert, ScrollView, useWindowDimensions, Platform } from "react-native";
 import React, { useLayoutEffect, useState } from "react";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { AppBackButton } from "@/components/app-components/back-btn";
@@ -36,11 +36,13 @@ const CreateProfile = () => {
     profileImage: ""
   });
 
+  const { width, height } = useWindowDimensions();
+
   const { pickFile, isLoading: isUploading } = useFileUpload();
   const navigation = useNavigation();
   const { back } = useRouter();
   const dispatch = useAppDispatch()
-    const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAppSelector((state) => state.auth);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -136,79 +138,108 @@ const CreateProfile = () => {
     }));
   };
 
-const handleSubmitArtistProfile = async () => {
-  if (!validateForm()) return;
+  const handleSubmitArtistProfile = async () => {
+    if (!validateForm()) return;
 
-  setIsSubmitting(true);
+    setIsSubmitting(true);
 
-  try {
-    // Construct form payload with social media handles from form data
-    const formPayload = {
-      artistname: formData.stageName,
-      email: formData.email,
-      profileImage: formData.profileImage,
-      bio: formData.bio,
-      genres: selectedGenres,
-      city: selectedCity,
-      country: selectedCountry,
-      address1: formData.addressLine1,
-      address2: formData.addressLine2,
-      postalcode: formData.postalCode,
-      websiteurl: formData.websiteUrl,
-      twitter: formData.socialAccounts.twitter || "https://x.com/looop_music",
-      tiktok: formData.socialAccounts.tiktok || "https://x.com/looop_music", 
-      instagram: formData.socialAccounts.instagram || "https://x.com/looop_music",
-      id: userdata?._id
-    };
+    try {
+      // Construct form payload with social media handles from form data
+      const formPayload = {
+        artistname: formData.stageName,
+        email: formData.email,
+        profileImage: formData.profileImage,
+        bio: formData.bio,
+        genres: selectedGenres,
+        city: selectedCity,
+        country: selectedCountry,
+        address1: formData.addressLine1,
+        address2: formData.addressLine2,
+        postalcode: formData.postalCode,
+        websiteurl: formData.websiteUrl,
+        twitter: formData.socialAccounts.twitter || "https://x.com/looop_music",
+        tiktok: formData.socialAccounts.tiktok || "https://x.com/looop_music", 
+        instagram: formData.socialAccounts.instagram || "https://x.com/looop_music",
+        id: userdata?._id
+      };
 
-    // Make API request to create artist profile
-    const { data } = await api.post('/api/artist/createartist', formPayload);
+      // Make API request to create artist profile
+      const { data } = await api.post('/api/artist/createartist', formPayload);
 
-    if (data.status === "success") {
-      const { artist, claimresult } = data.data;
+      if (data.status === "success") {
+        const { artist, claimresult } = data.data;
+        
+        // Update redux store with new artist and claim IDs
+        dispatch(setArtistId(artist?._id));
+        dispatch(setClaimId(claimresult?.data?.id));
+        
+        // Show success message and navigate back
+        Alert.alert("Success", claimresult?.message);
+        back();
+      } else {
+        throw new Error(data.message || 'Failed to create profile');
+      }
+    } catch (error) {
+      console.error("Error submitting artist profile:", error);
       
-      // Update redux store with new artist and claim IDs
-      dispatch(setArtistId(artist?._id));
-      dispatch(setClaimId(claimresult?.data?.id));
-      
-      // Show success message and navigate back
-      Alert.alert("Success", claimresult?.message);
-      back();
-    } else {
-      throw new Error(data.message || 'Failed to create profile');
+      // Show user-friendly error message
+      Alert.alert(
+        "Profile Creation Failed",
+        error instanceof Error 
+          ? error.message
+          : "Unable to create profile. Please try again later."
+      );
+    } finally {
+      setIsSubmitting(false);
     }
-  } catch (error) {
-    console.error("Error submitting artist profile:", error);
-    
-    // Show user-friendly error message
-    Alert.alert(
-      "Profile Creation Failed",
-      error instanceof Error 
-        ? error.message
-        : "Unable to create profile. Please try again later."
-    );
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
 
   const renderIntro = () => (
-    <View>
-      <Image
-        source={require("../../assets/images/createProfile.png")}
-        resizeMode="contain"
-        style={{ width: "100%", alignSelf: "center", marginTop: "20%", height: "50%" }}
-      />
-      <View style={{ marginTop: "30%", alignSelf: "center", gap: 12 }}>
-        <Text style={{ fontSize: 28, fontWeight: "bold", color: "#FFFFFF" }}>
-          Create your profile
-        </Text>
-        <Text style={{ fontSize: 16, color: "#D2D3D5" }}>
-          Ready to create magic? Let's get you started by setting up your
-          creator profile
-        </Text>
+    <ScrollView 
+      contentContainerStyle={{ 
+        flexGrow: 1,
+        paddingBottom: 100 // Space for the bottom button
+      }}
+    >
+      <View style={{ 
+        flex: 1,
+        paddingHorizontal: width * 0.05 // 5% padding on each side
+      }}>
+        <Image
+          source={require("../../assets/images/createProfile.png")}
+          resizeMode="contain"
+          style={{ 
+            width: width * 0.9, // 90% of screen width
+            height: height * 0.4, // 40% of screen height
+            alignSelf: "center",
+            marginTop: height * 0.05 // 5% of screen height
+          }}
+        />
+        <View style={{ 
+          marginTop: height * 0.05,
+          alignSelf: "center",
+          gap: 12,
+          paddingHorizontal: 20
+        }}>
+          <Text style={{ 
+            fontSize: Math.min(28, width * 0.07), // Responsive font size
+            fontWeight: "bold",
+            color: "#FFFFFF",
+            textAlign: "center"
+          }}>
+            Create your profile
+          </Text>
+          <Text style={{ 
+            fontSize: Math.min(16, width * 0.04), // Responsive font size
+            color: "#D2D3D5",
+            textAlign: "center"
+          }}>
+            Ready to create magic? Let's get you started by setting up your
+            creator profile
+          </Text>
+        </View>
       </View>
-    </View>
+    </ScrollView>
   );
 
   const handleFlow = () => {
@@ -217,20 +248,27 @@ const handleSubmitArtistProfile = async () => {
         return renderIntro();
       case "CREATE_PROFILE":
         return (
-          <CreatorForm
-            formData={formData}
-            selectedGenres={selectedGenres}
-            selectedCountry={selectedCountry}
-            selectedCity={selectedCity}
-            cities={cities}
-            isLoading={isUploading}
-            onFormChange={handleFormChange}
-            onGenresChange={setSelectedGenres}
-            onCountrySelect={handleCountrySelect}
-            onCitySelect={setSelectedCity}
-            onProfileImageUpload={handleProfileImageUpload}
-            onSocialAccountChange={handleSocialAccountChange}
-          />
+          <ScrollView 
+            contentContainerStyle={{ 
+              flexGrow: 1,
+              paddingBottom: 100 // Space for the bottom button
+            }}
+          >
+            <CreatorForm
+              formData={formData}
+              selectedGenres={selectedGenres}
+              selectedCountry={selectedCountry}
+              selectedCity={selectedCity}
+              cities={cities}
+              isLoading={isUploading}
+              onFormChange={handleFormChange}
+              onGenresChange={setSelectedGenres}
+              onCountrySelect={handleCountrySelect}
+              onCitySelect={setSelectedCity}
+              onProfileImageUpload={handleProfileImageUpload}
+              onSocialAccountChange={handleSocialAccountChange}
+            />
+          </ScrollView>
         );
       default:
         return null;
@@ -238,20 +276,26 @@ const handleSubmitArtistProfile = async () => {
   };
 
   const handleNext = () => {
-    switch (currentFlow) {
-      case "INTRO":
-        setCurrentFlow("CREATE_PROFILE");
-        break;
-      case "CREATE_PROFILE":
-        handleSubmitArtistProfile();
-        break;
+    if (currentFlow === "INTRO") {
+      setCurrentFlow("CREATE_PROFILE");
+    } else {
+      handleSubmitArtistProfile();
     }
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#040405" }}>
+    <SafeAreaView style={{ 
+      flex: 1, 
+      backgroundColor: "#040405"
+    }}>
       {handleFlow()}
-      <View style={{ position: "absolute", bottom: 60, right: 24, left: 24 }}>
+      <View style={{ 
+        position: "absolute",
+        bottom: height * 0.02, // 2% from bottom
+        right: width * 0.06, // 6% from right
+        left: width * 0.06, // 6% from left
+        paddingBottom: Platform.OS === 'ios' ? 20 : 0 // Extra padding for iOS
+      }}>
         <AppButton.Primary
           text={currentFlow === "CREATE_PROFILE" ? "Submit Profile" : "Continue"}
           color="#A187B5"

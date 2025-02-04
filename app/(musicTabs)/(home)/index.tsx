@@ -90,7 +90,7 @@ const Index = () => {
             title="Your Daily Mixes"
           />
 
-          <Text className="text-[#ffffff] text-[20px] font-PlusJakartaSansBold">Coming Soon</Text>
+          {/* <Text className="text-[#ffffff] text-[14px] font-PlusJakartaSansBold">Amazing sounds Coming Soon</Text> */}
 
           {/* New Releases Section */}
           {/* <NewlyReleased
