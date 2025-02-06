@@ -9,6 +9,7 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
+      "usesAppleSignIn": true,
       "bundleIdentifier": "com.looop.music",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "This app requires microphone access to play and record audio.",

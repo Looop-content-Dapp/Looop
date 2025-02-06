@@ -38,7 +38,7 @@ const EmailSignupFlow = () => {
   const [isCorrect, setIsCorrect] = useState<boolean>();
   const [timer, setTimer] = useState(60);
   const [isLoading, setIsLoading] = useState(false);
-  const { handleEmailSignUp, userId, handleOAuthSignIn } =
+  const { handleEmailSignUp, userId } =
     useClerkAuthentication();
 
   // Verification code field setup
@@ -170,15 +170,15 @@ const EmailSignupFlow = () => {
           onPress={handleEmailSubmit}
         />
 
-        {/* <Text className="mt-14 text-center text-gray-400 font-PlusJakartaSansRegular text-sm">
+        <Text className="mt-14 text-center text-gray-400 font-PlusJakartaSansRegular text-sm">
           Or you can sign up with
-        </Text> */}
+        </Text>
       </View>
-{/* 
+
       <View className="mt-12 gap-y-4">
         <TouchableOpacity
           className="bg-white py-4 rounded-full flex-row items-center justify-center"
-          onPress={() => handleOAuthSignIn("google")}
+      
         >
           <Image
             source={require("../../assets/images/google.png")}
@@ -191,7 +191,6 @@ const EmailSignupFlow = () => {
 
         <TouchableOpacity
           className="bg-white py-4 rounded-full flex-row items-center justify-center"
-          onPress={() => handleOAuthSignIn("apple")}
         >
           <Image
             source={require("../../assets/images/apple.png")}
@@ -201,7 +200,7 @@ const EmailSignupFlow = () => {
             Sign up with Apple
           </Text>
         </TouchableOpacity>
-      </View> */}
+      </View>
 
          <View className="flex-row items-center justify-center gap-x-[4px] absolute bottom-12 left-0 right-0">
             <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[14px]">

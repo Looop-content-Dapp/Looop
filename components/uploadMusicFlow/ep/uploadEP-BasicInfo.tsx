@@ -1,19 +1,51 @@
 import React, { useState } from "react";
 import { FormField } from "../../app-components/formField";
 import { Text, View } from "react-native";
+import { useEPUpload } from "@/context/EPUploadContext";
+import useFileUpload, { FileType } from "@/hooks/useFileUpload";
 
-const EPBasicInfo = () => {
-  const [ePName, setEPName] = useState("");
-  const [primaryGenre, setPrimaryGenre] = useState("");
-  const [secondaryGenre, setSecondaryGenre] = useState("");
-  const [coverImage, setCoverImage] = useState(null);
+const EPBasicInfo: React.FC<{ onTrackCountChange: (count: number) => void }> = ({ onTrackCountChange }) => {
+  const { epData, updateEPData } = useEPUpload();
+  const { pickFile, isLoading } = useFileUpload();
 
+  const handleNumberOfSongsChange = (value: string) => {
+    const count = parseInt(value);
+    if (count >= 2 && count <= 6) {
+      onTrackCountChange(count); // Update parent component
+      updateEPData({ 
+        numberOfSongs: value,
+        tracks: Array(count).fill({
+          trackName: '',
+          songType: '',
+          audioFile: null,
+          explicitLyrics: '',
+          writers: [],
+          producers: [],
+          isrc: '',
+          creatorUrl: ''
+        })
+      });
+    }
+  };
+
+  const handleCoverImageUpload = async () => {
+    const result = await pickFile(FileType.IMAGE);
+    if (result?.success && result.file) {
+      updateEPData({ coverImage: result.file });
+    }
+  };
+
+  // Remove unused state variables since we're using context
   const genreOptions = [
     { label: "Afrobeats", value: "afrobeats" },
     { label: "Hip Hop", value: "hiphop" },
     { label: "R&B", value: "rnb" }
-    // Add more genres as needed
   ];
+
+  const songNumberOptions = Array.from({ length: 5 }, (_, i) => ({
+    label: `${i + 2} songs`,
+    value: `${i + 2}`
+  }));
 
   return (
     <>
@@ -23,27 +55,27 @@ const EPBasicInfo = () => {
       <View className="py-[32px] px-[24px] bg-[#0A0B0F] gap-y-[32px] mt-[32px] rounded-[24px] mb-[32px]">
         <FormField.TextField
           label="EP name"
-          description="What do you want to name you EP"
-          value={ePName}
-          onChangeText={setEPName}
+          description="What do you want to name your EP"
+          value={epData.epName}
+          onChangeText={(value) => updateEPData({ epName: value })}
           required
         />
 
-        <FormField.TextField
+        <FormField.PickerField
           label="No. of songs"
           description="You can have between 2 - 6 songs on your EP"
-          value={ePName}
-          onChangeText={setEPName}
-          keyboardType="numeric"
-          placeholder="Enter no. of songs"
+          value={epData.numberOfSongs}
+          onSelect={handleNumberOfSongsChange}
+          options={songNumberOptions}
+          placeholder="Select number of songs"
           required
         />
 
         <FormField.PickerField
           label="Primary Genre"
           description="Add main genres"
-          value={primaryGenre}
-          onSelect={setPrimaryGenre}
+          value={epData.primaryGenre}
+          onSelect={(value) => updateEPData({ primaryGenre: value })}
           options={genreOptions}
           placeholder="Select genre"
           required
@@ -52,23 +84,17 @@ const EPBasicInfo = () => {
         <FormField.PickerField
           label="Secondary Genre (Optional)"
           description="Add a secondary genre"
-          value={secondaryGenre}
-          onSelect={setSecondaryGenre}
+          value={epData.secondaryGenre}
+          onSelect={(value) => updateEPData({ secondaryGenre: value })}
           options={genreOptions}
           placeholder="Select genre"
         />
 
-        {/* Add Quick Note Component */}
-        {/* <QuickNote /> */}
-
         <FormField.ImageUploadField
           label="Cover art"
           description="Upload your song/EP art."
-          value={coverImage || undefined}
-          onUpload={() => {
-            // Implement image upload logic
-            setCoverImage("placeholder-url" as any);
-          }}
+          value={epData.coverImage?.uri}
+          onUpload={handleCoverImageUpload}
           maxSize="20MB"
           acceptedFormats="JPEG"
           required

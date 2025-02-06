@@ -9,14 +9,15 @@ import {
   Platform,
   Alert
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import {
   CdIcon,
   FileUploadIcon,
   Playlist02Icon,
   Vynil03Icon
 } from "@hugeicons/react-native";
-import { useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
+import { AppBackButton } from "@/components/app-components/back-btn";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -30,16 +31,20 @@ const responsiveSize = (size: number) => {
 const isIOS = Platform.OS === "ios";
 
 const index = () => {
-  const { push } = useRouter();
-  const [currentScreen, setCurrentScreen] = useState<"initial" | "uploadType">(
-    "initial"
-  );
+  const { push, back } = useRouter();
   const [selectedType, setSelectedType] = useState<
     "Single" | "EP" | "Album" | null
   >(null);
   const [dimensions, setDimensions] = useState({
     window: Dimensions.get("window")
   });
+  const navigation = useNavigation()
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => <AppBackButton name="Select Upload Option" onBackPress={() => back()}  />
+    })
+  })
 
   useEffect(() => {
     const subscription = Dimensions.addEventListener("change", ({ window }) => {
@@ -95,149 +100,84 @@ const index = () => {
     }
   };
 
-  const renderInitialScreen = () => (
+  return(
+   <SafeAreaView style={styles.safeArea}>
     <ScrollView
-      style={styles.scrollView}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.container}>
-        <View
-          style={[
-            styles.iconContainer,
-            {
-              width: responsiveSize(140),
-              height: responsiveSize(140)
-            }
-          ]}>
-          <FileUploadIcon
-            size={responsiveSize(48)}
-            color="#57E09A"
-            variant="solid"
-          />
-        </View>
 
-        <View style={styles.contentContainer}>
-          <View style={styles.textContainer}>
-            <Text style={styles.heading}>Uploading music on Looop</Text>
-            <Text style={styles.subHeading}>
-              You're all set to share your music with everyone, and we've made
-              it super easy for you!
-            </Text>
-          </View>
+        <Text style={styles.title} className="font-PlusJakartaSansBold">
+          Upload Type
+        </Text>
+        <Text
+          style={styles.subtitle}
+          className="font-PlusJakartaSansRegular text-[16px]">
+          Select from the upload types
+        </Text>
 
-          <View style={styles.featureCard}>
-            <Text style={styles.featureTitle}>You can now:</Text>
-            <View style={styles.featureList}>
-              <Text style={styles.featureItem}>◇ Choose upload types</Text>
-              <Text style={styles.featureItem}>◇ Add features</Text>
-              <Text style={styles.featureItem}>
-                ◇ Include necessary metadata
-              </Text>
-              <Text style={styles.featureItem}>
-                ◇ Upload your own cover art
-              </Text>
-            </View>
-          </View>
+        <View style={styles.uploadTypeGrid}>
+          {uploadTypes.map((item, index) => {
+            const isSelected = selectedType === item.id;
+            return (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.uploadTypeCard,
+                  {
+                    width: gridItemWidth,
+                    height: gridItemWidth
+                  },
+                  isSelected && styles.selectedCard
+                ]}
+                onPress={() =>
+                  handleTypeSelect(item.id as "Single" | "EP" | "Album")
+                }>
+                <View
+                  style={[
+                    styles.uploadTypeIconContainer,
+                    {
+                      transform: [{ scale: scale }]
+                    }
+                  ]}>
+                  <item.icon
+                    size={responsiveSize(120)}
+                    color={isSelected ? "#57E09A" : "#787A80"}
+                    variant="solid"
+                  />
+                </View>
+                <Text
+                  style={[
+                    styles.uploadTypeText,
+                    isSelected && styles.selectedText
+                  ]}>
+                  {item.text}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 
       <View style={styles.buttonWrapper}>
         <TouchableOpacity
-          style={styles.continueButton}
-          onPress={() => setCurrentScreen("uploadType")}>
-          <Text style={styles.buttonText}>Continue</Text>
+          style={[
+            styles.continueButton,
+            !selectedType && styles.disabledButton
+          ]}
+          onPress={handleContinue}
+          disabled={!selectedType}>
+          <Text
+            style={
+              styles.buttonText && !selectedType && styles.disabledButton
+            }>
+            Continue
+          </Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
-  );
-
-  const renderUploadTypeScreen = () => (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollViewContent}>
-        <View style={styles.container}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => setCurrentScreen("initial")}>
-            <Text style={styles.backButtonText}>←</Text>
-          </TouchableOpacity>
-
-          <Text style={styles.title} className="font-PlusJakartaSansBold">
-            Upload Type
-          </Text>
-          <Text
-            style={styles.subtitle}
-            className="font-PlusJakartaSansRegular text-[16px]">
-            Select from the upload types
-          </Text>
-
-          <View style={styles.uploadTypeGrid}>
-            {uploadTypes.map((item, index) => {
-              const isSelected = selectedType === item.id;
-              return (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.uploadTypeCard,
-                    {
-                      width: gridItemWidth,
-                      height: gridItemWidth
-                    },
-                    isSelected && styles.selectedCard
-                  ]}
-                  onPress={() =>
-                    handleTypeSelect(item.id as "Single" | "EP" | "Album")
-                  }>
-                  <View
-                    style={[
-                      styles.uploadTypeIconContainer,
-                      {
-                        transform: [{ scale: scale }]
-                      }
-                    ]}>
-                    <item.icon
-                      size={responsiveSize(120)}
-                      color={isSelected ? "#57E09A" : "#787A80"}
-                      variant="solid"
-                    />
-                  </View>
-                  <Text
-                    style={[
-                      styles.uploadTypeText,
-                      isSelected && styles.selectedText
-                    ]}>
-                    {item.text}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
-
-        <View style={styles.buttonWrapper}>
-          <TouchableOpacity
-            style={[
-              styles.continueButton,
-              !selectedType && styles.disabledButton
-            ]}
-            onPress={handleContinue}
-            disabled={!selectedType}>
-            <Text
-              style={
-                styles.buttonText && !selectedType && styles.disabledButton
-              }>
-              Continue
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-
-  return currentScreen === "initial"
-    ? renderInitialScreen()
-    : renderUploadTypeScreen();
+  </SafeAreaView>
+  )
 };
 
 const styles = StyleSheet.create({

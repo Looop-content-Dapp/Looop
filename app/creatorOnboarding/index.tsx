@@ -46,7 +46,7 @@ const CreatorModeWelcome = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);  
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const { claimId, userdata } = useAppSelector((state) => state.auth);
+  const { claimId } = useAppSelector((state) => state.auth);
   const { push } = useRouter();
 
   const checkArtistClaimStatus = async () => {

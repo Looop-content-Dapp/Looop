@@ -20,6 +20,7 @@ import { showToast } from "@/config/ShowMessage";
 import { setUserData } from "@/redux/slices/auth";
 import { useAppDispatch } from "@/redux/hooks";
 import store from "@/redux/store";
+import { AppButton } from "@/components/app-components/button";
 
 const MusicOnboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -51,7 +52,6 @@ const MusicOnboarding = () => {
     try {
       setLoading(true);
       const data = await getGenres();
-      console.log(data.data, "genres");
       setGenres(data.data);
     } catch (error) {
       console.error("Error fetching genres:", error);
@@ -61,7 +61,9 @@ const MusicOnboarding = () => {
   };
 
   const handleNext = async () => {
-    if (currentStep === 1) {
+    if (currentStep === 0) {
+      setCurrentStep(1);
+    } else if (currentStep === 1) {
       if (selectedInterests.length > 0 && userdata?._id) {
         try {
           await saveUserPreference(userdata?._id, selectedInterests);
@@ -73,6 +75,8 @@ const MusicOnboarding = () => {
             "Failed to save your preferences. Please try again."
           );
         }
+      } else {
+        showToast("Please select at least one genre", "error");
       }
     } else if (currentStep === 2) {
       if (userdata) {
@@ -91,7 +95,6 @@ const MusicOnboarding = () => {
       if (artistData.data) {
         if (artistData?.status === "success") {
           if (artistData?.data?.length > 0 && Array.isArray(artistData.data)) {
-            console.log("artist", artistData?.data)
             setArtistes(artistData?.data ?? []);
           } else {
             setArtistes([]);
@@ -107,32 +110,13 @@ const MusicOnboarding = () => {
     }
   };
 
-const handleFollowArtist = async (artistId: string) => {
-  try {
-    if (!userdata?._id) {
-      showToast("Please login to follow artists", "error");
-      return;
-    }
+  const handleFollowArtist = async (artistId: string) => {
+    try {
+      if (!userdata?._id) {
+        showToast("Please login to follow artists", "error");
+        return;
+      }
 
-    setArtistes(prevArtists => 
-      prevArtists.map(section => ({
-        ...section,
-        artists: section.artists.map(artist => 
-          artist.id === artistId 
-            ? { ...artist, isFavourite: !artist.isFavourite }
-            : artist
-        )
-      }))
-    );
-
-    const payload = {
-      userId: userdata._id,
-      faveArtist: [artistId]
-    };
-
-    const response = await api.post("/api/user/createuserfaveartistbasedongenres", payload);
-
-    if (response?.data?.status !== "success") {
       setArtistes(prevArtists => 
         prevArtists.map(section => ({
           ...section,
@@ -143,141 +127,142 @@ const handleFollowArtist = async (artistId: string) => {
           )
         }))
       );
-      const errorMessage = response?.data?.message || "Failed to follow artist";
-      throw new Error(errorMessage);
+
+      const payload = {
+        userId: userdata._id,
+        faveArtist: [artistId]
+      };
+
+      const response = await api.post("/api/user/createuserfaveartistbasedongenres", payload);
+
+      if (response?.data?.status !== "success") {
+        setArtistes(prevArtists => 
+          prevArtists.map(section => ({
+            ...section,
+            artists: section.artists.map(artist => 
+              artist.id === artistId 
+                ? { ...artist, isFavourite: !artist.isFavourite }
+                : artist
+            )
+          }))
+        );
+        const errorMessage = response?.data?.message || "Failed to follow artist";
+        throw new Error(errorMessage);
+      }
+    } catch (error) {
+      console.error("Error following artist:", error);
+      showToast("Failed to follow artist", "error");
     }
-  } catch (error) {
-    console.error("Error following artist:", error);
-    showToast("Failed to follow artist", "error");
-  }
-};
+  };
 
-  const renderSetup = () => (
-    <ScrollView
-      contentContainerStyle={{ alignItems: "center", paddingBottom: 20 }}
-    >
-      <Image
-        source={require("../../assets/images/audioOrange.png")}
-        style={{ width: 215, height: 215, marginTop: "20%" }}
-      />
-      <View
-        style={{
-          gap: 16,
-          alignItems: "center",
-          width: "90%",
-          marginTop: "10%",
-        }}
-      >
-        <View
-          style={{
-            padding: 8,
-            borderWidth: 2,
-            borderColor: "#A0A0A0",
-            borderRadius: 24,
-          }}
-        >
-          <Text style={{ fontSize: 16, color: "#808080", fontWeight: "bold" }}>
-            Learning your taste
-          </Text>
-        </View>
-        <Text style={{ fontSize: 24, color: "#f4f4f4", textAlign: "center" }}>
-          Before we get you started listening to all your favorite artistes, we
-          want to get a feel for your music taste so we can recommend you
-          amazing sounds.
-        </Text>
-      </View>
-      <TouchableOpacity
-        onPress={() => setCurrentStep(1)}
-        style={{
-          backgroundColor: "#FF6D1B",
-          width: "90%",
-          alignItems: "center",
-          padding: 16,
-          marginTop: "20%",
-          borderRadius: 56,
-        }}
-      >
-        <Text style={{ color: "#ffffff", fontSize: 16 }}>Continue</Text>
-      </TouchableOpacity>
-    </ScrollView>
-  );
-
-  const renderGenres = () => (
-    <>
-      <TouchableOpacity
-        style={{ padding: 24 }}
-        onPress={() => setCurrentStep(0)}
-      >
-        <ArrowLeft02Icon size={32} color="#fff" />
-      </TouchableOpacity>
-      <View style={{ padding: 24 }}>
-        <Text style={{ fontSize: 24, color: "#f4f4f4", fontWeight: "bold" }}>
-          What are your favorite genres?
-        </Text>
-        <Text style={{ fontSize: 16, color: "#A0A0A0", marginTop: 8 }}>
-          Select one or more genres and we'll help you discover amazing sounds
-        </Text>
-      </View>
-      <FlatList
-        data={loading ? Array(22).fill({}) : genres}
-        renderItem={({ item }: {item: any}) => {
-          const selected = selectedInterests.includes(item?._id as never);
-          return loading ? (
-            <SkeletonGenre />
-          ) : (
-            <TouchableOpacity
-              onPress={() => {
-                setSelectedGenres((prev: any) =>
-                  prev.includes(item._id)
-                    ? prev.filter((id: any) => id !== item._id)
-                    : [...prev, item._id]
-                );
-              }}
-              style={{
-                width: "33%",
-                padding: 3,
-              }}
-            >
-              <View
-                style={{
-                  borderWidth: 1,
-                  borderColor: selected ? "#FF6D1B" : "#A0A0A0",
-                  backgroundColor: selected ? "#FF6D1B" : "transparent",
-                  padding: 16,
-                  borderRadius: 56,
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ color: selected ? "#ffffff" : "#A0A0A0" }}>
-                  {item?.name}
+  const renderContent = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <ScrollView contentContainerStyle={{ alignItems: "center", paddingBottom: 20 }}>
+            <Image
+              source={require("../../assets/images/audioOrange.png")}
+              style={{ width: 215, height: 215, marginTop: "20%" }}
+            />
+            <View style={{ gap: 16, alignItems: "center", width: "90%", marginTop: "10%" }}>
+              <View style={{ padding: 8, borderWidth: 2, borderColor: "#A0A0A0", borderRadius: 24 }}>
+                <Text style={{ fontSize: 16, color: "#808080", fontWeight: "bold" }}>
+                  Learning your taste
                 </Text>
               </View>
-            </TouchableOpacity>
-          );
-        }}
-        numColumns={3}
-        keyExtractor={(item, index) => item?._id || index.toString()}
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          gap: 8,
-        }}
-      />
-      <TouchableOpacity
-        onPress={handleNext}
-        style={{
-          backgroundColor: "#FF6D1B",
-          width: "90%",
-          alignSelf: "center",
-          padding: 16,
-          borderRadius: 56,
-          alignItems: "center",
-          marginTop: 20,
-        }}
-      >
-        <Text style={{ color: "#ffffff", fontSize: 16 }}>Continue</Text>
-      </TouchableOpacity>
-    </>
-  );
+              <Text style={{ fontSize: 24, color: "#f4f4f4", textAlign: "center" }}>
+                Before we get you started listening to all your favorite artistes, we
+                want to get a feel for your music taste so we can recommend you
+                amazing sounds.
+              </Text>
+            </View>
+          </ScrollView>
+        );
+      case 1:
+        return (
+          <View style={{ flex: 1 }}>
+            <View style={{ padding: 24 }}>
+              <Text style={{ fontSize: 24, color: "#f4f4f4", fontWeight: "bold" }}>
+                What are your favorite genres?
+              </Text>
+              <Text style={{ fontSize: 16, color: "#A0A0A0", marginTop: 8 }}>
+                Select one or more genres and we'll help you discover amazing sounds
+              </Text>
+            </View>
+            <FlatList
+              data={loading ? Array(22).fill({}) : genres}
+              renderItem={({ item }: {item: any}) => {
+                const selected = selectedInterests.includes(item?._id as never);
+                return loading ? (
+                  <SkeletonGenre />
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSelectedGenres((prev: any) =>
+                        prev.includes(item._id)
+                          ? prev.filter((id: any) => id !== item._id)
+                          : [...prev, item._id]
+                      );
+                    }}
+                    style={{ width: "33%", padding: 3 }}
+                  >
+                    <View
+                      style={{
+                        borderWidth: 1,
+                        borderColor: selected ? "#FF6D1B" : "#A0A0A0",
+                        backgroundColor: selected ? "#FF6D1B" : "transparent",
+                        padding: 16,
+                        borderRadius: 56,
+                        alignItems: "center",
+                      }}
+                    >
+                      <Text style={{ color: selected ? "#ffffff" : "#A0A0A0" }}>
+                        {item?.name}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              }}
+              numColumns={3}
+              keyExtractor={(item, index) => item?._id || index.toString()}
+              contentContainerStyle={{
+                paddingHorizontal: 16,
+                gap: 8,
+              }}
+            />
+          </View>
+        );
+      case 2:
+        return (
+          <View style={{ flex: 1, padding: 24 }}>
+            <View style={{ marginBottom: 16 }}>
+              <Text style={{ fontSize: 24, color: "#f4f4f4", fontWeight: "bold" }}>
+                Based on your selections
+              </Text>
+              <Text style={{ fontSize: 14, color: "#D2D3D5" }}>
+                Alright! Let's follow some artistes to start exploring their discographies
+              </Text>
+            </View>
+            <ArtistSectionList
+              sections={artistes}
+              onFollow={handleFollowArtist}
+              loading={loading}
+            />
+          </View>
+        );
+    }
+  };
+
+  const getButtonText = () => {
+    switch (currentStep) {
+      case 0:
+        return "Get Started";
+      case 1 || 2:
+        return "Continue";
+      default:
+        return "Next";
+    }
+  };
 
   const SkeletonGenre = () => (
     <View style={{ width: "33%", padding: 3 }}>
@@ -296,35 +281,16 @@ const handleFollowArtist = async (artistId: string) => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      {currentStep === 0 && renderSetup()}
-      {currentStep === 1 && renderGenres()}
-      {currentStep === 2 && (
-      <View className="p-[24px]">
-        <View className="gap-y-8px]">
-            <Text className="text-[24px] text-[#f4f4f4] font-PlusJakartaSansBold">Based on your selections</Text>
-            <Text className="text-[14px] font-PlusJakartaSansRegular text-[#D2D3D5]">Alright! Let's follow some artistes to start exploring their discographies</Text>
-        </View>
-        <ArtistSectionList
-          sections={artistes ? artistes : []}
-          onFollow={handleFollowArtist}
-          loading={loading}
-        />
+      {currentStep > 0 && (
         <TouchableOpacity
-          onPress={handleNext}
-          style={{
-            backgroundColor: "#FF6D1B",
-            width: "90%",
-            alignSelf: "center",
-            padding: 16,
-            borderRadius: 56,
-            alignItems: "center",
-            marginTop: 20,
-          }}
+          style={{ padding: 24 }}
+          onPress={() => setCurrentStep(prev => prev - 1)}
         >
-          <Text style={{ color: "#ffffff", fontSize: 16 }}>Finish</Text>
+          <ArrowLeft02Icon size={32} color="#fff" />
         </TouchableOpacity>
-      </View>
       )}
+      {renderContent()}
+      <AppButton.Primary onPress={handleNext} text={`${getButtonText()}`} color="#FF6D1B" loading={false} />
     </SafeAreaView>
   );
 };

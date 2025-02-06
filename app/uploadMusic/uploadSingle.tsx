@@ -1,6 +1,6 @@
 import { View, Text } from "react-native";
 import React, { useLayoutEffect, useState } from "react";
-import { useNavigation } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import TrackUploadForm from "@/components/uploadMusicFlow/TrackUploadForm";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -11,6 +11,7 @@ const uploadSingle = () => {
   const [flow, setFlow] = useState("Track info");
   const navigation = useNavigation();
   const [coverImage, setCoverImage] = useState(null);
+  const { back } = useRouter()
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -21,7 +22,7 @@ const uploadSingle = () => {
       headerLeft: () => (
         <AppBackButton
           name="Upload music"
-          onBackPress={() => console.log("hello")}
+          onBackPress={() => back()}
         />
       ),
       headerTitle: ""

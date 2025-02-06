@@ -38,6 +38,7 @@ interface AudioUploadFieldProps extends BaseFieldProps {
   onFileSelect: () => void;
   acceptedFormats?: string;
   selectedFileName?: string;
+  onFileRemove?: () => void;
 }
 
 interface DatePickerFieldProps extends BaseFieldProps {
@@ -941,7 +942,7 @@ const styles = StyleSheet.create({
     padding: 4
   },
   uploadContainer: {
-    width: 440,
+    width: "100%",
     height: 240,
     borderRadius: 8,
     borderWidth: 2,
