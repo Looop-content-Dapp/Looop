@@ -77,6 +77,7 @@
     "react-native-markdown-display": "^7.0.2",
     "react-native-modal": "^13.0.1",
     "react-native-modalbox": "^2.0.2",
+    "react-native-payaza": "^1.0.1",
     "react-native-paystack-webview": "^4.3.1",
     "react-native-reanimated": "~3.16.1",
     "react-native-responsive-screen": "^1.4.2",
