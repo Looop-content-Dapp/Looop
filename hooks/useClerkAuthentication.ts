@@ -7,9 +7,6 @@ import { setClaimId, setUserData } from "@/redux/slices/auth";
 import api from "@/config/apiConfig";
 import { showToast } from "@/config/ShowMessage";
 
-const ENDPOINT = "https://looop-backend.onrender.com";
-export type UserRole = "user" | "admin" | "artist";
-
 /**
  * Custom hook to handle authentication with OAuth providers
  */
@@ -23,29 +20,12 @@ export const useClerkAuthentication = () => {
     setLoading(true);
     setError(null);
     try {
-      const session = await account.createOAuth2Session(
+      const session = account.createOAuth2Session(
         provider === "google" ? OAuthProvider.Google : OAuthProvider.Apple,
-        "https://example.com/success",
+        "looop://(auth)/createpassword",
         "https://example.com/failure",
         ["email", "profile"]
       );
-
-      if (session) {
-        // Get user profile after successful OAuth login
-        const user = await account.get();
-
-        // Send user data to backend
-        const response = await api.post(`/api/user/oauth-signin`, {
-          email: user.email,
-          provider: provider,
-          providerUserId: user.$id
-        });
-
-        store.dispatch(setUserData(response.data.data));
-        showToast(`Successfully signed in with ${provider}`, "success");
-        router.push("../(musicTabs)/(home)/");
-        return response.data;
-      }
     } catch (err: any) {
       console.error(`Error during ${provider} sign-in:`, err);
       setError(`${provider} sign-in failed`);
@@ -80,8 +60,10 @@ export const useClerkAuthentication = () => {
     setError(null);
 
     try {
-        // // First authenticate with Appwrite
-        // await account.createEmailPasswordSession(emailAddress, password);
+
+        const user =  await account.get()
+        // First authenticate with Appwrite
+        await account.createEmailToken(user.$id, emailAddress,);
 
         // Then authenticate with your backend
         const response = await api.post(`/api/user/signin`, {

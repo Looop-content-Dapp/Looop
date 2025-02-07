@@ -1,20 +1,19 @@
-import { View, Text } from "react-native";
+import { View, Text, Alert } from "react-native";
 import React, { useLayoutEffect, useState } from "react";
-import { useNavigation, useRouter } from "expo-router";
+import { useNavigation } from "expo-router";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { AppButton } from "@/components/app-components/button";
-import FileUpload from "@/components/uploadMusicFlow/FileUpload";
 import EPBasicInfo from "@/components/uploadMusicFlow/ep/uploadEP-BasicInfo";
 import TrackInfo from "@/components/uploadMusicFlow/ep/uploadEP-TrackInfo";
 import EPPreview from "@/components/uploadMusicFlow/ep/uploadEP-PreviewUpload";
+import { EPUploadProvider, useEPUpload } from "@/context/EPUploadContext";
+import { validateEPBasicInfo, validateEPTrackInfo } from "@/utils/epValidation";
 
-const TRACK_COUNT: number = 4;
-
-const UploadEP = () => {
-  const [flow, setFlow] = useState<"BasicInfo" | "EPDetails" | "PreviewUpload">(
-    "BasicInfo"
-  );
+const UploadEPContent = () => {
+  const { epData } = useEPUpload();
+  const [flow, setFlow] = useState<"BasicInfo" | "EPDetails" | "PreviewUpload">("BasicInfo");
+  const [trackCount, setTrackCount] = useState<number>(2);
   const navigation = useNavigation();
 
   useLayoutEffect(() => {
@@ -32,8 +31,18 @@ const UploadEP = () => {
 
   const handleNextPage = () => {
     if (flow === "BasicInfo") {
+      const validation = validateEPBasicInfo(epData);
+      if (!validation.isValid) {
+        Alert.alert("Missing Information", validation.message);
+        return;
+      }
       setFlow("EPDetails");
     } else if (flow === "EPDetails") {
+      const validation = validateEPTrackInfo(epData.tracks);
+      if (!validation.isValid) {
+        Alert.alert("Missing Information", validation.message);
+        return;
+      }
       setFlow("PreviewUpload");
     }
   };
@@ -51,9 +60,9 @@ const UploadEP = () => {
   const handleFlow = () => {
     switch (flow) {
       case "BasicInfo":
-        return <EPBasicInfo />;
+        return <EPBasicInfo onTrackCountChange={setTrackCount} />;
       case "EPDetails":
-        return <TrackInfo trackCount={TRACK_COUNT} />;
+        return <TrackInfo trackCount={trackCount} />;
       case "PreviewUpload":
         return <EPPreview />;
       default:
@@ -76,6 +85,14 @@ const UploadEP = () => {
         onPress={handleNextPage}
       />
     </KeyboardAwareScrollView>
+  );
+};
+
+const UploadEP = () => {
+  return (
+    <EPUploadProvider>
+      <UploadEPContent />
+    </EPUploadProvider>
   );
 };
 

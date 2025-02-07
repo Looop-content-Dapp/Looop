@@ -1,18 +1,24 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
 import { Text } from "react-native";
 import { FormField } from "../../app-components/formField";
+import useFileUpload, { FileType } from "@/hooks/useFileUpload";
+import { useEPUpload } from "@/context/EPUploadContext";
 
 interface Track {
   trackName: string;
   songType: string;
   creatorUrl: string;
-  audioFile: File | null;
+  audioFile: {
+    uri: string;
+    name: string;
+    type: string;
+    size: number;
+  } | null;
   explicitLyrics: string;
   writers: string[];
   producers: string[];
   isrc: string;
-  releaseDate: Date | null;
 }
 
 interface TrackInfoProps {
@@ -20,62 +26,55 @@ interface TrackInfoProps {
 }
 
 const TrackInfo: React.FC<TrackInfoProps> = ({ trackCount }) => {
-  const [tracks, setTracks] = useState(
-    Array.from({ length: trackCount }, () => ({
-      trackName: "",
-      songType: "",
-      creatorUrl: "",
-      audioFile: null,
-      explicitLyrics: "",
-      writers: [],
-      producers: [],
-      isrc: "",
-      releaseDate: null
-    }))
-  );
+  const { epData, updateTrackData } = useEPUpload();
+  const { pickFile, isLoading } = useFileUpload();
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const handleAudioUpload = async (index: number) => {
+    const result = await pickFile(FileType.AUDIO);
+    if (result?.success && result.file) {
+      updateTrackData(index, { audioFile: result.file });
+    }
+  };
+
+  useEffect(() => {
+    // Initialize tracks in context if not already set
+    if (!epData.tracks || epData.tracks.length !== trackCount) {
+      const initialTracks = Array.from({ length: trackCount }, () => ({
+        trackName: "",
+        songType: "",
+        creatorUrl: "",
+        audioFile: null,
+        explicitLyrics: "",
+        writers: [],
+        producers: [],
+        isrc: "",
+        releaseDate: null
+      }));
+      updateTrackData(0, { tracks: initialTracks });
+    }
+  }, [trackCount]);
 
   const handleChange = (index: number, field: keyof Track, value: any) => {
-    setTracks((prev) =>
-      prev.map((track, i) =>
-        i === index ? { ...track, [field]: value } : track
-      )
-    );
+    updateTrackData(index, { [field]: value });
   };
 
-  const handleAddCreator = (
-    index: number,
-    field: keyof Track,
-    name: string
-  ) => {
-    setTracks((prev) =>
-      prev.map((track, i) =>
-        i === index &&
-        name.trim() &&
-        track[field] &&
-        !(track[field] as string[]).includes(name)
-          ? { ...track, [field]: [...track[field], name] }
-          : track
-      )
-    );
+  const handleAddCreator = (index: number, field: keyof Track, name: string) => {
+    if (!name.trim() || !epData.tracks[index][field]) return;
+    
+    const currentCreators = epData.tracks[index][field] as string[];
+    if (!currentCreators.includes(name)) {
+      updateTrackData(index, { 
+        [field]: [...currentCreators, name]
+      });
+    }
   };
 
-  const handleRemoveCreator = (
-    index: number,
-    field: keyof Track,
-    name: string
-  ) => {
-    setTracks((prev) =>
-      prev.map((track, i) =>
-        i === index
-          ? {
-              ...track,
-              [field]: (track[field] as string[]).filter(
-                (item) => item !== name
-              )
-            }
-          : track
-      )
-    );
+  const handleRemoveCreator = (index: number, field: keyof Track, name: string) => {
+    const currentCreators = epData.tracks[index][field] as string[];
+    updateTrackData(index, {
+      [field]: currentCreators.filter(item => item !== name)
+    });
   };
 
   const explicitOptions = [
@@ -97,7 +96,7 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ trackCount }) => {
 
   return (
     <ScrollView>
-      {tracks.map((track, index) => (
+      {epData.tracks.map((track, index) => (
         <View key={index} className="mt-[32px]">
           <Text className="text-[24px] font-PlusJakartaSansBold leading-[30px] text-[#F4F4F4]">
             Track {index + 1}
@@ -144,12 +143,9 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ trackCount }) => {
             <FormField.AudioUploadField
               label="Upload audio file"
               description="MP3, M4A, WAV, FLAC, WMA, AIFF"
-              //   acceptedFormats="MP3, M4A, WAV, FLAC, WMA, AIFF"
-              selectedFile={track.audioFile}
-              onFileSelect={(file: any) =>
-                handleChange(index, "audioFile", file)
-              }
-              onFileRemove={() => handleChange(index, "audioFile", null)}
+              selectedFileName={track.audioFile?.name}
+              onFileSelect={() => handleAudioUpload(index)}
+              onRemove={() => updateTrackData(index, { audioFile: null })} // Changed from onFileRemove to onRemove
             />
 
             <FormField.RadioField

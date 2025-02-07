@@ -4,19 +4,19 @@ import { useNavigation, useRouter } from "expo-router";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { AppButton } from "@/components/app-components/button";
-import FileUpload from "@/components/uploadMusicFlow/FileUpload";
 import AlbumBasicInfo from "@/components/uploadMusicFlow/album/uploadAlbum-BasicInfo";
 import TrackInfo from "@/components/uploadMusicFlow/album/uploadAlbum-TrackInfo";
 import AlbumPreview from "@/components/uploadMusicFlow/album/uploadAlbum-PreviewUpload";
-
-// TODO: Replace this with the number of tracks set in the album details component.
-// TODO: Using a demo for now!
-const TRACK_COUNT: number = 7;
+import { validateBasicInfo, validateTrackInfo } from "@/utils/albumValidation";
+import { Alert } from "react-native";
+import { useAlbumUpload } from "@/context/AlbumUploadContext";
 
 const UploadAlbum = () => {
+  const { albumData } = useAlbumUpload();
   const [flow, setFlow] = useState<
     "BasicInfo" | "AlbumDetails" | "PreviewUpload"
   >("BasicInfo");
+  const [trackCount, setTrackCount] = useState<number>(2);
   const navigation = useNavigation();
 
   useLayoutEffect(() => {
@@ -34,8 +34,18 @@ const UploadAlbum = () => {
 
   const handleNextPage = () => {
     if (flow === "BasicInfo") {
+      const validation = validateBasicInfo(albumData);
+      if (!validation.isValid) {
+        Alert.alert("Missing Information", validation.message);
+        return;
+      }
       setFlow("AlbumDetails");
     } else if (flow === "AlbumDetails") {
+      const validation = validateTrackInfo(albumData.tracks);
+      if (!validation.isValid) {
+        Alert.alert("Missing Information", validation.message);
+        return;
+      }
       setFlow("PreviewUpload");
     }
   };
@@ -53,9 +63,9 @@ const UploadAlbum = () => {
   const handleFlow = () => {
     switch (flow) {
       case "BasicInfo":
-        return <AlbumBasicInfo />;
+        return <AlbumBasicInfo onTrackCountChange={setTrackCount} />;
       case "AlbumDetails":
-        return <TrackInfo trackCount={TRACK_COUNT} />;
+        return <TrackInfo trackCount={trackCount} />;
       case "PreviewUpload":
         return <AlbumPreview />;
       default:

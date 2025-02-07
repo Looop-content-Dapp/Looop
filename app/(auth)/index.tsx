@@ -38,7 +38,7 @@ const EmailSignupFlow = () => {
   const [isCorrect, setIsCorrect] = useState<boolean>();
   const [timer, setTimer] = useState(60);
   const [isLoading, setIsLoading] = useState(false);
-  const { handleEmailSignUp, userId, handleOAuthSignIn } =
+  const { handleEmailSignUp, userId } =
     useClerkAuthentication();
 
   // Verification code field setup
@@ -138,17 +138,17 @@ const EmailSignupFlow = () => {
 
       <View className="gap-y-12 mt-6">
         <View className="gap-y-2 pt-6">
-          <Text className="text-white text-2xl font-PlusJakartaSansBold">
+          <Text className="text-white text-[24px] font-PlusJakartaSansBold">
             Welcome to Looop
           </Text>
-          <Text className="text-gray-400 text-base font-PlusJakartaSansRegular">
+          <Text className="text-gray-400 text-[16px] font-PlusJakartaSansRegular">
             We're excited to have you in the looop. Are you ready for an amazing
             experience? Let's get you started
           </Text>
         </View>
 
         <View className="gap-y-3">
-          <Text className="text-lg text-gray-200 font-PlusJakartaSansBold">
+          <Text className="text-[16px] text-gray-200 font-PlusJakartaSansBold">
             What's your Email?
           </Text>
           <TextInput
@@ -170,15 +170,15 @@ const EmailSignupFlow = () => {
           onPress={handleEmailSubmit}
         />
 
-        {/* <Text className="mt-14 text-center text-gray-400 font-PlusJakartaSansRegular text-sm">
+        <Text className="mt-14 text-center text-gray-400 font-PlusJakartaSansRegular text-sm">
           Or you can sign up with
-        </Text> */}
+        </Text>
       </View>
-{/* 
+
       <View className="mt-12 gap-y-4">
         <TouchableOpacity
           className="bg-white py-4 rounded-full flex-row items-center justify-center"
-          onPress={() => handleOAuthSignIn("google")}
+          onPress={() => Alert.alert('Google signon not available yet')}
         >
           <Image
             source={require("../../assets/images/google.png")}
@@ -191,7 +191,7 @@ const EmailSignupFlow = () => {
 
         <TouchableOpacity
           className="bg-white py-4 rounded-full flex-row items-center justify-center"
-          onPress={() => handleOAuthSignIn("apple")}
+          onPress={() => Alert.alert('Apple signon not available yet')}
         >
           <Image
             source={require("../../assets/images/apple.png")}
@@ -201,7 +201,7 @@ const EmailSignupFlow = () => {
             Sign up with Apple
           </Text>
         </TouchableOpacity>
-      </View> */}
+      </View>
 
          <View className="flex-row items-center justify-center gap-x-[4px] absolute bottom-12 left-0 right-0">
             <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[14px]">

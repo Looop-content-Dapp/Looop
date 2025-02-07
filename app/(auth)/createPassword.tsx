@@ -49,13 +49,9 @@ const CreatePassword = () => {
   const { checkUsername } = useQuery();
 
   const validateUsername = async (username: string) => {
-    if (!username) {
-      setShowMessage("");
-      return;
-    }
-
-    if (username.length < 3) {
-      setShowMessage("Username must be at least 3 characters");
+    // Client-side validation first
+    if (!username || username.length < 5) {
+      setShowMessage(username.length > 0 ? "Username must be at least 5 characters" : "");
       return;
     }
 
@@ -65,6 +61,7 @@ const CreatePassword = () => {
       return;
     }
 
+    // Only proceed with API call if client-side validation passes
     setLoading(true);
     const payload = { username };
 
@@ -87,13 +84,15 @@ const CreatePassword = () => {
     }
   };
 
-  const debouncedValidateUsername = debounce(validateUsername, 500);
+  // Increase debounce delay to 800ms
+  const debouncedValidateUsername = debounce(validateUsername, 800);
 
   useEffect(() => {
-    if (_username.length > 2) {
+    // Only trigger validation if username is at least 3 characters
+    if (_username.length >= 5) {
       debouncedValidateUsername(_username);
     } else {
-      setShowMessage("");
+      setShowMessage(_username.length > 0 ? "Username must be at least 5 characters" : "");
     }
   }, [_username]);
 

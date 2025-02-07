@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
 import { Text } from "react-native";
 import { FormField } from "../../app-components/formField";
+import useFileUpload, { FileType } from "@/hooks/useFileUpload";
+import { useAlbumUpload } from "@/context/AlbumUploadContext";
 
 interface Track {
   trackName: string;
@@ -20,6 +22,22 @@ interface TrackInfoProps {
 }
 
 const TrackInfo: React.FC<TrackInfoProps> = ({ trackCount }) => {
+  const { albumData, updateTrackData } = useAlbumUpload();
+  const { pickFile, isLoading } = useFileUpload();
+  const scrollViewRef = useRef<ScrollView>(null);
+  
+  useEffect(() => {
+    // Scroll to top when component mounts
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  }, []);
+
+  const handleAudioUpload = async (index: number) => {
+    const result = await pickFile(FileType.AUDIO);
+    if (result?.success && result.file) {
+      updateTrackData(index, { audioFile: result.file });
+    }
+  };
+
   const [tracks, setTracks] = useState(
     Array.from({ length: trackCount }, () => ({
       trackName: "",
@@ -96,7 +114,13 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ trackCount }) => {
   ];
 
   return (
-    <ScrollView>
+    <ScrollView
+      ref={scrollViewRef}
+      contentContainerStyle={{
+        paddingBottom: 120,
+        alignItems: 'center'
+      }}
+      showsVerticalScrollIndicator={false}>
       {tracks.map((track, index) => (
         <View key={index} className="mt-[32px]">
           <Text className="text-[24px] font-PlusJakartaSansBold leading-[30px] text-[#F4F4F4]">
