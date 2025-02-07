@@ -19,7 +19,6 @@ import api from "@/config/apiConfig";
 import { showToast } from "@/config/ShowMessage";
 import { setUserData } from "@/redux/slices/auth";
 import { useAppDispatch } from "@/redux/hooks";
-import store from "@/redux/store";
 import { AppButton } from "@/components/app-components/button";
 
 const MusicOnboarding = () => {

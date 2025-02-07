@@ -1,4 +1,3 @@
-// JoinCommunity.tsx
 import React from 'react';
 import {
   View,
@@ -7,7 +6,6 @@ import {
   TouchableOpacity,
   Image,
   useWindowDimensions,
-  Platform,
 } from 'react-native';
 import { ArrowRight01Icon } from '@hugeicons/react-native';
 import { MotiView } from 'moti';

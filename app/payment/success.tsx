@@ -5,11 +5,32 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Audit01Icon, HeadphonesIcon, UserGroupIcon } from '@hugeicons/react-native'
 import LoadingScreen from '../loadingScreen'
 import Confetti from '@/assets/svg/Confetti'
+import api from '@/config/apiConfig'
+import { useAppSelector } from '@/redux/hooks'
 
 const successful = () => {
   const { name, image } = useLocalSearchParams()
   const router = useRouter()
+  const { userdata } = useAppSelector((state) => state.auth)
   const [showMintingScreen, setShowMintingScreen] = useState(true);
+  const  chainType = "xion"
+
+  const handleJoinCommunity = async() => {
+    const payload = {
+      "recipientAddress": "xion1u6z49wty3j3a4ldn8hwv2jplyxq6rvhs472s4y",
+      "type": "xion",
+      "userId": userdata?._id,
+      "communityId": "67a0eab9c60ab771cc6c2756",
+      "collectionAddress": "xion1v47tm32nxfjtlfrcek5dq3xcg8jd6qcj4gye7flaazuh2h3ydtmqdkmn7h",
+      "userAddress":  chainType === "xion" ?  userdata?.wallets.xion : userdata?.wallets.starknet,
+      "transactionReference": `Minting tribe pass of ${name} to ${userdata?._id} with wallet address ${chainType === "xion" ?  userdata?.wallets.xion : userdata?.wallets.starknet}`
+  }
+    try {
+      const res = await api.post('/api/community/joincommunity', payload)
+    } catch (error) {
+      
+    }
+  }
   
 
   useEffect(() => {
@@ -41,47 +62,49 @@ const successful = () => {
 
   return (
     <View className="flex-1 bg-[#040405] px-6">
-      <View className="flex-1 items-center mt-[100px]">
+      <View className="flex-1 items-center justify-center">
         <View className="w-full relative">
           {/* Main Image Container with Icons */}
           <View className="relative items-center">
             <Image
               source={{ uri: image as string }}
-              className="w-[216px] aspect-square rounded-[32px]"
+              className="w-[280px] aspect-square rounded-[32px]"
               style={{ resizeMode: "cover" }}
             />
             
-            {/* Floating Icons */}
-            <View className="absolute -top-3 -left-3">
-              <View className="w-12 h-12 bg-[#1ED760] rounded-full items-center justify-center">
-                <Audit01Icon size={24} color="#000000" />
-                
+            {/* Audio Wave Icon */}
+            <View className="absolute -top-4 -left-4">
+              <View className="w-14 h-14 bg-[#1ED760] rounded-full items-center justify-center rotate-[-15deg]">
+                <Audit01Icon size={28} color="#000000" />
               </View>
             </View>
             
-            <View className="absolute -top-28 right-4">
-               <Confetti />
+            {/* Confetti */}
+            <View className="absolute -top-8 right-0">
+               <Confetti  />
             </View>
             
-            <View className="absolute -bottom-3  left-12">
-              <View className="w-[90px] h-[90px] bg-[#A187B5] rounded-[24px] items-center justify-center">
-                 <UserGroupIcon size={46} color='black' variant='solid' />
+            {/* Group Icon */}
+            <View className="absolute -bottom-6 left-4">
+              <View className="w-[80px] h-[80px] bg-[#A187B5] rounded-[20px] items-center justify-center rotate-[15deg]">
+                 <UserGroupIcon size={40} color='black' variant='solid' />
               </View>
             </View>
             
-            <View className="absolute bottom-12 right-20">
-              <View className="w-[64px] h-[64px] bg-[#FF8A49] rounded-[24px] items-center justify-center">
-                <HeadphonesIcon size={34.133} color='black' variant='solid' />
+            {/* Headphones Icon */}
+            <View className="absolute -bottom-2 right-4">
+              <View className="w-[60px] h-[60px] bg-[#FF8A49] rounded-[18px] items-center justify-center rotate-[10deg]">
+                <HeadphonesIcon size={32} color='black' variant='solid' />
               </View>
             </View>
           </View>
 
           {/* Welcome Text */}
-          <View className="mt-[105px] items-center">
-            <Text className="text-[28px] font-PlusJakartaSansBold text-white">
-              Welcome to {name}
+          <View className="mt-16 items-center">
+            <Text className="text-[32px] font-PlusJakartaSansBold text-white">
+              Welcome to Ravers HQ
             </Text>
-            <Text className="text-[16px] font-PlusJakartaSansMedium text-[#D2D3D5] text-center mt-2">
+            <Text className="text-[16px] font-PlusJakartaSansMedium text-[#D2D3D5] text-center mt-3 px-6">
               Connect with other fans and join the important discussions and just have fun
             </Text>
           </View>
