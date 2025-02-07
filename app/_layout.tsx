@@ -13,6 +13,8 @@ import "../global.css";
 
 import store, { persistor } from "../redux/store";
 import { Pressable, Text } from "react-native";
+import { account } from "@/appWrite";
+import { Alert } from "react-native";
 
 GiphySDK.configure({ apiKey: "R25Je48LLUMFnuTOGV2kibJO2xFGSR6i" });
 SplashScreen.preventAutoHideAsync();
@@ -105,11 +107,25 @@ export default function _RootLayout() {
     <BottomSheetModalProvider>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <Pressable className="bg-Orange/08 absolute bottom-[120px] right-[12px] z-[1000px] h-[60px] w-[60px]  items-center justify-center rounded-full" onPress={async () => {
-          persistor.purge();
+        {/* <Pressable className="bg-Orange/08 absolute bottom-[120px] right-[12px] z-[1000px] h-[60px] w-[60px]  items-center justify-center rounded-full" onPress={async () => {
+          const session = await account.getSession('current');
+          if (session) {
+              await account.deleteSession(session.$id);
+              Alert.alert(
+                  "Success",
+                  "You have been logged out",
+                  [
+                      {
+                          text: "OK",
+                          onPress: () => {
+                              persistor.purge();
+                          },
+                      },
+                  ])
+          }
         }}>
             <Text className="text-[#fff]">Reset</Text>
-        </Pressable>
+        </Pressable> */}
         <KeyboardProvider>
           <AppContent />
         </KeyboardProvider>

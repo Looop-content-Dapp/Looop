@@ -138,17 +138,17 @@ const EmailSignupFlow = () => {
 
       <View className="gap-y-12 mt-6">
         <View className="gap-y-2 pt-6">
-          <Text className="text-white text-2xl font-PlusJakartaSansBold">
+          <Text className="text-white text-[24px] font-PlusJakartaSansBold">
             Welcome to Looop
           </Text>
-          <Text className="text-gray-400 text-base font-PlusJakartaSansRegular">
+          <Text className="text-gray-400 text-[16px] font-PlusJakartaSansRegular">
             We're excited to have you in the looop. Are you ready for an amazing
             experience? Let's get you started
           </Text>
         </View>
 
         <View className="gap-y-3">
-          <Text className="text-lg text-gray-200 font-PlusJakartaSansBold">
+          <Text className="text-[16px] text-gray-200 font-PlusJakartaSansBold">
             What's your Email?
           </Text>
           <TextInput
@@ -178,7 +178,7 @@ const EmailSignupFlow = () => {
       <View className="mt-12 gap-y-4">
         <TouchableOpacity
           className="bg-white py-4 rounded-full flex-row items-center justify-center"
-      
+          onPress={() => Alert.alert('Google signon not available yet')}
         >
           <Image
             source={require("../../assets/images/google.png")}
@@ -191,6 +191,7 @@ const EmailSignupFlow = () => {
 
         <TouchableOpacity
           className="bg-white py-4 rounded-full flex-row items-center justify-center"
+          onPress={() => Alert.alert('Apple signon not available yet')}
         >
           <Image
             source={require("../../assets/images/apple.png")}

@@ -290,7 +290,10 @@ const MusicOnboarding = () => {
         </TouchableOpacity>
       )}
       {renderContent()}
-      <AppButton.Primary onPress={handleNext} text={`${getButtonText()}`} color="#FF6D1B" loading={false} />
+      <AppButton.Primary
+         onPress={handleNext} text={`${getButtonText()}`} color="#FF6D1B" loading={false} 
+         className="absolute bottom-6 left-6 right-6 z-10 py-[16px] rounded-[56px]"
+      />
     </SafeAreaView>
   );
 };

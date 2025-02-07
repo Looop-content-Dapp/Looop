@@ -13,19 +13,30 @@ import { MotiView } from "moti";
 
 const { width } = Dimensions.get("window");
 
+const skeletonAnimation = {
+  from: { opacity: 0.3 },
+  animate: { opacity: 0.7 },
+  transition: {
+    type: 'timing',
+    duration: 1000,
+    repeatReverse: true,
+    loop: true
+  }
+} as const;
+
 const SkeletonArtistCard = () => {
   return (
     <View style={styles.card}>
       <MotiView
-        from={{ opacity: 0.5 }}
-        animate={{ opacity: 1 }}
-        transition={{ loop: true, duration: 1000 }}
+        from={skeletonAnimation.from}
+        animate={skeletonAnimation.animate}
+        transition={skeletonAnimation.transition}
         style={[styles.artistImage, { backgroundColor: '#2e2e2e' }]}
       />
       <MotiView
-        from={{ opacity: 0.5 }}
-        animate={{ opacity: 1 }}
-        transition={{ loop: true, duration: 1000 }}
+        from={skeletonAnimation.from}
+        animate={skeletonAnimation.animate}
+        transition={skeletonAnimation.transition}
         style={{
           height: 20,
           width: '80%',
@@ -35,9 +46,9 @@ const SkeletonArtistCard = () => {
         }}
       />
       <MotiView
-        from={{ opacity: 0.5 }}
-        animate={{ opacity: 1 }}
-        transition={{ loop: true, duration: 1000 }}
+        from={skeletonAnimation.from}
+        animate={skeletonAnimation.animate}
+        transition={skeletonAnimation.transition}
         style={{
           height: 16,
           width: '60%',
@@ -47,9 +58,9 @@ const SkeletonArtistCard = () => {
         }}
       />
       <MotiView
-        from={{ opacity: 0.5 }}
-        animate={{ opacity: 1 }}
-        transition={{ loop: true, duration: 1000 }}
+        from={skeletonAnimation.from}
+        animate={skeletonAnimation.animate}
+        transition={skeletonAnimation.transition}
         style={{
           height: 36,
           width: '80%',
@@ -103,14 +114,25 @@ const ArtistSection = ({
   onFollow: any;
   loading?: boolean;
 }) => {
+  const isEmpty = !loading && (!section || section.length === 0);
+  const skeletonCount = 5;
+
+  if (isEmpty) {
+    return (
+      <View style={styles.emptySection}>
+        <Text style={styles.emptyText}>No artists available in this genre</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.section}>
       <FlatList
         horizontal
-        data={loading ? Array(3).fill({}) : section}
-        keyExtractor={(item, index) => index.toString() + Date.now()}
+        data={loading ? Array(skeletonCount).fill({}) : section}
+        keyExtractor={(item, index) => `artist-${index}-${Date.now()}`}
         renderItem={({ item }) => (
-          loading && !item  ? (
+          loading || !item ? (
             <SkeletonArtistCard />
           ) : (
             <ArtistCard
@@ -120,6 +142,7 @@ const ArtistSection = ({
           )
         )}
         contentContainerStyle={styles.artistList}
+        showsHorizontalScrollIndicator={false}
       />
     </View>
   );
@@ -135,30 +158,38 @@ const ArtistSectionList = ({
   loading?: boolean;
 }) => {
   const listsections = loading 
-    ? [{ title: 'Loading...', data: [] }] 
+    ? [
+        { title: 'Pop', data: [] },
+        { title: 'Rock', data: [] },
+        { title: 'Hip Hop', data: [] }
+      ]
     : sections.map((item: any) => ({
         title: item.genreName,
-        data: item.artists,
+        data: item.artists || [],
       }));
 
   return (
     <SectionList
       sections={listsections}
-      keyExtractor={(item, index) => index.toString() + Date.now()}
+      keyExtractor={(item, index) => `section-${index}-${Date.now()}`}
       renderSectionHeader={({ section }) => (
-        <View className="mt-[44px]">
+        <MotiView
+          from={{ opacity: 0, translateY: 10 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 300 }}
+          style={{ marginTop: 44 }}
+        >
           <Text style={styles.sectionTitle}>{section.title}</Text>
           <ArtistSection
             section={section.data}
             onFollow={onFollow}
             loading={loading}
           />
-        </View>
+        </MotiView>
       )}
       renderItem={() => null}
       stickySectionHeadersEnabled={false}
       showsVerticalScrollIndicator={false}
-      disableVirtualization={true}
       contentContainerStyle={{ flexGrow: 1 }}
     />
   );
@@ -239,6 +270,19 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 16,
     fontWeight: "500",
+  },
+  emptySection: {
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#12141B',
+    borderRadius: 16,
+    marginHorizontal: 8,
+  },
+  emptyText: {
+    color: '#A0A0A0',
+    fontSize: 14,
+    textAlign: 'center',
   },
 });
 

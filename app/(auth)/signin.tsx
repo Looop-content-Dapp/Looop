@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -43,16 +44,16 @@ const Signin = () => {
 
           <View className="gap-y-10">
             <View className="gap-y-2 pt-6">
-              <Text className="text-white text-2xl font-PlusJakartaSansBold">
+              <Text className="text-white text-[24px] font-PlusJakartaSansBold">
                 Welcome back!
               </Text>
-              <Text className="text-[#D2D3D5] text-[16px]font-PlusJakartaSansRegular">
+              <Text className="text-[#D2D3D5] text-[16px] font-PlusJakartaSansRegular">
                 Dive right in and continue exploring
               </Text>
             </View>
 
             <View className="gap-y-3">
-              <Text className="text-lg text-gray-200 font-PlusJakartaSansBold">
+              <Text className="text-[16px] text-gray-200 font-PlusJakartaSansBold">
                 Email
               </Text>
               <TextInput
@@ -66,7 +67,7 @@ const Signin = () => {
                 keyboardType="email-address"
               />
 
-              <Text className="text-lg text-gray-200 font-PlusJakartaSansBold">
+              <Text className="text-[16px] text-gray-200 font-PlusJakartaSansBold">
                 Password
               </Text>
               <View className="flex-row items-center bg-Grey/07 overflow-hidden rounded-full pr-5">
@@ -103,10 +104,10 @@ const Signin = () => {
             </Text> */}
           </View>
 
-          {/* <View className="gap-y-4 flex flex-row gap-x-4">
+          <View className="gap-y-4 flex flex-row gap-x-4">
             <TouchableOpacity
               className="bg-white flex-1 py-4 rounded-full flex-row items-center justify-center"
-              onPress={() => handleOAuthSignIn('google')}
+              onPress={() => Alert.alert('Google signon not available yet')}
             >
               <Image
                 source={require("../../assets/images/google.png")}
@@ -119,7 +120,7 @@ const Signin = () => {
 
             <TouchableOpacity
               className="bg-white flex-1 py-4 rounded-full flex-row items-center justify-center"
-              onPress={() => handleOAuthSignIn('apple')}
+              onPress={() => Alert.alert('Apple signon not available yet')}
             >
               <Image
                 source={require("../../assets/images/apple.png")}
@@ -129,7 +130,7 @@ const Signin = () => {
                 Apple
               </Text>
             </TouchableOpacity>
-          </View> */}
+          </View>
 
           <View className="flex-row items-center justify-center gap-x-[4px] absolute bottom-12 left-0 right-0">
             <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[14px]">
