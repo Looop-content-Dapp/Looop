@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,19 +9,19 @@ import {
   Platform,
   useWindowDimensions,
   Image,
-} from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft02Icon } from '@hugeicons/react-native';
-import { Artist } from '../../utils/types';
-import ArtistInfo from '../../components/ArtistInfo';
-import { useQuery } from '../../hooks/useQuery';
-import JoinCommunity from '../../components/cards/JoinCommunity';
-import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import PaymentBottomSheet from '../../components/Subscribe/PaymentBottomsheet';
-import ArtistReleases from '../../components/ArtistProfile/ArtistReleases';
-import api from '@/config/apiConfig';
-import { useAppSelector } from '@/redux/hooks';
+} from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { ArrowLeft02Icon } from "@hugeicons/react-native";
+import { Artist } from "../../utils/types";
+import ArtistInfo from "../../components/ArtistInfo";
+import { useQuery } from "../../hooks/useQuery";
+import JoinCommunity from "../../components/cards/JoinCommunity";
+import { widthPercentageToDP as wp } from "react-native-responsive-screen";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import PaymentBottomSheet from "../../components/Subscribe/PaymentBottomsheet";
+import ArtistReleases from "../../components/ArtistProfile/ArtistReleases";
+import api from "@/config/apiConfig";
+import { useAppSelector } from "@/redux/hooks";
 
 interface CommunityData {
   _id: string;
@@ -59,13 +59,13 @@ const ArtistDetails = () => {
     isActive,
     id,
     isFollowing,
-    noOfFollowers
+    noOfFollowers,
   } = useLocalSearchParams();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [communityData, setCommunityData] = useState<any | null>(null);
   const [showPaymentSheet, setShowPaymentSheet] = useState(false);
-  const { userdata } = useAppSelector((state) => state.auth)
+  const { userdata } = useAppSelector((state) => state.auth);
   const scrollY = useRef(new Animated.Value(0)).current;
   const [isMember, setIsMember] = useState(false);
   const router = useRouter();
@@ -79,10 +79,10 @@ const ArtistDetails = () => {
     const fetchArtistCommunity = async () => {
       try {
         setIsLoading(true);
-        const response = await api.get(`/api/community/${id as string}`)
+        const response = await api.get(`/api/community/${id as string}`);
         setCommunityData(response?.data?.data);
       } catch (error) {
-        console.error('Error fetching artist community:', error);
+        console.error("Error fetching artist community:", error);
       } finally {
         setIsLoading(false);
       }
@@ -93,13 +93,15 @@ const ArtistDetails = () => {
 
   const handleJoinPress = () => {
     // setShowPaymentSheet(true);
-     router.push({
+    router.push({
       pathname: "/payment",
       params: {
-        name: communityData.tribePass.collectibleName,
-        image: communityData.tribePass.collectibleImage
-      }
-     })
+        name: communityData?.tribePass?.collectibleName,
+        image: communityData?.tribePass?.collectibleImage,
+        communityAddress: communityData?.tribePass?.contractAddress,
+        communityId: communityData?._id,
+      },
+    });
   };
 
   const handleClosePaymentSheet = () => {
@@ -113,7 +115,7 @@ const ArtistDetails = () => {
           handleClosePaymentSheet();
         }
       } catch (error) {
-        console.error('Error joining community:', error);
+        console.error("Error joining community:", error);
       }
     }
   };
@@ -122,19 +124,19 @@ const ArtistDetails = () => {
   const headerHeight = scrollY.interpolate({
     inputRange: [0, 300],
     outputRange: [SCREEN_HEIGHT * 0.4, SCREEN_HEIGHT * 0.08],
-    extrapolate: 'clamp',
+    extrapolate: "clamp",
   });
 
   const headerOpacity = scrollY.interpolate({
     inputRange: [150, 300],
     outputRange: [0, 1],
-    extrapolate: 'clamp',
+    extrapolate: "clamp",
   });
 
   const imageOpacity = scrollY.interpolate({
     inputRange: [0, 150],
     outputRange: [1, 0],
-    extrapolate: 'clamp',
+    extrapolate: "clamp",
   });
 
   return (
@@ -150,7 +152,10 @@ const ArtistDetails = () => {
             },
           ]}
         >
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
             <ArrowLeft02Icon size={24} color="#fff" />
           </TouchableOpacity>
         </Animated.View>
@@ -162,7 +167,10 @@ const ArtistDetails = () => {
             style={styles.imageBackground}
             resizeMode="cover"
           >
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
               <ArrowLeft02Icon size={24} color="#fff" />
             </TouchableOpacity>
           </ImageBackground>
@@ -189,111 +197,114 @@ const ArtistDetails = () => {
               isFollowing={isFollowing as boolean}
             />
 
-<JoinCommunity
-  isLoading={isLoading}
-  communityData={communityData}
-  onJoinPress={handleJoinPress}
-  isMember={isMember}
-/>
+            <JoinCommunity
+              isLoading={isLoading}
+              communityData={communityData}
+              onJoinPress={handleJoinPress}
+              isMember={isMember}
+            />
 
-          <ArtistReleases artistId={index as string} />
+            <ArtistReleases artistId={index as string} />
           </View>
 
-             {/* Description Section */}
-      <View style={styles.descriptionContainer}>
-        <Text style={styles.aboutText}>About {name}</Text>
-        <Text numberOfLines={isExpanded ? undefined : 1} style={styles.descriptionText}>
-          {bio}
-        </Text>
-        <TouchableOpacity onPress={toggleDescription}>
-          <Text style={styles.toggleDescriptionText}>
-            {isExpanded ? 'See less' : 'See more'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+          {/* Description Section */}
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.aboutText}>About {name}</Text>
+            <Text
+              numberOfLines={isExpanded ? undefined : 1}
+              style={styles.descriptionText}
+            >
+              {bio}
+            </Text>
+            <TouchableOpacity onPress={toggleDescription}>
+              <Text style={styles.toggleDescriptionText}>
+                {isExpanded ? "See less" : "See more"}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </Animated.ScrollView>
 
         <PaymentBottomSheet
-            isVisible={showPaymentSheet}
-            closeSheet={handleClosePaymentSheet}
-            communityData={communityData}
-            onPaymentComplete={handleJoinCommunity}
-          />
-        </View>
-      </GestureHandlerRootView>
+          isVisible={showPaymentSheet}
+          closeSheet={handleClosePaymentSheet}
+          communityData={communityData}
+          onPaymentComplete={handleJoinCommunity}
+        />
+      </View>
+    </GestureHandlerRootView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: "#000",
   },
   header: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'black',
-    flexDirection: 'row',
+    backgroundColor: "black",
+    flexDirection: "row",
     zIndex: 10,
   },
   backButton: {
-    marginTop: Platform.OS === 'ios' ? '15%' : '10%',
-    marginLeft: '5%',
+    marginTop: Platform.OS === "ios" ? "15%" : "10%",
+    marginLeft: "5%",
   },
   imageBackground: {
     flex: 1,
   },
   scrollViewContent: {
-    paddingBottom: '14%',
+    paddingBottom: "14%",
   },
   contentContainer: {
-    paddingTop: '8%',
-    marginTop: '-10%',
+    paddingTop: "8%",
+    marginTop: "-10%",
   },
   // Payment Bottom Sheet Styles
   paymentContainer: {
     padding: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   paymentCurrency: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
     marginBottom: 16,
-    fontFamily: 'PlusJakartaSansRegular',
+    fontFamily: "PlusJakartaSansRegular",
   },
   usdText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontFamily: 'PlusJakartaSansBold',
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontFamily: "PlusJakartaSansBold",
   },
   amountText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 48,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
-    fontFamily: 'PlusJakartaSansBold',
+    fontFamily: "PlusJakartaSansBold",
   },
   minimumText: {
-    color: '#8E8E93',
+    color: "#8E8E93",
     fontSize: 14,
     marginBottom: 24,
-    fontFamily: 'PlusJakartaSansRegular',
+    fontFamily: "PlusJakartaSansRegular",
   },
   recipientContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 32,
   },
   toText: {
-    color: '#8E8E93',
+    color: "#8E8E93",
     fontSize: 14,
     marginBottom: 8,
-    fontFamily: 'PlusJakartaSansRegular',
+    fontFamily: "PlusJakartaSansRegular",
   },
   recipientInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
   },
   recipientImage: {
@@ -303,86 +314,86 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   recipientName: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: 'bold',
-    fontFamily: 'PlusJakartaSansBold',
+    fontWeight: "bold",
+    fontFamily: "PlusJakartaSansBold",
   },
   forText: {
-    color: '#8E8E93',
+    color: "#8E8E93",
     fontSize: 14,
-    fontFamily: 'PlusJakartaSansRegular',
+    fontFamily: "PlusJakartaSansRegular",
   },
   applePayButton: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 56,
-    width: '100%',
+    width: "100%",
     height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 12,
   },
   applePayImage: {
     height: 24,
     width: 24,
-    resizeMode: 'contain',
+    resizeMode: "contain",
   },
   creditCardButton: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     borderRadius: 56,
-    width: '100%',
+    width: "100%",
     height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#3A3A3C',
+    borderColor: "#3A3A3C",
   },
   creditCardText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'PlusJakartaSansSemiBold',
+    fontWeight: "600",
+    fontFamily: "PlusJakartaSansSemiBold",
   },
   // Skeleton styles
   skeletonContainer: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: "#2a2a2a",
     borderRadius: 24,
-    padding: '4%',
-    justifyContent: 'center',
+    padding: "4%",
+    justifyContent: "center",
   },
   skeletonTitle: {
     height: 12,
-    backgroundColor: '#3a3a3a',
-    marginBottom: '2%',
+    backgroundColor: "#3a3a3a",
+    marginBottom: "2%",
     borderRadius: 6,
   },
   skeletonDescription: {
     height: 10,
-    backgroundColor: '#3a3a3a',
-    marginBottom: '4%',
+    backgroundColor: "#3a3a3a",
+    marginBottom: "4%",
     borderRadius: 5,
   },
   skeletonButton: {
     height: 30,
-    backgroundColor: '#3a3a3a',
+    backgroundColor: "#3a3a3a",
     borderRadius: 15,
   },
   descriptionContainer: {
     padding: 16,
-    backgroundColor: '#12141B',
+    backgroundColor: "#12141B",
     borderRadius: 15,
-    width: wp('90%'),
-    marginHorizontal: "auto"
+    width: wp("90%"),
+    marginHorizontal: "auto",
   },
   aboutText: {
-    color: '#b0b0b0',
+    color: "#b0b0b0",
     marginBottom: 8,
   },
   descriptionText: {
-    color: '#787A80',
+    color: "#787A80",
   },
   toggleDescriptionText: {
-    color: '#fff',
+    color: "#fff",
     marginTop: 8,
   },
 });
