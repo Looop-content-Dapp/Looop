@@ -14,20 +14,22 @@ interface ApiResponse {
 
 // Custom Toast Component
 
-
 // Configure environment variables
+// const API_URL = "http://localhost:8000";
 const API_URL = "https://looop-backend-vu20.onrender.com";
 const API_TIMEOUT = process.env.API_TIMEOUT || 30000;
 
 const api = axios.create({
   baseURL: API_URL,
-//   timeout: API_TIMEOUT,
+  //   timeout: API_TIMEOUT,
   headers: {
     "Content-Type": "application/json",
-    "Accept": "application/json",
+    Accept: "application/json",
   },
   validateStatus: (status) => status >= 200 && status < 300,
 });
+
+// 4012000033330026
 
 // Request interceptor
 api.interceptors.request.use(
@@ -53,7 +55,7 @@ api.interceptors.response.use(
     // Show success toast for successful responses
     const data = response.data as ApiResponse;
     if (data?.message) {
-      showToast(data.message, 'success');
+      showToast(data.message, "success");
     }
     return response;
   },
@@ -62,57 +64,63 @@ api.interceptors.response.use(
 
     // Handle network errors
     if (!error.response) {
-      const message = "Network error occurred. Please check your internet connection.";
-      showToast(message, 'error');
+      const message =
+        "Network error occurred. Please check your internet connection.";
+      showToast(message, "error");
       throw new Error(message);
     }
 
     // Handle specific HTTP status codes
-    let errorMessage = '';
+    let errorMessage = "";
     switch (error.response.status) {
       case 400:
-        errorMessage = error.response.data?.message || 'Bad Request';
+        errorMessage = error.response.data?.message || "Bad Request";
         break;
 
       case 401:
-        errorMessage = error.response.data?.message || 'Unauthorized access';
+        errorMessage = error.response.data?.message || "Unauthorized access";
         store.dispatch({ type: "auth/logout" });
         break;
 
       case 403:
-        errorMessage = error.response.data?.message || 'Access forbidden';
+        errorMessage = error.response.data?.message || "Access forbidden";
         break;
 
       case 404:
-        errorMessage = error.response.data?.message || 'Resource not found';
+        errorMessage = error.response.data?.message || "Resource not found";
         break;
 
       case 409:
-        errorMessage = error.response.data?.message || 'Conflict occurred';
+        errorMessage = error.response.data?.message || "Conflict occurred";
         // return error.response.data
         break;
 
       case 429:
-        errorMessage = error.response.data?.message || 'Too many requests';
+        errorMessage = error.response.data?.message || "Too many requests";
         break;
 
       case 500:
-        errorMessage = error.response.data?.message || 'Server error occurred';
+        errorMessage = error.response.data?.message || "Server error occurred";
         break;
       case 502:
       case 503:
-        errorMessage = error.response.data?.message || 'Server error occurred';
+        errorMessage = error.response.data?.message || "Server error occurred";
         break;
 
       default:
-        errorMessage = error.response.data?.message || 'An unexpected error occurred';
+        errorMessage =
+          error.response.data?.message || "An unexpected error occurred";
     }
 
     // Show error toast
-    showToast(errorMessage, 'error');
+    showToast(errorMessage, "error");
 
     // Retry logic for 5xx errors
-    if (error.response.status >= 500 && originalRequest && !originalRequest._retry) {
+    if (
+      error.response.status >= 500 &&
+      originalRequest &&
+      !originalRequest._retry
+    ) {
       originalRequest._retry = true;
       return new Promise((resolve) => {
         setTimeout(() => {
