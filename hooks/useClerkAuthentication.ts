@@ -56,7 +56,7 @@ export const useClerkAuthentication = () => {
     }
   };
 
-  const handleEmailSignIn = async (emailAddress: string, password: string) => {
+  const handleEmailSignIn = async (emailAddress: string) => {
     setLoading(true);
     setError(null);
 
