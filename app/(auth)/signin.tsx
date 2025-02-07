@@ -62,7 +62,7 @@ const Signin = () => {
     try {
       if (session) {
         const accountToken = await account.createSession(
-          session.$id,
+          session?.userId,
           value // The OTP code
         );
 
