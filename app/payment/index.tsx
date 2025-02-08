@@ -20,8 +20,6 @@ import Payaza, {
   PayazaConnectionMode,
 } from "react-native-payaza";
 import api from "@/config/apiConfig";
-import { getPathWithConventionsCollapsed } from "expo-router/build/fork/getPathFromState-forks";
-import LoadingScreen from "../loadingScreen";
 
 const Index = () => {
   const { name, image, communityAddress, communityId } = useLocalSearchParams();
@@ -94,6 +92,40 @@ const Index = () => {
       console.error("Error verifying payment:", error);
     }
   };
+
+if (loader) {
+  return (
+    <View className="flex-1 bg-gradient-to-b from-[#040405] to-[#0A0B0F] items-center justify-center px-6">
+      <View className="items-center bg-[#0F1014] p-8 rounded-3xl shadow-2xl border border-[#1A1B1F] w-full max-w-[400px]">
+        <View className="w-24 h-24 mb-8 transform hover:scale-105 transition-transform">
+          <Image 
+            source={require("../../assets/images/logo-gray.png")}
+            className="w-full h-full opacity-90"
+            style={{ resizeMode: "contain" }}
+          />
+        </View>
+        
+        <View className="relative mb-8">
+          <View className="w-16 h-16 border-4 border-[#FF6D1B] border-t-transparent rounded-full animate-spin" />
+          <View className="absolute inset-0 w-16 h-16 border-4 border-[#FF6D1B]/20 rounded-full" />
+        </View>
+
+        <Text className="text-[24px] font-PlusJakartaSansBold text-white mb-4 tracking-wide">
+          Minting in Progress
+        </Text>
+        
+        <Text className="text-[16px] font-PlusJakartaSansMedium text-[#9EA0A5] text-center leading-6">
+          Please wait while we mint your NFT.{"\n"}
+          This process may take a few moments.
+        </Text>
+
+        <View className="w-full h-2 bg-[#1A1B1F] rounded-full mt-8 overflow-hidden">
+          <View className="h-full w-1/2 bg-[#FF6D1B] rounded-full animate-pulse" />
+        </View>
+      </View>
+    </View>
+  );
+}
 
   return (
     <>

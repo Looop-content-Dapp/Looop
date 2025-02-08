@@ -41,22 +41,6 @@ const ArtistDetails = () => {
     name,
     bio,
     isVerified,
-    email,
-    websiteUrl,
-    address1,
-    address2,
-    city,
-    country,
-    postalCode,
-    followers = [],
-    monthlyListeners,
-    popularity,
-    genres,
-    labels,
-    topTracks,
-    createdAt,
-    updatedAt,
-    isActive,
     id,
     isFollowing,
     noOfFollowers,
@@ -64,6 +48,7 @@ const ArtistDetails = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [communityData, setCommunityData] = useState<any | null>(null);
+  const [artistData, setArtistData] = useState<any | null>(null)
   const [showPaymentSheet, setShowPaymentSheet] = useState(false);
   const { userdata } = useAppSelector((state) => state.auth);
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -74,20 +59,50 @@ const ArtistDetails = () => {
   const toggleDescription = useCallback(() => {
     setIsExpanded((prev) => !prev);
   }, []);
+  console.log(id)
+
+useEffect(() => {
+  const fetchArtist = async () => {
+    try {
+      if (!id) {
+        console.error('Artist ID is missing');
+        return;
+      }
+
+      const res = await api.get(`/api/artist/${id}`);
+      
+      if (!res?.data?.data?.artist) {
+        throw new Error('Invalid artist data received from API');
+      }
+
+      setArtistData(res.data.data.artist);
+    } catch (error) {
+      console.error('Error fetching artist data:', error);
+      // You could add error state management here if needed
+      setArtistData(null);
+    }
+  };
+
+  fetchArtist();
+}, [id]); // Added id to dependency array to re-fetch when id changes
+
 
   useEffect(() => {
     const fetchArtistCommunity = async () => {
       try {
         setIsLoading(true);
+    
         const response = await api.get(`/api/community/${id as string}`);
         setCommunityData(response?.data?.data);
+        return
       } catch (error) {
         console.error("Error fetching artist community:", error);
+        return
       } finally {
         setIsLoading(false);
+        return
       }
     };
-
     fetchArtistCommunity();
   }, []);
 
@@ -201,7 +216,8 @@ const ArtistDetails = () => {
               isLoading={isLoading}
               communityData={communityData}
               onJoinPress={handleJoinPress}
-              isMember={isMember}
+              isMember={artistData?.communityMembers.includes(userdata?._id)}
+              isOwner={communityData?.createdBy === userdata?._id} 
             />
 
             <ArtistReleases artistId={index as string} />

@@ -26,6 +26,7 @@ interface JoinCommunityProps {
   communityData: CommunityData | null;
   onJoinPress: () => void;
   isMember?: boolean;
+  isOwner: boolean;
 }
 
 const SkeletonLoader = () => {
@@ -50,6 +51,7 @@ const JoinCommunity = ({
   communityData,
   onJoinPress,
   isMember = false,
+  isOwner
 }: JoinCommunityProps) => {
   const { height: SCREEN_HEIGHT } = useWindowDimensions();
   const router = useRouter();
@@ -70,8 +72,86 @@ const JoinCommunity = ({
     }
   };
 
-
-  console.log(communityData)
+  const renderCommunityCard = () => {
+    return (
+      <TouchableOpacity onPress={handleCommunityPress}>
+       {isOwner || isMember && communityData ? (
+        <View className="p-[12px] flex-row items-center justify-evenly bg-[#12141B] rounded-[24px] w-full">
+              <Image
+             source={{
+               uri:
+                 communityData?.coverImage ||
+                 "https://i.pinimg.com/736x/08/36/11/083611341ce01bf33a233cfa6d04331c.jpg",
+             }}
+            className=" w-[76px] h-[76px] rounded-[10px]"
+           />
+           <View  className="flex-1">
+            <Text className="text-[12px] font-PlusJakartaSansBold text-[#A5A6AA]">{isOwner ? "Manage your community" : "You can check out"}</Text>
+            <Text className="text-[#fff] text-[12px] font-PlusJakartaSansBold" numberOfLines={1}>{communityData?.communityName}</Text>
+            <Text numberOfLines={2}>{communityData?.description}</Text>
+           </View>
+           <ArrowRight01Icon
+            size={16}
+            color="#FFFFFF"
+            variant="solid"
+          />
+        </View>
+       ) : (
+         <TouchableOpacity
+         style={styles.communityContainer}
+         onPress={handleCommunityPress}
+         activeOpacity={0.7}
+       >
+         <View style={styles.imageContainer}>
+           <Image
+             source={{
+               uri:
+                 communityData?.coverImage ||
+                 "https://i.pinimg.com/736x/08/36/11/083611341ce01bf33a233cfa6d04331c.jpg",
+             }}
+             style={styles.communityImage}
+           />
+           <View style={styles.gradientOverlay} />
+         </View>
+         <View style={styles.communityContent}>
+           <View style={styles.textContainer}>
+             <Text
+               style={styles.communityName}
+               numberOfLines={1}
+               className="captilize"
+             >
+               {communityData?.communityName}
+             </Text>
+             <Text style={styles.communityDescription} numberOfLines={2}>
+               {communityData?.description}
+             </Text>
+           </View>
+           <View
+             style={[
+               styles.actionButton,
+               isMember ? styles.memberButton : styles.joinButton,
+             ]}
+           >
+             <Text
+               style={[
+                 styles.actionButtonText,
+                 isMember ? styles.memberButtonText : styles.joinButtonText,
+               ]}
+             >
+               {isMember ? "View Community" : "Join Community"}
+             </Text>
+             <ArrowRight01Icon
+               size={16}
+               color={isMember ? "#FFFFFF" : "#FF6D1B"}
+               variant="solid"
+             />
+           </View>
+         </View>
+       </TouchableOpacity>
+       )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={[styles.communitySection, { height: SCREEN_HEIGHT * 0.25 }]}>
@@ -79,57 +159,7 @@ const JoinCommunity = ({
       {isLoading ? (
         <SkeletonLoader />
       ) : communityData ? (
-        <TouchableOpacity
-          style={styles.communityContainer}
-          onPress={handleCommunityPress}
-          activeOpacity={0.7}
-        >
-          <View style={styles.imageContainer}>
-            <Image
-              source={{
-                uri:
-                  communityData.coverImage ||
-                  "https://i.pinimg.com/736x/08/36/11/083611341ce01bf33a233cfa6d04331c.jpg",
-              }}
-              style={styles.communityImage}
-            />
-            <View style={styles.gradientOverlay} />
-          </View>
-          <View style={styles.communityContent}>
-            <View style={styles.textContainer}>
-              <Text
-                style={styles.communityName}
-                numberOfLines={1}
-                className="captilize"
-              >
-                {communityData.communityName}
-              </Text>
-              <Text style={styles.communityDescription} numberOfLines={2}>
-                {communityData.description}
-              </Text>
-            </View>
-            <View
-              style={[
-                styles.actionButton,
-                isMember ? styles.memberButton : styles.joinButton,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.actionButtonText,
-                  isMember ? styles.memberButtonText : styles.joinButtonText,
-                ]}
-              >
-                {isMember ? "View Community" : "Join Community"}
-              </Text>
-              <ArrowRight01Icon
-                size={16}
-                color={isMember ? "#FFFFFF" : "#FF6D1B"}
-                variant="solid"
-              />
-            </View>
-          </View>
-        </TouchableOpacity>
+        renderCommunityCard()
       ) : (
         <View style={styles.noCommunityContainer}>
           <Text style={styles.noCommunityText}>No Community Available</Text>
@@ -241,7 +271,6 @@ const styles = StyleSheet.create({
     color: "#D2D3D5",
     fontFamily: "PlusJakartaSansSemiBold",
   },
-  // Skeleton styles
   skeletonContainer: {
     backgroundColor: "#2a2a2a",
     borderRadius: 24,

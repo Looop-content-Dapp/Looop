@@ -96,11 +96,11 @@ const EmailSignupFlow = () => {
           Alert.alert("confirmed");
         }, 1000);
       } else {
-        await account.deleteSession(session?.$id);
+        await account.deleteSession(userId);
         setIsCorrect(false);
       }
     } catch (err) {
-      await account.deleteSession(session?.$id);
+      await account.deleteSession(userId);
       console.error("Verification failed:", err);
       setIsCorrect(false);
     } finally {
@@ -209,7 +209,7 @@ const EmailSignupFlow = () => {
             </Text>
             <TouchableOpacity onPress={() => router.navigate("/(auth)/signin")}>
             <Text className="text-Orange/08 underline pl- font-PlusJakartaSansMedium text-[14px]">
-             SignIn
+             Sign In
             </Text>
             </TouchableOpacity>
 

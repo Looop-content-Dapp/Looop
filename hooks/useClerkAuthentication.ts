@@ -2,10 +2,11 @@ import { useState } from "react";
 import { useRouter } from "expo-router";
 import { ID, Account, OAuthProvider } from "react-native-appwrite";
 import { account } from "@/appWrite";
-import store from "@/redux/store";
+import store, { persistor } from "@/redux/store";
 import { setClaimId, setUserData } from "@/redux/slices/auth";
 
 import { showToast } from "@/config/ShowMessage";
+import { Alert } from "react-native";
 
 /**
  * Custom hook to handle authentication with OAuth providers
@@ -75,34 +76,61 @@ export const useClerkAuthentication = () => {
     }
   };
 
-  const handleLogout = async () => {
+const handleLogout = async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    // Clear redux store first
+    store.dispatch(setUserData(null));
+    store.dispatch(setClaimId(null));
+    
+    // Clear persisted storage
+    await persistor.purge();
+
+    // Get and delete current session
+    const session = await account.getSession("current");
+    if (session) {
+      await account.deleteSession(session.$id);
+      console.log("Session deleted successfully");
+      
+      // Navigate to home and show success messages
+      router.replace("/");
+      Alert.alert("Success", "You have been logged out.");
+      showToast("Successfully logged out", "success");
+    }
+  } catch (error) {
+    console.error("Error during logout:", error);
+    showToast("Failed to logout. Please try again.", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const handleDeleteAccount = async () => {
     setLoading(true);
     setError(null);
     try {
-      const session = await account.getSession("current");
+      // Clear redux store first
+      store.dispatch(setUserData(null));
+      store.dispatch(setClaimId(null));
+
+      // Clear persisted storage
+      await persistor.purge();
+
+      // Get and delete current session
+      const session = await account.getSession('current');
       if (session) {
         await account.deleteSession(session.$id);
-        router.replace("/");
-        showToast("Successfully logged out", "success");
       }
-    } catch (error) {
-      console.error("Error during logout:", error);
-      showToast("Failed to logout. Please try again.", "error");
-    }
-  };
 
-  const handleDeleteAccount = async (userId: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      // Delete all sessions first
+      // Delete all other sessions
       await account.deleteSessions();
 
-      // Delete the account
-      await account.deleteIdentity(userId);
-
-      // Clear local store
-      store.dispatch(setUserData(null));
+      // Get user's identities and delete them
+      const identities = await account.listIdentities();
+      for (const identity of identities.identities) {
+        await account.deleteIdentity(identity.$id);
+      }
 
       showToast("Account successfully deleted", "success");
       router.replace("/");

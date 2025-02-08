@@ -27,7 +27,7 @@ const profile = () => {
   const navigation = useNavigation();
 
   const { userdata } = useAppSelector((state) => state.auth);
-  console.log(userdata?.artist)
+  console.log(userdata?._id, "userid")
   const dispatch = useAppDispatch();
   const router = useRouter()
 

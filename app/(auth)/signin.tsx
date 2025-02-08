@@ -50,7 +50,7 @@ const Signin = () => {
     validationSchema: signinSchema,
     onSubmit: async (values) => {
       try {
-        await handleEmailSignIn(values.emailAddress, values.password);
+        await handleEmailSignIn(values.emailAddress);
         setCurrentStep("verification"); // Move to verification step after sending email
       } catch (error) {
         showToast("Failed to send verification code", "error");
@@ -67,6 +67,7 @@ const Signin = () => {
         );
 
         if (accountToken) {
+          setIsCorrect(true)
           const response = await api.post(`/api/user/signin`, {
             email: formik.values.emailAddress,
             password: formik.values.password,
@@ -78,6 +79,7 @@ const Signin = () => {
           router.push("/(musicTabs)/(home)");
         }
       } else {
+        setIsCorrect(false)
         showToast("Invalid verification code", "error");
       }
     } catch (error) {
@@ -305,7 +307,7 @@ const Signin = () => {
             </Text>
             <TouchableOpacity onPress={() => router.navigate("/(auth)/")}>
               <Text className="text-Orange/08 underline pl- font-PlusJakartaSansMedium text-[14px]">
-                SignUp
+                Sign Up
               </Text>
             </TouchableOpacity>
           </View>

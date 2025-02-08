@@ -44,30 +44,11 @@ const accountInfo = () => {
     };
 
     const confirmDelete = async () => {
+        setShowDeleteModal(false);
         try {
-            // First get the current session
-            const session = await account.getSession('current');
-            console.log(session.$id)
-            if (!session) {
-                throw new Error('No active session found');
-            }
-
-     const res =  account.listIdentities()
-   
-
-            // Delete the session first
-            await account.deleteSession(session.$id);
-
-            
-            // Then delete the account
-           await account.deleteIdentity(session.userId);
-            
-            // Close modal and navigate to login
-            setShowDeleteModal(false);
+            await handleDeleteAccount();
             router.replace('/');
         } catch (error) {
-            console.error('Error during account deletion:', error);
-            showToast('Failed to delete account. Please try again.', 'error');
         }
     };
 
