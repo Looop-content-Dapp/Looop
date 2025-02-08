@@ -147,8 +147,8 @@ const SecureAccount = () => {
             className="items-center"
           >
             <CheckmarkBadge01Icon size={20} variant="solid" color="#57E09A" />
-            <Text className="text-[16px] font-PlusJakartaSansBold text-Grey/06 text-center mt-2">
-             Time to explore awesome Sounds
+            <Text className="text-[24px] font-PlusJakartaSansBold text-Grey/06 text-center mt-2">
+            Account created successfully
             </Text>
           </MotiView>
         )}

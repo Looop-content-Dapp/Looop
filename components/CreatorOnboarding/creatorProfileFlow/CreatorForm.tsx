@@ -13,7 +13,6 @@ import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import { countries, genres } from "@/data/data";
 import { FormField } from "@/components/app-components/formField";
 import { CreatorFormData } from "@/types/index";
-import api from "@/config/apiConfig";
 import { useQuery } from "@/hooks/useQuery";
 
 const social = [
@@ -63,6 +62,8 @@ interface CreatorFormProps {
     onCitySelect: (city: string) => void;
     onProfileImageUpload: () => Promise<void>;
     onSocialAccountChange: (platform: "twitter" | "instagram" | "tiktok", value: string) => void
+    onSocialConnect: (platform: 'twitter' | 'instagram' | 'tiktok') => Promise<void>;
+    isAuthenticating: boolean;
   }
 
 const CreatorForm = ({
@@ -78,6 +79,8 @@ const CreatorForm = ({
     onCitySelect,
     onProfileImageUpload,
     onSocialAccountChange,
+    onSocialConnect,
+     isAuthenticating
 }: CreatorFormProps) => {
     const [isValidating, setIsValidating] = useState(false);
     const [validationStatus, setValidationStatus] = useState(null);
@@ -308,12 +311,33 @@ const CreatorForm = ({
       <View style={{ marginTop: 20, marginBottom: 20 }}>
         <Text style={styles.sectionTitle}>Connect Social Accounts</Text>
         <View style={styles.socialContainer}>
-          {social.map((item) => (
-            <TouchableOpacity key={item.title} style={styles.socialButton}>
-              {item.socialIcon}
-              <Text style={styles.socialText}>{item.title}</Text>
-            </TouchableOpacity>
-          ))}
+          {social.map((item) => {
+            const platform = item.title === 'X (Formerly Twitter)' 
+              ? 'twitter' 
+              : item.title.toLowerCase() as 'instagram' | 'tiktok';
+            
+            const isConnected = formData.socialAccounts[platform] !== '';
+            
+            return (
+              <TouchableOpacity 
+                key={item.title} 
+                style={[
+                  styles.socialButton,
+                  isConnected && { backgroundColor: '#1E1F25' }
+                ]}
+                onPress={() => onSocialConnect(platform)}
+                disabled={isAuthenticating}
+              >
+                {item.socialIcon}
+                <Text style={styles.socialText}>
+                  {isConnected ? `${item.title} Connected` : `Connect ${item.title}`}
+                </Text>
+                {isAuthenticating && platform === 'twitter' && (
+                  <ActivityIndicator size="small" color="#787A80" />
+                )}
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
     </ScrollView>
@@ -372,11 +396,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#1E1F25",
+    minWidth: 150,
   },
   socialText: {
     fontSize: 16,
     fontFamily: "PlusJakartaSans-Medium",
     color: "#A5A6AA",
+  },
+  socialButtonConnected: {
+    backgroundColor: '#1E1F25',
   },
 });
 

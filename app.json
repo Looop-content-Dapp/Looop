@@ -46,7 +46,12 @@
       ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "config": {
+        "oauth": {
+          "redirectUri": "looop://"
+        }
+      }
     },
     "plugins": [
       "expo-router",

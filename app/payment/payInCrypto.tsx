@@ -9,8 +9,6 @@ import {
   import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
   import { AppBackButton } from "@/components/app-components/back-btn";
   import { AppButton } from "@/components/app-components/button";
-  import FilterButton from "@/components/app-components/FilterButton";
-import ChainPicker from "@/components/app-components/ChainPicker";
   
   const payInCrypto = () => {
     const {name, image} = useLocalSearchParams();
@@ -45,8 +43,6 @@ import ChainPicker from "@/components/app-components/ChainPicker";
               </Text>
             </View>
 
-            <ChainPicker />
-
             <View className="bg-[#12141B] p-3 rounded-[8px]">
               <Text className="text-[12px] text-[#A5A6AA]">
                 • This is a demo version for testing purposes only{'\n'}
@@ -65,7 +61,7 @@ import ChainPicker from "@/components/app-components/ChainPicker";
             />
             <View className="flex-row items-end px-[16px] mt-[16px]">
               <View className="flex-1 gap-y-[8px]">
-                <Text className="text-[24px] text-[#FAFBFB] font-PlusJakartaSansBold">Rave Pass</Text>
+                <Text className="text-[24px] text-[#FAFBFB] font-PlusJakartaSansBold">{name}</Text>
                 <View className="flex-row items-center w-[93px] bg-[#A187B5] py-[8px] rounded-[56px] px-[12px]">
                   <Text className="text-[#0A0B0F] text-[14px] font-PlusJakartaSansBold">$2/month</Text>
                 </View>

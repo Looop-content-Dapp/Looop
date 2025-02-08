@@ -3,6 +3,7 @@ import React from 'react'
 import { useNavigation } from 'expo-router'
 import Checkbox from 'expo-checkbox'
 import { FormField } from '@/components/app-components/formField'
+import { useState } from 'react'
 
 
 interface SignContractProps {
@@ -10,9 +11,25 @@ interface SignContractProps {
   setFullName: (value: string) => void;
   isChecked: boolean;
   setIsChecked: (value: boolean) => void;
+  onError?: (error: string) => void;
 }
 
-const SignContract = ({ fullName, setFullName, isChecked, setIsChecked }: SignContractProps) => {
+const SignContract = ({ fullName, setFullName, isChecked, setIsChecked, onError }: SignContractProps) => {
+    const [nameError, setNameError] = useState<string>('')
+
+    const validateFullName = (name: string) => {
+        if (name.length < 2) {
+            setNameError('Name must be at least 2 characters long')
+            return false
+        }
+        if (!/^[a-zA-Z\s]*$/.test(name)) {
+            setNameError('Name should only contain letters and spaces')
+            return false
+        }
+        setNameError('')
+        return true
+    }
+
     const currentDate = new Date().toLocaleDateString('en-GB')
 
     return (
@@ -21,6 +38,8 @@ const SignContract = ({ fullName, setFullName, isChecked, setIsChecked }: SignCo
             
             <View className='gap-y-[32px] mt-[32px]'>
                 <Text className='text-[20px] text-[#A5A6AA] font-PlusJakartaSansBold'>IN WITNESS WHEREOF, the Parties have executed this Agreement as of the date upon which this digital contract is duly signed on-chain.</Text>
+                
+                <Text className='text-[14px] text-[#7F5AF0] font-PlusJakartaSansMedium'>This agreement will be permanently stored on the blockchain for transparency and immutability.</Text>
 
                 <View className='gap-y-[8px] flex-row items-center'>
                     <Text className='text-[16px] text-[#A5A6AA] font-PlusJakartaSansRegular'>Platform Representative:</Text>
@@ -43,7 +62,11 @@ const SignContract = ({ fullName, setFullName, isChecked, setIsChecked }: SignCo
                     <FormField.TextField
                         placeholder="Enter fullname"
                         value={fullName}
-                        onChangeText={setFullName}
+                        onChangeText={(text) => {
+                            setFullName(text)
+                            validateFullName(text)
+                        }}
+                        error={nameError}
                     />
                 </View>
 
@@ -57,7 +80,7 @@ const SignContract = ({ fullName, setFullName, isChecked, setIsChecked }: SignCo
                         }}
                     />
                     <Text className='flex-1 text-[16px] font-PlusJakartaSansRegular text-[#D2D3D5]'>
-                        I hereby confirm that I understand and agree to the terms outlined in this agreement.
+                        I hereby confirm that I understand and agree to the terms outlined in this agreement. I acknowledge that this contract will be stored on the blockchain.
                     </Text>
                 </View>
             </View>

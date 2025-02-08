@@ -1,10 +1,12 @@
-import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { useRouter } from 'expo-router';
 import Intro from '@/components/CreatorOnboarding/ContractFlow/Intro';
 import ContractIntro from '@/components/CreatorOnboarding/ContractFlow/ContractIntro';
 import ContractAgreement from '@/components/CreatorOnboarding/ContractFlow/ContractAgreement';
 import SignContract from '@/components/CreatorOnboarding/ContractFlow/SignContract';
+import api from '@/config/apiConfig';
+import { useAppSelector } from '@/redux/hooks';
 
 type ContractFlowState =
   | "REVIEWED"
@@ -19,6 +21,7 @@ const ContractSigning = () => {
     const [isChecked, setIsChecked] = useState<boolean>(false) // Add type
     const { width, height } = useWindowDimensions();
     const { push } = useRouter();
+    const { artistId } = useAppSelector((state) => state.auth)
 
     const getButtonText = (flow: ContractFlowState) => {
       switch (flow) {
@@ -53,6 +56,54 @@ const ContractSigning = () => {
         }
     }
 
+    const signContract = async () => {
+      if(!artistId){
+        return Alert.alert("ArtistId doesnt exist")
+      }
+
+        const payload = {
+            "artistname": fullName,
+            "artistAddress": artistId
+        }
+
+        try {
+            const response = await api.post("/api/artist/sign-contract", payload);
+            
+            if (response.data.status === "success") {
+                Alert.alert(
+                    "Success",
+                    response.data.message,
+                    [{ text: "OK" }]
+                );
+                push("/(artisteTabs)/(dashboard)");
+                return true;
+            } else {
+                throw new Error(response.data.message || 'Unexpected response status');
+            }
+        } catch (error) {
+            let errorMessage = "An error occurred while signing the contract.";
+            
+            if (error instanceof Error) {
+                if (error.message.includes('network')) {
+                    errorMessage = "Network error. Please check your connection.";
+                } else if (error.message.includes('timeout')) {
+                    errorMessage = "Request timed out. Please try again.";
+                } else {
+                    errorMessage = error.message;
+                }
+            }
+            
+            Alert.alert(
+                "Error",
+                errorMessage,
+                [{ text: "OK" }]
+            );
+            
+            console.error("Contract signing error:", error);
+            return false;
+        }
+    }
+
     const handleNext = () => {
         switch (currentFlow) {
             case "REVIEWED":
@@ -66,7 +117,7 @@ const ContractSigning = () => {
                 break;
             case "SIGN":
               if (fullName && isChecked) {
-                push("/(artisteTabs)/(dashboard)");
+                signContract()  
             }
                 break;
         }

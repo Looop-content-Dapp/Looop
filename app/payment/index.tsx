@@ -20,6 +20,7 @@ import Payaza, {
   PayazaConnectionMode,
 } from "react-native-payaza";
 import api from "@/config/apiConfig";
+import ChainPicker from "@/components/app-components/ChainPicker";
 
 const Index = () => {
   const { name, image, communityAddress, communityId } = useLocalSearchParams();
@@ -71,61 +72,37 @@ const Index = () => {
 
       const res = await api.post("/api/community/joincommunity", payload);
       if (res) {
+        // First update the UI states
+        setLoader(false);
+        setIsModalVisible(false);
+
+        // Use setTimeout to ensure state updates are processed before navigation
+        setTimeout(() => {
+          router.push({
+            pathname: "/payment/success",
+            params: {
+              name: name,
+              image: image,
+              reference: transactionReference,
+            },
+          });
+        }, 0);
+
         Alert.alert(
           "Payment Successful",
           `Transaction reference: ${res.data?.message}`
         );
-        setLoader(false);
-        setIsModalVisible(false);
-        router.push({
-          pathname: "/payment/success",
-          params: {
-            name: name,
-            image: image,
-            reference: transactionReference,
-          },
-        });
       } else {
         setLoader(false);
       }
     } catch (error) {
+      setLoader(false);
       console.error("Error verifying payment:", error);
+      Alert.alert("Error", "Failed to process payment. Please try again.");
     }
   };
 
-if (loader) {
-  return (
-    <View className="flex-1 bg-gradient-to-b from-[#040405] to-[#0A0B0F] items-center justify-center px-6">
-      <View className="items-center bg-[#0F1014] p-8 rounded-3xl shadow-2xl border border-[#1A1B1F] w-full max-w-[400px]">
-        <View className="w-24 h-24 mb-8 transform hover:scale-105 transition-transform">
-          <Image 
-            source={require("../../assets/images/logo-gray.png")}
-            className="w-full h-full opacity-90"
-            style={{ resizeMode: "contain" }}
-          />
-        </View>
-        
-        <View className="relative mb-8">
-          <View className="w-16 h-16 border-4 border-[#FF6D1B] border-t-transparent rounded-full animate-spin" />
-          <View className="absolute inset-0 w-16 h-16 border-4 border-[#FF6D1B]/20 rounded-full" />
-        </View>
-
-        <Text className="text-[24px] font-PlusJakartaSansBold text-white mb-4 tracking-wide">
-          Minting in Progress
-        </Text>
-        
-        <Text className="text-[16px] font-PlusJakartaSansMedium text-[#9EA0A5] text-center leading-6">
-          Please wait while we mint your NFT.{"\n"}
-          This process may take a few moments.
-        </Text>
-
-        <View className="w-full h-2 bg-[#1A1B1F] rounded-full mt-8 overflow-hidden">
-          <View className="h-full w-1/2 bg-[#FF6D1B] rounded-full animate-pulse" />
-        </View>
-      </View>
-    </View>
-  );
-}
+  
 
   return (
     <>
@@ -150,6 +127,8 @@ if (loader) {
                 fans, join conversations, and unlock unique experiences.
               </Text>
             </View>
+
+            <ChainPicker />
 
             <View className="px-[8px] pt-[8px] pb-[32px] aspect-[3/4] border-[0.5px] border-[#787A80] bg-[#0A0B0F] gap-y-[16px] rounded-[32px] shadow-lg">
               <Image

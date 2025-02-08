@@ -10,6 +10,7 @@ import api from "@/config/apiConfig";
 import { CreatorFormData } from "@/types/index";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { setArtistId, setClaimId } from "@/redux/slices/auth";
+import { useSocialAuth } from '@/hooks/useSocialAuth';
 
 type ProfileFlowState = "INTRO" | "CREATE_PROFILE";
 
@@ -43,6 +44,33 @@ const CreateProfile = () => {
   const { back } = useRouter();
   const dispatch = useAppDispatch()
   const { userdata } = useAppSelector((state) => state.auth);
+  const { connectTwitter, connectInstagram, connectTikTok, isAuthenticating } = useSocialAuth();
+
+  const handleSocialConnect = async (platform: 'twitter' | 'instagram' | 'tiktok') => {
+    try {
+      let result;
+      switch (platform) {
+        case 'twitter':
+          result = await connectTwitter();
+          break;
+        case 'instagram':
+          result = await connectInstagram();
+          break;
+        case 'tiktok':
+          result = await connectTikTok();
+          break;
+      }
+
+      if (result.profileUrl) {
+        handleSocialAccountChange(platform, result.profileUrl);
+        Alert.alert('Success', `Successfully connected ${platform}`);
+      } else if (result.error) {
+        Alert.alert('Connection Failed', result.error);
+      }
+    } catch (error) {
+      Alert.alert('Error', `Failed to connect ${platform}. Please try again.`);
+    }
+  };
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -267,6 +295,8 @@ const CreateProfile = () => {
               onCitySelect={setSelectedCity}
               onProfileImageUpload={handleProfileImageUpload}
               onSocialAccountChange={handleSocialAccountChange}
+              onSocialConnect={handleSocialConnect}
+             isAuthenticating={isAuthenticating}
             />
           </ScrollView>
         );
