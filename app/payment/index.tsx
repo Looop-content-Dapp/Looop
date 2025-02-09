@@ -23,11 +23,16 @@ import api from "@/config/apiConfig";
 import ChainPicker from "@/components/app-components/ChainPicker";
 
 const Index = () => {
-  const { name, image, communityAddress, communityId } = useLocalSearchParams();
+  const { name, image, communityAddress, communityId, communityDescription } = useLocalSearchParams();
+  const { userdata } = useAppSelector((state) => state.auth);
+  const [selectedChain, setSelectedChain] = useState({
+    type: 'xion',
+    walletAddress: userdata?.wallets?.xion || ''
+  });
   const navigation = useNavigation();
   const router = useRouter();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const { userdata } = useAppSelector((state) => state.auth);
+ 
   const [loader, setLoader] = useState<boolean>(false);
 
   const payaza = React.useRef<IPayaza>(null);
@@ -46,7 +51,7 @@ const Index = () => {
       connectionMode: PayazaConnectionMode.TEST_CONNECTION_MODE,
       email: userdata?.email as string,
       firstName: userdata?.username as string,
-      lastName: "<last name>",
+      lastName: userdata?.username as string,
       phoneNumber: userdata?.tel as string,
       currencyCode: "USD",
       transactionReference: "transaction_reference",
@@ -54,46 +59,40 @@ const Index = () => {
   };
 
   const handleError = (response: PayazaErrorResponse) => {
-    Alert.alert(response.data.message, "Error Occurred");
+    setLoader(false);
+    Alert.alert("Error", response.data.message || "Payment failed. Please try again.");
   };
 
   const handleSuccess = async (response: any) => {
     setLoader(true);
     try {
       const { transactionReference } = response.data;
+      console.log("transaction_reference", transactionReference)
       const payload = {
-        type: "xion",
+        type: selectedChain.type,
         userId: userdata?._id,
         communityId: communityId,
         collectionAddress: communityAddress,
-        userAddress: userdata?.wallets?.xion,
+        userAddress: selectedChain.walletAddress,
         transactionReference: transactionReference,
       };
 
       const res = await api.post("/api/community/joincommunity", payload);
-      if (res) {
-        // First update the UI states
+      if (res?.data) {
         setLoader(false);
         setIsModalVisible(false);
-
-        // Use setTimeout to ensure state updates are processed before navigation
-        setTimeout(() => {
-          router.push({
-            pathname: "/payment/success",
-            params: {
-              name: name,
-              image: image,
-              reference: transactionReference,
-            },
-          });
-        }, 0);
-
-        Alert.alert(
-          "Payment Successful",
-          `Transaction reference: ${res.data?.message}`
-        );
+        router.push({
+          pathname: "/payment/success",
+          params: {
+            name: name,
+            image: image,
+            reference: transactionReference,
+            id: communityId,
+            description: communityDescription
+          },
+        });
       } else {
-        setLoader(false);
+        throw new Error("Invalid server response");
       }
     } catch (error) {
       setLoader(false);
@@ -102,15 +101,14 @@ const Index = () => {
     }
   };
 
-  
-
   return (
     <>
       <View className="flex-1 bg-[#0A0B0F]">
         <AppButton.Primary
           color="#FF6D1B"
           text="Continue to Payment"
-          loading={false}
+          loading={loader}
+          disabled={loader}
           onPress={() => setIsModalVisible(true)}
           className="absolute bottom-6 left-6 right-6 z-10 py-[16px] rounded-[56px]"
         />
@@ -128,7 +126,10 @@ const Index = () => {
               </Text>
             </View>
 
-            <ChainPicker />
+            <ChainPicker 
+            onChainSelect={setSelectedChain}
+            userWallets={userdata?.wallets}
+            />
 
             <View className="px-[8px] pt-[8px] pb-[32px] aspect-[3/4] border-[0.5px] border-[#787A80] bg-[#0A0B0F] gap-y-[16px] rounded-[32px] shadow-lg">
               <Image
@@ -213,7 +214,7 @@ const Index = () => {
                   <View className="w-full gap-y-[32px]">
                     <AppButton.Primary
                       color={"#FFFFFF"}
-                      text="Pay wisth Cash"
+                      text="Pay with Cash"
                       loading={loader}
                       disabled={loader}
                       icon={
@@ -229,7 +230,10 @@ const Index = () => {
             <Payaza
               onSuccess={handleSuccess}
               onError={handleError}
-              onClose={console.log}
+              onClose={() => {
+                setLoader(false);
+                setIsModalVisible(false);
+              }}
               merchantKey="PZ78-PKTEST-FF00C2E4-3339-4D9A-93AF-1CD4F3A834DC"
               ref={payaza}
             />

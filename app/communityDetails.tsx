@@ -1,17 +1,78 @@
 import { View, Text, ImageBackground, TouchableOpacity, ScrollView, Animated } from 'react-native';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import { Share05Icon, ArrowLeft01Icon, ArrowLeft02Icon } from '@hugeicons/react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import Annnoucement from '../components/community/Annoucement';
 import Events from '../components/community/Events';
 import Posts from '../components/community/Posts';
+import { Skeleton } from "moti/skeleton";
+import { prefetchCommunityData } from '@/utils/prefetch';
+import { formatNumber } from '@/utils/ArstsisArr';
 
 const communityDetails = () => {
-    const {id, name, description, image}= useLocalSearchParams()
+    const { id } = useLocalSearchParams();
     const [activeTab, setActiveTab] = useState('posts');
     const scrollY = useRef(new Animated.Value(0)).current;
-    const [showStickyTabs, setShowStickyTabs] = useState(false); // Track if sticky tabs should be shown
+    const [showStickyTabs, setShowStickyTabs] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [communityData, setCommunityData] = useState<any>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchCommunityData = async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
+
+                if (!id) {
+                    throw new Error('Community ID is missing');
+                }
+
+                const data = await prefetchCommunityData(id as string);
+                setCommunityData(data);
+                console.log("communityData: ", data);
+
+            } catch (error: any) {
+                console.error('Error fetching community data:', error);
+                setError(error.message || 'Failed to load community details');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchCommunityData();
+    }, [id]);
+
+    if (isLoading) {
+        return (
+            <View className="flex-1 bg-black">
+                <Skeleton
+                    show={true}
+                    width="100%"
+                    height={300}
+                    colorMode="dark"
+                />
+                <View className="p-6">
+                    <Skeleton
+                        show={true}
+                        width={200}
+                        height={24}
+                        radius={4}
+                        colorMode="dark"
+                    />
+                    <View className="h-4" />
+                    <Skeleton
+                        show={true}
+                        width="100%"
+                        height={60}
+                        radius={4}
+                        colorMode="dark"
+                    />
+                </View>
+            </View>
+        );
+    }
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -50,28 +111,30 @@ const communityDetails = () => {
             <Animated.View
                 style={{
                     position: 'absolute',
-                    top: 30,
+                    top: 35,
                     left: 0,
                     right: 0,
                     height: 60,
-                    backgroundColor: 'black',
+                    backgroundColor: '#040405',
                     opacity: headerOpacity,
-                    zIndex: 10, // To keep it above other content
+                    zIndex: 20,
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingHorizontal: 16,
                 }}
             >
-                <TouchableOpacity onPress={() => router.back()} className='mt-[40px] ml-[30px]'>
-                    <ArrowLeft01Icon size={24} color="#fff" />
+                <TouchableOpacity onPress={() => router.back()}>
+                    <ArrowLeft01Icon size={24} color="#fff" variant='stroke' />
                 </TouchableOpacity>
-                <Text className="text-white text-[18px] font-bold ml-4">{name}</Text>
+                <Text className="text-white text-[18px] font-bold ml-4">
+                    {communityData?.communityName}
+                </Text>
             </Animated.View>
 
             {/* Parallax Image Background */}
             <Animated.View style={{ height: headerHeight, opacity: imageOpacity }}>
                 <ImageBackground
-                    source={{ uri: image as string }}
+                    source={{ uri: communityData?.coverImage as string }}
                     className='h-full w-full'
                     resizeMode='cover'
                 >
@@ -90,42 +153,36 @@ const communityDetails = () => {
                         left: 0,
                         right: 0,
                         zIndex: 20,
-                        backgroundColor: 'black',
+                        backgroundColor: '#040405',
                     }}
                     className='flex-row justify-around border-b-[1px] border-gray-600'
                 >
                     <TouchableOpacity
                         onPress={() => setActiveTab('posts')}
-                        className={`py-[16px] ${activeTab === 'posts' ? 'border-b-2 border-Orange/08' : ''}`}
+                        className={`py-[10px] px-[24px] ${activeTab === 'posts' ? 'border-b-2 border-Orange/08 w-fit' : ''}`}
                     >
                         <Text
-                            className={`text-[16px] font-PlusJakartaSansMedium ${
-                                activeTab === 'posts' ? 'text-white' : 'text-gray-400'
-                            }`}
+                            className={`text-[16px] font-PlusJakartaSansMedium text-white`}
                         >
                             Posts
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => setActiveTab('announcements')}
-                        className={`py-[16px] ${activeTab === 'announcements' ? 'border-b-2 border-Orange/08' : ''}`}
+                        className={`py-[10px] px-[24px] ${activeTab === 'announcements' ? 'border-b-2 border-Orange/08 w-fit' : ''}`}
                     >
                         <Text
-                            className={`text-[16px] font-PlusJakartaSansMedium ${
-                                activeTab === 'announcements' ? 'text-white' : 'text-gray-400'
-                            }`}
+                            className={`text-[16px] font-PlusJakartaSansMedium text-white`}
                         >
                             Announcements
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => setActiveTab('events')}
-                        className={`py-[16px] ${activeTab === 'events' ? 'border-b-2 border-Orange/08' : ''}`}
+                        className={`py-[10px] px-[24px] ${activeTab === 'events' ? 'border-b-2 border-Orange/08 w-fit' : ''}`}
                     >
                         <Text
-                            className={`text-[16px] font-PlusJakartaSansMedium ${
-                                activeTab === 'events' ? 'text-white' : 'text-gray-400'
-                            }`}
+                            className={`text-[16px] font-PlusJakartaSansMedium text-white`}
                         >
                             Events
                         </Text>
@@ -152,69 +209,71 @@ const communityDetails = () => {
                 )}
                 scrollEventThrottle={16}
             >
-                <View
-                    style={{ width: wp('100%') }}
-                    className='gap-y-[16px] px-[24px] pt-[24px] pb-[54px] border-b-[1px] border-Grey/07'
-                >
-                    <View className='flex-row items-start justify-between'>
-                        <View className="gap-y-[24px] items-center">
-                            <Text className='text-[24px] font-PlusJakartaSansBold text-[#fff]'>{name}</Text>
-                            <View className='bg-[#12141B] py-[8px] px-[12px] items-center justify-center'>
-                                <Text className='text-[12px] text-[#fff] font-PlusJakartaSansRegular'>22.7M Members</Text>
-                            </View>
-                        </View>
-                        <View className='flex-row items-center gap-x-[4px]'>
-                            {/* <TouchableOpacity className='border-2 border-[#A5A6AA] px-[32px] py-[12px] rounded-[24px]'>
-                                <Text className='text-[14px] font-PlusJakartaSansMedium text-[#fff]'>Join Tribe</Text>
-                            </TouchableOpacity> */}
-                            <TouchableOpacity className='border border-[#A5A6AA] h-[42px] w-[42px] rounded-full items-center justify-center'>
-                                <Share05Icon size={24} color='#A5A6AA' variant='stroke' />
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                    <Text
-                        style={{ width: wp('90%') }}
-                        numberOfLines={3}
-                        className='text-[14px] font-PlusJakartaSansRegular text-[#fff]'
-                    >
-                       {description}
-                    </Text>
-                </View>
+<View 
+    style={{ width: wp('100%') }} 
+    className='px-6 pt-6 pb-14 gap-y-[16px] bg-[#040405] border-b border-Grey/07 space-y-4'
+>
+    <View className='flex-row justify-between items-start'>
+        <View className='space-y-6 items-start'>
+            <Text className='text-2xl font-PlusJakartaSansBold text-white'>
+                {communityData?.communityName}
+            </Text>
+            <View className='bg-[#12141B] p-[8px] rounded-md'>
+                <Text className='text-[12px] font-PlusJakartaSansRegular text-white'>
+                    {formatNumber(communityData?.memberCount)} Members
+                </Text>
+            </View>
+        </View>
+        
+        <TouchableOpacity 
+            className='border border-[#A5A6AA] h-[42px] w-[42px] rounded-full items-center justify-center'
+            activeOpacity={0.7}
+        >
+            <Share05Icon 
+                size={24} 
+                color='#A5A6AA' 
+                variant='stroke' 
+            />
+        </TouchableOpacity>
+    </View>
+
+    <Text
+        style={{ width: wp('90%') }}
+        numberOfLines={3}
+        className='text-[14px] font-PlusJakartaSansRegular text-white'
+    >
+        {communityData?.description}
+    </Text>
+</View>
 
                 {/* Original Tab Navigation */}
-                <View className='flex-row justify-around bg-black border-b-[1px] border-gray-600'>
+                <View className='flex-row justify-between bg-[#040405] border-b-[1px] border-gray-600'>
                     <TouchableOpacity
                         onPress={() => setActiveTab('posts')}
-                        className={`py-[16px] ${activeTab === 'posts' ? 'border-b-2 border-Orange/08' : ''}`}
+                        className={`py-[10px] px-[24px] ${activeTab === 'posts' ? 'border-b-2 border-Orange/08 w-fit' : ''}`}
                     >
                         <Text
-                            className={`text-[16px] font-PlusJakartaSansMedium ${
-                                activeTab === 'posts' ? 'text-white' : 'text-gray-400'
-                            }`}
+                             className={`text-[16px] font-PlusJakartaSansMedium text-white`}
                         >
                             Posts
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => setActiveTab('announcements')}
-                        className={`py-[16px] ${activeTab === 'announcements' ? 'border-b-2 border-Orange/08' : ''}`}
+                        className={`py-[10px] px-[24px] ${activeTab === 'announcements' ? 'border-b-2 border-Orange/08 w-fit' : ''}`}
                     >
                         <Text
-                            className={`text-[16px] font-PlusJakartaSansMedium ${
-                                activeTab === 'announcements' ? 'text-white' : 'text-gray-400'
-                            }`}
+                            className={`text-[16px] font-PlusJakartaSansMedium text-white`}
                         >
                             Announcements
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => setActiveTab('events')}
-                        className={`py-[16px] ${activeTab === 'events' ? 'border-b-2 border-Orange/08' : ''}`}
+                        className={`py-[10px] px-[24px] ${activeTab === 'events' ? 'border-b-2 border-Orange/08 w-fit' : ''}`}
                     >
                         <Text
-                            className={`text-[16px] font-PlusJakartaSansMedium ${
-                                activeTab === 'events' ? 'text-white' : 'text-gray-400'
-                            }`}
+                            className={`text-[16px] font-PlusJakartaSansMedium text-white`}
                         >
                             Events
                         </Text>
@@ -222,7 +281,7 @@ const communityDetails = () => {
                 </View>
 
                 {/* Tab Content */}
-                <View className="px-4 py-2">{renderTabContent()}</View>
+                <View className="px-4 mt-[14px]">{renderTabContent()}</View>
             </Animated.ScrollView>
         </View>
     );

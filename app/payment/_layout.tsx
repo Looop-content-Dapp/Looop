@@ -20,7 +20,7 @@ export default () => {
       <Stack.Screen name="payWithCard" />
       <Stack.Screen name="cardAuthentication" />
       <Stack.Screen 
-        name="MintingSuccessful" 
+        name="success" 
         options={{
           headerShown: false,
           gestureEnabled: false

@@ -106,16 +106,16 @@ const ArtistCommunityDetails = ({ community }: ArtistCommunityDetailProps) => {
             uri: community?.coverImage
           }}
           style={{
-            height: hp("27.9%"),
+            height: hp("60.9%"),
             width: wp("100%")
           }}
         >
-          <View className="mt-[40px] px-[24px]">
+          <View className="mt-[60px] px-[24px]">
             <TouchableOpacity>
               <ArrowLeft02Icon size={32} color="#fff" />
             </TouchableOpacity>
 
-            <View className="items-end justify-end mt-[30%]">
+            <View className="items-end justify-end mt-[40%]">
               <TouchableOpacity className="border border-[#D2D3D5] py-[16px] px-[12px] rounded-[24px]">
                 <Text className="text-[14px] font-PlusJakartaSansMedium text-[#D2D3D5]">Change Cover</Text>
               </TouchableOpacity>

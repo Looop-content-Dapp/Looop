@@ -26,6 +26,7 @@ const ArtistInfo = ({ follow, name, desc, follower, isVerfied, index, isFollowin
     isFollowingArtist,
   } = useQuery();
   const { userdata } = useAppSelector((state) => state.auth);
+  console.log("isFollowing", isFollowing)
 
   const handleFollowArtist = async () => {
     try {
@@ -60,7 +61,7 @@ const ArtistInfo = ({ follow, name, desc, follower, isVerfied, index, isFollowin
           </View>
           <View className="flex-row gap-3 mt-1">
             <Text className="text-sm font-medium text-[#787A80]">{formatNumber(follow)} Followers</Text>
-            <Text className="text-sm font-medium text-[#787A80]">{formatNumber(follower)} Followers</Text>
+            <Text className="text-sm font-medium text-[#787A80]">{formatNumber(follower)} Monthly Listeners</Text>
           </View>
         </View>
         <TouchableOpacity

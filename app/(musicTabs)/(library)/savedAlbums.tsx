@@ -16,6 +16,7 @@ import ToggleFlatListView from "../../../components/view/ToggleFlatlistView";
 import GridComponent from "../../../components/cards/GridComponents";
 import ListComponent from "../../../components/cards/ListComponents";
 import { useQuery } from "../../../hooks/useQuery";
+import { useAppSelector } from "@/redux/hooks";
 
 const AnimatedImageBackground =
   Animated.createAnimatedComponent(ImageBackground);
@@ -25,10 +26,10 @@ const SavedAlbums = () => {
   const [showStickySearch, setShowStickySearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredAlbums, setFilteredAlbums] = useState([]);
-  const route = useRouter();
   const [savedAlbums, setSavedAlbums] = useState([]); // State to store fetched saved albums
   const [loading, setLoading] = useState(true); // Loading state for skeleton
-  const { getSavedAlbums, retrieveUserId } = useQuery();
+  const { getSavedAlbums } = useQuery();
+  const { userdata } = useAppSelector((state) =>  state.auth)
 
   const searchAnimation = useRef(new Animated.Value(1)).current;
 
@@ -65,9 +66,8 @@ const SavedAlbums = () => {
     const fetchSavedAlbums = async () => {
       setLoading(true);
       try {
-        const userId = await retrieveUserId();
-        if (userId) {
-          const data = await getSavedAlbums(userId);
+        if (userdata?._id) {
+          const data = await getSavedAlbums(userdata?._id);
           setSavedAlbums(data);
           setFilteredAlbums(data);
         }
@@ -102,9 +102,9 @@ const SavedAlbums = () => {
           style={[styles.imageBackground, { opacity: imageOpacity }]}
         >
           <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>My Downloads</Text>
+            <Text style={styles.headerTitle}>Saved Albums</Text>
             <Text style={styles.headerSubtitle}>
-              Browse through your downloads
+              Browse through your saved albums.
             </Text>
           </View>
         </AnimatedImageBackground>

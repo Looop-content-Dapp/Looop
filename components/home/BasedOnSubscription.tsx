@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Skeleton } from "moti/skeleton";
 import { useRouter } from "expo-router";
 import { useAppSelector } from "@/redux/hooks";
+import { prefetchArtistData } from '@/utils/prefetch';
 
 const ExploreDiscographies = ({
   title,
@@ -38,42 +39,29 @@ export default ExploreDiscographies;
 
 const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
   const [isImageLoading, setIsImageLoading] = useState(true);
-  const { userdata } = useAppSelector((state) =>  state.auth)
   const router = useRouter();
-  const followers = item?.followers
+
+  const handlePress = async () => {
+    try {
+      // Prefetch data before navigation
+      await prefetchArtistData(item?._id);
+      
+      router.push({
+        pathname: `/artist/${item?._id}`,
+      });
+    } catch (error) {
+      console.error('Error prefetching artist data:', error);
+      // Navigate anyway if prefetch fails
+      router.push({
+        pathname: `/artist/${item?._id}`,
+      });
+    }
+  };
+
   return (
     <Pressable
-      onPress={() =>
-        router.push({
-          pathname: `/artist/${item?._id}`,
-          params: {
-            id: item?._id,
-            artistId: item?.artistId,
-            image: item?.profileImage,
-            name: item?.name,
-            bio: item?.biography,
-            isVerified: item?.verified,
-            email: item?.email,
-            websiteUrl: item?.websiteurl,
-            address1: item?.address1,
-            address2: item?.address2,
-            city: item?.city,
-            country: item?.country,
-            postalCode: item?.postalcode,
-            followers: followers,
-            monthlyListeners: item?.monthlyListeners,
-            popularity: item?.popularity,
-            genres: item?.genres,
-            labels: item?.labels,
-            topTracks: item?.topTracks,
-            createdAt: item?.createdAt,
-            updatedAt: item?.updatedAt,
-            isActive: item?.isActive,
-           isFollowing:  followers?.includes(userdata?._id),
-           noOfFollowers: followers.length
-          },
-        })
-      }
+      onPress={handlePress}
+      onHoverIn={() => prefetchArtistData(item?._id)} // Prefetch on hover
       className="items-center gap-y-[4px]"
     >
       <Skeleton

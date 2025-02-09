@@ -5,60 +5,11 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Audit01Icon, HeadphonesIcon, UserGroupIcon } from '@hugeicons/react-native'
 import LoadingScreen from '../loadingScreen'
 import Confetti from '@/assets/svg/Confetti'
-import api from '@/config/apiConfig'
-import { useAppSelector } from '@/redux/hooks'
 
 const successful = () => {
-  const { name, image } = useLocalSearchParams()
+  const { name, image, id, description } = useLocalSearchParams()
+  console.log('name', )
   const router = useRouter()
-  const { userdata } = useAppSelector((state) => state.auth)
-  const [showMintingScreen, setShowMintingScreen] = useState(true);
-  const  chainType = "xion"
-
-  const handleJoinCommunity = async() => {
-    const payload = {
-      "recipientAddress": "xion1u6z49wty3j3a4ldn8hwv2jplyxq6rvhs472s4y",
-      "type": "xion",
-      "userId": userdata?._id,
-      "communityId": "67a0eab9c60ab771cc6c2756",
-      "collectionAddress": "xion1v47tm32nxfjtlfrcek5dq3xcg8jd6qcj4gye7flaazuh2h3ydtmqdkmn7h",
-      "userAddress":  chainType === "xion" ?  userdata?.wallets.xion : userdata?.wallets.starknet,
-      "transactionReference": `Minting tribe pass of ${name} to ${userdata?._id} with wallet address ${chainType === "xion" ?  userdata?.wallets.xion : userdata?.wallets.starknet}`
-  }
-    try {
-      const res = await api.post('/api/community/joincommunity', payload)
-    } catch (error) {
-      
-    }
-  }
-  
-
-  useEffect(() => {
-    // After 3 seconds, show the success screen
-    const timer = setTimeout(() => {
-      setShowMintingScreen(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (showMintingScreen) {
-    return (
-      <LoadingScreen
-        words={[
-          { text: 'Minting', color: '#FF6D1B' },
-          { text: 'Processing', color: '#FF6D1B' },
-          { text: 'Confirming', color: '#FF6D1B' },
-        ]}
-        prefixText="Please wait"
-        finalMessage="Minting your Tribe Pass..."
-        showBackButton={false}
-        onContinue={() => {}}
-        animationDuration={600}
-        delayBeforeFinal={2000}
-      />
-    );
-  }
 
   return (
     <View className="flex-1 bg-[#040405] px-6">
@@ -101,8 +52,8 @@ const successful = () => {
 
           {/* Welcome Text */}
           <View className="mt-16 items-center">
-            <Text className="text-[32px] font-PlusJakartaSansBold text-white">
-              Welcome to Ravers HQ
+            <Text numberOfLines={1} className="text-[32px] font-PlusJakartaSansBold text-white">
+              Welcome to {name}
             </Text>
             <Text className="text-[16px] font-PlusJakartaSansMedium text-[#D2D3D5] text-center mt-3 px-6">
               Connect with other fans and join the important discussions and just have fun

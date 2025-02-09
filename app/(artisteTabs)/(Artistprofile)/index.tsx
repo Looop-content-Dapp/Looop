@@ -127,7 +127,7 @@ const index = () => {
               uri: artistProfile?.profileImage,
             }}
             style={{
-              height: hp("40.9%"),
+              height: hp("60.9%"),
               width: wp("100%"),
             }}
           >

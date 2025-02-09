@@ -12,38 +12,19 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { ArrowLeft02Icon } from "@hugeicons/react-native";
-import { Artist } from "../../utils/types";
 import ArtistInfo from "../../components/ArtistInfo";
-import { useQuery } from "../../hooks/useQuery";
 import JoinCommunity from "../../components/cards/JoinCommunity";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import PaymentBottomSheet from "../../components/Subscribe/PaymentBottomsheet";
 import ArtistReleases from "../../components/ArtistProfile/ArtistReleases";
-import api from "@/config/apiConfig";
 import { useAppSelector } from "@/redux/hooks";
-
-interface CommunityData {
-  _id: string;
-  communityName: string;
-  description: string;
-  createdBy: string;
-  createdAt: string;
-  price?: number;
-  image?: string;
-}
+import { Skeleton } from "moti/skeleton";
+import { prefetchArtistData } from '@/utils/prefetch';
 
 const ArtistDetails = () => {
   const {
-    index,
-    artistId,
-    image,
-    name,
-    bio,
-    isVerified,
     id,
-    isFollowing,
-    noOfFollowers,
   } = useLocalSearchParams();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,59 +33,69 @@ const ArtistDetails = () => {
   const [showPaymentSheet, setShowPaymentSheet] = useState(false);
   const { userdata } = useAppSelector((state) => state.auth);
   const scrollY = useRef(new Animated.Value(0)).current;
-  const [isMember, setIsMember] = useState(false);
   const router = useRouter();
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
+  console.log(artistData?._id)
 
   const toggleDescription = useCallback(() => {
     setIsExpanded((prev) => !prev);
   }, []);
-  console.log(id)
 
-useEffect(() => {
-  const fetchArtist = async () => {
-    try {
-      if (!id) {
-        console.error('Artist ID is missing');
-        return;
-      }
-
-      const res = await api.get(`/api/artist/${id}`);
-      
-      if (!res?.data?.data?.artist) {
-        throw new Error('Invalid artist data received from API');
-      }
-
-      setArtistData(res.data.data.artist);
-    } catch (error) {
-      console.error('Error fetching artist data:', error);
-      // You could add error state management here if needed
-      setArtistData(null);
-    }
-  };
-
-  fetchArtist();
-}, [id]); // Added id to dependency array to re-fetch when id changes
-
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchArtistCommunity = async () => {
+    const fetchArtistData = async () => {
       try {
         setIsLoading(true);
-    
-        const response = await api.get(`/api/community/${id as string}`);
-        setCommunityData(response?.data?.data);
-        return
-      } catch (error) {
-        console.error("Error fetching artist community:", error);
-        return
+        setError(null);
+
+        if (!id) {
+          throw new Error('Artist ID is missing');
+        }
+
+        // Try to get prefetched data first
+        const prefetchedData = await prefetchArtistData(id as string);
+        
+        setArtistData(prefetchedData.artist);
+        setCommunityData(prefetchedData.community);
+
+      } catch (error: any) {
+        console.error('Error fetching artist data:', error);
+        setError(error.message || 'Failed to load artist details');
+        setArtistData(null);
+        setCommunityData(null);
       } finally {
         setIsLoading(false);
-        return
       }
     };
-    fetchArtistCommunity();
-  }, []);
+
+    fetchArtistData();
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <Skeleton
+          show={true}
+          width="100%"
+          height={SCREEN_HEIGHT * 0.4}
+          colorMode="dark"
+        >
+          <View style={styles.header} />
+        </Skeleton>
+        <View style={styles.contentContainer}>
+          <Skeleton
+            show={true}
+            width={200}
+            height={20}
+            radius={4}
+            colorMode="dark"
+            style={{ marginTop: 16 }}
+          />
+        </View>
+      </View>
+    );
+  }
 
   const handleJoinPress = () => {
     // setShowPaymentSheet(true);
@@ -115,9 +106,11 @@ useEffect(() => {
         image: communityData?.tribePass?.collectibleImage,
         communityAddress: communityData?.tribePass?.contractAddress,
         communityId: communityData?._id,
+        communityDescription: communityData?.description
       },
     });
   };
+
 
   const handleClosePaymentSheet = () => {
     setShowPaymentSheet(false);
@@ -178,7 +171,7 @@ useEffect(() => {
         {/* Parallax Image Background */}
         <Animated.View style={{ height: headerHeight, opacity: imageOpacity }}>
           <ImageBackground
-            source={{ uri: image as string }}
+            source={{ uri: artistData?.profileImage as string }}
             style={styles.imageBackground}
             resizeMode="cover"
           >
@@ -202,15 +195,31 @@ useEffect(() => {
         >
           <View style={styles.contentContainer}>
             <ArtistInfo
-              image={image as string}
-              name={name as string}
-              follow={noOfFollowers as string}
-              desc={bio as string}
-              follower={"12459"}
-              isVerfied={isVerified as string}
-              index={index as string}
-              isFollowing={isFollowing as boolean}
+              image={artistData?.profileImage as string}
+              name={artistData?.name as string}
+              follow={artistData?.followers.length as string}
+              desc={artistData?.biography as string}
+              follower={artistData?.monthlyListeners as string}
+              isVerfied={artistData?.verified as string}
+              index={artistData?._id as string}
+              isFollowing={artistData?.followers.includes(userdata?._id) as boolean}
             />
+
+         {/* Description Section */}
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.aboutText}>About {artistData?.name}</Text>
+            <Text
+              numberOfLines={isExpanded ? undefined : 1}
+              style={styles.descriptionText}
+            >
+              {artistData?.biography}
+            </Text>
+            <TouchableOpacity onPress={toggleDescription}>
+              <Text style={styles.toggleDescriptionText}>
+                {isExpanded ? "See less" : "See more"}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
             <JoinCommunity
               isLoading={isLoading}
@@ -218,25 +227,10 @@ useEffect(() => {
               onJoinPress={handleJoinPress}
               isMember={artistData?.communityMembers.includes(userdata?._id)}
               isOwner={communityData?.createdBy === userdata?._id} 
+              artistID={artistData?._id as string}
             />
 
-            <ArtistReleases artistId={index as string} />
-          </View>
-
-          {/* Description Section */}
-          <View style={styles.descriptionContainer}>
-            <Text style={styles.aboutText}>About {name}</Text>
-            <Text
-              numberOfLines={isExpanded ? undefined : 1}
-              style={styles.descriptionText}
-            >
-              {bio}
-            </Text>
-            <TouchableOpacity onPress={toggleDescription}>
-              <Text style={styles.toggleDescriptionText}>
-                {isExpanded ? "See less" : "See more"}
-              </Text>
-            </TouchableOpacity>
+            <ArtistReleases artistId={artistData?._id as string} />
           </View>
         </Animated.ScrollView>
 
@@ -276,8 +270,7 @@ const styles = StyleSheet.create({
     paddingBottom: "14%",
   },
   contentContainer: {
-    paddingTop: "8%",
-    marginTop: "-10%",
+    paddingTop: 16,
   },
   // Payment Bottom Sheet Styles
   paymentContainer: {
@@ -400,6 +393,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     width: wp("90%"),
     marginHorizontal: "auto",
+    marginVertical: 16
   },
   aboutText: {
     color: "#b0b0b0",
@@ -411,6 +405,22 @@ const styles = StyleSheet.create({
   toggleDescriptionText: {
     color: "#fff",
     marginTop: 8,
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'PlusJakartaSansMedium',
+  },
+  errorText: {
+    color: '#FF4444',
+    fontSize: 16,
+    fontFamily: 'PlusJakartaSansMedium',
+    textAlign: 'center',
+    marginHorizontal: 20,
   },
 });
 

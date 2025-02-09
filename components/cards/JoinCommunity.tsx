@@ -10,6 +10,7 @@ import {
 import { ArrowRight01Icon } from "@hugeicons/react-native";
 import { MotiView } from "moti";
 import { useRouter } from "expo-router";
+import { prefetchCommunityData } from '@/utils/prefetch';
 
 interface CommunityData {
   _id: string;
@@ -19,6 +20,7 @@ interface CommunityData {
   createdAt: string;
   price?: number;
   coverImage?: string;
+  
 }
 
 interface JoinCommunityProps {
@@ -27,6 +29,7 @@ interface JoinCommunityProps {
   onJoinPress: () => void;
   isMember?: boolean;
   isOwner: boolean;
+  artistID: string
 }
 
 const SkeletonLoader = () => {
@@ -46,27 +49,32 @@ const SkeletonLoader = () => {
   );
 };
 
-const JoinCommunity = ({
-  isLoading,
-  communityData,
-  onJoinPress,
-  isMember = false,
-  isOwner
-}: JoinCommunityProps) => {
+const JoinCommunity = ({ isLoading, communityData, onJoinPress, isMember = false, isOwner, artistID }: JoinCommunityProps) => {
   const { height: SCREEN_HEIGHT } = useWindowDimensions();
   const router = useRouter();
 
-  const handleCommunityPress = () => {
+  const handleCommunityPress = async () => {
     if (isMember && communityData) {
-      router.push({
-        pathname: "/communityDetails",
-        params: {
-          id: communityData._id,
-          name: communityData.communityName,
-          description: communityData.description,
-          image: communityData.coverImage,
-        },
-      });
+      try {
+        // Prefetch community data before navigation
+        await prefetchCommunityData(artistID);
+        
+        router.push({
+          pathname: "/communityDetails",
+          params: {
+            id: artistID,
+          },
+        });
+      } catch (error) {
+        console.error('Error navigating to community:', error);
+        // Navigate anyway if prefetch fails
+        router.push({
+          pathname: "/communityDetails",
+          params: {
+            id: artistID,
+          },
+        });
+      }
     } else {
       onJoinPress();
     }
@@ -76,7 +84,7 @@ const JoinCommunity = ({
     return (
       <TouchableOpacity onPress={handleCommunityPress}>
        {isOwner || isMember && communityData ? (
-        <View className="p-[12px] flex-row items-center justify-evenly bg-[#12141B] rounded-[24px] w-full">
+        <View className="flex-row items-center justify-evenly bg-[#12141B] gap-x-[12px] p-[12px] rounded-[24px] w-full h-[100px]">
               <Image
              source={{
                uri:
@@ -85,15 +93,16 @@ const JoinCommunity = ({
              }}
             className=" w-[76px] h-[76px] rounded-[10px]"
            />
-           <View  className="flex-1">
+           <View  className="flex-1 gap-y-[4px]">
             <Text className="text-[12px] font-PlusJakartaSansBold text-[#A5A6AA]">{isOwner ? "Manage your community" : "You can check out"}</Text>
             <Text className="text-[#fff] text-[12px] font-PlusJakartaSansBold" numberOfLines={1}>{communityData?.communityName}</Text>
-            <Text numberOfLines={2}>{communityData?.description}</Text>
+            <Text numberOfLines={2} className="text-[12px] font-PlusJakartaSansBold text-[#D2D3D5]">{communityData?.description}</Text>
            </View>
            <ArrowRight01Icon
-            size={16}
+            size={32}
             color="#FFFFFF"
-            variant="solid"
+            variant="stroke"
+            fontSize={32}
           />
         </View>
        ) : (
@@ -138,7 +147,7 @@ const JoinCommunity = ({
                  isMember ? styles.memberButtonText : styles.joinButtonText,
                ]}
              >
-               {isMember ? "View Community" : "Join Community"}
+              Join Community
              </Text>
              <ArrowRight01Icon
                size={16}
@@ -155,7 +164,6 @@ const JoinCommunity = ({
 
   return (
     <View style={[styles.communitySection, { height: SCREEN_HEIGHT * 0.25 }]}>
-      <Text style={styles.communityTitle}>Community</Text>
       {isLoading ? (
         <SkeletonLoader />
       ) : communityData ? (
