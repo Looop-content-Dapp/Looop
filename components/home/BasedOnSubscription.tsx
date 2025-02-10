@@ -15,6 +15,7 @@ const ExploreDiscographies = ({
   isLoading: boolean;
 }) => {
   const placeholderData = Array(5).fill({}); // Create 5 placeholder items
+  console.log("data: ", data)
   return (
     <View className="h-[254px] gap-y-4">
       <Text className="text-[#F4F4F4] text-[16px] font-normal font-PlusJakartaSansBold">
@@ -48,6 +49,9 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
       
       router.push({
         pathname: `/artist/${item?._id}`,
+        params: {
+          artistId: item?._id,
+        },
       });
     } catch (error) {
       console.error('Error prefetching artist data:', error);

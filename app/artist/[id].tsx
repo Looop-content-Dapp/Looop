@@ -25,6 +25,7 @@ import { prefetchArtistData } from '@/utils/prefetch';
 const ArtistDetails = () => {
   const {
     id,
+    artistId
   } = useLocalSearchParams();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +36,6 @@ const ArtistDetails = () => {
   const scrollY = useRef(new Animated.Value(0)).current;
   const router = useRouter();
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
-  console.log(artistData?._id)
 
   const toggleDescription = useCallback(() => {
     setIsExpanded((prev) => !prev);
@@ -49,12 +49,12 @@ const ArtistDetails = () => {
         setIsLoading(true);
         setError(null);
 
-        if (!id) {
+        if (!artistId) {
           throw new Error('Artist ID is missing');
         }
 
         // Try to get prefetched data first
-        const prefetchedData = await prefetchArtistData(id as string);
+        const prefetchedData = await prefetchArtistData(artistId as string);
         
         setArtistData(prefetchedData.artist);
         setCommunityData(prefetchedData.community);
@@ -98,17 +98,18 @@ const ArtistDetails = () => {
   }
 
   const handleJoinPress = () => {
-    // setShowPaymentSheet(true);
-    router.push({
-      pathname: "/payment",
-      params: {
-        name: communityData?.tribePass?.collectibleName,
-        image: communityData?.tribePass?.collectibleImage,
-        communityAddress: communityData?.tribePass?.contractAddress,
-        communityId: communityData?._id,
-        communityDescription: communityData?.description
-      },
-    });
+    if(!artistData?.communityMembers.includes(userdata?._id)){
+      router.push({
+        pathname: "/payment",
+        params: {
+          name: communityData?.tribePass?.collectibleName,
+          image: communityData?.tribePass?.collectibleImage,
+          communityAddress: communityData?.tribePass?.contractAddress,
+          communityId: communityData?._id,
+          communityDescription: communityData?.description
+        },
+      });
+    }
   };
 
 
@@ -195,7 +196,6 @@ const ArtistDetails = () => {
         >
           <View style={styles.contentContainer}>
             <ArtistInfo
-              image={artistData?.profileImage as string}
               name={artistData?.name as string}
               follow={artistData?.followers.length as string}
               desc={artistData?.biography as string}
@@ -203,6 +203,7 @@ const ArtistDetails = () => {
               isVerfied={artistData?.verified as string}
               index={artistData?._id as string}
               isFollowing={artistData?.followers.includes(userdata?._id) as boolean}
+              country={artistData?.country as string}
             />
 
          {/* Description Section */}

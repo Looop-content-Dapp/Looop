@@ -36,6 +36,7 @@ const ProfileFollowing = () => {
     const fetchData = async () => {
       if (userdata) {
         const res = await fetchFollowingArtists(userdata._id);
+        console.log("artist i follow", res.data)
         setArtistFollowing(res.data);
       }
     };

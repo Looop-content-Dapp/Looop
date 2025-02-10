@@ -1,4 +1,4 @@
-import { View, Text, Pressable, TouchableOpacity } from 'react-native';
+import { View, Text, Pressable, TouchableOpacity, Image } from 'react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { formatNumber } from '../utils/ArstsisArr';
 import { CheckmarkBadge01Icon } from '@hugeicons/react-native';
@@ -6,27 +6,25 @@ import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import { useQuery } from '../hooks/useQuery';
 import axios from 'axios';
 import { useAppSelector } from '@/redux/hooks';
+import { countries } from '../data/data';
 
 type Props = {
-  image: any;
   name: string;
   follow: string;
   desc: string;
   follower: string;
   isVerfied: string;
   index: string; // Assuming index is a string representing artist ID
-  isFollowing: boolean
+  isFollowing: boolean,
+  country: string
 };
 
-const ArtistInfo = ({ follow, name, desc, follower, isVerfied, index, isFollowing }: Props) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const ArtistInfo = ({ follow, name, follower, isVerfied, index, isFollowing, country }: Props) => {
   const [followed, setFollowed] = useState(false);
   const {
     followArtist,
-    isFollowingArtist,
   } = useQuery();
   const { userdata } = useAppSelector((state) => state.auth);
-  console.log("isFollowing", isFollowing)
 
   const handleFollowArtist = async () => {
     try {
@@ -42,13 +40,13 @@ const ArtistInfo = ({ follow, name, desc, follower, isVerfied, index, isFollowin
     }
   };
 
-  const toggleDescription = useCallback(() => {
-    setIsExpanded((prev) => !prev);
-  }, []);
+  const countryData = countries.find(c => 
+    c.value === country || c.label === country
+  );
 
   return (
-    <View className="max-h-[256px] m-4 gap-4">
-      <View className="flex-row items-center justify-between">
+    <View className="max-h-[256px] px-[24px] gap-4">
+      <View className="flex-row items-start justify-between">
         <View className="gap-1 flex-1">
           <View className="flex-row items-center flex-wrap gap-2">
             <Text className="text-xl font-bold text-white">{name}</Text>
@@ -57,7 +55,17 @@ const ArtistInfo = ({ follow, name, desc, follower, isVerfied, index, isFollowin
                 <CheckmarkBadge01Icon size={20} variant="solid" color="#2DD881" />
               </Pressable>
             )}
-            <Text className="text-[#787A80] text-sm">#4 in Nigeria</Text>
+            <View className="flex-row bg-[#12141B] items-center p-[8px] gap-1 rounded-[24px]">
+              {countryData && (
+                <Image 
+                  source={{ uri: countryData.icon }} 
+                  className="w-[15px] h-[15px] rounded-full"
+                />
+              )}
+              <Text className="text-[#787A80] text-sm">
+                #4 in {countryData?.label}
+              </Text>
+            </View>
           </View>
           <View className="flex-row gap-3 mt-1">
             <Text className="text-sm font-medium text-[#787A80]">{formatNumber(follow)} Followers</Text>

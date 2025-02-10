@@ -1,9 +1,6 @@
 import React from "react";
 import { useHeader } from "@/hooks/useHeader";
 import { Stack } from "expo-router";
-import { View } from "react-native";
-import { Notification02Icon } from "@hugeicons/react-native";
-import { Avatar } from "react-native-elements";
 import { useAppSelector } from "@/redux/hooks";
 import { router } from "expo-router";
 

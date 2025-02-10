@@ -113,7 +113,7 @@ export default function _RootLayout() {
       <BottomSheetModalProvider>
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
-            <Pressable
+            {/* <Pressable
               className="bg-Orange/08 absolute bottom-[120px] right-[12px] z-[1000px] h-[60px] w-[60px]  items-center justify-center rounded-full"
               onPress={async () => {
                 const session = await account.getSession("current");
@@ -124,7 +124,7 @@ export default function _RootLayout() {
               }}
             >
               <Text className="text-[#fff]">Reset</Text>
-            </Pressable>
+            </Pressable> */}
             <KeyboardProvider>
               <AppContent />
             </KeyboardProvider>

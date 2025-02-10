@@ -127,11 +127,11 @@ const index = () => {
               uri: artistProfile?.profileImage,
             }}
             style={{
-              height: hp("60.9%"),
+              height: hp("40.9%"),
               width: wp("100%"),
             }}
           >
-            <View className="flex-row items-center justify-between w-full mt-[40%] px-[12px]">
+            <View className="flex-row items-center justify-between w-full mt-[70%] px-[12px]">
               <View>
                 <View className="flex-row gap-x-[8px] items-center">
                   <Text className="text-[24px] font-PlusJakartaSansBold text-[#f4f4f4]">
@@ -182,7 +182,7 @@ const index = () => {
         )}
         scrollEventThrottle={16}
       >
-        <View className="px-[2px] mt-[10px] gap-y-[24px]">
+        <View className="px-[2px] mt-[30%] gap-y-[24px]">
           <View className="flex-row items-center gap-x-[10px] mx-auto w-full">
             <TouchableOpacity
               onPress={() => navigate("/(musicTabs)")}

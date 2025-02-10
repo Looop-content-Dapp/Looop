@@ -18,6 +18,8 @@ export default function _Setttingslayout() {
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="personalInfo" />
+      <Stack.Screen name="phone-number" />
+      <Stack.Screen name="email-address" />
     </Stack>
   )
 }

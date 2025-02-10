@@ -57,8 +57,8 @@ const SignContract = ({ fullName, setFullName, isChecked, setIsChecked, onError 
                 </View>
 
                 <View className='gap-y-[8px] mt-[68px]'>
-                    <Text className='text-[16px] font-PlusJakartaSansMedium text-[#f4f4f4]'>Creator Fullname</Text>
-                    <Text className='text-[14px] font-PlusJakartaSansMedium text-[#A5A6AA]'>As represented in govt issued documents</Text>
+                    <Text className='text-[16px] font-PlusJakartaSansMedium text-[#f4f4f4]'>Creator Stage Name</Text>
+                    {/* <Text className='text-[14px] font-PlusJakartaSansMedium text-[#A5A6AA]'>As represented in govt issued documents</Text> */}
                     <FormField.TextField
                         placeholder="Enter fullname"
                         value={fullName}

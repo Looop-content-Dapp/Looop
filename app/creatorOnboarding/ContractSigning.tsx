@@ -21,7 +21,8 @@ const ContractSigning = () => {
     const [isChecked, setIsChecked] = useState<boolean>(false) // Add type
     const { width, height } = useWindowDimensions();
     const { push } = useRouter();
-    const { artistId } = useAppSelector((state) => state.auth)
+    const { artistId, userdata } = useAppSelector((state) => state.auth)
+
 
     const getButtonText = (flow: ContractFlowState) => {
       switch (flow) {
@@ -62,8 +63,8 @@ const ContractSigning = () => {
       }
 
         const payload = {
-            "artistname": fullName,
-            "artistAddress": artistId
+            artistname: fullName,
+            artistAddress: userdata?.wallets?.xion
         }
 
         try {

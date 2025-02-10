@@ -48,6 +48,7 @@ const CreatorModeWelcome = () => {
   const insets = useSafeAreaInsets();
   const { claimId } = useAppSelector((state) => state.auth);
   const { push } = useRouter();
+  console.log("claimId: ", claimId)
 
   const checkArtistClaimStatus = async () => {
     if (!claimId){

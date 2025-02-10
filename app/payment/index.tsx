@@ -88,7 +88,7 @@ const Index = () => {
             image: image,
             reference: transactionReference,
             id: communityId,
-            description: communityDescription
+            description: description
           },
         });
       } else {
