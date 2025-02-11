@@ -28,7 +28,7 @@ const ArtistDetails = () => {
     artistId
   } = useLocalSearchParams();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [communityData, setCommunityData] = useState<any | null>(null);
   const [artistData, setArtistData] = useState<any | null>(null)
   const [showPaymentSheet, setShowPaymentSheet] = useState(false);
@@ -43,34 +43,34 @@ const ArtistDetails = () => {
 
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchArtistData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+  // useEffect(() => {
+  //   const fetchArtistData = async () => {
+  //     try {
+  //       setIsLoading(true);
+  //       setError(null);
 
-        if (!artistId) {
-          throw new Error('Artist ID is missing');
-        }
+  //       if (!artistId) {
+  //         throw new Error('Artist ID is missing');
+  //       }
 
-        // Try to get prefetched data first
-        const prefetchedData = await prefetchArtistData(artistId as string);
+  //       // Try to get prefetched data first
+  //       const prefetchedData = await prefetchArtistData(artistId as string);
         
-        setArtistData(prefetchedData.artist);
-        setCommunityData(prefetchedData.community);
+  //       setArtistData(prefetchedData.artist);
+  //       setCommunityData(prefetchedData.community);
 
-      } catch (error: any) {
-        console.error('Error fetching artist data:', error);
-        setError(error.message || 'Failed to load artist details');
-        setArtistData(null);
-        setCommunityData(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  //     } catch (error: any) {
+  //       console.error('Error fetching artist data:', error);
+  //       setError(error.message || 'Failed to load artist details');
+  //       setArtistData(null);
+  //       setCommunityData(null);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
 
-    fetchArtistData();
-  }, [id]);
+  //   fetchArtistData();
+  // }, [id]);
 
   if (isLoading) {
     return (
