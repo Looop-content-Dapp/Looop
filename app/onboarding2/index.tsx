@@ -27,38 +27,54 @@ const Onboard2 = () => {
   return (
     <>
       <StatusBar
-        backgroundColor={"transparent"}
+        backgroundColor={"#FF6D1B"}
         translucent={true}
         barStyle="light-content"
       />
       <SafeAreaView style={[styles.container, { backgroundColor: "#FF6D1B" }]}>
         <Onboarding
+          bottomBarHighlight={false}
+          showSkip={false}
+          showNext={false}
+          showDone={false}
+          showPagination={true}
+          containerStyles={{
+            backgroundColor: "#FF6D1B",
+            paddingBottom: hp("10%"),
+          }}
           pages={[
             {
               backgroundColor: "#FF6D1B",
               image: (
-                <View className="flex-1 items-center justify-center flex-col">
+                <View className="flex-1 justify-center items-center">
                   <Image source={logowhite} resizeMode="cover" />
-                  <ImageBackground
-                    source={vector1 as ImageSourcePropType}
-                    resizeMode="contain"
-                    style={{
-                      width: wp("100%"),
-                      height: hp("100%"),
-                    }}
-                  ></ImageBackground>
+                  <Image
+                    className=" "
+                    resizeMode="cover"
+                    style={{ height: hp("25%"), width: wp("100%") }}
+                    source={vector1}
+                  />
                   <Image
                     source={newonboard1}
+                    className="absolute -top-0  flex-shrink"
                     style={{
-                      width: wp("100%"),
-                      height: hp("100%"),
-                      resizeMode: "contain",
-                    }}
+                        width: wp("100%"),
+                        height: hp("45%"),
+                        }}
                   />
                 </View>
               ),
               title: "Onboarding",
               subtitle: "Done with React Native Onboarding Swiper",
+              containerStyles: {
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              },
+              imageContainerStyles: {
+                height: hp("75%"),
+                width: wp("100%"),
+              },
             },
             {
               backgroundColor: "#FF6D1B",
