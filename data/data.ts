@@ -605,3 +605,34 @@ export const TopLocation = [
     percentage: 5.75,
   },
 ];
+
+export const ONBOARDING_TEXTS = [
+  {
+    first: { text: "discover a new way to connect over music — it's " },
+    second: {
+      text: "the only music app you will ever need...",
+      color: "#FF7A1B",
+    },
+  },
+  {
+    first: {
+      text: "stream, share and join the world conversation — your favorite artists are ",
+    },
+    second: { text: "Now closer than ever", color: "#A187B5" },
+  },
+  {
+    first: { text: "decentralizing the community experience — giving " },
+    second: {
+      text: "power back to the creators, the fans, the fam..",
+      color: "#57E09A",
+    },
+  },
+  {
+    first: {
+      text: "you can now own a piece of your favorite creators ",
+      color: "white",
+    },
+    second: { text: "on-chain ", color: "#40E0D0" },
+    third: { text: "and earn rewards for supporting them", color: "white" },
+  },
+] as const
