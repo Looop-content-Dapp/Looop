@@ -9,6 +9,7 @@ import {
     type ImageStyle,
     type ViewStyle,
     Platform,
+    Dimensions,
   } from "react-native";
   import React, { useState } from "react";
   import {
@@ -27,6 +28,7 @@ import {
   } from "react-native-responsive-screen";
   import { ONBOARDING_TEXTS } from "@/data/data";
   
+  const { width: SCREEN_WIDTH } = Dimensions.get('window');
   const pagesBackgroundColor = [
     "#FF6D1B",
     "#8D4FB4",
@@ -140,12 +142,16 @@ import {
             showPagination={false}
             pageIndexCallback={changePageHandler}
             containerStyles={{
-              paddingHorizontal: wp("5%"),
+              paddingHorizontal: 0,
+              paddingLeft: 0,
+              paddingRight: 0,
               flex: 1,
+              width: SCREEN_WIDTH,
             }}
             imageContainerStyles={{
               paddingBottom: 0,
               marginBottom: 0,
+              paddingHorizontal: 0,
               flex: Platform.OS === 'ios' ? 0.5 : undefined,
             }}
             titleStyles={{
@@ -159,8 +165,9 @@ import {
               left: 0,
               right: 0,
               height: hp('45%'),
-              marginBottom: 0,
-              paddingBottom: 0,
+              width: SCREEN_WIDTH,
+              margin: 0,
+              padding: 0,
             }}
             pages={[
               {
@@ -227,17 +234,21 @@ import {
       flex: 1,
     },
     subtitleWrapper: {
-      width: wp("100%"),
+      width: SCREEN_WIDTH,
       height: hp("45%"),
+      left: 0,
+      right: 0,
     },
     bottomContainer: {
-      width: "100%",
+      width: SCREEN_WIDTH,
       backgroundColor: "#000",
-      paddingHorizontal: wp("2%"),
       paddingVertical: hp("1%"),
       height: "100%",
       alignItems: "center",
       justifyContent: "space-between",
+      paddingHorizontal: wp("2%"),
+      left: 0,
+      right: 0,
     },
     bigText: {
       color: "#fff",
@@ -273,7 +284,6 @@ import {
       marginBottom: Platform.OS === 'ios' ? hp("4%") : hp("2%"),
       width: wp("80%"),
       alignItems: "center",
-      // iOS-specific styles to ensure visibility
       ...Platform.select({
         ios: {
           shadowColor: '#000',
