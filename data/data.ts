@@ -623,7 +623,7 @@ export const ONBOARDING_TEXTS = [
   {
     first: { text: "decentralizing the community experience — giving " },
     second: {
-      text: "power back to the creators, the fans, the fam..",
+      text: "Power back to the creators, the fans, the fam…",
       color: "#57E09A",
     },
   },
