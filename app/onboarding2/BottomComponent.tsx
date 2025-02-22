@@ -1,4 +1,5 @@
 import { ONBOARDING_TEXTS } from "@/data/data";
+import { useRouter } from "expo-router";
 import React from "react";
 import { Text, View, TouchableOpacity, StyleSheet, Dimensions, Platform} from "react-native";
 import {
@@ -6,8 +7,10 @@ import {
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 
+
 const { width } = Dimensions.get("window");
 const CustomBottomContent = ({ pageIndex }: { pageIndex: number }) => {
+  const router = useRouter();
   return (
     <View style={styles.subtitleWrapper}>
       <View style={styles.bottomContainer}>
@@ -45,7 +48,9 @@ const CustomBottomContent = ({ pageIndex }: { pageIndex: number }) => {
           ))}
         </View>
 
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button}
+          onPress={() => router.push("signin")}
+        >
           <Text style={styles.buttonText}>Continue to Sign in</Text>
         </TouchableOpacity>
       </View>

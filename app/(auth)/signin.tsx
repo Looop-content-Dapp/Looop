@@ -15,16 +15,29 @@ import { ViewIcon, ViewOffIcon } from "@hugeicons/react-native";
 import { AppButton } from "@/components/app-components/button";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
+import { useForm, Controller } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useVerifyEmail } from "@/hooks/useVerifyEmail";
 
+
+const schema = z.object({
+  email: z.string({
+    message: "Please enter a valid email address",
+  }).email({
+    message: "Please enter a valid email address",
+  }).nonempty({
+    message: "Email is required",
+  }),
+});
 const Signin = () => {
-  const [emailAddress, setEmailAddress] = React.useState("");
-  const [password, setPassword] = useState("");
-  const [passwordView, setPasswordView] = useState(true);
+  const { mutate: verifyEmail, isPending } = useVerifyEmail();
 
-  const {
-    handleEmailSignIn,
-    loading,
-  } = useClerkAuthentication();
+  const { control, handleSubmit, formState: { errors }, } = useForm({
+    resolver: zodResolver(schema),
+  });
+
+
   return (
     <>
       <StatusBar translucent={true} backgroundColor="#040405" style="light" />
@@ -35,114 +48,120 @@ const Signin = () => {
         }}
       >
         <View className="flex-1 px-6 gap-12">
-          <View className="items-center">
-            <Image
-              source={require("../../assets/images/logo-orange.png")}
-              className="w-[72px] h-[32px]"
-            />
-          </View>
 
-          <View className="gap-y-10">
+          <View className="gap-y-20">
             <View className="gap-y-2 pt-6">
               <Text className="text-white text-[24px] font-PlusJakartaSansBold">
-                Welcome back!
+                Welcome to Looop
               </Text>
               <Text className="text-[#D2D3D5] text-[16px] font-PlusJakartaSansRegular">
-                Dive right in and continue exploring
+                We&rsquo;re excited to have you in the looop. Are you ready for an amazing experience? Let&rsquo;s get you started!
               </Text>
             </View>
 
             <View className="gap-y-3">
               <Text className="text-[16px] text-gray-200 font-PlusJakartaSansBold">
-                Email
+                What&rsquo;s your Email?
               </Text>
-              <TextInput
-                placeholderTextColor="#787A80"
-                placeholder="Email address"
-                value={emailAddress}
-                onChangeText={setEmailAddress}
-                className="h-16 text-sm font-PlusJakartaSansRegular bg-Grey/07 text-Grey/04 rounded-full px-8"
-                inputMode="email"
-                keyboardAppearance="dark"
-                keyboardType="email-address"
+              <Controller
+                control={control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    style={{
+                      backgroundColor: "#1E1E1E",
+                      color: "#D2D3D5",
+                      borderRadius: 10,
+                      padding: 10,
+                    }}
+                    className="h-16 text-sm font-PlusJakartaSansRegular bg-Grey/07 text-Grey/04 rounded-full px-8"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    placeholder="Email Address"
+                    placeholderTextColor="#787A80"
+                    keyboardType="email-address"
+                    inputMode="email"
+                    keyboardAppearance="dark"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoComplete="email"
+                    returnKeyType="next"
+                  />
+                )}
+                name="email"
+                defaultValue=""
               />
+              {errors?.email && (
+                <Text className="text-red-500 text-sm font-PlusJakartaSansRegular"
+                >{errors.email.message}</Text>
+              )}
 
-              <Text className="text-[16px] text-gray-200 font-PlusJakartaSansBold">
-                Password
-              </Text>
-              <View className="flex-row items-center bg-Grey/07 overflow-hidden rounded-full pr-5">
-                <TextInput
-                  secureTextEntry={passwordView}
-                  placeholderTextColor="#787A80"
-                  placeholder="Enter password"
-                  value={password}
-                  onChangeText={setPassword}
-                  className="h-16 text-sm font-PlusJakartaSansRegular bg-Grey/07 text-Grey/04 flex-1 px-8"
-                />
-                <TouchableOpacity
-                  onPress={() => setPasswordView(!passwordView)}
-                >
-                  {passwordView ? (
-                    <ViewIcon size={24} color="#787A80" variant="solid" />
-                  ) : (
-                    <ViewOffIcon size={24} color="#787A80" variant="solid" />
-                  )}
-                </TouchableOpacity>
-              </View>
+
             </View>
 
-            <AppButton.Primary
-            color="#FF6D1B"
+            <AppButton.Secondary
+              color="#FF7A1B"
               text="Continue"
-              loading={loading}
-              disabled={loading}
-              onPress={() => handleEmailSignIn(emailAddress, password)}
+              onPress={handleSubmit((data) => {
+                verifyEmail(data, {
+                  onSuccess: () => {
+                    Alert.alert("Success", "Email sent successfully");
+                  },
+                  onError: (error) => {
+                    Alert.alert("Error", error.message);
+                  },
+                });
+              })}
+              loading={isPending}
+
             />
 
-            {/* <Text className="mt-[10px] text-center text-gray-400 font-PlusJakartaSansRegular text-sm">
+            <Text className="mt-[10px] text-center text-gray-400 font-PlusJakartaSansRegular text-sm">
               Or you can sign in with
-            </Text> */}
+            </Text>
           </View>
 
-          <View className="gap-y-4 flex flex-row gap-x-4">
-            <TouchableOpacity
-              className="bg-white flex-1 py-4 rounded-full flex-row items-center justify-center"
-              onPress={() => Alert.alert('Google signon not available yet')}
-            >
+
+          <View className="flex-col gap-y-4">
+            <TouchableOpacity onPress={() => router.navigate("/(auth)/signin")}
+              className="flex-row items-center justify-center gap-x-4 bg-white px-4 py-2 rounded-full w-full">
+
               <Image
                 source={require("../../assets/images/google.png")}
-                className="w-8 h-8"
+                style={{ width: 40, height: 40 }}
               />
-              <Text className="ml-2 text-lg font-PlusJakartaSansMedium text-black">
-                Google
+              <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[14px]">
+              Sign in with Google
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              className="bg-white flex-1 py-4 rounded-full flex-row items-center justify-center"
-              onPress={() => Alert.alert('Apple signon not available yet')}
-            >
+            <TouchableOpacity onPress={() => router.navigate("/(auth)/signin")}
+              className="flex-row items-center justify-center gap-x-4 bg-white px-4 py-2 rounded-full w-full">
               <Image
                 source={require("../../assets/images/apple.png")}
-                className="w-8 h-8"
+                style={{ width: 40, height: 40 }}
               />
-              <Text className="ml-2 text-lg font-PlusJakartaSansMedium text-black">
-                Apple
+              <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[14px]">
+                Sign in with Apple
               </Text>
             </TouchableOpacity>
           </View>
-
-          <View className="flex-row items-center justify-center gap-x-[4px] absolute bottom-12 left-0 right-0">
-            <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[14px]">
-              Dont have an account?
+          <View className="flex-col gap-y-4">
+            <Text
+              className="text-center text-[#787A80] font-PlusJakartaSansRegular text-xs uppercase ">
+              Powered by
             </Text>
-            <TouchableOpacity onPress={() => router.navigate("/(auth)/")}>
-            <Text className="text-Orange/08 underline pl- font-PlusJakartaSansMedium text-[14px]">
-             SignUp
-            </Text>
-            </TouchableOpacity>
-
+            <View className="flex-row items-center justify-center">
+              <Image
+                source={require("../../assets/images/xion.png")}
+                className="w-10 h-6"
+              />
+              <Text className="text-[#787A80] font-PlusJakartaSansRegular text-xs uppercase">
+                Xion
+              </Text>
+            </View>
           </View>
+
         </View>
       </SafeAreaView>
     </>

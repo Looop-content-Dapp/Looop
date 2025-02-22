@@ -12,13 +12,13 @@ import { useFonts } from "expo-font";
 import "../global.css";
 
 import store, { persistor } from "../redux/store";
-import { Pressable, Text } from "react-native";
-import { account } from "@/appWrite";
-import { Alert } from "react-native";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 
 GiphySDK.configure({ apiKey: "R25Je48LLUMFnuTOGV2kibJO2xFGSR6i" });
 SplashScreen.preventAutoHideAsync();
 
+const queryClient = new QueryClient();
 function AppContent() {
   const [fontsLoaded, fontsError] = useFonts({
     PlusJakartaSansBold: require("../assets/fonts/PlusJakartaSans-Bold.ttf"),
@@ -37,78 +37,80 @@ function AppContent() {
   return (
 
     <>
-        <StatusBar
-          style="light"
-          backgroundColor="transparent"
-          translucent={false}
-        />
-        <Stack
-          screenOptions={{
-            contentStyle: { backgroundColor: "#0A0B0F" },
-            headerShown: false,
-          }}
-          initialRouteName={"index"}
-        >
-          {/* Define all possible screens here */}
-          <Stack.Screen
-            name="index"
-            options={{
-              headerShown: false,
-              headerTransparent: true,
-            }}
-          />
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(musicTabs)" />
-          <Stack.Screen name="(communityTabs)" />
-          <Stack.Screen name="musicDetails" />
-          <Stack.Screen name="(settingUp)" />
-          <Stack.Screen name="loadingScreen" />
-          <Stack.Screen
-            name="nowPlaying"
-            options={{
-              presentation: "fullScreenModal",
-            }}
-          />
-          <Stack.Screen name="creatorOnboarding" />
-          <Stack.Screen name="(artisteTabs)" />
-          <Stack.Screen
-            name="createPlaylist"
-            options={{
-              presentation: "fullScreenModal",
-            }}
-          />
-          <Stack.Screen name="communityDetails" />
-          <Stack.Screen name="uploadMusic" options={{
-              presentation: "fullScreenModal"
-          }} />
-          <Stack.Screen
-           name="withdrawFundsScreen"
+      <StatusBar
+        style="light"
+        backgroundColor="transparent"
+        translucent={false}
+      />
+      <Stack
+        screenOptions={{
+          contentStyle: { backgroundColor: "#0A0B0F" },
+          headerShown: false,
+        }}
+        initialRouteName={"index"}
+      >
+        {/* Define all possible screens here */}
+        <Stack.Screen
+          name="index"
           options={{
-              presentation: "fullScreenModal"
-          }} />
-          <Stack.Screen name="connectedAccountsScreen"
-           options={{
-                presentation: "fullScreenModal"
-          }} />
-          <Stack.Screen name="settings" />
-          <Stack.Screen name="payment"
-           options={{
+            headerShown: false,
+            headerTransparent: true,
+          }}
+        />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(musicTabs)" />
+        <Stack.Screen name="(communityTabs)" />
+        <Stack.Screen name="musicDetails" />
+        <Stack.Screen name="(settingUp)" />
+        <Stack.Screen name="loadingScreen" />
+        <Stack.Screen
+          name="nowPlaying"
+          options={{
+            presentation: "fullScreenModal",
+          }}
+        />
+        <Stack.Screen name="creatorOnboarding" />
+        <Stack.Screen name="(artisteTabs)" />
+        <Stack.Screen
+          name="createPlaylist"
+          options={{
+            presentation: "fullScreenModal",
+          }}
+        />
+        <Stack.Screen name="communityDetails" />
+        <Stack.Screen name="uploadMusic" options={{
+          presentation: "fullScreenModal"
+        }} />
+        <Stack.Screen
+          name="withdrawFundsScreen"
+          options={{
             presentation: "fullScreenModal"
-           }}
-           />
-          <Stack.Screen name="wallet" />
-        </Stack>
-        </>
+          }} />
+        <Stack.Screen name="connectedAccountsScreen"
+          options={{
+            presentation: "fullScreenModal"
+          }} />
+        <Stack.Screen name="settings" />
+        <Stack.Screen name="payment"
+          options={{
+            presentation: "fullScreenModal"
+          }}
+        />
+        <Stack.Screen name="wallet" />
+      </Stack>
+    </>
   );
 }
 
 export default function _RootLayout() {
+  const queryClient = new QueryClient();
   return (
-  <GestureHandlerRootView style={{ flex: 1 }}>
-    <BottomSheetModalProvider>
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        {/* <Pressable className="bg-Orange/08 absolute bottom-[120px] right-[12px] z-[1000px] h-[60px] w-[60px]  items-center justify-center rounded-full" onPress={async () => {
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryClientProvider client={queryClient}>
+        <BottomSheetModalProvider>
+          <Provider store={store}>
+            <PersistGate loading={null} persistor={persistor}>
+              {/* <Pressable className="bg-Orange/08 absolute bottom-[120px] right-[12px] z-[1000px] h-[60px] w-[60px]  items-center justify-center rounded-full" onPress={async () => {
           const session = await account.getSession('current');
           if (session) {
               await account.deleteSession(session.$id);
@@ -127,12 +129,13 @@ export default function _RootLayout() {
         }}>
             <Text className="text-[#fff]">Reset</Text>
         </Pressable> */}
-        <KeyboardProvider>
-          <AppContent />
-        </KeyboardProvider>
-      </PersistGate>
-    </Provider>
-    </BottomSheetModalProvider>
+              <KeyboardProvider>
+                <AppContent />
+              </KeyboardProvider>
+            </PersistGate>
+          </Provider>
+        </BottomSheetModalProvider>
+      </QueryClientProvider>
     </GestureHandlerRootView>
   );
 }

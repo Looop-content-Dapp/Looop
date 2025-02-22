@@ -130,6 +130,7 @@ import CustomBottomContent from "./BottomComponent";
               {
                 title: '',
                 subtitle: <CustomBottomContent pageIndex={0} />,
+                
                 backgroundColor: pagesBackgroundColor[0],
                 image: (
                   <Image
@@ -179,16 +180,34 @@ import CustomBottomContent from "./BottomComponent";
               },
             ]}
           />
+
+          <BottomBlackComponent />
         </SafeAreaView>
       </>
     );
   };
   
+  const BottomBlackComponent = () => {
+    return (
+      <View style={styles.bottomBlackcontainer}>
+
+      </View>
+    );
+  }
   export default Onboard2;
   
   const styles = StyleSheet.create({
     container: {
       flex: 1,
+    },
+    bottomBlackcontainer: {
+      width,
+      backgroundColor: "#000",
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: hp('10%'),
     },
     
   });
