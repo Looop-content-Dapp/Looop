@@ -3,15 +3,13 @@ import {
   Text,
   Image,
   TouchableOpacity,
-  ScrollView,
-  StyleSheet,
   Alert,
+  ImageSourcePropType
 } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput } from "react-native-gesture-handler";
-import { useClerkAuthentication } from "../../hooks/useClerkAuthentication";
-import { ViewIcon, ViewOffIcon } from "@hugeicons/react-native";
+;
 import { AppButton } from "@/components/app-components/button";
 import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
@@ -19,7 +17,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useVerifyEmail } from "@/hooks/useVerifyEmail";
-
+import { XIONB, StarknetB } from "@/assets/images/images";
 
 const schema = z.object({
   email: z.string({
@@ -131,7 +129,7 @@ const Signin = () => {
                 style={{ width: 40, height: 40 }}
               />
               <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[14px]">
-              Sign in with Google
+                Sign in with Google
               </Text>
             </TouchableOpacity>
 
@@ -139,7 +137,7 @@ const Signin = () => {
               className="flex-row items-center justify-center gap-x-4 bg-white px-4 py-2 rounded-full w-full">
               <Image
                 source={require("../../assets/images/apple.png")}
-                style={{ width: 40, height: 40 }}
+                style={{ width: 40, height: 40, }}
               />
               <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[14px]">
                 Sign in with Apple
@@ -151,15 +149,35 @@ const Signin = () => {
               className="text-center text-[#787A80] font-PlusJakartaSansRegular text-xs uppercase ">
               Powered by
             </Text>
-            <View className="flex-row items-center justify-center">
+            <View className="flex-row items-center justify-center gap-x-2">
+            <View className="flex-row items-center justify-center gap-x-2">
               <Image
-                source={require("../../assets/images/xion.png")}
-                className="w-10 h-6"
+                source={XIONB as ImageSourcePropType}
+                style={{
+                  width: 20, height: 20,
+                  
+                }}
               />
-              <Text className="text-[#787A80] font-PlusJakartaSansRegular text-xs uppercase">
+              <Text className="text-[#787A80] font-PlusJakartaSansRegular uppercase">
                 Xion
               </Text>
             </View>
+            <View className="flex-row items-center justify-center gap-x-2">
+              <Image
+                source={StarknetB as ImageSourcePropType}
+                style={{
+                  width: 20, height: 20,
+                  
+                }}
+              />
+              <Text className="text-[#787A80] font-PlusJakartaSansRegular uppercase">
+                Starknet
+              </Text>
+              </View>
+            </View>
+            
+
+
           </View>
 
         </View>

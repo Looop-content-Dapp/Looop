@@ -10,6 +10,8 @@ import newonboard2 from "./newonboard2.png";
 import newonboard3 from "./newonboard3.png";
 import newonboard4 from "./newonboard4.png";
 import newonboard5 from "./newonboard5.png";
+import XIONB from "./XIONB.png";
+import StarknetB from "./StarknetB.png";
 
 export {
   onboard1,
@@ -24,6 +26,8 @@ export {
   newonboard3,
   newonboard4,
   newonboard5,
+  XIONB,
+  StarknetB,
 };
 
 const logowhite = require("./logo-white.png");
