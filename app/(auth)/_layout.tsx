@@ -2,6 +2,9 @@ import React, { useEffect } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { account } from '../../appWrite';
 import { useUserAuth } from '../../context/AuthContextProvider';
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+import AuthFooter from '@/components/AuthFooter';
 
 export default function AuthLayout() {
   const router = useRouter();
@@ -39,13 +42,31 @@ export default function AuthLayout() {
   // }, [firstTimeUser]); // Re-run when firstTimeUser changes
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: {
-          backgroundColor: "#040405"
-        }
-      }}
-    />
+    <>
+      <StatusBar translucent={true} backgroundColor="#040405" style="light" />
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: "#040405",
+        }}
+      >
+        <Stack
+          screenOptions={{
+            headerShown: true,
+            contentStyle: {
+              backgroundColor: "#040405"
+            },
+            headerTitle: '',
+            headerTransparent: true,
+            headerTintColor: 'white',
+          }}
+
+
+
+        />
+        <AuthFooter />
+
+      </SafeAreaView>
+    </>
   );
 }

@@ -6,7 +6,7 @@ interface VerifyEmailInput {
   email: string;
 }
 
-export const useVerifyEmail = () => {
+export const useSendEmailOTP = () => {
   return useMutation({
     mutationFn: async (input: VerifyEmailInput) => {
       const { data } = await api.post("/api/user/verify-email", input);
