@@ -52,18 +52,17 @@ export default function AuthLayout() {
       >
         <Stack
           screenOptions={{
-            headerShown: true,
+            headerShown: false,
             contentStyle: {
               backgroundColor: "#040405"
-            },
-            headerTitle: '',
-            headerTransparent: true,
-            headerTintColor: 'white',
+            }
           }}
-
-
-
         />
+
+
+
+
+
         <AuthFooter />
 
       </SafeAreaView>

@@ -57,7 +57,7 @@ const EnterCode = () => {
       },
       onError: (error) => {
         setError('Oops! Seems the code is incorrect.');
-        setValue(''); // Clear the input on error
+        setValue(''); 
         console.error(error);
       }
     })
@@ -118,7 +118,7 @@ const EnterCode = () => {
         </Text>
       </View>
       <Text
-        onPress={() => !isVerifying && router.canGoBack() && router.back()}
+        onPress={() => !isVerifying&& router.navigate({ pathname: "/(auth)/verifyemail" })}
         className={`text-Orange/08 text-center text-[16px] font-PlusJakartaSansBold underline mt-[24px] ${isVerifying ? 'opacity-50' : ''}`}
       >
         Change email
@@ -151,11 +151,9 @@ const EnterCode = () => {
         {...props}
       />
 
-      
-
       <View className="flex-row items-center justify-center gap-x-2">
         <Text className="text-sm font-medium text-[#D2D3D5]">
-          Didn't receive a code?{" "}
+          Didn't receive a code?
         </Text>
         {timer > 0 ? (
           <Text className="text-gray-500">Resend in {timer}s</Text>

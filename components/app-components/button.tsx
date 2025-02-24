@@ -7,7 +7,7 @@ import {
 } from "react-native";
 
 interface ButtonProps extends TouchableOpacityProps {
-  loading: boolean;
+  loading?: boolean;
   text: string;
   color: string;
   icon?: React.ReactNode; // Optional icon prop

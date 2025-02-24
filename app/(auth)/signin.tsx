@@ -16,7 +16,10 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSendEmailOTP } from "@/hooks/useVerifyEmail";
-import AuthFooter from "@/components/AuthFooter";
+import AuthHeader from "@/components/AuthHeader";
+
+
+
 
 
 const schema = z.object({
@@ -36,32 +39,31 @@ const Signin = () => {
     resolver: zodResolver(schema),
   });
   const onSubmit = (data: { email: string }) => {
-    sendOtpEmail(data, {
-      onSuccess: () => {
-        router.navigate({ pathname: "/(auth)/verifyEmail", params: { email: data.email } });
-      },
-      onError: (error) => {
-        Alert.alert("Error", error.message);
-      },
-    });
+    router.navigate({ pathname: "/(auth)/userDetail", params: { email: data.email } });
+    // sendOtpEmail(data, {
+    //   onSuccess: () => {
+    //     router.navigate({ pathname: "/(auth)/choosePassowrd", params: { email: data.email } });
+    //   },
+    //   onError: (error) => {
+    //     Alert.alert("Error", error.message);
+    //   },
+    // });
 
   }
 
 
   return (
+    
+    
 
 
     <View className="flex-1 px-6 gap-12">
 
       <View className="gap-y-20">
-        <View className="gap-y-2 pt-6">
-          <Text className="text-white text-[24px] font-PlusJakartaSansBold">
-            Welcome to Looop
-          </Text>
-          <Text className="text-[#D2D3D5] text-sm font-PlusJakartaSansRegular">
-            We&rsquo;re excited to have you in the looop. Are you ready for an amazing experience? Let&rsquo;s get you started!
-          </Text>
-        </View>
+        <AuthHeader
+        title="Welcome to Looop"
+        description="We&rsquo;re excited to have you in the looop. Are you ready for an amazing experience? Let&rsquo;s get you started!"
+        />
 
         <View className="gap-y-3">
           <Text className="text-[16px] text-gray-200 font-PlusJakartaSansBold">
