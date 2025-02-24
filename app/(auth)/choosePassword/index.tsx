@@ -11,7 +11,8 @@ import {
     ViewOffIcon,
 } from "@hugeicons/react-native";
 import { AppButton } from '@/components/app-components/button';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+
 
 
 
@@ -34,6 +35,7 @@ const schema = z.object({
 });
 
 const ChoosePassword = () => {
+    const { email } = useLocalSearchParams<{ email: string }>();
     const router = useRouter();
     const [passwordView, setPasswordView] = useState(false);
     const [validationState, setValidationState] = useState({
@@ -60,18 +62,7 @@ const ChoosePassword = () => {
         });
     }, [password]);
 
-    const ValidationItem = ({ isValid, text }: { isValid: boolean, text: string }) => (
-        <View className="flex-row items-center mt-2">
-            <CheckmarkCircle01Icon
-                variant={isValid ? "solid" : "stroke"}
-                size={24}
-                color={isValid ? "green" : "gray"}
-            />
-            <Text className="ml-2 text-base text-gray-400">
-                {text}
-            </Text>
-        </View>
-    );
+    
 
     return (
         <View className="flex-1 pt-10 px-6 gap-12">
@@ -154,11 +145,24 @@ const ChoosePassword = () => {
             <AppButton.Secondary
                 text="Continue"
                 color="#FF7A1B"
-                onPress={() => { }}
+                onPress={() => { router.push({params: {email,password}, pathname: "/(auth)/userDetail"}) }}
                 disabled={!validationState.hasLetter || !validationState.hasNumber || !validationState.hasSpecial || !validationState.hasLength}
             />
         </View>
     );
 };
+
+const ValidationItem = ({ isValid, text }: { isValid: boolean, text: string }) => (
+    <View className="flex-row items-center mt-2">
+        <CheckmarkCircle01Icon
+            variant={isValid ? "solid" : "stroke"}
+            size={24}
+            color={isValid ? "green" : "gray"}
+        />
+        <Text className="ml-2 text-base text-gray-400">
+            {text}
+        </Text>
+    </View>
+);
 
 export default ChoosePassword;

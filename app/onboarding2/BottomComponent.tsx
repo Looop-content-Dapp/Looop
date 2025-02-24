@@ -6,10 +6,13 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
+import { useAppDispatch } from "@/redux/hooks";
+import { updateOnBoarded } from "@/redux/slices/miscelleaneous";
 
 
 const { width } = Dimensions.get("window");
 const CustomBottomContent = ({ pageIndex }: { pageIndex: number }) => {
+  const dispatch = useAppDispatch();
   const router = useRouter();
   return (
     <View style={styles.subtitleWrapper}>
@@ -49,7 +52,9 @@ const CustomBottomContent = ({ pageIndex }: { pageIndex: number }) => {
         </View>
 
         <TouchableOpacity style={styles.button}
-          onPress={() => router.push("signin")}
+          onPress={() => {
+            dispatch(updateOnBoarded());
+            router.push("signin")}}
         >
           <Text style={styles.buttonText}>Continue to Sign in</Text>
         </TouchableOpacity>

@@ -10,13 +10,10 @@ type User = {
   gender: string;
 };
 
-interface CreateUserInput {
-  user: User;
-}
 
 export const useCreateUser = () => {
   return useMutation({
-    mutationFn: async (input: CreateUserInput) => {
+    mutationFn: async (input: User) => {
       const { data } = await api.post("/api/user/createuser", input);
       return data;
     },

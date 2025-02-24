@@ -39,15 +39,15 @@ const Signin = () => {
     resolver: zodResolver(schema),
   });
   const onSubmit = (data: { email: string }) => {
-    router.navigate({ pathname: "/(auth)/userDetail", params: { email: data.email } });
-    // sendOtpEmail(data, {
-    //   onSuccess: () => {
-    //     router.navigate({ pathname: "/(auth)/choosePassowrd", params: { email: data.email } });
-    //   },
-    //   onError: (error) => {
-    //     Alert.alert("Error", error.message);
-    //   },
-    // });
+
+    sendOtpEmail(data, {
+      onSuccess: () => {
+        router.navigate({ pathname: "/(auth)/verifyEmail", params: { email: data.email } });
+      },
+      onError: (error) => {
+        Alert.alert("Error", error.message);
+      },
+    });
 
   }
 

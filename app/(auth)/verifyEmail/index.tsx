@@ -52,7 +52,7 @@ const EnterCode = () => {
       onSuccess: () => {
         setIsSuccess(true);
         setTimeout(() => {
-          router.navigate({ pathname: "/(auth)/signin" });
+          router.navigate({ pathname: "/(auth)/choosePassword",params: { email } });
         }, 1000); 
       },
       onError: (error) => {

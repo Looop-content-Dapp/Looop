@@ -1,4 +1,4 @@
-import { View, Text, TextInput } from 'react-native';
+import { View, Text, TextInput, ScrollView, StyleSheet } from 'react-native';
 import React from 'react';
 import AuthHeader from '@/components/AuthHeader';
 import { AppButton } from '@/components/app-components/button';
@@ -6,96 +6,51 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DatePicker from './DatePicker';
+import { FormField } from '@/components/app-components/formField';
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from "react-native-responsive-screen";
+import { useLocalSearchParams, useRouter } from 'expo-router';
+
+
 
 type FormData = {
-  username: string;
   dob: string;
-  name: string;
   gender: string;
 };
 
 const schema = z.object({
-  username: z.string().nonempty({ message: "Username is required" }),
-  dob: z.string().nonempty({ message: "Date of birth is required" }),
-  name: z.string().nonempty({ message: "Name is required" }),
-  gender: z.string().nonempty({ message: "Gender is required" }),
+  dob: z.string({
+    message: "Date of birth is required",
+  }).nonempty({ message: "Date of birth is required" }),
+  gender: z.string({
+    message: "gender is required",
+  }).nonempty({ message: "Gender is required" }),
 });
 
 const UserDetail = () => {
+  const {email, password} = useLocalSearchParams<{ email: string, password: string }>();
+  const router = useRouter();
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
   const onSubmit = (data: FormData) => {
     console.log(data);
-    // Handle form submission
+    router.navigate({ pathname: "/(auth)/enterUserName", params: { email, password, ...data } });
   };
 
   return (
-    <View className="flex-1 px-6 gap-12">
+    <View className="flex-1 px-6 gap-12"
+
+    >
       <AuthHeader 
-        title="Complete your profile" 
+        title="Tell Us About Yourself" 
         description='Just a few more details to personalize your experience!' 
       />
 
       
-      <View className="gap-y-3">
-        <Text className="text-[14px] text-gray-200 font-PlusJakartaSansBold">
-          What's your name?
-        </Text>
-        <Controller
-          control={control}
-          name="name"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              placeholder="..."
-              placeholderTextColor={'#D2D3D5'}
-              style={{
-                backgroundColor: "#1E1E1E",
-                color: "#D2D3D5",
-                borderRadius: 10,
-                padding: 10,
-                height: 64
-              }}
-            />
-          )}
-        />
-        {errors.name && (
-          <Text className="text-red-500">{errors.name.message}</Text>
-        )}
-      </View>
-
-      <View className="gap-y-3">
-        <Text className="text-[14px] text-gray-200 font-PlusJakartaSansBold">
-          What's your username?
-        </Text>
-        <Controller
-          control={control}
-          name="username"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              placeholder="..."
-              placeholderTextColor={'#D2D3D5'}
-              style={{
-                backgroundColor: "#1E1E1E",
-                color: "#D2D3D5",
-                borderRadius: 10,
-                padding: 10,
-                height: 64
-              }}
-            />
-          )}
-        />
-        {errors.username && (
-          <Text className="text-red-500">{errors.username.message}</Text>
-        )}
-      </View>
 
       <View className="gap-y-3">
         <Text className="text-[14px] text-gray-200 font-PlusJakartaSansBold">
@@ -117,13 +72,61 @@ const UserDetail = () => {
         )}
       </View>
 
+      <View className="gap-y-3">
+        <Text className="text-[14px] text-gray-200 font-PlusJakartaSansBold">
+          Gender
+        </Text>
+        <Controller
+          control={control}
+          name="gender"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <FormField.PickerField
+              value={value}
+              onSelect={onChange}
+              options={
+                [
+                  {
+                    label:"male",
+                    value:"male"
+                  },
+                  {
+                    label: "female",
+                    value: "female"
+                  }
+                ]}
+                showSearch={false}
+                
+              placeholder="Select gender"
+            />
+          )}
+        />
+        {errors.gender && (
+          <Text className="text-red-500">{errors.gender.message}</Text>
+        )}
+      </View>
+      
+      <View style= {styles.buttomButtonContainer}>
+        
       <AppButton.Secondary 
         onPress={handleSubmit(onSubmit)} 
         text="Continue"
         color='#FF7A1B'
+        
       />
+      </View>
+
     </View>
   );
 };
 
 export default UserDetail;
+const styles = StyleSheet.create({
+  buttomButtonContainer:{
+    position: 'absolute',
+    bottom: hp('5%'),
+    left: 0,
+    right: 0,
+    padding: 20,
+  
+  }
+})
