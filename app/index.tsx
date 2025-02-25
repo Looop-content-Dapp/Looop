@@ -14,7 +14,7 @@ export default function Page() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (onBoarded === false && userdata === null) {
-        router.replace("/onboarding");
+        router.replace("/onboarding2");
       } else if (onBoarded === true && userdata === null) {
         router.replace("/(auth)/signin");
       } else {

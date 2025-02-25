@@ -61,6 +61,7 @@ interface PickerFieldProps extends BaseFieldProps {
   onSelect: (value: string) => void;
   options: PickerOption[];
   searchPlaceholder?: string;
+  showSearch?: boolean;
 }
 
 interface RadioOption {
@@ -454,7 +455,8 @@ const PickerField = ({
   options,
   error,
   required,
-  searchPlaceholder = "Search..."
+  searchPlaceholder = "Search...",
+  showSearch = true
 }: PickerFieldProps) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -511,7 +513,9 @@ const PickerField = ({
               </TouchableOpacity>
             </View>
 
-            <View style={styles.searchContainer}>
+            {
+              showSearch &&
+              <View style={styles.searchContainer}>
               <Ionicons name="search" size={20} color="#787A80" />
               <TextInput
                 style={styles.searchInput}
@@ -520,7 +524,7 @@ const PickerField = ({
                 value={searchQuery}
                 onChangeText={setSearchQuery}
               />
-            </View>
+            </View>}
 
             <FlatList
               data={filteredOptions}
