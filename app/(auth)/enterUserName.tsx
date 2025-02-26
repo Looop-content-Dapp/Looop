@@ -44,13 +44,6 @@ const EnterUserName = () => {
     });
 
     const onSubmit = (data: FormData) => {
-        console.log({
-            email,
-            password,
-            age: calculateAge(dob).toLocaleString(),
-            fullname: data.name,
-            username: data.username
-        });
 
         createUser({
             email,

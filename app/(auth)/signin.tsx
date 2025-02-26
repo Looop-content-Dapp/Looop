@@ -18,8 +18,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSendEmailOTP } from "@/hooks/useVerifyEmail";
 import AuthHeader from "@/components/AuthHeader";
 
-
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect } from "react";
+import { InformationCircleIcon } from '@hugeicons/react-native';
 
 
 const schema = z.object({
@@ -32,8 +33,11 @@ const schema = z.object({
   }),
 });
 const Signin = () => {
+
+
+
   const router = useRouter();
-  const { mutate: sendOtpEmail, isPending } = useSendEmailOTP();
+  const { mutate: sendOtpEmail, isPending, isError, error } = useSendEmailOTP();
 
   const { control, handleSubmit, formState: { errors }, } = useForm({
     resolver: zodResolver(schema),
@@ -43,28 +47,33 @@ const Signin = () => {
     sendOtpEmail(data, {
       onSuccess: () => {
         router.navigate({ pathname: "/(auth)/verifyEmail", params: { email: data.email } });
-      },
-      onError: (error) => {
-        Alert.alert("Error", error.message);
-      },
+      }
     });
 
   }
 
-
   return (
-    
-    
+
+
 
 
     <View className="flex-1 px-6 gap-12">
 
       <View className="gap-y-20">
         <AuthHeader
-        title="Welcome to Looop"
-        description="We&rsquo;re excited to have you in the looop. Are you ready for an amazing experience? Let&rsquo;s get you started!"
+          title="Welcome to Looop"
+          description="We&rsquo;re excited to have you in the looop. Are you ready for an amazing experience? Let&rsquo;s get you started!"
         />
-
+        {isError && (
+          <View className="flex-row items-center gap-x-2">
+            <InformationCircleIcon size={20} color="#FF1B1B" />
+            <Text className="text-[#FF1B1B] font-PlusJakartaSansRegular text-xs"
+            >{
+                // @ts-ignore
+                error?.response?.data.message || "Failed to send email. Please try again."
+              }</Text>
+          </View>
+        )}
         <View className="gap-y-3">
           <Text className="text-[16px] text-gray-200 font-PlusJakartaSansBold">
             What&rsquo;s your Email?
