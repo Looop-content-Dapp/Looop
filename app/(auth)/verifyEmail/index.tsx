@@ -1,29 +1,37 @@
-import { View, Text, Image, ImageSourcePropType, StyleSheet, Pressable, ActivityIndicator } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import {
+  View,
+  Text,
+  Image,
+  ImageSourcePropType,
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
+import React, { useState, useEffect } from "react";
 
-import Mail from '../../../assets/images/Mail.png'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import Mail from "../../../assets/images/Mail.png";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   CodeField,
   Cursor,
   useBlurOnFulfill,
   useClearByFocusCell,
-} from 'react-native-confirmation-code-field';
-import { useSendEmailOTP } from '@/hooks/useVerifyEmail';
-import { useVerifyEmailOtp } from '@/hooks/useVerifyEmailOtp';
-import { InformationCircleIcon } from '@hugeicons/react-native';
-
+} from "react-native-confirmation-code-field";
+import { useSendEmailOTP } from "@/hooks/useVerifyEmail";
+import { useVerifyEmailOtp } from "@/hooks/useVerifyEmailOtp";
+import { InformationCircleIcon } from "@hugeicons/react-native";
 
 const CELL_COUNT = 6;
 
 const EnterCode = () => {
   const { mutate: resend, isPending } = useSendEmailOTP();
-  const { mutate: verifyEmailOtp, isPending: isVerifying } = useVerifyEmailOtp();
+  const { mutate: verifyEmailOtp, isPending: isVerifying } =
+    useVerifyEmailOtp();
   const [timer, setTimer] = useState(60);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  const router = useRouter()
+  const router = useRouter();
   const [value, setValue] = useState("");
   const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
@@ -33,44 +41,52 @@ const EnterCode = () => {
   const { email } = useLocalSearchParams<{ email: string }>();
 
   const handleResend = () => {
-    setError('');
-    resend({ email }, {
-      onSuccess: () => {
-        setTimer(60);
-        setValue('');       
-      },
-      onError: () => {
-        setError('Failed to resend code. Please try again.');
+    setError("");
+    resend(
+      { email },
+      {
+        onSuccess: () => {
+          setTimer(60);
+          setValue("");
+        },
+        onError: () => {
+          setError("Failed to resend code. Please try again.");
+        },
       }
-    })
-  }
+    );
+  };
 
-  const handleVerify = (code:string) => {
-    setError('');
+  const handleVerify = (code: string) => {
+    setError("");
     console.log({ email, otp: code });
-    verifyEmailOtp({ email, otp: code }, {
-      onSuccess: () => {
-        setIsSuccess(true);
-        setTimeout(() => {
-          router.navigate({ pathname: "/(auth)/choosePassword",params: { email } });
-        }, 1000); 
-      },
-      onError: (error) => {
-        setError('Oops! Seems the code is incorrect.');
-        setValue(''); 
-        console.error(error);
+    verifyEmailOtp(
+      { email, otp: code },
+      {
+        onSuccess: () => {
+          setIsSuccess(true);
+          setTimeout(() => {
+            router.navigate({
+              pathname: "/(auth)/choosePassword",
+              params: { email },
+            });
+          }, 1000);
+        },
+        onError: (error) => {
+          setError("Oops! Seems the code is incorrect.");
+          setValue("");
+          console.error(error);
+        },
       }
-    })
-  }
+    );
+  };
   const handleCodeChange = (code: string) => {
     setValue(code);
     if (code.length === CELL_COUNT) {
       setTimeout(() => {
         handleVerify(code);
-      }
-      , 100);
+      }, 100);
     }
-  }
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -88,7 +104,7 @@ const EnterCode = () => {
       error && styles.errorCell,
       isVerifying && styles.verifyingCell,
       symbol && styles.filledCell,
-      isSuccess && styles.successCell, 
+      isSuccess && styles.successCell,
     ];
   };
 
@@ -97,29 +113,33 @@ const EnterCode = () => {
       {error && (
         <View className="flex-row items-center gap-x-2">
           <InformationCircleIcon size={20} color="#FF1B1B" />
-          <Text className= "text-[#FF1B1B] font-PlusJakartaSansRegular text-xs"
-          >{error}</Text>
+          <Text className="text-[#FF1B1B] font-PlusJakartaSansRegular text-xs">
+            {error}
+          </Text>
         </View>
       )}
       <Image
         source={Mail as ImageSourcePropType}
         style={{
-          width: 150, height: 150,
+          width: 150,
+          height: 150,
         }}
       />
       <View className="flex-col gap-y-1">
-        <Text
-          className="text-center text-[#D2D3D5] font-PlusJakartaSansRegular text-[16px]">
+        <Text className="text-center text-[#D2D3D5] font-PlusJakartaSansRegular text-[16px]">
           Please enter the code we sent to
         </Text>
-        <Text
-          className="text-center text-[#787A80] font-PlusJakartaSansRegular text-[16px]">
+        <Text className="text-center text-[#787A80] font-PlusJakartaSansRegular text-[16px]">
           {email}
         </Text>
       </View>
       <Text
-        onPress={() => !isVerifying&& router.navigate({ pathname: "/(auth)/verifyemail" })}
-        className={`text-Orange/08 text-center text-[16px] font-PlusJakartaSansBold underline mt-[24px] ${isVerifying ? 'opacity-50' : ''}`}
+        onPress={() =>
+          !isVerifying && router.navigate({ pathname: "/(auth)/verifyemail" })
+        }
+        className={`text-Orange/08 text-center text-[16px] font-PlusJakartaSansBold underline mt-[24px] ${
+          isVerifying ? "opacity-50" : ""
+        }`}
       >
         Change email
       </Text>
@@ -134,12 +154,13 @@ const EnterCode = () => {
           <View key={index} style={styles.cellContainer}>
             <Text
               style={getCellStyle(index, symbol, isFocused)}
-              onLayout={getCellOnLayoutHandler(index)}>
+              onLayout={getCellOnLayoutHandler(index)}
+            >
               {symbol || (isFocused ? <Cursor /> : null)}
             </Text>
             {isVerifying && index === CELL_COUNT - 1 && (
-              <ActivityIndicator 
-                style={styles.verifyingIndicator} 
+              <ActivityIndicator
+                style={styles.verifyingIndicator}
                 color="#FFA500"
               />
             )}
@@ -157,30 +178,35 @@ const EnterCode = () => {
         </Text>
         {timer > 0 ? (
           <Text className="text-gray-500">Resend in {timer}s</Text>
+        ) : isPending ? (
+          <Text className="text-gray-500">Resending...</Text>
         ) : (
-          isPending ? (
-            <Text className="text-gray-500">Resending...</Text>
-          ) : (
-            <Pressable onPress={handleResend} disabled={isVerifying}>
-              <Text className={`text-orange-600 active:text-orange-700 ${isVerifying ? 'opacity-50' : ''}`}>
-                Resend
-              </Text>
-            </Pressable>
-          )
+          <Pressable onPress={handleResend} disabled={isVerifying}>
+            <Text
+              className={`text-orange-600 active:text-orange-700 ${
+                isVerifying ? "opacity-50" : ""
+              }`}
+            >
+              Resend
+            </Text>
+          </Pressable>
         )}
       </View>
     </View>
-  )
-}
+  );
+};
 
-export default EnterCode
+export default EnterCode;
 
 const styles = StyleSheet.create({
-  codeFieldRoot: { marginTop: 32, marginHorizontal: 14,
-    gap: 6, justifyContent: 'center'
-   },
+  codeFieldRoot: {
+    marginTop: 32,
+    marginHorizontal: 14,
+    gap: 6,
+    justifyContent: "center",
+  },
   cellContainer: {
-    position: 'relative',
+    position: "relative",
   },
   cell: {
     width: 56,
@@ -208,7 +234,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1A1B1E",
   },
   verifyingIndicator: {
-    position: 'absolute',
+    position: "absolute",
     top: -15,
     right: -15,
   },
