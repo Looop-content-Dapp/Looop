@@ -7,12 +7,12 @@ import {
   FlatList,
   Alert,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft02Icon } from "@hugeicons/react-native";
 import { MotiView } from "moti";
-import { router } from "expo-router";
-import { useQuery } from "../../hooks/useQuery";
+import { router, Stack } from "expo-router";
+import { useQuery } from "../../../hooks/useQuery";
 import { useAppSelector } from "@/redux/hooks";
 import ArtistSectionList from "@/components/settingUp/ArtistSectionList";
 import api from "@/config/apiConfig";
@@ -21,8 +21,16 @@ import { setUserData } from "@/redux/slices/auth";
 import { useAppDispatch } from "@/redux/hooks";
 import store from "@/redux/store";
 import { AppButton } from "@/components/app-components/button";
+import { useNavigation } from "@react-navigation/native";
+import { color } from "react-native-elements/dist/helpers";
+
+
+
 
 const MusicOnboarding = () => {
+  
+  const navigation = useNavigation();
+  
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedInterests, setSelectedGenres] = useState([]);
   const [genres, setGenres] = useState([]);
@@ -161,19 +169,17 @@ const MusicOnboarding = () => {
         return (
           <ScrollView contentContainerStyle={{ alignItems: "center", paddingBottom: 20 }}>
             <Image
-              source={require("../../assets/images/audioOrange.png")}
+              source={require("../../../assets/images/audioOrange.png")}
               style={{ width: 215, height: 215, marginTop: "20%" }}
             />
             <View style={{ gap: 16, alignItems: "center", width: "90%", marginTop: "10%" }}>
-              <View style={{ padding: 8, borderWidth: 2, borderColor: "#A0A0A0", borderRadius: 24 }}>
-                <Text style={{ fontSize: 16, color: "#808080", fontWeight: "bold" }}>
+              
+                <Text className="text-sm font-PlusJakartaSansBold text-Grey/06 text-center">
                   Learning your taste
                 </Text>
-              </View>
-              <Text style={{ fontSize: 24, color: "#f4f4f4", textAlign: "center" }}>
-                Before we get you started listening to all your favorite artistes, we
-                want to get a feel for your music taste so we can recommend you
-                amazing sounds.
+              
+              <Text className="text-[16px] font-PlusJakartaSansBold text-[#f4f4f4] text-center">
+              Before we get you started listening to all your favorite artistes, we want to get a feel for your music taste so we can recommend you amazing sounds.
               </Text>
             </View>
           </ScrollView>
@@ -208,7 +214,7 @@ const MusicOnboarding = () => {
                   >
                     <View
                       style={{
-                        borderWidth: 1,
+                        
                         borderColor: selected ? "#FF6D1B" : "#A0A0A0",
                         backgroundColor: selected ? "#FF6D1B" : "transparent",
                         padding: 16,
@@ -280,6 +286,7 @@ const MusicOnboarding = () => {
   );
 
   return (
+   
     <SafeAreaView style={{ flex: 1 }}>
       {currentStep > 0 && (
         <TouchableOpacity
@@ -290,11 +297,12 @@ const MusicOnboarding = () => {
         </TouchableOpacity>
       )}
       {renderContent()}
-      <AppButton.Primary
+      <AppButton.Secondary
          onPress={handleNext} text={`${getButtonText()}`} color="#FF6D1B" loading={false} 
          className="absolute bottom-6 left-6 right-6 z-10 py-[16px] rounded-[56px]"
       />
     </SafeAreaView>
+    
   );
 };
 
