@@ -16,6 +16,7 @@ import { calculateAge } from "@/utils/calculateAge";
 type FormData = {
   username: string;
   name: string;
+  referralCode?: string;
 };
 const schema = z.object({
   username: z
@@ -28,6 +29,7 @@ const schema = z.object({
       message: "Name is required",
     })
     .nonempty({ message: "Name is required" }),
+  referralCode: z.string().optional(),
 });
 const EnterUserName = () => {
   const { mutate: createUser, isPending } = useCreateUser();
@@ -63,6 +65,7 @@ const EnterUserName = () => {
         fullname: data.name,
         username: data.username,
         gender,
+        referralCode: data.referralCode,
       },
       {
         onSuccess: () => {
@@ -140,6 +143,24 @@ const EnterUserName = () => {
             {errors.username.message}
           </Text>
         )}
+      </View>
+      <View className="gap-y-3">
+        <Text className="text-[14px] text-gray-200 font-PlusJakartaSansBold">
+          Referral Code (optional)
+        </Text>
+        <Controller
+          control={control}
+          name="referralCode"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              placeholder="Enter referral code"
+              className="h-16 text-sm font-PlusJakartaSansRegular bg-Grey/07 text-Grey/04 rounded-full px-8"
+            />
+          )}
+        />
       </View>
       <View className="gap-y-4">
         <Text className="text-[12px] text-gray-400 font-PlusJakartaSansRegular">

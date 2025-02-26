@@ -8,8 +8,8 @@ type User = {
   fullname: string;
   age: string;
   gender: string;
+  referralCode?: string;
 };
-
 
 export const useCreateUser = () => {
   return useMutation({
