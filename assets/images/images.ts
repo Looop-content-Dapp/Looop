@@ -16,6 +16,9 @@ import onboardbg1 from "./onboardbg1.png";
 import onboardbg2 from "./onboardbg2.png";
 import onboardbg3 from "./onboardbg3.png";
 import onboardbg4 from "./onboardbg4.png";
+import onboardNew from "./onboardNew.png";
+import welcome from "./welcome.png";
+import welcomeBg from "./welcomeBg.png";
 export {
   onboard1,
   onboard2,
@@ -35,6 +38,9 @@ export {
   onboardbg2,
   onboardbg3,
   onboardbg4,
+  onboardNew,
+  welcome,
+  welcomeBg,
 } 
 
 const logowhite = require("./logo-white.png");
