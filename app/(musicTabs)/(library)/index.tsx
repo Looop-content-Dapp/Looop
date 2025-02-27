@@ -29,7 +29,7 @@ const index = () => {
     },
     {
       image: require("../../../assets/images/savedAlbums.png"),
-      title: "My Downloads",
+      title: "Saved Albums",
       route: "/savedAlbums",
     },
     {

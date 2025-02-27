@@ -91,7 +91,7 @@ const SavedAlbums = () => {
         <Animated.Text
           style={[styles.headerBarTitle, { opacity: headerTitleOpacity }]}
         >
-        My Downloads
+        Saved Albums
         </Animated.Text>
       </View>
 
@@ -102,7 +102,7 @@ const SavedAlbums = () => {
           style={[styles.imageBackground, { opacity: imageOpacity }]}
         >
           <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>My Downloads</Text>
+            <Text style={styles.headerTitle}>Saved Albums</Text>
             <Text style={styles.headerSubtitle}>
               Browse through your downloads
             </Text>

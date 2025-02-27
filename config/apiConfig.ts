@@ -1,4 +1,3 @@
-// /src/api/config/apiConfig.ts
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import store from "@/redux/store";
 import { showToast } from "./ShowMessage";

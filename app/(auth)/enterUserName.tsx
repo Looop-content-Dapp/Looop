@@ -70,6 +70,7 @@ const EnterUserName = () => {
                 },
                 onError: (error) => {
                     Alert.alert("Error", "Failed to create account. Please try again.");
+                    console.log(error)
                 },
             }
         );
