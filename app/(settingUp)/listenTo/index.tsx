@@ -1,10 +1,8 @@
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, ScrollView, Alert } from "react-native";
 import React, { useLayoutEffect, useState } from "react";
 import { useNavigation, useRouter } from "expo-router";
 import {
-  ArrowRight02Icon,
-  HeadphonesIcon,
-  UserGroupIcon,
+  
   ArrowLeft02Icon,
 } from "@hugeicons/react-native";
 import { AppButton } from "@/components/app-components/button";
@@ -12,14 +10,17 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
-import { useGetGenre } from "@/hooks/useGenre";
+import { useCreateGenreForUser, useGetGenre } from "@/hooks/useGenre";
 import { MotiView } from "moti";
 import MusicCategoryGrid from "./MusicGrid";
 import type { Genre } from "@/hooks/useGenre";
+import { useAppSelector } from "@/redux/hooks";
 
 
 
 const WhatDoYouListenTo = () => {
+  const { userdata } = useAppSelector((state) => state.auth);
+  const { mutate: createGenreForUser, isPending } = useCreateGenreForUser();
   const { data, isLoading } = useGetGenre();
   const [selectedGenres, setSelectedGenres] = useState([]);
   const navigation = useNavigation();
@@ -35,6 +36,25 @@ const WhatDoYouListenTo = () => {
       }
     });
   };
+
+  console.log("selectedGenres", selectedGenres);
+  const handleContinue = () => {
+    createGenreForUser({
+      preferences: selectedGenres,
+      userId: userdata?._id as string,
+    },
+    {
+      onSuccess: () => {
+        router.push("/(settingUp)/listenTo/selection");
+      },
+
+      onError: (error) => {
+        Alert.alert("Error", error.message);
+      },
+    }
+  );
+    
+  }
   
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -63,9 +83,8 @@ const WhatDoYouListenTo = () => {
           text={selectedGenres.length > 0 ? `Continue (${selectedGenres.length})` : "Continue"}
           color="#FF7A1B"
           disabled={selectedGenres.length === 0}
-          onPress={() => {
-            router.navigate("/(settingUp)/listenTo/selection");
-          }}
+          onPress={handleContinue}
+          loading={isPending}
         />
       </View>
     </View>

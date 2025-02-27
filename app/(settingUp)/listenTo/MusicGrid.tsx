@@ -25,12 +25,12 @@ const MusicCategoryGrid = ({
   isLoading?: boolean;
 }) => {
   const renderItem = ({ item }: { item: Genre }) => {
-    const isSelected = selectedGenres.includes(item.name);
+    const isSelected = selectedGenres.includes(item._id);
 
     return (
       <TouchableOpacity
         style={styles.itemContainer}
-        onPress={() => onSelectGenre(item.name)}
+        onPress={() => onSelectGenre(item._id)}
         activeOpacity={0.7}
       >
         <ImageBackground
@@ -64,7 +64,7 @@ const MusicCategoryGrid = ({
       columnWrapperStyle={styles.columnWrapper}
       ListHeaderComponent={
         <Text className="text-[14px] text-[#f4f4f4] font-PlusJakartaSansBold">
-          Select one or more genres and we’ll help you discover amazing sounds
+          Select one or more genres and we&rsquo;ll help you discover amazing sounds
         </Text>
       }
     />
