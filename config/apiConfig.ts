@@ -16,7 +16,7 @@ interface ApiResponse {
 
 
 // Configure environment variables
-const API_URL = "https://looop-backend-vu20.onrender.com";
+const API_URL = "https://looop-backend-gxjh.onrender.com";
 const API_TIMEOUT = process.env.API_TIMEOUT || 30000;
 
 const api = axios.create({
