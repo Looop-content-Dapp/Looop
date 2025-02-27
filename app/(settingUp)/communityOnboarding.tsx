@@ -10,13 +10,18 @@ import {
 } from "react-native";
 import React, { useEffect, useState, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft02Icon, CheckmarkCircle02Icon } from "@hugeicons/react-native";
+import {
+  ArrowLeft02Icon,
+  CheckmarkCircle02Icon,
+  InformationCircleIcon,
+} from "@hugeicons/react-native";
 import { MotiView } from "moti";
 import { router } from "expo-router";
 import { useQuery } from "../../hooks/useQuery";
 import PaymentBottomSheet from "../../components/Subscribe/PaymentBottomsheet";
 import CommunitySectionList from "@/components/settingUp/CommunitySectionList";
 import { useAppSelector } from "@/redux/hooks";
+import { AppButton } from "@/components/app-components/button";
 
 // Types and Interfaces
 interface Genre {
@@ -59,9 +64,7 @@ const CommunityOnboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [interests, setInterests] = useState<Genre[]>([]);
-  const [communities, setCommunities] = useState<
-    Artist[]
-  >([]);
+  const [communities, setCommunities] = useState<Artist[]>([]);
   const [loading, setLoading] = useState(true);
   const [showPaymentSheet, setShowPaymentSheet] = useState(false);
   const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(
@@ -70,27 +73,23 @@ const CommunityOnboarding = () => {
   const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
   const { userdata } = useAppSelector((state) => state.auth);
 
-  const {
-    getGenres,
-    getArtistCommunitiesByGenre,
-    saveUserPreference,
-  } = useQuery();
-
+  const { getGenres, getArtistCommunitiesByGenre, saveUserPreference } =
+    useQuery();
 
   const benefit = [
     {
-        text: "Get exclusive updates and announcements."
+      text: "Get exclusive updates and announcements.",
     },
     {
-        text: "Get sneak peeks and demos of unreleased music."
+      text: "Get sneak peeks and demos of unreleased music.",
     },
     {
-        text: "Access exclusive content and perks just for Tribestars."
+      text: "Access exclusive content and perks just for Tribestars.",
     },
     {
-        text: "Be part of a community on your terms and connect with other fans who share your passion."
+      text: "Be part of a community on your terms and connect with other fans who share your passion.",
     },
-  ]
+  ];
 
   // Effect Hooks for data fetching
   useEffect(() => {
@@ -119,14 +118,16 @@ const CommunityOnboarding = () => {
     try {
       setLoading(true);
       if (!userdata?._id) throw new Error("User ID not found");
-      const response = await getArtistCommunitiesByGenre(userdata?._id as string);
-      if(response.data){
-        if(response?.status === "success"){
-            if (response?.data?.length > 0 && Array.isArray(response.data)) {
-                setCommunities(response?.data ?? []);
-              } else {
-                setCommunities([]);
-              }
+      const response = await getArtistCommunitiesByGenre(
+        userdata?._id as string
+      );
+      if (response.data) {
+        if (response?.status === "success") {
+          if (response?.data?.length > 0 && Array.isArray(response.data)) {
+            setCommunities(response?.data ?? []);
+          } else {
+            setCommunities([]);
+          }
         }
       }
     } catch (error) {
@@ -199,54 +200,60 @@ const CommunityOnboarding = () => {
 
   const renderSetup = () => (
     <ScrollView contentContainerStyle={styles.setupContainer}>
-           <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-                width: '100%',
-                marginTop: 71
-              }}>
-                <Image
-                  source={require("../../assets/images/musicNote.png")}
-                  style={{
-                    width: 106,
-                    height: 106,
-                    resizeMode: 'cover',
-                    marginRight: -40
-                  }}
-                />
-                <Image
-                  source={require("../../assets/images/userGroup.png")}
-                  style={{
-                    width: 106,
-                    height: 106,
-                    resizeMode: 'cover',
-                    zIndex: 1
-                  }}
-                />
-     </View>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+          width: "100%",
+          marginTop: 71,
+        }}
+      >
+        <Image
+          source={require("../../assets/images/musicNote.png")}
+          style={{
+            width: 106,
+            height: 106,
+            resizeMode: "cover",
+            marginRight: -40,
+          }}
+        />
+        <Image
+          source={require("../../assets/images/userGroup.png")}
+          style={{
+            width: 106,
+            height: 106,
+            resizeMode: "cover",
+            zIndex: 1,
+          }}
+        />
+      </View>
       <View style={styles.setupTextContainer}>
-      <Text style={styles.setupBadgeText}>What’s Tribes?</Text>
-      <View></View>
-     <Text style={styles.setupDescription}>
-        Tribes are an exciting way to connect with your favorite artist or creator on a whole new level.
-    </Text>
-    <Text style={styles.setupDescription}>
-       By joining a Tribe, you can:
-    </Text>
-    <View className="gap-y-[7px]">
-       {benefit.map((text) => (
-         <View className="bg-[#12141B] flex-row items-center gap-2 rounded-lg p-[12px]">
-         <CheckmarkCircle02Icon size={16} color="#12141B" variant="stroke" />
-         <Text className="text-gray-300 font-PlusJakartaSansRegular text-base break-words">{text.text}</Text>
-       </View>
-
-       ))}
-    </View>
+        <Text className="text-[24px] text-[#f4f4f4] font-PlusJakartaSansBold">
+          What&rsquo;s Tribes?
+        </Text>
+        <View></View>
+        <Text className="text-[14px] font-PlusJakartaSansRegular text-[#D2D3D5]">
+          Tribes are an exciting way to connect with your favorite artist or
+          creator on a whole new level.
+        </Text>
+        <Text className="text-[14px] font-PlusJakartaSansRegular text-[#D2D3D5]">
+          By joining a Tribe, you can:
+        </Text>
+        <View className="gap-y-[7px]">
+          {benefit.map((text) => (
+            <View className="bg-[#12141B] flex-row items-center gap-2 rounded-lg p-[12px]">
+              <CheckmarkCircle02Icon size={16} color="#D2D3D5" />
+              <Text className="text-gray-300 font-PlusJakartaSansRegular text-base break-words">
+                {text.text}
+              </Text>
+            </View>
+          ))}
+        </View>
       </View>
       <TouchableOpacity
-        onPress={() => setCurrentStep(1)}
+        onPress={() => router.push("/(settingUp)/listenTo")}
         style={styles.continueButton}
       >
         <Text style={styles.buttonText}>Continue</Text>
@@ -331,15 +338,20 @@ const CommunityOnboarding = () => {
       {currentStep === 1 && renderInterests()}
       {currentStep === 2 && (
         <>
-        <View className="gap-y-8px]">
-            <Text className="text-[24px] text-[#f4f4f4] font-PlusJakartaSansBold">Based on your selections</Text>
-            <Text className="text-[14px] font-PlusJakartaSansRegular text-[#D2D3D5]">Alright! Let’s follow some artistes to start exploring their discographies</Text>
-        </View>
-        <CommunitySectionList
-         sections={communities ? communities : []}
-         onFollow={handleJoinCommunity}
-          followingArtists={selectedCommunity ? [selectedCommunity] : []}
-         />
+          <View className="gap-y-8px]">
+            <Text className="text-[24px] text-[#f4f4f4] font-PlusJakartaSansBold">
+              Based on your selections
+            </Text>
+            <Text className="text-[14px] font-PlusJakartaSansRegular text-[#D2D3D5]">
+              Alright! Let’s follow some artistes to start exploring their
+              discographies
+            </Text>
+          </View>
+          <CommunitySectionList
+            sections={communities ? communities : []}
+            onFollow={handleJoinCommunity}
+            followingArtists={selectedCommunity ? [selectedCommunity] : []}
+          />
         </>
       )}
       {showPaymentSheet && (
@@ -392,7 +404,7 @@ const styles = StyleSheet.create({
     fontFamily: "PlusJakartaSansRegular",
   },
   continueButton: {
-    backgroundColor: "#FF6D1B",
+    backgroundColor: "#FF7A1B",
     width: "90%",
     alignItems: "center",
     padding: 16,
