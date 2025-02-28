@@ -127,6 +127,11 @@ const Signin: React.FC = () => {
   const handleAppleSignIn = async (): Promise<void> => {
     try {
       setAuthLoading(true);
+      // Check if Apple Authentication is available
+      if (!AppleAuthentication.isAvailableAsync()) {
+        console.error("Apple Sign-In is not available on this device.");
+        return;
+      }
       const credential: AppleAuthentication.AppleAuthenticationCredential =
         await AppleAuthentication.signInAsync({
           requestedScopes: [

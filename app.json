@@ -11,9 +11,9 @@
       "supportsTablet": true,
       "usesAppleSignIn": true,
       "bundleIdentifier": "com.looop.music",
-      "entitlements": {
-        "com.apple.developer.signin": ["Default"]
-     },
+    //   "entitlements": {
+    //     "com.apple.developer.signin": ["Default"]
+    //  },
       "infoPlist": {
         "NSMicrophoneUsageDescription": "This app requires microphone access to play and record audio.",
         "NSContactsUsageDescription": "This app needs access to your contacts to demonstrate its functionality.",
@@ -55,6 +55,7 @@
       "expo-router",
       "expo-font",
       "expo-video",
+      "expo-apple-authentication",
       [
         "expo-splash-screen",
         {
