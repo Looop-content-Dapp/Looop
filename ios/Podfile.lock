@@ -296,6 +296,8 @@ PODS:
     - Yoga
   - ExpoNetwork (7.0.5):
     - ExpoModulesCore
+  - ExpoRandom (14.0.1):
+    - ExpoModulesCore
   - ExpoScreenOrientation (8.0.4):
     - DoubleConversion
     - ExpoModulesCore
@@ -319,6 +321,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - Yoga
   - ExpoSecureStore (14.0.1):
+    - ExpoModulesCore
+  - ExpoSMS (13.0.1):
     - ExpoModulesCore
   - ExpoSplashScreen (0.29.22):
     - ExpoModulesCore
@@ -2170,8 +2174,10 @@ DEPENDENCIES:
   - ExpoMediaLibrary (from `../node_modules/expo-media-library/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
   - ExpoNetwork (from `../node_modules/expo-network/ios`)
+  - ExpoRandom (from `../node_modules/expo-random/ios`)
   - ExpoScreenOrientation (from `../node_modules/expo-screen-orientation/ios`)
   - ExpoSecureStore (from `../node_modules/expo-secure-store/ios`)
+  - ExpoSMS (from `../node_modules/expo-sms/ios`)
   - ExpoSplashScreen (from `../node_modules/expo-splash-screen/ios`)
   - ExpoSymbols (from `../node_modules/expo-symbols/ios`)
   - ExpoSystemUI (from `../node_modules/expo-system-ui/ios`)
@@ -2339,10 +2345,14 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-modules-core"
   ExpoNetwork:
     :path: "../node_modules/expo-network/ios"
+  ExpoRandom:
+    :path: "../node_modules/expo-random/ios"
   ExpoScreenOrientation:
     :path: "../node_modules/expo-screen-orientation/ios"
   ExpoSecureStore:
     :path: "../node_modules/expo-secure-store/ios"
+  ExpoSMS:
+    :path: "../node_modules/expo-sms/ios"
   ExpoSplashScreen:
     :path: "../node_modules/expo-splash-screen/ios"
   ExpoSymbols:
@@ -2549,8 +2559,10 @@ SPEC CHECKSUMS:
   ExpoMediaLibrary: e76bf16d148184fc32f6302445d5d11e72ab47f5
   ExpoModulesCore: f9976411ca33b45435bf26b58c1facd4648a5d50
   ExpoNetwork: 15bf53158b439ce75e1df0df3a9ff5051c492db8
+  ExpoRandom: 099ddce39b39ffb984b45118d031e8713e962a50
   ExpoScreenOrientation: eb2229ceeab36ce787ccae413d23273698b946fa
   ExpoSecureStore: d006eea5e316283099d46f80a6b10055b89a6008
+  ExpoSMS: 2f90c7c780ef65c9f52b800183aab554360b34a2
   ExpoSplashScreen: 48a5b55b370aaf48e8be0c7846c487e583067164
   ExpoSymbols: b9f255ce49868d46a73f30e12859efeb8117bcad
   ExpoSystemUI: ba4507df7d8d15f5e1694a3c7fc6bc3cca3803e5
