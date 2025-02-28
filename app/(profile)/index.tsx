@@ -43,7 +43,7 @@ const profile = () => {
       headerRight: () => {
         return (
           <View className="flex-row items-center gap-x-[16px] mr-4">
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.navigate("/wallet/userWallet")}>
               <Wallet02Icon size={24} color="#787A80" />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.navigate("/settings")}>

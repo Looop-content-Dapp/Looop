@@ -4,9 +4,15 @@ import React, { useState, useEffect } from "react";
 import { TouchableOpacity } from "react-native";
 import { Link05Icon } from "@hugeicons/react-native";
 import * as Contacts from "expo-contacts";
+import ShareModal from "@/components/modals/ShareModal";
 
 const Friends = () => {
   const [contacts, setContacts] = useState([]);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+
+  const handleShare = () => {
+    setModalVisible(true);
+  };
 
   useEffect(() => {
     (async () => {
@@ -39,7 +45,7 @@ const Friends = () => {
           </Text>
         </View>
         <View className="absolute right-6 bottom-4">
-          <TouchableOpacity className="item bg-[#fff] px-[16px] py-[12px] flex-row items-center rounded-[24px] gap-x-[8px]">
+          <TouchableOpacity onPress={handleShare} className="item bg-[#fff] px-[16px] py-[12px] flex-row items-center rounded-[24px] gap-x-[8px]">
             <Link05Icon size={16} color="#0A0B0F" variant="stroke" />
             <Text className="text-[14px] font-PlusJakartaSansMedium text-Grey/07">
               Invite friends
@@ -48,16 +54,12 @@ const Friends = () => {
         </View>
       </ImageBackground>
 
-      {/* <FlatList
-        data={contacts}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.contactItem}>
-            <Text className='text-[#fff]'>{item.name}</Text>
-            {item.emails && item.emails[0] && <Text className='text-[#fff]'>{item.emails[0].email}</Text>}
-          </View>
-        )}
-      /> */}
+      <ShareModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        shareLink="https://example.com/share-link"
+        shareTitle="Check this out!"
+      />
     </View>
   );
 };
