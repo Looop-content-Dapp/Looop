@@ -1,4 +1,4 @@
-import { SafeAreaView, View, Text, FlatList, TouchableOpacity, TextInput, Image, ActivityIndicator } from "react-native";
+import { SafeAreaView, View, Text, FlatList, TouchableOpacity, TextInput, Image } from "react-native";
 import { router, useNavigation } from "expo-router";
 import WalletBalance from "@/components/wallet/WalletBalance";
 import TransactionHistory from "@/components/wallet/TransactionHistory";
@@ -21,7 +21,7 @@ const WalletScreen = () => {
     balances: {
       xion: 0,
       starknet: 0,
-      total: 0
+      total: 0,
     },
     addresses: [
       { chain: "XION", address: `${userdata?.wallets?.xion?.address?.slice(0, 35) || ''}...` },
@@ -36,12 +36,15 @@ const WalletScreen = () => {
     ],
   });
 
+  // Set navigation header
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerLeft: () => <AppBackButton name="Wallet" onBackPress={() => router.back()} />
+      headerLeft: () => <AppBackButton name="Wallet" onBackPress={() => router.back()} />,
     });
   }, [navigation]);
+  
 
+  // Fetch wallet balances
   useEffect(() => {
     const fetchBalances = async () => {
       setIsLoading(true);
@@ -58,20 +61,16 @@ const WalletScreen = () => {
         // Fetch XION balance
         try {
           const xionData = await getXionBalance(xionAddress);
-          console.log('XION raw response:', xionData);
           xionBalance = parseFloat(xionData.data.balance) / 1000000;
-          console.log('Parsed XION balance:', xionBalance);
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error fetching XION balance:', error.message);
         }
 
         // Fetch Starknet balance
         try {
           const starknetData = await getStarknetBalance(starknetAddress);
-          console.log('Starknet raw response:', starknetData);
           starknetBalance = Number(BigInt(starknetData.data.balance) / BigInt(1e18));
-          console.log('Parsed Starknet balance:', starknetBalance);
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error fetching Starknet balance:', error.message);
         }
 
@@ -81,8 +80,8 @@ const WalletScreen = () => {
           balances: {
             xion: xionBalance,
             starknet: starknetBalance,
-            total: xionBalance + starknetBalance
-          }
+            total: xionBalance + starknetBalance,
+          },
         }));
       } catch (error) {
         console.error('Error in fetchBalances:', error.message);
@@ -94,10 +93,11 @@ const WalletScreen = () => {
     fetchBalances();
   }, [userdata]);
 
-  const handleTabPress = (tab) => setActiveTab(tab);
+  const handleTabPress = (tab: string) => setActiveTab(tab);
 
   return (
     <SafeAreaView className="flex-1">
+      {/* Tab Navigation */}
       <View className="flex-row justify-around border-b border-[#1A1B1E]">
         <TouchableOpacity
           onPress={() => handleTabPress('Balances')}
@@ -123,8 +123,9 @@ const WalletScreen = () => {
             balances={walletData.balances}
             addresses={walletData.addresses}
             isLoading={isLoading}
-            onCopyAddress={(address) => { /* Handle copy address */ }}
+            onCopyAddress={(address) => { /* Add copy functionality here */ }}
           />
+          {/* Fund with Card Button */}
           <TouchableOpacity className="bg-[#202227] mx-4 my-3 px-[16px] pt-[20px] pb-[19px] rounded-[10px] flex-row justify-between items-center">
             <View className="flex-1 flex-row items-center gap-[16px]">
               <CreditCardIcon size={24} color="#FF8A49" variant="stroke" />
@@ -135,6 +136,7 @@ const WalletScreen = () => {
             </View>
             <ArrowRight01Icon size={24} color="#FF8A49" />
           </TouchableOpacity>
+          {/* Transaction History */}
           <View className="flex-1 mt-[48px] px-[16px]">
             <View className="flex-row items-center justify-between px-4 py-[12px]">
               <Text className="text-[#D2D3D5] text-[20px] font-PlusJakartaSansMedium">History</Text>
@@ -149,6 +151,7 @@ const WalletScreen = () => {
         </>
       ) : (
         <View className="flex-1">
+          {/* Collectibles Search */}
           <View className="mx-4 my-4">
             <View className="bg-[#111318] py-[15px] rounded-[10px] px-4 flex-row items-center gap-x-[12px] border border-[#202227]">
               <Search01Icon size={16} color="#63656B" variant="stroke" />
@@ -159,6 +162,7 @@ const WalletScreen = () => {
               />
             </View>
           </View>
+          {/* Collectibles List */}
           <FlatList
             data={[
               {
