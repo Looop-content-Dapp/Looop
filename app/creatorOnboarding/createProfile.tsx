@@ -1,4 +1,13 @@
-import { View, Text, Image, SafeAreaView, Alert, ScrollView, useWindowDimensions, Platform } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  SafeAreaView,
+  Alert,
+  ScrollView,
+  useWindowDimensions,
+  Platform,
+} from "react-native";
 import React, { useLayoutEffect, useState } from "react";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { AppBackButton } from "@/components/app-components/back-btn";
@@ -10,10 +19,14 @@ import api from "@/config/apiConfig";
 import { CreatorFormData } from "@/types/index";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { setArtistId, setClaimId } from "@/redux/slices/auth";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 type ProfileFlowState = "INTRO" | "CREATE_PROFILE";
 
 const CreateProfile = () => {
+  const { data } = useCurrentUser();
+
+  const user = data?.data;
   const [currentFlow, setCurrentFlow] = useState<ProfileFlowState>("INTRO");
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [selectedCountry, setSelectedCountry] = useState("");
@@ -22,7 +35,6 @@ const CreateProfile = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<CreatorFormData>({
     stageName: "",
-    email: "",
     bio: "",
     addressLine1: "",
     addressLine2: "",
@@ -33,7 +45,7 @@ const CreateProfile = () => {
       instagram: "",
       tiktok: "",
     },
-    profileImage: ""
+    profileImage: "",
   });
 
   const { width, height } = useWindowDimensions();
@@ -41,7 +53,7 @@ const CreateProfile = () => {
   const { pickFile, isLoading: isUploading } = useFileUpload();
   const navigation = useNavigation();
   const { back } = useRouter();
-  const dispatch = useAppDispatch()
+  const dispatch = useAppDispatch();
   const { userdata } = useAppSelector((state) => state.auth);
 
   useLayoutEffect(() => {
@@ -65,11 +77,10 @@ const CreateProfile = () => {
 
   const validateForm = () => {
     const requiredFields = {
-      'Stage name': formData.stageName,
-      'Email': formData.email,
-      'Profile image': formData.profileImage,
-      'Genres': selectedGenres.length,
-      'Country': selectedCountry
+      "Stage name": formData.stageName,
+      "Profile image": formData.profileImage,
+      Genres: selectedGenres.length,
+      Country: selectedCountry,
     };
 
     for (const [field, value] of Object.entries(requiredFields)) {
@@ -89,15 +100,15 @@ const CreateProfile = () => {
       const result = await pickFile(FileType.IMAGE);
 
       if (result?.success && result.file) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          profileImage: result?.file?.uri
+          profileImage: result?.file?.uri,
         }));
       } else if (result?.error) {
         Alert.alert("Upload Failed", result.error);
       }
     } catch (error) {
-      console.error('Error uploading profile image:', error);
+      console.error("Error uploading profile image:", error);
       Alert.alert(
         "Upload Error",
         "Failed to upload profile image. Please try again."
@@ -106,7 +117,9 @@ const CreateProfile = () => {
   };
 
   const handleCountrySelect = (countryValue: string) => {
-    const selected = countries?.find((country) => country.value === countryValue);
+    const selected = countries?.find(
+      (country) => country.value === countryValue
+    );
     if (selected) {
       setSelectedCountry(countryValue);
       setCities(selected.cities || []);
@@ -119,9 +132,9 @@ const CreateProfile = () => {
   };
 
   const handleFormChange = (field: keyof CreatorFormData, value: any) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -129,12 +142,12 @@ const CreateProfile = () => {
     platform: keyof typeof formData.socialAccounts,
     value: string
   ) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       socialAccounts: {
         ...prev.socialAccounts,
-        [platform]: value
-      }
+        [platform]: value,
+      },
     }));
   };
 
@@ -147,7 +160,7 @@ const CreateProfile = () => {
       // Construct form payload with social media handles from form data
       const formPayload = {
         artistname: formData.stageName,
-        email: formData.email,
+        email: user?.email,
         profileImage: formData.profileImage,
         bio: formData.bio,
         genres: selectedGenres,
@@ -158,34 +171,38 @@ const CreateProfile = () => {
         postalcode: formData.postalCode,
         websiteurl: formData.websiteUrl,
         twitter: formData.socialAccounts.twitter || "https://x.com/looop_music",
-        tiktok: formData.socialAccounts.tiktok || "https://x.com/looop_music", 
-        instagram: formData.socialAccounts.instagram || "https://x.com/looop_music",
-        id: userdata?._id
+        tiktok: formData.socialAccounts.tiktok || "https://x.com/looop_music",
+        instagram:
+          formData.socialAccounts.instagram || "https://x.com/looop_music",
+        id: userdata?._id,
       };
 
-      // Make API request to create artist profile
-      const { data } = await api.post('/api/artist/createartist', formPayload);
+      console.log("formPayload", formPayload);
+      const { data } = await api.post("/api/artist/createartist", formPayload);
 
       if (data.status === "success") {
         const { artist, claimresult } = data.data;
-        
+
         // Update redux store with new artist and claim IDs
         dispatch(setArtistId(artist?._id));
         dispatch(setClaimId(claimresult?.data?.id));
-        
+
         // Show success message and navigate back
         Alert.alert("Success", claimresult?.message);
         back();
       } else {
-        throw new Error(data.message || 'Failed to create profile');
+        throw new Error(data.message || "Failed to create profile");
       }
     } catch (error) {
-      console.error("Error submitting artist profile:", error);
-      
+      console.error(
+        "Error submitting artist profile:",
+        error?.response?.data.message
+      );
+
       // Show user-friendly error message
       Alert.alert(
         "Profile Creation Failed",
-        error instanceof Error 
+        error instanceof Error
           ? error.message
           : "Unable to create profile. Please try again later."
       );
@@ -195,45 +212,53 @@ const CreateProfile = () => {
   };
 
   const renderIntro = () => (
-    <ScrollView 
-      contentContainerStyle={{ 
+    <ScrollView
+      contentContainerStyle={{
         flexGrow: 1,
-        paddingBottom: 100 // Space for the bottom button
+        paddingBottom: 100, // Space for the bottom button
       }}
     >
-      <View style={{ 
-        flex: 1,
-        paddingHorizontal: width * 0.05 // 5% padding on each side
-      }}>
+      <View
+        style={{
+          flex: 1,
+          paddingHorizontal: width * 0.05, // 5% padding on each side
+        }}
+      >
         <Image
           source={require("../../assets/images/createProfile.png")}
           resizeMode="contain"
-          style={{ 
+          style={{
             width: width * 0.9, // 90% of screen width
             height: height * 0.4, // 40% of screen height
             alignSelf: "center",
-            marginTop: height * 0.05 // 5% of screen height
+            marginTop: height * 0.05, // 5% of screen height
           }}
         />
-        <View style={{ 
-          marginTop: height * 0.05,
-          alignSelf: "center",
-          gap: 12,
-          paddingHorizontal: 20
-        }}>
-          <Text style={{ 
-            fontSize: Math.min(28, width * 0.07), // Responsive font size
-            fontWeight: "bold",
-            color: "#FFFFFF",
-            textAlign: "center"
-          }}>
+        <View
+          style={{
+            marginTop: height * 0.05,
+            alignSelf: "center",
+            gap: 12,
+            paddingHorizontal: 20,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: Math.min(28, width * 0.07), // Responsive font size
+              fontWeight: "bold",
+              color: "#FFFFFF",
+              textAlign: "center",
+            }}
+          >
             Create your profile
           </Text>
-          <Text style={{ 
-            fontSize: Math.min(16, width * 0.04), // Responsive font size
-            color: "#D2D3D5",
-            textAlign: "center"
-          }}>
+          <Text
+            style={{
+              fontSize: Math.min(16, width * 0.04), // Responsive font size
+              color: "#D2D3D5",
+              textAlign: "center",
+            }}
+          >
             Ready to create magic? Let's get you started by setting up your
             creator profile
           </Text>
@@ -248,10 +273,10 @@ const CreateProfile = () => {
         return renderIntro();
       case "CREATE_PROFILE":
         return (
-          <ScrollView 
-            contentContainerStyle={{ 
+          <ScrollView
+            contentContainerStyle={{
               flexGrow: 1,
-              paddingBottom: 100 // Space for the bottom button
+              paddingBottom: 100,
             }}
           >
             <CreatorForm
@@ -284,20 +309,26 @@ const CreateProfile = () => {
   };
 
   return (
-    <SafeAreaView style={{ 
-      flex: 1, 
-      backgroundColor: "#040405"
-    }}>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: "#040405",
+      }}
+    >
       {handleFlow()}
-      <View style={{ 
-        position: "absolute",
-        bottom: height * 0.02, // 2% from bottom
-        right: width * 0.06, // 6% from right
-        left: width * 0.06, // 6% from left
-        paddingBottom: Platform.OS === 'ios' ? 20 : 0 // Extra padding for iOS
-      }}>
+      <View
+        style={{
+          position: "absolute",
+          bottom: height * 0.02, // 2% from bottom
+          right: width * 0.06, // 6% from right
+          left: width * 0.06, // 6% from left
+          paddingBottom: Platform.OS === "ios" ? 20 : 0, // Extra padding for iOS
+        }}
+      >
         <AppButton.Primary
-          text={currentFlow === "CREATE_PROFILE" ? "Submit Profile" : "Continue"}
+          text={
+            currentFlow === "CREATE_PROFILE" ? "Submit Profile" : "Continue"
+          }
           color="#A187B5"
           loading={isSubmitting || isUploading}
           onPress={handleNext}
