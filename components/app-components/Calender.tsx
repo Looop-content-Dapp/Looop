@@ -1,95 +1,64 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface CalendarProps {
-  selectedDate: Date | null;
-  onSelectDate: (date: Date) => void;
-  minDate?: Date;
+    selectedDate: Date | null;
+    onSelectDate: (date: Date) => void;
+    minDate?: Date; // Optional prop
 }
 
-const Calendar = ({ selectedDate, onSelectDate, minDate }: CalendarProps) => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+const Calendar: React.FC<CalendarProps> = ({ selectedDate, onSelectDate, minDate }) => {
+    const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [showPicker, setShowPicker] = useState(false);
 
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    return new Date(year, month + 1, 0).getDate();
+  // Helper function to get the number of days in the current month
+  const getDaysInMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+
+  // Helper function to get the weekday (0-6) of the first day of the month
+  const getFirstDayOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+
+  // Handle month/year selection from the picker
+  const handleSelectMonthYear = (month, year) => {
+    const newDate = new Date(currentMonth);
+    if (month !== undefined) newDate.setMonth(month);
+    if (year !== undefined) newDate.setFullYear(year);
+    newDate.setDate(1); // Set day to 1 to avoid invalid dates
+    setCurrentMonth(newDate);
+    setShowPicker(false); // Close picker after selection
   };
 
-  const getFirstDayOfMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    return new Date(year, month, 1).getDay();
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      month: 'long',
-      year: 'numeric'
-    });
-  };
-
-  const isSelectedDate = (date: Date) => {
-    return selectedDate?.toDateString() === date.toDateString();
-  };
-
-  const isDateDisabled = (date: Date) => {
-    if (!minDate) return false;
-    return date < new Date(minDate.setHours(0, 0, 0, 0));
-  };
-
-  const handlePrevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
-  };
-
-  const handleNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
-  };
-
+  // Render day headers (Sun, Mon, etc.)
   const renderDays = () => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    return days.map(day => (
+    return days.map((day) => (
       <Text key={day} style={styles.dayHeader}>
         {day}
       </Text>
     ));
   };
 
+  // Render the calendar grid with days
   const renderCells = () => {
     const daysInMonth = getDaysInMonth(currentMonth);
     const firstDayOfMonth = getFirstDayOfMonth(currentMonth);
     const cells = [];
 
-    // Add empty cells for days before the first day of the month
+    // Add empty cells before the first day of the month
     for (let i = 0; i < firstDayOfMonth; i++) {
       cells.push(<View key={`empty-${i}`} style={styles.emptyCell} />);
     }
 
-    // Add cells for each day of the month
+    // Add date cells for each day in the month
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-      const isDisabled = isDateDisabled(date);
-      const isSelected = isSelectedDate(date);
-
       cells.push(
         <TouchableOpacity
-          key={date.toISOString()}
-          style={[
-            styles.dateCell,
-            isSelected && styles.selectedDate,
-            isDisabled && styles.disabledDate,
-          ]}
-          onPress={() => !isDisabled && onSelectDate(date)}
-          disabled={isDisabled}
+          key={day}
+          onPress={() => onSelectDate(date)}
+          style={styles.dateCell}
         >
-          <Text style={[
-            styles.dateCellText,
-            isSelected && styles.selectedDateText,
-            isDisabled && styles.disabledDateText,
-          ]}>
-            {day}
-          </Text>
+          <Text style={styles.dateCellText}>{day}</Text>
         </TouchableOpacity>
       );
     }
@@ -97,29 +66,83 @@ const Calendar = ({ selectedDate, onSelectDate, minDate }: CalendarProps) => {
     return cells;
   };
 
+  // Render the month/year picker modal
+  const renderPicker = () => {
+    const months = Array.from({ length: 12 }, (_, i) => ({
+      label: new Date(0, i).toLocaleString('en-US', { month: 'long' }),
+      value: i,
+    }));
+    const years = Array.from({ length: 100 }, (_, i) => ({
+      label: (new Date().getFullYear() - 50 + i).toString(),
+      value: new Date().getFullYear() - 50 + i,
+    }));
+
+    return (
+      <Modal visible={showPicker} transparent animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={styles.pickerContainer}>
+            <View style={styles.pickerSection}>
+              <Text style={styles.pickerTitle}>Month</Text>
+              <FlatList
+                data={months}
+                keyExtractor={(item) => item.value.toString()}
+                renderItem={({ item }) => (
+                  <TouchableOpacity onPress={() => handleSelectMonthYear(item.value, undefined)}>
+                    <Text style={styles.pickerItem}>{item.label}</Text>
+                  </TouchableOpacity>
+                )}
+                style={styles.pickerList}
+              />
+            </View>
+            <View style={styles.pickerSection}>
+              <Text style={styles.pickerTitle}>Year</Text>
+              <FlatList
+                data={years}
+                keyExtractor={(item) => item.value.toString()}
+                renderItem={({ item }) => (
+                  <TouchableOpacity onPress={() => handleSelectMonthYear(undefined, item.value)}>
+                    <Text style={styles.pickerItem}>{item.label}</Text>
+                  </TouchableOpacity>
+                )}
+                style={styles.pickerList}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   return (
     <View style={styles.container}>
+      {/* Header with navigation and month/year picker trigger */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handlePrevMonth}>
+        <TouchableOpacity onPress={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))}>
           <Ionicons name="chevron-back" size={24} color="#787A80" />
         </TouchableOpacity>
-        <Text style={styles.monthText}>{formatDate(currentMonth)}</Text>
-        <TouchableOpacity onPress={handleNextMonth}>
+        <TouchableOpacity onPress={() => setShowPicker(true)}>
+          <Text style={styles.monthText}>
+            {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))}>
           <Ionicons name="chevron-forward" size={24} color="#787A80" />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.daysHeader}>
-        {renderDays()}
-      </View>
+      {/* Day headers */}
+      <View style={styles.daysHeader}>{renderDays()}</View>
 
-      <View style={styles.datesContainer}>
-        {renderCells()}
-      </View>
+      {/* Calendar grid */}
+      <View style={styles.datesContainer}>{renderCells()}</View>
+
+      {/* Month/Year picker */}
+      {renderPicker()}
     </View>
   );
 };
 
+// Styles for the calendar component
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#12141B',
@@ -169,19 +192,42 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'PlusJakartaSans-Medium',
   },
-  selectedDate: {
-    backgroundColor: '#9B6AD4',
-    borderRadius: 20,
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
-  selectedDateText: {
-    color: '#FFFFFF',
+  pickerContainer: {
+    backgroundColor: '#12141B',
+    margin: 20,
+    borderRadius: 12,
+    padding: 16,
+    width: '90%',
+    flexDirection: 'row',
+  },
+  pickerSection: {
+    flex: 1,
+    marginHorizontal: 10,
+  },
+  pickerTitle: {
+    color: '#F4F4F4',
+    fontSize: 16,
     fontFamily: 'PlusJakartaSans-SemiBold',
+    marginBottom: 8,
+    textAlign: 'center',
   },
-  disabledDate: {
-    opacity: 0.5,
+  pickerList: {
+    maxHeight: 200,
   },
-  disabledDateText: {
-    color: '#787A80',
+  pickerItem: {
+    color: '#F4F4F4',
+    fontSize: 14,
+    paddingVertical: 8,
+    textAlign: 'center',
+    backgroundColor: '#1A1D26',
+    marginVertical: 2,
+    borderRadius: 4,
   },
 });
 

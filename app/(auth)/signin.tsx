@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, ImageSourcePropType } from "react-native";
+import { View, Text, Image, TouchableOpacity, ImageSourcePropType, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput } from "react-native-gesture-handler";
 import { AppButton } from "@/components/app-components/button";
@@ -8,12 +8,14 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSendEmailOTP } from "@/hooks/useVerifyEmail";
 import AuthHeader from "@/components/AuthHeader";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { InformationCircleIcon } from "@hugeicons/react-native";
 import * as Google from "expo-auth-session/providers/google";
 import * as AppleAuthentication from "expo-apple-authentication";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState, useCallback } from "react";
+import api from "@/config/apiConfig";
+import { AuthRequest, AuthRequestPromptOptions, AuthSessionResult } from 'expo-auth-session';
+import { useLogin } from "@/hooks/useLogin";
 
 // Complete WebBrowser auth session
 WebBrowser.maybeCompleteAuthSession();
@@ -24,6 +26,10 @@ const schema = z.object({
     .string({ message: "Please enter a valid email address" })
     .email({ message: "Please enter a valid email address" })
     .nonempty({ message: "Email is required" }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" })
+    .nonempty({ message: "Password is required" }),
 });
 
 // Define form data type from schema
@@ -59,7 +65,7 @@ const SocialButton: React.FC<SocialButtonProps> = ({ onPress, imageSource, text 
 );
 
 const Signin: React.FC = () => {
-  const { mutate: sendOtpEmail, isPending, isError, error } = useSendEmailOTP() as {
+  const { mutate: login, isPending, isError, error } = useLogin() as {
     mutate: (data: FormData, options: { onSuccess: () => void }) => void;
     isPending: boolean;
     isError: boolean;
@@ -67,15 +73,15 @@ const Signin: React.FC = () => {
   };
   const [authLoading, setAuthLoading] = useState<boolean>(false);
 
-  // Google Auth Setup with proper typing
+  // Google Auth Setup with correct typing
   const [request, response, promptAsync] = Google.useAuthRequest({
     iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
     androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
     webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
   }) as [
-    Google.AuthRequest | null,
-    Google.AuthResponse | null,
-    (options?: Google.AuthRequestPromptOptions) => Promise<Google.AuthResponse>
+    AuthRequest | null,
+    AuthSessionResult | null,
+    (options?: AuthRequestPromptOptions) => Promise<AuthSessionResult>
   ];
 
   const {
@@ -88,12 +94,16 @@ const Signin: React.FC = () => {
   });
 
   // Handle social sign-in with proper typing
-  const handleSocialSignIn = useCallback(async (provider: "google" | "apple", token: string) => {
+  const handleSocialSignIn = useCallback(async (provider: "google" | "apple", token: string, email: string) => {
     setAuthLoading(true);
     try {
       // Replace with your actual API call
-      // const response = await api.verifySocialToken(provider, token);
-      // await AsyncStorage.setItem('userToken', response.token);
+      const payload = {
+        "channel": provider, // google or apple
+        "email": email,
+        "token": token
+    }
+      const response = await api.post("/api/user/oauth", payload)
       router.navigate("/home");
     } catch (err: unknown) {
       console.error(`${provider} sign-in error:`, err);
@@ -107,19 +117,25 @@ const Signin: React.FC = () => {
     if (response?.type === "success") {
       const { authentication } = response;
       if (authentication?.accessToken) {
-        handleSocialSignIn("google", authentication.accessToken);
+        // Fetch Google user info to get email
+        fetch('https://www.googleapis.com/userinfo/v2/me', {
+          headers: { Authorization: `Bearer ${authentication.accessToken}` },
+        })
+          .then(response => response.json())
+          .then(userInfo => {
+            handleSocialSignIn("google", authentication.accessToken, userInfo.email);
+          })
+          .catch(error => {
+            console.error('Error fetching Google user info:', error);
+          });
       }
     }
   }, [response, handleSocialSignIn]);
 
-  // Email Submit Handler
+  // Email/Password Submit Handler
   const onSubmit = (data: FormData): void => {
-    sendOtpEmail(data, {
-      onSuccess: () =>
-        router.navigate({
-          pathname: "/(auth)/verifyEmail",
-          params: { email: data.email },
-        }),
+    login(data, {
+      onSuccess: () => router.navigate("/home"),
     });
   };
 
@@ -139,8 +155,8 @@ const Signin: React.FC = () => {
             AppleAuthentication.AppleAuthenticationScope.EMAIL,
           ],
         });
-      if (credential.identityToken) {
-        handleSocialSignIn("apple", credential.identityToken);
+      if (credential.identityToken && credential.email) {
+        handleSocialSignIn("apple", credential.identityToken, credential.email);
       } else {
         console.error("No identity token received from Apple Sign-In");
       }
@@ -159,73 +175,111 @@ const Signin: React.FC = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1">
+    <View className="flex-1">
       <View className="flex-1 px-6 gap-12">
         <View className="gap-y-20">
           <AuthHeader
             title="Welcome to Looop"
-            description="We’re excited to have you in the looop. Are you ready for an amazing experience? Let’s get you started!"
+            description="Sign in to your account to continue"
           />
 
           {isError && (
             <View className="flex-row items-center gap-x-2">
               <InformationCircleIcon size={20} color="#FF1B1B" />
               <Text className="text-[#FF1B1B] font-PlusJakartaSansRegular text-xs">
-                {error?.response?.data.message || "Failed to send email. Please try again."}
+                {error?.response?.data.message || "Invalid email or password"}
               </Text>
             </View>
           )}
 
-          <View className="gap-y-3">
-            <Text className="text-[16px] text-gray-200 font-PlusJakartaSansBold">
-              What’s your Email?
-            </Text>
-            <Controller
-              control={control}
-              name="email"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  style={{
-                    backgroundColor: "#1E1E1E",
-                    color: "#D2D3D5",
-                    borderRadius: 10,
-                    padding: 10,
-                  }}
-                  className="h-16 text-sm font-PlusJakartaSansRegular rounded-full px-8"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                  placeholder="Email Address"
-                  placeholderTextColor="#787A80"
-                  keyboardType="email-address"
-                  inputMode="email"
-                  keyboardAppearance="dark"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  autoComplete="email"
-                  returnKeyType="next"
-                />
-              )}
-            />
-            {errors?.email && (
-              <Text className="text-red-500 text-sm font-PlusJakartaSansRegular">
-                {errors.email.message}
+          <View className="gap-y-6">
+            {/* Email Input */}
+            <View className="gap-y-3">
+              <Text className="text-[16px] text-gray-200 font-PlusJakartaSansBold">
+                Email Address
               </Text>
-            )}
+              <Controller
+                control={control}
+                name="email"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    style={{
+                      backgroundColor: "#1E1E1E",
+                      color: "#D2D3D5",
+                      borderRadius: 10,
+                      padding: 10,
+                    }}
+                    className="h-16 text-sm font-PlusJakartaSansRegular rounded-full px-8"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    placeholder="Email Address"
+                    placeholderTextColor="#787A80"
+                    keyboardType="email-address"
+                    inputMode="email"
+                    keyboardAppearance="dark"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoComplete="email"
+                    returnKeyType="next"
+                  />
+                )}
+              />
+              {errors?.email && (
+                <Text className="text-red-500 text-sm font-PlusJakartaSansRegular">
+                  {errors.email.message}
+                </Text>
+              )}
+            </View>
+
+            {/* Password Input */}
+            <View className="gap-y-3">
+              <Text className="text-[16px] text-gray-200 font-PlusJakartaSansBold">
+                Password
+              </Text>
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    style={{
+                      backgroundColor: "#1E1E1E",
+                      color: "#D2D3D5",
+                      borderRadius: 10,
+                      padding: 10,
+                    }}
+                    className="h-16 text-sm font-PlusJakartaSansRegular rounded-full px-8"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    placeholder="Enter your password"
+                    placeholderTextColor="#787A80"
+                    secureTextEntry
+                    keyboardAppearance="dark"
+                  />
+                )}
+              />
+              {errors?.password && (
+                <Text className="text-red-500 text-sm font-PlusJakartaSansRegular">
+                  {errors.password.message}
+                </Text>
+              )}
+            </View>
           </View>
 
           <AppButton.Secondary
             color="#FF7A1B"
-            text="Continue"
+            text="Sign In"
             onPress={handleSubmit(onSubmit)}
             loading={isPending}
           />
 
           <Text className="mt-[10px] text-center text-gray-400 font-PlusJakartaSansRegular text-sm">
-            Or you can sign in with
+            Or continue with
           </Text>
         </View>
 
+        {/* Social buttons remain the same */}
         <View className="flex-col gap-y-4">
           <SocialButton
             onPress={() => promptAsync()}
@@ -238,8 +292,14 @@ const Signin: React.FC = () => {
             text="Sign in with Apple"
           />
         </View>
+        <Pressable onPress={() => router.navigate("/(auth)")} className="items-center mx-auto">
+            <Text className="text-[14px] font-PlusJakartaSansRegular text-[#f4f4f4]">
+                Don't have an account?
+                 <Text className="text-Orange/08 underline font-PlusJakartaSansBold"> Sign Up</Text>
+            </Text>
+        </Pressable>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

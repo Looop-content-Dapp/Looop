@@ -9,9 +9,8 @@ import {
   import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
   import { AppBackButton } from "@/components/app-components/back-btn";
   import { AppButton } from "@/components/app-components/button";
-  import FilterButton from "@/components/app-components/FilterButton";
 import ChainPicker from "@/components/app-components/ChainPicker";
-  
+
   const payInCrypto = () => {
     const {name, image} = useLocalSearchParams();
     const navigation = useNavigation();
@@ -38,7 +37,7 @@ import ChainPicker from "@/components/app-components/ChainPicker";
         <ScrollView className="flex-1 px-[24px]" showsVerticalScrollIndicator={false}>
           <View className="mt-[24px] gap-y-[16px]">
             <Text className="text-[20px] font-PlusJakartaSansBold text-[#f4f4f4]">Mint Tribe pass</Text>
-            
+
             <View className="bg-[#FF6D1B20] p-3 rounded-[8px] mb-2">
               <Text className="text-[14px] text-[#FF6D1B] font-PlusJakartaSansMedium">
                 ⚠️ Test Mode: This is a demonstration version. No real cryptocurrency transactions will be processed.
@@ -58,10 +57,10 @@ import ChainPicker from "@/components/app-components/ChainPicker";
           </View>
 
           <View className="px-[8px] pt-[8px] pb-[24px] border-[0.5px] border-[#787A80] bg-[#0A0B0F] rounded-[32px] mt-[24px] mb-[24px]">
-            <Image 
-              source={{ uri: image as string }} 
-              className="w-full aspect-square rounded-[24px]" 
-              style={{ resizeMode: "cover" }} 
+            <Image
+              source={{ uri: image as string }}
+              className="w-full aspect-square rounded-[24px]"
+              style={{ resizeMode: "cover" }}
             />
             <View className="flex-row items-end px-[16px] mt-[16px]">
               <View className="flex-1 gap-y-[8px]">
@@ -70,25 +69,25 @@ import ChainPicker from "@/components/app-components/ChainPicker";
                   <Text className="text-[#0A0B0F] text-[14px] font-PlusJakartaSansBold">$2/month</Text>
                 </View>
               </View>
-              <Image 
-                source={require("../../assets/images/logo-gray.png")} 
-                className="w-[49px] h-[22px]" 
-                style={{ resizeMode: "cover" }} 
+              <Image
+                source={require("../../assets/images/logo-gray.png")}
+                className="w-[49px] h-[22px]"
+                style={{ resizeMode: "cover" }}
               />
             </View>
           </View>
         </ScrollView>
 
         <View className="px-[24px] pb-[24px]">
-          <AppButton.Primary 
-            color="#FF6D1B" 
-            text="Continue (Test Mode)" 
-            loading={false} 
+          <AppButton.Primary
+            color="#FF6D1B"
+            text="Continue (Test Mode)"
+            loading={false}
             onPress={showTestModeAlert}
           />
         </View>
       </View>
     );
   };
-  
+
   export default payInCrypto;

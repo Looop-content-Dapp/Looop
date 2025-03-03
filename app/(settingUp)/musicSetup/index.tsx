@@ -1,5 +1,5 @@
 import React, { useEffect, useState, memo } from "react";
-import { View, Text, Image, TouchableOpacity, FlatList, Alert } from "react-native";
+import { View, Text, Image, TouchableOpacity, FlatList, ActivityIndicator  } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft02Icon } from "@hugeicons/react-native";
 import { MotiView } from "moti";
@@ -54,7 +54,7 @@ const Step1 = memo(
           </Text>
         </View>
         <FlatList
-          data={loading ? Array(12).fill({}) : genres}
+          data={loading ? Array(12).fill({}) : genres.slice(0, 23)}
           renderItem={({ item }) =>
             loading ? (
               <SkeletonGenre />
@@ -99,13 +99,22 @@ const Step2 = memo(({ artistes, loading, onFollow }: any) => (
   <View style={{ flex: 1, padding: 24 }}>
     <View style={{ marginBottom: 16 }}>
       <Text style={{ fontSize: 24, color: "#f4f4f4", fontWeight: "bold" }}>
-        Based on your selections
+        {loading ? "Finding artists for you..." : "Based on your selections"}
       </Text>
       <Text style={{ fontSize: 14, color: "#D2D3D5" }}>
-        Follow some artists to explore their discographies!
+        {loading
+          ? "Please wait while we curate artists based on your genres"
+          : "Follow some artists to explore their discographies!"
+        }
       </Text>
     </View>
-    <ArtistSectionList sections={artistes} onFollow={onFollow} loading={loading} />
+    {loading ? (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#FF6D1B" />
+      </View>
+    ) : (
+      <ArtistSectionList sections={artistes} onFollow={onFollow} loading={loading} />
+    )}
   </View>
 ));
 
@@ -116,7 +125,6 @@ const MusicOnboarding = () => {
   const [artistes, setArtistes] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const { userdata } = useAppSelector((state) => state.auth);
-  const dispatch = useAppDispatch();
   const { getGenres, getArtistBasedOnGenre, saveUserPreference, getUserById } = useQuery();
 
   useEffect(() => {

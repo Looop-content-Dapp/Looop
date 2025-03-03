@@ -1,5 +1,5 @@
 import { ArrowDown01Icon, Copy01Icon } from "@hugeicons/react-native";
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image, ActivityIndicator } from "react-native";
 import { XIONB, StarknetB } from "@/assets/images/images";
 import { useState } from "react";
 
@@ -10,10 +10,11 @@ type WalletBalanceProps = {
     total: number;
   };
   addresses: { chain: string; address: string }[];
+  isLoading: boolean; // New prop to track loading state
   onCopyAddress?: (address: string) => void;
 };
 
-export default function WalletBalance({ balances, addresses, onCopyAddress }: WalletBalanceProps) {
+export default function WalletBalance({ balances, addresses, isLoading, onCopyAddress }: WalletBalanceProps) {
   const [selectedTab, setSelectedTab] = useState("All balances");
   const [currency, setCurrency] = useState<"USD" | "NGN">("USD");
 
@@ -58,7 +59,7 @@ export default function WalletBalance({ balances, addresses, onCopyAddress }: Wa
             <Text className="text-[#D2D3D5] text-[12px] font-PlusJakartaSansMedium">{tab}</Text>
           </TouchableOpacity>
         ))}
-         <TouchableOpacity
+        <TouchableOpacity
           onPress={() => setCurrency(currency === "USD" ? "NGN" : "USD")}
           className="bg-[#202227] px-3 py-[6px] flex-row items-center rounded-full"
         >
@@ -71,10 +72,15 @@ export default function WalletBalance({ balances, addresses, onCopyAddress }: Wa
 
       <View className="mx-auto items-center">
         <Text className="text-[#63656B] text-[14px] mb-2">Wallet balance</Text>
-        <Text className="text-white text-[40px] font-PlusJakartaSansBold">
-          {getCurrentBalance()}
-        </Text>
-
+        {isLoading ? (
+          <View className="justify-center items-center">
+            <ActivityIndicator size="large" color="#FF8A49" />
+          </View>
+        ) : (
+          <Text className="text-white text-[40px] font-PlusJakartaSansBold">
+            {getCurrentBalance()}
+          </Text>
+        )}
       </View>
 
       <View className="bg-[#202227] p-[20px] gap-y-[12px] mt-[32px] rounded-[10px]">

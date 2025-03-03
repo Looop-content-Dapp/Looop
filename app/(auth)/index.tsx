@@ -1,349 +1,274 @@
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  Platform,
-  TextInput,
-  Pressable,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
-import React, { useState, useEffect } from "react";
+import { View, Text, Image, TouchableOpacity, ImageSourcePropType } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft02Icon } from "@hugeicons/react-native";
-import {
-  CodeField,
-  Cursor,
-  useBlurOnFulfill,
-  useClearByFocusCell,
-} from "react-native-confirmation-code-field";
-import { router } from "expo-router";
-import { account } from "../../appWrite";
-import { useClerkAuthentication } from "../../hooks/useClerkAuthentication";
-import { ID } from "react-native-appwrite";
+import { TextInput } from "react-native-gesture-handler";
 import { AppButton } from "@/components/app-components/button";
+import { router } from "expo-router";
+import { useForm, Controller, UseFormReturn } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useSendEmailOTP } from "@/hooks/useVerifyEmail";
+import AuthHeader from "@/components/AuthHeader";
+import { InformationCircleIcon } from "@hugeicons/react-native";
+import * as Google from "expo-auth-session/providers/google";
+import * as AppleAuthentication from "expo-apple-authentication";
+import * as WebBrowser from "expo-web-browser";
+import { useEffect, useState, useCallback } from "react";
+import api from "@/config/apiConfig";
+import { AuthRequest, AuthRequestPromptOptions, AuthSessionResult } from 'expo-auth-session';
+import { Pressable } from "react-native";
 
-const CELL_COUNT = 6;
+// Complete WebBrowser auth session
+WebBrowser.maybeCompleteAuthSession();
 
-const EmailSignupFlow = () => {
-  // Step management
-  const [currentStep, setCurrentStep] = useState("email"); // 'email' or 'verification'
+// Validation schema
+const schema = z.object({
+  email: z
+    .string({ message: "Please enter a valid email address" })
+    .email({ message: "Please enter a valid email address" })
+    .nonempty({ message: "Email is required" }),
+});
 
-  // Email step state
-  const [emailAddress, setEmailAddress] = useState("");
+// Define form data type from schema
+type FormData = z.infer<typeof schema>;
 
-  // Verification step state
-  const [value, setValue] = useState("");
-  const [isCorrect, setIsCorrect] = useState<boolean>();
-  const [timer, setTimer] = useState(60);
-  const [isLoading, setIsLoading] = useState(false);
-  const { handleEmailSignUp, userId } =
-    useClerkAuthentication();
+// Define mutation error type (adjust based on your API response)
+interface MutationError {
+  response?: {
+    data: {
+      message: string;
+    };
+  };
+}
 
-  // Verification code field setup
-  const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
-  const [props, getCellOnLayoutHandler] = useClearByFocusCell({
-    value,
-    setValue,
+// Props for SocialButton component
+interface SocialButtonProps {
+  onPress: () => void;
+  imageSource: ImageSourcePropType;
+  text: string;
+}
+
+// Social Button Component
+const SocialButton: React.FC<SocialButtonProps> = ({ onPress, imageSource, text }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    className="flex-row items-center justify-center gap-x-4 bg-white px-4 py-2 rounded-full w-full"
+  >
+    <Image source={imageSource} style={{ width: 40, height: 40 }} />
+    <Text className="text-[#040405] font-PlusJakartaSansMedium text-[14px]">
+      {text}
+    </Text>
+  </TouchableOpacity>
+);
+
+const EmailSignUp: React.FC = () => {
+  const { mutate: sendOtpEmail, isPending, isError, error } = useSendEmailOTP() as {
+    mutate: (data: FormData, options: { onSuccess: () => void }) => void;
+    isPending: boolean;
+    isError: boolean;
+    error: MutationError | null;
+  };
+  const [authLoading, setAuthLoading] = useState<boolean>(false);
+
+  // Google Auth Setup with correct typing
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  }) as [
+    AuthRequest | null,
+    AuthSessionResult | null,
+    (options?: AuthRequestPromptOptions) => Promise<AuthSessionResult>
+  ];
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  }: UseFormReturn<FormData> = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: "" },
   });
 
-  // Timer effect for resend cooldown
-  useEffect(() => {
-    if (timer > 0) {
-      const intervalId = setInterval(() => {
-        setTimer((prevTimer) => prevTimer - 1);
-      }, 1000);
-      return () => clearInterval(intervalId);
-    }
-  }, [timer]);
-
-  // Handle initial email submission
-  const handleEmailSubmit = async () => {
-    if (!emailAddress || !emailAddress.includes("@")) {
-      // Add proper email validation here
-      return;
-    }
-    setIsLoading(true);
+  // Handle social sign-in with proper typing
+  const handleSocialSignIn = useCallback(async (provider: "google" | "apple", token: string, email: string) => {
+    setAuthLoading(true);
     try {
-      // Create verification request with Appwrite
-      await handleEmailSignUp(emailAddress);
-      setIsLoading(false);
-      setCurrentStep("verification");
-    } catch (error: any) {
-      setIsLoading(false);
-      console.error("Failed to send verification email:", error.message);
-      // Add proper error handling/display here
+      // Replace with your actual API call
+      const payload = {
+        "channel": provider, // google or apple
+        "email": email,
+        "token": token
     }
-  };
-
-  // Handle verification code submission
-  const handleVerification = async () => {
-    if (isLoading) return;
-    setIsLoading(true);
-
-    try {
-      const session = await account.createSession(
-        userId,
-        value // The OTP code
-      );
-      console.log("session", session);
-
-      if (session) {
-        setIsCorrect(true);
-        setTimeout(() => {
-          router.replace("/(auth)/createPassword");
-          Alert.alert("confirmed");
-        }, 1000);
-      } else {
-        await account.deleteSession(session?.$id);
-        setIsCorrect(false);
+      const response = await api.post("/api/user/oauth", payload)
+      // await AsyncStorage.setItem('userToken', response.token);
+      console.log("response", response.data.data)
+      if(response.data){
+        router.navigate("/(auth)/userDetail");
       }
-    } catch (err) {
-      await account.deleteSession(session?.$id);
-      console.error("Verification failed:", err);
-      setIsCorrect(false);
+
+    } catch (err: unknown) {
+      console.error(`${provider} sign-in error:`, err);
     } finally {
-      setIsLoading(false);
+      setAuthLoading(false);
     }
-  };
+  }, []);
 
-  // Handle resend verification code
-  const handleResend = async () => {
-    if (timer > 0) return;
-
-    try {
-      await account.createEmailToken(ID.unique(), emailAddress, true);
-      setTimer(60);
-    } catch (err) {
-      console.error("Failed to resend verification code:", err);
-    }
-  };
-
+  // Google Auth Response Handler
   useEffect(() => {
-    if (value.length === CELL_COUNT) {
-      handleVerification();
+    if (response?.type === "success") {
+      const { authentication } = response;
+      if (authentication?.accessToken) {
+        // Fetch Google user info to get email
+        fetch('https://www.googleapis.com/userinfo/v2/me', {
+          headers: { Authorization: `Bearer ${authentication.accessToken}` },
+        })
+          .then(response => response.json())
+          .then(userInfo => {
+            handleSocialSignIn("google", authentication.accessToken, userInfo.email);
+          })
+          .catch(error => {
+            console.error('Error fetching Google user info:', error);
+          });
+      }
     }
-  }, [value]);
+  }, [response, handleSocialSignIn]);
 
-  // Email Input Step
-  const renderEmailStep = () => (
-    <>
-      <View className="items-center">
-        <Image
-          source={require("../../assets/images/logo-orange.png")}
-          className="w-[72px] h-[32px]"
-        />
-      </View>
+  // Email Submit Handler
+  const onSubmit = (data: FormData): void => {
+    sendOtpEmail(data, {
+      onSuccess: () =>
+        router.navigate({
+          pathname: "/(auth)/verifyEmail",
+          params: { email: data.email },
+        }),
+    });
+  };
 
-      <View className="gap-y-12 mt-6">
-        <View className="gap-y-2 pt-6">
-          <Text className="text-white text-[24px] font-PlusJakartaSansBold">
-            Welcome to Looop
-          </Text>
-          <Text className="text-gray-400 text-[16px] font-PlusJakartaSansRegular">
-            We're excited to have you in the looop. Are you ready for an amazing
-            experience? Let's get you started
-          </Text>
-        </View>
-
-        <View className="gap-y-3">
-          <Text className="text-[16px] text-gray-200 font-PlusJakartaSansBold">
-            What's your Email?
-          </Text>
-          <TextInput
-            placeholderTextColor="#787A80"
-            placeholder="Email address"
-            value={emailAddress}
-            onChangeText={setEmailAddress}
-            inputMode="email"
-            keyboardAppearance="dark"
-            keyboardType="email-address"
-            className="h-16 text-sm font-PlusJakartaSansRegular bg-Grey/07 text-Grey/04 rounded-full px-8"
-          />
-        </View>
-
-        <AppButton.Primary
-          color="#FF6D1B"
-          text="Continue"
-          loading={isLoading}
-          onPress={handleEmailSubmit}
-        />
-
-        <Text className="mt-14 text-center text-gray-400 font-PlusJakartaSansRegular text-sm">
-          Or you can sign up with
-        </Text>
-      </View>
-
-      <View className="mt-12 gap-y-4">
-        <TouchableOpacity
-          className="bg-white py-4 rounded-full flex-row items-center justify-center"
-          onPress={() => Alert.alert('Google signon not available yet')}
-        >
-          <Image
-            source={require("../../assets/images/google.png")}
-            className="w-8 h-8"
-          />
-          <Text className="ml-2 text-lg font-PlusJakartaSansMedium text-black">
-            Sign up with Google
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          className="bg-white py-4 rounded-full flex-row items-center justify-center"
-          onPress={() => Alert.alert('Apple signon not available yet')}
-        >
-          <Image
-            source={require("../../assets/images/apple.png")}
-            className="w-8 h-8"
-          />
-          <Text className="ml-2 text-lg font-PlusJakartaSansMedium text-black">
-            Sign up with Apple
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-         <View className="flex-row items-center justify-center gap-x-[4px] absolute bottom-12 left-0 right-0">
-            <Text className="text-[#787A80] font-PlusJakartaSansMedium text-[14px]">
-             Already have an account?
-            </Text>
-            <TouchableOpacity onPress={() => router.navigate("/(auth)/signin")}>
-            <Text className="text-Orange/08 underline pl- font-PlusJakartaSansMedium text-[14px]">
-             SignIn
-            </Text>
-            </TouchableOpacity>
-
-          </View>
-    </>
-  );
-
-  // Verification Step
-  const renderVerificationStep = () => (
-    <>
-      <Pressable onPress={() => setCurrentStep("email")}>
-        <ArrowLeft02Icon size={32} color="#fff" variant="solid" />
-      </Pressable>
-      <View className="items-center">
-        <Image
-          source={require("../../assets/images/Mail.png")}
-          className="w-[183px] h-[183px]"
-        />
-      </View>
-      <View className="items-center mt-[24px]">
-        <Text className="text-[20px] text-Grey/04 font-PlusJakartaSansRegular">
-          Please enter the code we sent to
-        </Text>
-        <Text className="text-[16px] text-Grey/06 font-PlusJakartaSansRegular">
-          {emailAddress}
-        </Text>
-      </View>
-
-      <Text
-        onPress={() => setCurrentStep("email")}
-        className="text-Orange/08 text-center text-[16px] font-PlusJakartaSansBold underline mt-[24px]"
-      >
-        Change email
-      </Text>
-
-      <View className="">
-        <CodeField
-          ref={ref}
-          value={value}
-          onChangeText={setValue}
-          cellCount={CELL_COUNT}
-          rootStyle={styles.codeFieldRoot}
-          keyboardType="number-pad"
-          textContentType="oneTimeCode"
-          autoComplete={Platform.OS === "android" ? "sms-otp" : "one-time-code"}
-          testID="my-code-input"
-          InputComponent={TextInput}
-          renderCell={({ index, symbol, isFocused }) => (
-            <Text
-              key={index}
-              style={[
-                styles.cell,
-                isFocused && styles.focusCell,
-                isCorrect === false &&
-                  value.length === CELL_COUNT &&
-                  styles.errorCell,
-                isCorrect === true &&
-                  value.length === CELL_COUNT &&
-                  styles.successCell,
-              ]}
-              onLayout={getCellOnLayoutHandler(index)}
-            >
-              {symbol || (isFocused ? <Cursor /> : null)}
-            </Text>
-          )}
-          {...props}
-        />
-
-        {isCorrect === false && value.length === CELL_COUNT && (
-          <Text style={styles.errorMessage}>
-            Incorrect code. Please try again.
-          </Text>
-        )}
-
-        <View className="mt-[32px]">
-          <Text className="text-[14px] font-PlusJakartaSansMedium text-Grey/04 text-center">
-            Didn't receive a code?{" "}
-            {timer > 0 ? (
-              <Text className="text-Grey/06">Resend in {timer}s</Text>
-            ) : (
-              <Text onPress={handleResend} className="text-Orange/08">
-                Resend
-              </Text>
-            )}
-          </Text>
-        </View>
-      </View>
-    </>
-  );
+  // Apple Sign In Handler
+  const handleAppleSignIn = async (): Promise<void> => {
+    try {
+      setAuthLoading(true);
+      // Check if Apple Authentication is available
+      if (!AppleAuthentication.isAvailableAsync()) {
+        console.error("Apple Sign-In is not available on this device.");
+        return;
+      }
+      const credential: AppleAuthentication.AppleAuthenticationCredential =
+        await AppleAuthentication.signInAsync({
+          requestedScopes: [
+            AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+            AppleAuthentication.AppleAuthenticationScope.EMAIL,
+          ],
+        });
+      if (credential.identityToken && credential.email) {
+        handleSocialSignIn("apple", credential.identityToken, credential.email);
+      } else {
+        console.error("No identity token received from Apple Sign-In");
+      }
+    } catch (e: unknown) {
+      const error = e as { code?: string; message?: string };
+      if (error.code !== "ERR_CANCELED") {
+        console.error("Apple Sign In Error Details:", {
+          code: error.code,
+          message: error.message,
+          stack: (e as Error).stack,
+        });
+      }
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        paddingHorizontal: 24,
-        maxHeight: "100%",
-      }}
-      className="flex-1 min-h-full px-6"
-    >
-      {currentStep === "email" ? renderEmailStep() : renderVerificationStep()}
-    </SafeAreaView>
+    <View className="flex-1">
+      <View className="flex-1 px-6 gap-12">
+        <View className="gap-y-20">
+          <AuthHeader
+            title="Welcome to Looop"
+            description="We’re excited to have you in the looop. Are you ready for an amazing experience? Let’s get you started!"
+          />
+
+          {isError && (
+            <View className="flex-row items-center gap-x-2">
+              <InformationCircleIcon size={20} color="#FF1B1B" />
+              <Text className="text-[#FF1B1B] font-PlusJakartaSansRegular text-xs">
+                {error?.response?.data.message || "Failed to send email. Please try again."}
+              </Text>
+            </View>
+          )}
+
+          <View className="gap-y-3">
+            <Text className="text-[16px] text-gray-200 font-PlusJakartaSansBold">
+              What’s your Email?
+            </Text>
+            <Controller
+              control={control}
+              name="email"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={{
+                    backgroundColor: "#1E1E1E",
+                    color: "#D2D3D5",
+                    borderRadius: 10,
+                    padding: 10,
+                  }}
+                  className="h-16 text-sm font-PlusJakartaSansRegular rounded-full px-8"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  placeholder="Email Address"
+                  placeholderTextColor="#787A80"
+                  keyboardType="email-address"
+                  inputMode="email"
+                  keyboardAppearance="dark"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  autoComplete="email"
+                  returnKeyType="next"
+                />
+              )}
+            />
+            {errors?.email && (
+              <Text className="text-red-500 text-sm font-PlusJakartaSansRegular">
+                {errors.email.message}
+              </Text>
+            )}
+          </View>
+
+          <AppButton.Secondary
+            color="#FF7A1B"
+            text="Continue"
+            onPress={handleSubmit(onSubmit)}
+            loading={isPending}
+          />
+
+          <Text className="mt-[10px] text-center text-gray-400 font-PlusJakartaSansRegular text-sm">
+            Or you can sign in with
+          </Text>
+        </View>
+
+        <View className="flex-col gap-y-4">
+          <SocialButton
+            onPress={() => promptAsync()}
+            imageSource={require("../../assets/images/google.png")}
+            text="Sign in with Google"
+          />
+          <SocialButton
+            onPress={handleAppleSignIn}
+            imageSource={require("../../assets/images/apple.png")}
+            text="Sign in with Apple"
+          />
+        </View>
+
+        <Pressable onPress={() => router.navigate("/(auth)/signin")} className="items-center mx-auto">
+            <Text className="text-[14px] font-PlusJakartaSansRegular text-[#f4f4f4]">
+                Already have an account?
+                 <Text className="text-Orange/08 underline font-PlusJakartaSansBold">  Log In</Text>
+            </Text>
+        </Pressable>
+      </View>
+    </View>
   );
 };
 
-export default EmailSignupFlow;
-
-const styles = StyleSheet.create({
-  codeFieldRoot: { marginTop: 32, marginHorizontal: 14 },
-  cell: {
-    width: 56,
-    height: 72,
-    lineHeight: 36,
-    fontSize: 28,
-    borderWidth: 2,
-    borderColor: "#12141B",
-    textAlign: "center",
-    borderRadius: 10,
-    color: "#FFFFFF",
-    fontWeight: "400",
-    paddingTop: 13,
-  },
-  focusCell: {
-    borderColor: "#12141B",
-  },
-  errorCell: {
-    borderColor: "#FF0000",
-  },
-  successCell: {
-    borderColor: "#45F42E",
-  },
-  errorMessage: {
-    color: "#FF0000",
-    textAlign: "center",
-    marginTop: 10,
-    fontSize: 14,
-  },
-});
+export default EmailSignUp;

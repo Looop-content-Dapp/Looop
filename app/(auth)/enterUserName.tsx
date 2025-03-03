@@ -13,6 +13,8 @@ import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useCreateUser } from "@/hooks/useCreateUser";
 import { calculateAge } from "@/utils/calculateAge";
 import { InformationCircleIcon } from '@hugeicons/react-native';
+import { useCheckUsername } from "@/hooks/useCheckUsername";
+import { debounce } from "lodash";
 
 
 type FormData = {
@@ -50,7 +52,34 @@ const EnterUserName = () => {
     resolver: zodResolver(schema),
   });
 
+  const { mutate: checkUsername } = useCheckUsername();
+  const [usernameError, setUsernameError] = React.useState<string>("");
+
+  // Add debounced username check
+  const debouncedCheckUsername = React.useCallback(
+    debounce((username: string) => {
+      if (username) {
+        checkUsername(
+          { username },
+          {
+            onSuccess: (response) => {
+              if (response.data.existingUser) {
+                setUsernameError("Username already taken");
+              } else {
+                setUsernameError("");
+              }
+            },
+          }
+        );
+      }
+    }, 500),
+    []
+  );
+
   const onSubmit = (data: FormData) => {
+    if (usernameError) {
+      return;
+    }
     createUser(
       {
         email,
@@ -68,12 +97,12 @@ const EnterUserName = () => {
             params: { email, password, ...data },
           });
         },
-        
+
       }
     );
   };
 
-  
+
   return (
     <View className="flex-1 px-6 gap-12">
       <AuthHeader
@@ -135,16 +164,19 @@ const EnterUserName = () => {
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               onBlur={onBlur}
-              onChangeText={onChange}
+              onChangeText={(text) => {
+                onChange(text);
+                debouncedCheckUsername(text);
+              }}
               value={value}
               placeholder="Username"
               className="h-16 text-sm font-PlusJakartaSansRegular bg-Grey/07 text-Grey/04 rounded-full px-8"
             />
           )}
         />
-        {errors.username && (
+        {(errors.username || usernameError) && (
           <Text className="text-red-500 text-[12px]">
-            {errors.username.message}
+            {errors.username?.message || usernameError}
           </Text>
         )}
       </View>

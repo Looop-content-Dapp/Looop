@@ -87,7 +87,9 @@ const ArtistSectionList = ({
 }) => {
   const listSections = loading
     ? [{ title: "Pop", data: [] }, { title: "Rock", data: [] }, { title: "Hip Hop", data: [] }]
-    : sections.map((item) => ({ title: item.genreName, data: item.artists || [] }));
+    : sections
+        .map((item) => ({ title: item.genreName, data: item.artists || [] }))
+        .filter((section) => section.data.length > 0); // Only keep sections with artists
 
   return (
     <SectionList

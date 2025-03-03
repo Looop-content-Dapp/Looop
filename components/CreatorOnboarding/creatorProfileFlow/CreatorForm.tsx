@@ -10,10 +10,9 @@ import {
 import React, { useEffect, useState } from "react";
 import { CheckmarkCircle02Icon, ImageAdd02Icon, XVariableCircleIcon } from "@hugeicons/react-native";
 import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
-import { countries, genres } from "@/data/data";
+import { countries } from "@/data/data";
 import { FormField } from "@/components/app-components/formField";
 import { CreatorFormData } from "@/types/index";
-import api from "@/config/apiConfig";
 import { useQuery } from "@/hooks/useQuery";
 
 const social = [
