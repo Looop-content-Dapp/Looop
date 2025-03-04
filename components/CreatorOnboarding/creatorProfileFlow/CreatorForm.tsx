@@ -7,7 +7,7 @@ import {
   Image,
   ActivityIndicator,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   CheckmarkCircle02Icon,
   ImageAdd02Icon,
@@ -19,23 +19,11 @@ import { FormField } from "@/components/app-components/formField";
 import { CreatorFormData } from "@/types/index";
 import { useGetGenre } from "@/hooks/useGenre";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import useTwitterAuth from "@/hooks/useTwitterAuth";
 
 
 
-const social = [
-  {
-    title: "X (Formerly Twitter)",
-    socialIcon: <FontAwesome6 name="x-twitter" size={18} color="#FFFFFF" />,
-  },
-  {
-    title: "Instagram",
-    socialIcon: <FontAwesome name="instagram" size={18} color="#ffffff" />,
-  },
-  {
-    title: "TikTok",
-    socialIcon: <FontAwesome6 name="tiktok" size={18} color="#ffffff" />,
-  },
-];
+
 
 type MultiSelectOption = {
   label: string;
@@ -88,13 +76,37 @@ const CreatorForm = ({
   onSocialAccountChange,
 }: CreatorFormProps) => {
   const { data} = useGetGenre();
-  const { data: currentUser } = useCurrentUser();
+  const { 
+    isVerified, 
+    userData, 
+    loading, 
+    error, 
+    startVerification 
+  } = useTwitterAuth();
+  
+  error && console.error("Twitter verification error:", error);
   const genres = data?.data || [];
   const [isValidating, setIsValidating] = useState(false);
   const [validationStatus, setValidationStatus] = useState(null);
   
   const [type, setType] = useState("");
 
+  const social = [
+
+    {
+      title: "X (Formerly Twitter)",
+      socialIcon: <FontAwesome6 name="x-twitter" size={18} color="#FFFFFF" />,
+      onPress: () => startVerification(),
+    },
+    {
+      title: "Instagram",
+      socialIcon: <FontAwesome name="instagram" size={18} color="#ffffff" />,
+    },
+    {
+      title: "TikTok",
+      socialIcon: <FontAwesome6 name="tiktok" size={18} color="#ffffff" />,
+    },
+  ];
   
 
   const getStatusIcon = () => {
@@ -240,7 +252,7 @@ const CreatorForm = ({
         <Text style={styles.sectionTitle}>Connect Social Accounts</Text>
         <View style={styles.socialContainer}>
           {social.map((item) => (
-            <TouchableOpacity key={item.title} style={styles.socialButton}>
+            <TouchableOpacity key={item.title} style={styles.socialButton} onPress={item.onPress}>
               {item.socialIcon}
               <Text style={styles.socialText}>{item.title}</Text>
             </TouchableOpacity>
