@@ -53,6 +53,7 @@ const useMusicPlayer = () => {
   const albumInfo = useSelector((state) => state.player.albumInfo);
   const playlist = useSelector((state) => state.player.playlist);
   const currentIndex = useSelector((state) => state.player.currentIndex);
+  const { userdata} = useAppSelector((auth) => auth.auth)
 
   // Local state
   const [state, setState] = useState<MusicPlayerState>({
@@ -94,17 +95,16 @@ const useMusicPlayer = () => {
   const play = useCallback(
     async (track: Track, albumInfo: AlbumInfo, playlist?: Track[]) => {
       try {
-        const userId = await retrieveUserId();
-        if (!userId) return;
+        if (!userdata?._id) return;
 
         if (streamTimeoutRef.current) {
           clearTimeout(streamTimeoutRef.current);
         }
 
-        await streamSong(track.songData._id, userId);
+        await streamSong(track.songData._id, userdata?._id);
 
         streamTimeoutRef.current = setTimeout(async () => {
-          await streamSong(track.songData._id, userId);
+          await streamSong(track.songData._id, userdata?._id);
         }, track.duration * 0.9 * 1000);
 
         dispatch(playTrack({ track, albumInfo, playlist }));
@@ -157,18 +157,20 @@ const useMusicPlayer = () => {
     [play]
   );
 
+
+
   const loadAlbumData = useCallback(
     async (albumId: string, type: string) => {
       setState((prev) => ({ ...prev, loading: true }));
       try {
-        const userId = await retrieveUserId();
-        if (!userId) {
+        if (!userdata?._id) {
           setState((prev) => ({ ...prev, loading: false }));
           return;
         }
 
         // First get tracks
         const fetchedTracks = await getTracksFromId(albumId);
+        console.log("albumId", albumId);
         if (!fetchedTracks?.data?.tracks) {
           throw new Error("Failed to fetch tracks");
         }
@@ -178,8 +180,8 @@ const useMusicPlayer = () => {
         let savedAlbums = [];
         try {
           const [liked, saved] = await Promise.all([
-            getLikedSongs(userId),
-            getSavedAlbums(userId),
+            getLikedSongs(userdata?._id),
+            getSavedAlbums(userdata?._id),
           ]);
           likedSongs = liked || [];
           savedAlbums = saved || [];
@@ -211,20 +213,19 @@ const useMusicPlayer = () => {
         }));
       }
     },
-    [getTracksFromId, getLikedSongs, getSavedAlbums, retrieveUserId]
+    [getTracksFromId, getLikedSongs, getSavedAlbums]
   );
 
   const handleLike = useCallback(
     async (id: string, type: string) => {
       try {
-        const userId = await retrieveUserId();
-        if (!userId) return;
+        if (!userdata?._id) return;
 
         if (type === "album") {
-          await Promise.all([saveAlbum(userId, id), likeSong(userId, id)]);
+          await Promise.all([saveAlbum(userdata?._id, id), likeSong(userdata?._id, id)]);
           setState((prev) => ({ ...prev, isSaved: true, isLiked: true }));
         } else {
-          await likeSong(userId, id);
+          await likeSong(userdata?._id, id);
           setState((prev) => ({ ...prev, isLiked: true }));
         }
       } catch (error) {
@@ -232,7 +233,7 @@ const useMusicPlayer = () => {
         // Optionally show error to user
       }
     },
-    [saveAlbum, likeSong, retrieveUserId]
+    [saveAlbum, likeSong]
   );
 
   return {

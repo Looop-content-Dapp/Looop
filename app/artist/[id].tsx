@@ -12,9 +12,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft02Icon } from '@hugeicons/react-native';
-import { Artist } from '../../utils/types';
 import ArtistInfo from '../../components/ArtistInfo';
-import { useQuery } from '../../hooks/useQuery';
 import JoinCommunity from '../../components/cards/JoinCommunity';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -36,27 +34,10 @@ interface CommunityData {
 const ArtistDetails = () => {
   const {
     index,
-    artistId,
     image,
     name,
     bio,
     isVerified,
-    email,
-    websiteUrl,
-    address1,
-    address2,
-    city,
-    country,
-    postalCode,
-    followers = [],
-    monthlyListeners,
-    popularity,
-    genres,
-    labels,
-    topTracks,
-    createdAt,
-    updatedAt,
-    isActive,
     id,
     isFollowing,
     noOfFollowers
@@ -162,7 +143,20 @@ const ArtistDetails = () => {
             style={styles.imageBackground}
             resizeMode="cover"
           >
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={[
+                styles.backButton,
+                {
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }
+              ]}
+            >
               <ArrowLeft02Icon size={24} color="#fff" />
             </TouchableOpacity>
           </ImageBackground>
@@ -185,7 +179,7 @@ const ArtistDetails = () => {
               desc={bio as string}
               follower={"12459"}
               isVerfied={isVerified as string}
-              index={index as string}
+              index={id as string}
               isFollowing={isFollowing as boolean}
             />
 
@@ -196,21 +190,9 @@ const ArtistDetails = () => {
   isMember={isMember}
 />
 
-          <ArtistReleases artistId={index as string} />
+          <ArtistReleases artistId={id as string} />
           </View>
 
-             {/* Description Section */}
-      <View style={styles.descriptionContainer}>
-        <Text style={styles.aboutText}>About {name}</Text>
-        <Text numberOfLines={isExpanded ? undefined : 1} style={styles.descriptionText}>
-          {bio}
-        </Text>
-        <TouchableOpacity onPress={toggleDescription}>
-          <Text style={styles.toggleDescriptionText}>
-            {isExpanded ? 'See less' : 'See more'}
-          </Text>
-        </TouchableOpacity>
-      </View>
         </Animated.ScrollView>
 
         <PaymentBottomSheet
@@ -256,92 +238,6 @@ const styles = StyleSheet.create({
   paymentContainer: {
     padding: 16,
     alignItems: 'center',
-  },
-  paymentCurrency: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    marginBottom: 16,
-    fontFamily: 'PlusJakartaSansRegular',
-  },
-  usdText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontFamily: 'PlusJakartaSansBold',
-  },
-  amountText: {
-    color: '#FFFFFF',
-    fontSize: 48,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    fontFamily: 'PlusJakartaSansBold',
-  },
-  minimumText: {
-    color: '#8E8E93',
-    fontSize: 14,
-    marginBottom: 24,
-    fontFamily: 'PlusJakartaSansRegular',
-  },
-  recipientContainer: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  toText: {
-    color: '#8E8E93',
-    fontSize: 14,
-    marginBottom: 8,
-    fontFamily: 'PlusJakartaSansRegular',
-  },
-  recipientInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  recipientImage: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    marginRight: 8,
-  },
-  recipientName: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-    fontFamily: 'PlusJakartaSansBold',
-  },
-  forText: {
-    color: '#8E8E93',
-    fontSize: 14,
-    fontFamily: 'PlusJakartaSansRegular',
-  },
-  applePayButton: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 56,
-    width: '100%',
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  applePayImage: {
-    height: 24,
-    width: 24,
-    resizeMode: 'contain',
-  },
-  creditCardButton: {
-    backgroundColor: 'transparent',
-    borderRadius: 56,
-    width: '100%',
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#3A3A3C',
-  },
-  creditCardText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'PlusJakartaSansSemiBold',
   },
   // Skeleton styles
   skeletonContainer: {

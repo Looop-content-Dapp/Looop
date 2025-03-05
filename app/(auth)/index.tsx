@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, ImageSourcePropType } from "react-native";
+import { View, Text, Image, TouchableOpacity, ImageSourcePropType, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput } from "react-native-gesture-handler";
 import { AppButton } from "@/components/app-components/button";
@@ -71,7 +71,7 @@ const EmailSignUp: React.FC = () => {
 
   // Google Auth Setup with correct typing
   const [request, response, promptAsync] = Google.useAuthRequest({
-    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || "776440951072-v1ncd4jb1o8arac8f541p0ghrv24v4ro.apps.googleusercontent.com",
     androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
     webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
   }) as [
@@ -100,12 +100,13 @@ const EmailSignUp: React.FC = () => {
         "token": token
     }
       const response = await api.post("/api/user/oauth", payload)
-      // await AsyncStorage.setItem('userToken', response.token);
       console.log("response", response.data.data)
-      if(response.data){
+      // await AsyncStorage.setItem('userToken', response.token);
+      if(response.status === 200){
         router.navigate("/(auth)/userDetail");
+      }else{
+        Alert.alert("Error", "Something went wrong");
       }
-
     } catch (err: unknown) {
       console.error(`${provider} sign-in error:`, err);
     } finally {
