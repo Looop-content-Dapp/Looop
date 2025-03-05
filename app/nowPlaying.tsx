@@ -52,7 +52,7 @@ import { useQuery } from '../hooks/useQuery';
     const [trackDuration] = React.useState(180); // 3 minutes in seconds
     const progressRef = React.useRef(progress);
     progressRef.current = progress;
-    console.log("currentTrack", currentTrack)
+    
 
     // const handleLikePress = async () => {
     //     try {
