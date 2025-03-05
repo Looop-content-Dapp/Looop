@@ -23,13 +23,10 @@ import {
 } from "@hugeicons/react-native";
 import { Skeleton } from "moti/skeleton";
 import MusicCategory from "../components/home/newlyRelease";
-import MusicBottomSheet from "../components/bottomSheet/MusicBottomSheet";
-import AddToPlaylistBottomSheet from "../components/bottomSheet/AddToPlaylistBottomSheet";
 import useMusicPlayer from "../hooks/useMusicPlayer";
 import { fetchAllAlbumsAndEPs, artistsArr } from "../utils/ArstsisArr";
 import { useQuery } from "@/hooks/useQuery";
 import { useQueryClient } from '@tanstack/react-query';
-import LoadingScreen from "./loadingScreen";
 import * as ImageCache from 'react-native-expo-image-cache';
 import Share from '../components/bottomSheet/Share';
 import { useRef } from 'react';
@@ -53,6 +50,9 @@ interface Track {
 }
 
 const MusicDetails = () => {
+  // Add this new state to track the selected track for sharing
+  const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
+
   const { width } = useWindowDimensions();
   const queryClient = useQueryClient();
   const { id, title, artist, image, type, duration, totalTracks } = useLocalSearchParams();
@@ -129,6 +129,12 @@ const convertSecondsToMinutes = (seconds: number) => {
 
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 };
+
+  // Add this function to handle track menu press
+  const handleTrackMenuPress = (track: Track) => {
+    setSelectedTrack(track);
+    shareBottomSheetRef.current?.expand();
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -277,9 +283,7 @@ const convertSecondsToMinutes = (seconds: number) => {
           {tracks.map((track: Track, index: number) => (
             <View key={track._id}>
               <TouchableOpacity
-                onPress={() =>
-                  handleTrackPress(track, index, albumInfo, tracks)
-                }
+                onPress={() => handleTrackPress(track, index, albumInfo, tracks)}
                 className="flex-row items-center justify-between py-3"
               >
                 <View className="flex-row items-center">
@@ -298,9 +302,9 @@ const convertSecondsToMinutes = (seconds: number) => {
                     </Text>
                   </View>
                 </View>
-                <View>
+                <TouchableOpacity onPress={() => handleTrackMenuPress(track)}>
                   <MoreHorizontalIcon size={24} color="#fff" />
-                </View>
+                </TouchableOpacity>
               </TouchableOpacity>
               {loading && (
                 <View style={styles.skeletonWrapper}>
@@ -331,11 +335,11 @@ const convertSecondsToMinutes = (seconds: number) => {
           <Share
             ref={shareBottomSheetRef}
             album={{
-              title: title as string,
-              artist: artist as string,
-              image: image as string,
+              title: selectedTrack ? selectedTrack.title : (title as string),
+              artist: selectedTrack ? selectedTrack.artist.name : (artist as string),
+              image: selectedTrack ? selectedTrack.release.artwork.high : (image as string),
               type: type as string,
-              duration: convertSecondsToMinutes(Number(duration))
+              duration: convertSecondsToMinutes(selectedTrack ? selectedTrack.duration : Number(duration))
             }}
           />
         </SafeAreaView>

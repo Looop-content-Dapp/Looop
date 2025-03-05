@@ -13,9 +13,9 @@ import * as Google from "expo-auth-session/providers/google";
 import * as AppleAuthentication from "expo-apple-authentication";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState, useCallback } from "react";
-import api from "@/config/apiConfig";
 import { AuthRequest, AuthRequestPromptOptions, AuthSessionResult } from 'expo-auth-session';
 import { Pressable } from "react-native";
+import { useAuth } from "@/hooks/useAuth";
 
 // Complete WebBrowser auth session
 WebBrowser.maybeCompleteAuthSession();
@@ -91,16 +91,23 @@ const EmailSignUp: React.FC = () => {
   });
 
   // Handle social sign-in with proper typing
+  const { authenticateUser, isPending: authPending } = useAuth();
+
+  // Update handleSocialSignIn
   const handleSocialSignIn = useCallback(async (provider: "google" | "apple", token: string, email: string) => {
     setAuthLoading(true);
-    console.log("token",)
     try {
+      authenticateUser({
+        channel: provider,
+        email,
+        token,
+      });
     } catch (err: unknown) {
       console.error(`${provider} sign-in error:`, err);
     } finally {
       setAuthLoading(false);
     }
-  }, []);
+  }, [authenticateUser]);
 
   // Google Auth Response Handler
   useEffect(() => {
@@ -160,17 +167,18 @@ const handleAppleSignIn = async (): Promise<void> => {
 
     console.log("credential", credential)
     console.log("credentialState", credentialState)
-    // if (credential.identityToken && credential.email) {
-    //    // Pass all user information to social sign in handler
-    //   handleSocialSignIn(
-    //     "apple",
-    //     credential.identityToken,
-    //     credential.email,
-    //   );
 
-    // } else {
-    //   console.error("No identity token received from Apple Sign-In");
-    // }
+    const userEmail = credential.email || `${credential.user}@privaterelay.appleid.com`;
+
+    if (credential.identityToken) {
+      handleSocialSignIn(
+        "apple",
+        credential.identityToken,
+        userEmail
+      );
+    } else {
+      console.error("No identity token received from Apple Sign-In");
+    }
   } catch (e: unknown) {
     const error = e as { code?: string; message?: string };
     if (error.code !== "ERR_CANCELED") {

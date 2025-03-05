@@ -29,20 +29,20 @@ const Share = forwardRef<BottomSheet, { album: ShareProps }>((props, ref) => {
 
 
   // Request contact permissions on mount
-  useEffect(() => {
-    (async () => {
-      const { status } = await Contacts.requestPermissionsAsync();
-      if (status === 'granted') {
-        setHasPermission(true);
-        const { data } = await Contacts.getContactsAsync({
-          fields: [Contacts.Fields.Image, Contacts.Fields.Name],
-        });
-        setContacts(data.slice(0, 5)); // Limit to 5 contacts
-      } else {
-        setHasPermission(false);
-      }
-    })();
-  }, []);
+//   useEffect(() => {
+//     (async () => {
+//       const { status } = await Contacts.requestPermissionsAsync();
+//       if (status === 'granted') {
+//         setHasPermission(true);
+//         const { data } = await Contacts.getContactsAsync({
+//           fields: [Contacts.Fields.Image, Contacts.Fields.Name],
+//         });
+//         setContacts(data.slice(0, 5)); // Limit to 5 contacts
+//       } else {
+//         setHasPermission(false);
+//       }
+//     })();
+//   }, []);
 
   // Handle permission request when button is pressed
   const requestPermission = async () => {
@@ -171,7 +171,7 @@ const Share = forwardRef<BottomSheet, { album: ShareProps }>((props, ref) => {
           </TouchableOpacity>
           <TouchableOpacity style={styles.shareButton}>
             <View style={[styles.iconContainer, { backgroundColor: '#FFFFFF' }]}>
-              <FontAwesome5 name="x-twitter" size={32} color="#000000" />
+              <FontAwesome5 name="twitter" size={32} color="#000000" />
             </View>
             <Text style={styles.shareLabel}>Share to X</Text>
           </TouchableOpacity>
