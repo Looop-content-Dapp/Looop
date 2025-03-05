@@ -26,7 +26,7 @@ function AppContent() {
     PlusJakartaSansLight: require("../assets/fonts/PlusJakartaSans-Light.ttf"),
     PlusJakartaSansMedium: require("../assets/fonts/PlusJakartaSans-Medium.ttf"),
     PlusJakartaSansRegular: require("../assets/fonts/PlusJakartaSans-Regular.ttf"),
-    TankerRegular: require("../assets/fonts/Tanker-Regular.otf"),
+    TankerRegular: require("../assets/fonts/Tanker-Regular.ttf"),
   });
 
   useEffect(() => {
