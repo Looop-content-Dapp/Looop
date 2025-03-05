@@ -24,7 +24,7 @@ export const getFileTypeFromUri = (uri: string): CollectibleFileType => {
 
 export interface CreatorFormData {
   stageName: string;
-  email: string;
+  
   bio: string;
   addressLine1: string;
   addressLine2: string;
