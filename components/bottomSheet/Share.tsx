@@ -119,6 +119,7 @@ const Share = forwardRef<BottomSheet, { album: ShareProps }>((props, ref) => {
 
 
         {/* Share to Friends Section */}
+        <View className='border-b-2 border-[#202227] pb-[16px] pt-[16px]'>
         <Text style={styles.sectionLabel}>Share to friends:</Text>
         {hasPermission ? (
           <FlatList
@@ -137,8 +138,11 @@ const Share = forwardRef<BottomSheet, { album: ShareProps }>((props, ref) => {
             <Text style={styles.permissionText}>Grant Contact Permission</Text>
           </TouchableOpacity>
         )}
+        </View>
+
 
         {/* Send to Section */}
+        <View className='border-b-2 border-[#202227] pb-[16px] pt-[16px]'>
         <Text style={styles.sectionLabel}>Send to</Text>
         <View style={styles.sharingButtons}>
           <TouchableOpacity style={styles.shareButton}>
@@ -172,6 +176,8 @@ const Share = forwardRef<BottomSheet, { album: ShareProps }>((props, ref) => {
             <Text style={styles.shareLabel}>Share to X</Text>
           </TouchableOpacity>
         </View>
+        </View>
+
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
@@ -213,13 +219,13 @@ const Share = forwardRef<BottomSheet, { album: ShareProps }>((props, ref) => {
 
 const styles = StyleSheet.create({
   bottomSheet: {
-    backgroundColor: '#12141B',
+    backgroundColor: '#111318',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingHorizontal: 20
   },
   container: {
-    backgroundColor: '#12141B',
+    backgroundColor: '#111318',
     padding: 16,
   },
   header: {
