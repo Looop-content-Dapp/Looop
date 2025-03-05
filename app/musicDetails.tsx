@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, Suspense } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import {
@@ -26,17 +27,40 @@ import MusicBottomSheet from "../components/bottomSheet/MusicBottomSheet";
 import AddToPlaylistBottomSheet from "../components/bottomSheet/AddToPlaylistBottomSheet";
 import useMusicPlayer from "../hooks/useMusicPlayer";
 import { fetchAllAlbumsAndEPs, artistsArr } from "../utils/ArstsisArr";
+import { useQuery } from "@/hooks/useQuery";
+import { useQueryClient } from '@tanstack/react-query';
+import LoadingScreen from "./loadingScreen";
+import * as ImageCache from 'react-native-expo-image-cache';
+
+interface Track {
+  _id: string;
+  title: string;
+  duration: number;
+  artist: {
+    name: string;
+    image: string;
+  };
+  release: {
+    artwork: {
+      high: string;
+      medium: string;
+      low: string;
+      thumbnail: string;
+    };
+  };
+}
 
 const MusicDetails = () => {
   const { width } = useWindowDimensions();
-  const { id, title, artist, image, type, duration, totalTracks } =
-    useLocalSearchParams();
+  const queryClient = useQueryClient();
+  const { id, title, artist, image, type, duration, totalTracks } = useLocalSearchParams();
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const { getTracksFromId } = useQuery();
   const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
   const [isAddToPlaylistVisible, setIsAddToPlaylistVisible] = useState(false);
   const [isTruncated, setIsTruncated] = useState(true);
 
   const {
-    tracks,
     isAlbumPlaying,
     currentPlayingIndex,
     isLiked,
@@ -51,10 +75,28 @@ const MusicDetails = () => {
     toggleShuffle,
   } = useMusicPlayer();
 
-  const allSongs = useMemo(
-    () => fetchAllAlbumsAndEPs(artistsArr),
-    [artistsArr]
-  );
+  const allSongs = useMemo(() => fetchAllAlbumsAndEPs(artistsArr), [artistsArr]);
+
+  // Use React Query to handle data fetching
+  useEffect(() => {
+    const fetchTracks = async () => {
+      try {
+        // Try to get data from cache first
+        const cachedData = queryClient.getQueryData(['tracks', id]);
+        if (cachedData) {
+          setTracks(cachedData.data.tracks);
+          return;
+        }
+
+        const fetchedTracks = await getTracksFromId(id as string);
+        setTracks(fetchedTracks.data.tracks);
+      } catch (error) {
+        console.error('Error fetching tracks:', error);
+      }
+    };
+
+    fetchTracks();
+  }, [id]);
 
   useEffect(() => {
     loadAlbumData(id as string, type as string);
@@ -66,6 +108,23 @@ const MusicDetails = () => {
     coverImage: image as string,
   };
 
+    // Prefetch similar music data
+    useEffect(() => {
+        const prefetchSimilarMusic = async () => {
+          const similarSongs = allSongs.filter(song =>
+            song.artist.name === artist && song._id !== id
+          );
+
+          similarSongs.forEach(song => {
+            queryClient.prefetchQuery(['tracks', song._id], () =>
+              getTracksFromId(song._id)
+            );
+          });
+        };
+
+        prefetchSimilarMusic();
+      }, [id, artist]);
+
   const Spacer = ({ size = 16 }) => <View style={{ height: size }} />;
 
   const toggleTruncate = () => setIsTruncated(!isTruncated);
@@ -75,12 +134,24 @@ const MusicDetails = () => {
   const truncatedText =
     text.length > 100 ? `${text.substring(0, 130)}...` : text;
 
-  const convertSecondsToMinutes = (seconds: number) => {
-    return Math.ceil(seconds / 60);
-  };
+const convertSecondsToMinutes = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+
+  if (remainingSeconds === 0) {
+    return `${minutes}min`;
+  }
+
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+};
 
   return (
     <SafeAreaView style={styles.container}>
+           <Suspense fallback={
+            <View style={styles.container}>
+            <ActivityIndicator size="large" color="#FF6D1B" />
+  </View>
+}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <ArrowLeft02Icon size={32} color="#D2D3D5" />
@@ -90,12 +161,13 @@ const MusicDetails = () => {
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         {/* Album Image */}
         <View style={styles.contentWrapper}>
-          <Image
-            source={{ uri: image }}
+          <ImageCache.Image
+            uri={image as string}
             style={[
               styles.albumImage,
               { width: width * 0.4, height: width * 0.4 },
             ]}
+            tint="dark"
           />
           {loading && (
             <View style={styles.skeletonWrapper}>
@@ -122,16 +194,6 @@ const MusicDetails = () => {
           <Text className="text-[12px] font-PlusJakartaSansBold text-Grey/06">
             ¥$, Ye & Ty Dolla Sign
           </Text>
-          {/* {loading && (
-                        <View style={styles.skeletonWrapper}>
-                            <Skeleton
-                                colorMode="dark"
-                                width={width * 0.6}
-                                height={44}
-                                radius={4}
-                            />
-                        </View>
-                    )} */}
         </View>
 
         <Spacer />
@@ -179,16 +241,6 @@ const MusicDetails = () => {
                   variant={control.active ? "solid" : "stroke"}
                 />
               </TouchableOpacity>
-              {/* {loading && (
-                                <View style={styles.skeletonWrapper}>
-                                    <Skeleton
-                                        colorMode="dark"
-                                        width={control.size}
-                                        height={control.size}
-                                        radius={control.size / 2}
-                                    />
-                                </View>
-                            )} */}
             </View>
           ))}
         </View>
@@ -197,7 +249,7 @@ const MusicDetails = () => {
           <View className="items-center justify-center gap-y-[16px]">
             <View className="flex-row items-center">
               <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansBold font-normal">
-                {totalTracks} Songs
+                {tracks.length} Songs
               </Text>
               <Pressable className="bg-Grey/06 h-[4px] w-[4px] m-[4px] font-normal" />
               <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansBold font-normal">
@@ -237,7 +289,7 @@ const MusicDetails = () => {
 
         {/* Track List */}
         <View style={styles.trackListContainer}>
-          {tracks.map((track: any, index: number) => (
+          {tracks.map((track: Track, index: number) => (
             <View key={track._id}>
               <TouchableOpacity
                 onPress={() =>
@@ -263,9 +315,9 @@ const MusicDetails = () => {
                 </View>
                 <View>
                   <MoreHorizontalIcon size={24} color="#fff" />
-                  <Text className="text-Grey/06 text-[12px] font-PlusJakartaSansRegular">
+                  {/* <Text className="text-Grey/06 text-[12px] font-PlusJakartaSansRegular">
                     {convertSecondsToMinutes(track.duration)} mins
-                  </Text>
+                  </Text> */}
                 </View>
               </TouchableOpacity>
               {loading && (
@@ -309,6 +361,7 @@ const MusicDetails = () => {
         isVisible={isAddToPlaylistVisible}
         closeSheet={() => setIsAddToPlaylistVisible(false)}
       />
+      </Suspense>
     </SafeAreaView>
   );
 };

@@ -5,76 +5,70 @@ import { Add01Icon, Search01Icon } from '@hugeicons/react-native';
 import { MotiView } from 'moti';
 import { router } from 'expo-router';
 import { useQuery } from '../../hooks/useQuery';
+import { useAppSelector } from '@/redux/hooks';
 
-const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }) => {
+const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible: boolean; closeSheet: () => void; album: any }) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const { getAllPlaylistsForUser, addSongToPlaylist, retrieveUserId } = useQuery();
-
-  const [playlists, setPlaylists] = useState([]);
+  const { getAllPlaylistsForUser, addSongToPlaylist } = useQuery();
+  const { userdata } = useAppSelector((state) => state.auth);
+  const [playlists, setPlaylists] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  console.log("playlist", playlists)
+  const [error, setError] = useState<string | null>("");
 
-  const fetchPlaylists = async () => {
+  const fetchPlaylists = useCallback(async () => {
+    if (!userdata?._id) return;
+
     setIsLoading(true);
     setError(null);
     try {
-        const userId = await retrieveUserId()
-      const response = await getAllPlaylistsForUser(userId as string);
-      if (response?.data) {
-        setPlaylists(response.data);
-      } else {
-        setPlaylists([]);
-      }
+      const response = await getAllPlaylistsForUser(userdata._id);
+      setPlaylists(response?.data || []);
     } catch (err) {
       setError('Failed to fetch playlists');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [getAllPlaylistsForUser]);
 
   useEffect(() => {
     if (isVisible) {
       fetchPlaylists();
     }
-  }, [isVisible, getAllPlaylistsForUser, playlists]);
+  }, [isVisible, fetchPlaylists]);
 
-  const handleSheetChanges = useCallback((index) => {
+  const handleSheetChanges = useCallback((index: number) => {
     if (index === -1) {
-      closeSheet(); // Close the bottom sheet when fully closed
+      closeSheet();
     }
   }, [closeSheet]);
 
-  const openBottomSheet = () => {
-    if (bottomSheetRef.current) {
-      bottomSheetRef.current.expand();
-    }
-  };
+  const openBottomSheet = useCallback(() => {
+    bottomSheetRef.current?.expand();
+  }, []);
 
-  // Handle adding song to playlist
-  const handleAddSong = async (playlistId) => {
+  const handleAddSong = async (playlistId: string) => {
+    if (!userdata?._id) return;
     try {
-    const userId = await retrieveUserId()
-    const trackIds = album.tracks.map((item: any) => item._id);
+      const trackIds = album?.tracks?.map((item: any) => item._id) || [];
 
-    if (!trackIds.length) {
-      Alert.alert('Error', 'No tracks found to add');
-      return;
-    }
-      await addSongToPlaylist(trackIds, playlistId, userId as string);
-      Alert.alert('Success', 'Song added to playlist');
+      if (!trackIds.length) {
+        Alert.alert('Error', 'No tracks found to add');
+        return;
+      }
+
+      await addSongToPlaylist(trackIds, playlistId, userdata?._id);
+      Alert.alert('Success', 'Songs added to playlist');
     } catch (error) {
-      Alert.alert('Error', 'Failed to add song to playlist');
+      Alert.alert('Error', 'Failed to add songs to playlist');
     }
   };
 
   const renderPlaylists = () => {
     if (isLoading) {
-      // Skeleton loading view when playlists are being fetched
       return (
         <FlatList
-          data={Array(5).fill({})} // Dummy data for skeleton loading
-          keyExtractor={(item, index) => index.toString()}
+          data={Array(5).fill({})}
+          keyExtractor={(_, index) => index.toString()}
           renderItem={() => (
             <MotiView
               from={{ opacity: 0.5 }}
@@ -98,7 +92,6 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }) => {
     }
 
     if (playlists.length === 0) {
-      // No playlists available
       return (
         <View style={{ alignItems: 'center', marginTop: 20 }}>
           <Text style={{ color: 'white', fontSize: 16 }}>No playlists available.</Text>
@@ -106,7 +99,6 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }) => {
       );
     }
 
-    // Render playlists if available
     return (
       <FlatList
         data={playlists}

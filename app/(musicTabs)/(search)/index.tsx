@@ -35,12 +35,11 @@ const index = () => {
 
         <View>
           <FlatList
-            horizontal
             data={[
               {
                 id: "1",
                 backgroundImage: require("../../../assets/images/top30Background.png"),
-                title: `Top 30 songs in ${location?.country}`,
+                title: `Charting in ${location?.country}`,
                 type: "location",
               },
               {

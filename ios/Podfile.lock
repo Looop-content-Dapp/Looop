@@ -17,11 +17,11 @@ PODS:
     - ExpoModulesCore
     - React-Core
   - EXJSONUtils (0.14.0)
-  - EXManifests (0.15.6):
+  - EXManifests (0.15.7):
     - ExpoModulesCore
   - EXNotifications (0.29.13):
     - ExpoModulesCore
-  - Expo (52.0.36):
+  - Expo (52.0.37):
     - ExpoModulesCore
   - expo-dev-client (5.0.12):
     - EXManifests
@@ -248,7 +248,7 @@ PODS:
     - ExpoModulesCore
   - ExpoDocumentPicker (13.0.3):
     - ExpoModulesCore
-  - ExpoFileSystem (16.0.8):
+  - ExpoFileSystem (18.0.11):
     - ExpoModulesCore
   - ExpoFont (13.0.4):
     - ExpoModulesCore
@@ -321,6 +321,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - Yoga
   - ExpoSecureStore (14.0.1):
+    - ExpoModulesCore
+  - ExpoSharing (13.0.1):
     - ExpoModulesCore
   - ExpoSMS (13.0.1):
     - ExpoModulesCore
@@ -1638,7 +1640,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-ios-utilities (5.1.1):
+  - react-native-ios-utilities (5.1.2):
     - ComputableLayout (~> 0.7)
     - DGSwiftUtilities (~> 0.46)
     - DoubleConversion
@@ -1662,7 +1664,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-keyboard-controller (1.16.3):
+  - react-native-keyboard-controller (1.16.6):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1689,7 +1691,7 @@ PODS:
     - React-Core
   - react-native-safe-area-context (4.12.0):
     - React-Core
-  - react-native-slider (4.5.5):
+  - react-native-slider (4.5.6):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2000,7 +2002,7 @@ PODS:
     - React-utils (= 0.76.6)
   - RNCAsyncStorage (1.23.1):
     - React-Core
-  - RNCClipboard (1.16.1):
+  - RNCClipboard (1.16.2):
     - React-Core
   - RNGestureHandler (2.20.2):
     - DoubleConversion
@@ -2177,6 +2179,7 @@ DEPENDENCIES:
   - ExpoRandom (from `../node_modules/expo-random/ios`)
   - ExpoScreenOrientation (from `../node_modules/expo-screen-orientation/ios`)
   - ExpoSecureStore (from `../node_modules/expo-secure-store/ios`)
+  - ExpoSharing (from `../node_modules/expo-sharing/ios`)
   - ExpoSMS (from `../node_modules/expo-sms/ios`)
   - ExpoSplashScreen (from `../node_modules/expo-splash-screen/ios`)
   - ExpoSymbols (from `../node_modules/expo-symbols/ios`)
@@ -2351,6 +2354,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-screen-orientation/ios"
   ExpoSecureStore:
     :path: "../node_modules/expo-secure-store/ios"
+  ExpoSharing:
+    :path: "../node_modules/expo-sharing/ios"
   ExpoSMS:
     :path: "../node_modules/expo-sms/ios"
   ExpoSplashScreen:
@@ -2530,9 +2535,9 @@ SPEC CHECKSUMS:
   EXConstants: 0472d3c23d97943fe3505306daf9cde8024365c2
   EXImageLoader: 759063a65ab016b836f73972d3bb25404888713d
   EXJSONUtils: 01fc7492b66c234e395dcffdd5f53439c5c29c93
-  EXManifests: b1586049a30ba7ec9ca7ec9afbd4cc233c4b2316
+  EXManifests: 4e8c6aa537f44e72c2b4e2b71698234b623007da
   EXNotifications: 08cc7c5a100c2edc3a01227cfdfcaf17746189d7
-  Expo: 8a2753e86ee7c1943ca0975b643d73ed03b113a1
+  Expo: f1d13d22815979ad85a0a59fcf6d23660c813ecd
   expo-dev-client: be653fa8a57337215e8557c07ddced0e8c576af6
   expo-dev-launcher: c2828ac93e56a5ae0278dc86296272c90376d63d
   expo-dev-menu: c05ba94a0e32c90493005178a26ecea66e941462
@@ -2546,7 +2551,7 @@ SPEC CHECKSUMS:
   ExpoCrypto: 156078f266bf28f80ecf5e2a9c3a0d6ffce07a1c
   ExpoDevice: 82da2577196c2ddee18189da65f754ea83003d2e
   ExpoDocumentPicker: 8c1f88c2809ab2287350e8fac65964bf423578be
-  ExpoFileSystem: eecaf6796aed0f4dd20042dc2ca2cac6c4bc1185
+  ExpoFileSystem: 4d2e7f77a41cfde8c3ae98580d872cd49437f993
   ExpoFont: 773955186469acc5108ff569712a2d243857475f
   ExpoHaptics: e01cce0741d68c281853118eb0267f88d42c6b7a
   ExpoHead: 3d555eb5d0d68c478b9ea259337686c58de22c71
@@ -2562,6 +2567,7 @@ SPEC CHECKSUMS:
   ExpoRandom: 099ddce39b39ffb984b45118d031e8713e962a50
   ExpoScreenOrientation: eb2229ceeab36ce787ccae413d23273698b946fa
   ExpoSecureStore: d006eea5e316283099d46f80a6b10055b89a6008
+  ExpoSharing: c4540ef2e6615a92e05d2bddf019e1f58f27119e
   ExpoSMS: 2f90c7c780ef65c9f52b800183aab554360b34a2
   ExpoSplashScreen: 48a5b55b370aaf48e8be0c7846c487e583067164
   ExpoSymbols: b9f255ce49868d46a73f30e12859efeb8117bcad
@@ -2606,12 +2612,12 @@ SPEC CHECKSUMS:
   React-Mapbuffer: f760d2229640be48cb3c2d4832b5bbc3018123fc
   React-microtasksnativemodule: c7beb09cf9c61d18b24b51db99ac026796035bb3
   react-native-ios-context-menu: 7093cda9cee072906e9302610d445e4fcb06befe
-  react-native-ios-utilities: 5c104c1505c00569e89950856be6d4c7228609a1
-  react-native-keyboard-controller: 3ce320d47980dbeb3c7cf2219a8bd22fde514b4a
+  react-native-ios-utilities: c9b64bef5b6ea2abf97a165a619e12532d0c0abe
+  react-native-keyboard-controller: ec99670a7761ef20b462bebabea3e0b67ec822c9
   react-native-menu: 27f634374481525b27e2123611aa4c6477324f92
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
   react-native-safe-area-context: 142fade490cbebbe428640b8cbdb09daf17e8191
-  react-native-slider: 4a0f3386a38fc3d2d955efc515aef7096f7d1ee4
+  react-native-slider: 5ff41e8c14bb9227ed5450ef76c70d27615e3795
   react-native-webview: b034adbe6dc6cc783c3270b6e47298bc1dfdb632
   React-nativeconfig: 539ff4de6ce3b694e8e751080568c281c84903ce
   React-NativeModulesApple: 771cc40b086281b820fe455fedebbe4341fd0c90
@@ -2641,7 +2647,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 484b223748d7489d7036db1cbf79896d297e33a7
   ReactCommon: 832cdd669aeecd430d9ca1975d15676b38d0b263
   RNCAsyncStorage: 826b603ae9c0f88b5ac4e956801f755109fa4d5c
-  RNCClipboard: d7a8903d32692b0a1e71738c3825465a9acae10e
+  RNCClipboard: 4411a880506f11fbcbdc03b5093eb8ffb246d900
   RNGestureHandler: 511250b190a284388f9dd0d2e56c1df76f14cfb8
   RNReanimated: 849c4bfc1a185b123ca9a89f2a98d679b3d79b4e
   RNScreens: e52d2e7e5fa29266d6f8f68e8229452e5b2f4236

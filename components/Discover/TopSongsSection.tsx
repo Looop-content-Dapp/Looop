@@ -168,10 +168,8 @@ const TopSongsSection = ({ backgroundImage, title, type = 'location' }) => {
   }, [type, location]);
 
   return (
-    <ImageBackground
-      source={backgroundImage}
-      style={{ width: wp("90%") }}
-      className='h-[653px] mt-[31px] mx-auto pl-[32px] pt-[32px] gap-y-[24px] rounded-[24px] overflow-hidden'
+    <View
+      className=' h-[653px] mt-[31px] mx-auto pl-[32px] pt-[32px] gap-y-[24px] rounded-[24px] overflow-hidden'
     >
       <View className='flex-row items-center w-full justify-between pr-[29px]'>
         <View style={{ width: wp("60%") }}>
@@ -183,7 +181,7 @@ const TopSongsSection = ({ backgroundImage, title, type = 'location' }) => {
         </View>
       </View>
       <LatestSongs songs={songs} loading={loading} error={error} />
-    </ImageBackground>
+    </View>
   );
 };
 

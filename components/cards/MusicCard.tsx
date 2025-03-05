@@ -1,4 +1,3 @@
-// MusicCard.js
 import { View, Text, Image, Pressable } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Skeleton } from "moti/skeleton";

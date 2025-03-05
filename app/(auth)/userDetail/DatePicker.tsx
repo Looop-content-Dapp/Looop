@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal } from 'react-native';
+// DatePicker.tsx
 import Calendar from '@/components/app-components/Calender';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Modal } from 'react-native';
 
 interface DatePickerProps {
-  value: string;
+  value: string; // Expected format: "YYYY-MM-DD"
   onChange: (date: string) => void;
   onBlur: () => void;
 }
@@ -11,23 +12,43 @@ interface DatePickerProps {
 const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, onBlur }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(
-    value ? new Date(value) : null
+    value
+      ? (() => {
+          const [year, month, day] = value.split('-').map(Number);
+          return new Date(year, month - 1, day); // Month is 0-based in JS Date
+        })()
+      : null
   );
 
+  // Sync selectedDate with the value prop when it changes externally
+  useEffect(() => {
+    if (value) {
+      const [year, month, day] = value.split('-').map(Number);
+      setSelectedDate(new Date(year, month - 1, day));
+    } else {
+      setSelectedDate(null);
+    }
+  }, [value]);
+
   const handleDateSelect = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-based, adjust for display
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
     setSelectedDate(date);
-    onChange(date.toISOString().split('T')[0]); 
-    setIsVisible(false);
-    onBlur();
+    onChange(dateString); // Pass the formatted string back to the parent
+    setIsVisible(false); // Close the modal
+    onBlur(); // Trigger blur event
   };
 
   const formatDisplayDate = (dateString: string) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
+    if (!dateString) return 'Select date...';
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -36,14 +57,14 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, onBlur }) => {
       <TouchableOpacity
         onPress={() => setIsVisible(true)}
         style={{
-          backgroundColor: "#1E1E1E",
+          backgroundColor: '#1E1E1E',
           borderRadius: 10,
           padding: 10,
-          height: 64
+          height: 64,
         }}
       >
-        <Text style={{ color: "#D2D3D5", padding: 10 }}>
-          {value ? formatDisplayDate(value) : "Select date..."}
+        <Text style={{ color: '#D2D3D5', padding: 10 }}>
+          {value ? formatDisplayDate(value) : 'Select date...'}
         </Text>
       </TouchableOpacity>
 
@@ -53,23 +74,27 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, onBlur }) => {
         animationType="slide"
         onRequestClose={() => setIsVisible(false)}
       >
-        <View style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)'
-        }}>
-          <View style={{
-            width: '90%',
-            maxWidth: 400,
-            backgroundColor: '#12141B',
-            borderRadius: 12,
-            padding: 16
-          }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          }}
+        >
+          <View
+            style={{
+              width: '90%',
+              maxWidth: 400,
+              backgroundColor: '#12141B',
+              borderRadius: 12,
+              padding: 16,
+            }}
+          >
             <Calendar
               selectedDate={selectedDate}
               onSelectDate={handleDateSelect}
-              minDate={new Date(1900, 0, 1)}
+              minDate={new Date(1900, 0, 1)} // Example minDate
             />
             <TouchableOpacity
               onPress={() => setIsVisible(false)}
@@ -78,7 +103,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, onBlur }) => {
                 padding: 12,
                 backgroundColor: '#9B6AD4',
                 borderRadius: 8,
-                alignItems: 'center'
+                alignItems: 'center',
               }}
             >
               <Text style={{ color: '#FFFFFF' }}>Cancel</Text>
@@ -91,4 +116,3 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, onBlur }) => {
 };
 
 export default DatePicker;
-

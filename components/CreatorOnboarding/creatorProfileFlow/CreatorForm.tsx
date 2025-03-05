@@ -21,10 +21,6 @@ import { useGetGenre } from "@/hooks/useGenre";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import useTwitterAuth from "@/hooks/useTwitterAuth";
 
-
-
-
-
 type MultiSelectOption = {
   label: string;
   value: string;

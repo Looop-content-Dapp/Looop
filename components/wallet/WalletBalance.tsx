@@ -1,5 +1,5 @@
 import { ArrowDown01Icon, Copy01Icon } from "@hugeicons/react-native";
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image, ActivityIndicator } from "react-native";
 import { XIONB, StarknetB } from "@/assets/images/images";
 import { useState } from "react";
 
@@ -10,19 +10,20 @@ type WalletBalanceProps = {
     total: number;
   };
   addresses: { chain: string; address: string }[];
+  isLoading: boolean;
   onCopyAddress?: (address: string) => void;
 };
 
-export default function WalletBalance({ balances, addresses, onCopyAddress }: WalletBalanceProps) {
+export default function WalletBalance({ balances, addresses, isLoading, onCopyAddress }: WalletBalanceProps) {
   const [selectedTab, setSelectedTab] = useState("All balances");
   const [currency, setCurrency] = useState<"USD" | "NGN">("USD");
 
-  const exchangeRate = 1450; // NGN to USD rate (should come from API)
+  const exchangeRate = 1450; // Hardcoded NGN to USD rate; ideally from an API
 
   const formatNumber = (num: number) => {
     return num.toLocaleString('en-US', {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     });
   };
 
@@ -46,6 +47,7 @@ export default function WalletBalance({ balances, addresses, onCopyAddress }: Wa
 
   return (
     <View className="px-4 py-6">
+      {/* Tab and Currency Selector */}
       <View className="flex-row gap-x-2 my-4 mx-auto border border-[#202227] pl-[5px] pr-[4px] py-[4px] rounded-[24px]">
         {["All balances", "XION", "Starknet"].map((tab) => (
           <TouchableOpacity
@@ -58,7 +60,7 @@ export default function WalletBalance({ balances, addresses, onCopyAddress }: Wa
             <Text className="text-[#D2D3D5] text-[12px] font-PlusJakartaSansMedium">{tab}</Text>
           </TouchableOpacity>
         ))}
-         <TouchableOpacity
+        <TouchableOpacity
           onPress={() => setCurrency(currency === "USD" ? "NGN" : "USD")}
           className="bg-[#202227] px-3 py-[6px] flex-row items-center rounded-full"
         >
@@ -69,14 +71,21 @@ export default function WalletBalance({ balances, addresses, onCopyAddress }: Wa
         </TouchableOpacity>
       </View>
 
+      {/* Balance Display */}
       <View className="mx-auto items-center">
         <Text className="text-[#63656B] text-[14px] mb-2">Wallet balance</Text>
-        <Text className="text-white text-[40px] font-PlusJakartaSansBold">
-          {getCurrentBalance()}
-        </Text>
-
+        {isLoading ? (
+          <View className="justify-center items-center">
+            <ActivityIndicator size="large" color="#FF8A49" />
+          </View>
+        ) : (
+          <Text className="text-white text-[40px] font-PlusJakartaSansBold">
+            {getCurrentBalance()}
+          </Text>
+        )}
       </View>
 
+      {/* Wallet Addresses */}
       <View className="bg-[#202227] p-[20px] gap-y-[12px] mt-[32px] rounded-[10px]">
         <Text className="text-[14px] text-[#63656B] font-PlusJakartaSansMedium">
           Wallet addresses
