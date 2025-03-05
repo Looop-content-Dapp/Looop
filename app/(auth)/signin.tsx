@@ -96,19 +96,8 @@ const Signin: React.FC = () => {
   // Handle social sign-in with proper typing
   const handleSocialSignIn = useCallback(async (provider: "google" | "apple", token: string, email: string) => {
     setAuthLoading(true);
+    console.log("token", token)
     try {
-      const payload = {
-        "channel": provider, // google or apple
-        "email": email,
-        "token": token
-    }
-      const response = await api.post("/api/user/oauth", payload)
-      console.log("response from auth", response.data)
-    if(response.status === 200) {
-        router.navigate("/home");
-    }else{
-    Alert.alert("Error", "An error occurred during sign-in. Please try again later.");
-    }
     } catch (err: unknown) {
       console.error(`${provider} sign-in error:`, err);
     } finally {

@@ -79,6 +79,7 @@ const EmailSignUp: React.FC = () => {
     AuthSessionResult | null,
     (options?: AuthRequestPromptOptions) => Promise<AuthSessionResult>
   ];
+  console.log("response", response)
 
   const {
     control,
@@ -92,21 +93,8 @@ const EmailSignUp: React.FC = () => {
   // Handle social sign-in with proper typing
   const handleSocialSignIn = useCallback(async (provider: "google" | "apple", token: string, email: string) => {
     setAuthLoading(true);
+    console.log("token",)
     try {
-      // Replace with your actual API call
-      const payload = {
-        "channel": provider, // google or apple
-        "email": email,
-        "token": token
-    }
-      const response = await api.post("/api/user/oauth", payload)
-      console.log("response", response.data.data)
-      // await AsyncStorage.setItem('userToken', response.token);
-      if(response.status === 200){
-        router.navigate("/(auth)/userDetail");
-      }else{
-        Alert.alert("Error", "Something went wrong");
-      }
     } catch (err: unknown) {
       console.error(`${provider} sign-in error:`, err);
     } finally {
@@ -118,6 +106,7 @@ const EmailSignUp: React.FC = () => {
   useEffect(() => {
     if (response?.type === "success") {
       const { authentication } = response;
+      console.log('auth', authentication, authentication?.accessToken)
       if (authentication?.accessToken) {
         // Fetch Google user info to get email
         fetch('https://www.googleapis.com/userinfo/v2/me', {
@@ -125,6 +114,7 @@ const EmailSignUp: React.FC = () => {
         })
           .then(response => response.json())
           .then(userInfo => {
+
             handleSocialSignIn("google", authentication.accessToken, userInfo.email);
           })
           .catch(error => {
@@ -146,39 +136,54 @@ const EmailSignUp: React.FC = () => {
   };
 
   // Apple Sign In Handler
-  const handleAppleSignIn = async (): Promise<void> => {
-    try {
-      setAuthLoading(true);
-      // Check if Apple Authentication is available
-      if (!AppleAuthentication.isAvailableAsync()) {
-        console.error("Apple Sign-In is not available on this device.");
-        return;
-      }
-      const credential: AppleAuthentication.AppleAuthenticationCredential =
-        await AppleAuthentication.signInAsync({
-          requestedScopes: [
-            AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-            AppleAuthentication.AppleAuthenticationScope.EMAIL,
-          ],
-        });
-      if (credential.identityToken && credential.email) {
-        handleSocialSignIn("apple", credential.identityToken, credential.email);
-      } else {
-        console.error("No identity token received from Apple Sign-In");
-      }
-    } catch (e: unknown) {
-      const error = e as { code?: string; message?: string };
-      if (error.code !== "ERR_CANCELED") {
-        console.error("Apple Sign In Error Details:", {
-          code: error.code,
-          message: error.message,
-          stack: (e as Error).stack,
-        });
-      }
-    } finally {
-      setAuthLoading(false);
+const handleAppleSignIn = async (): Promise<void> => {
+  try {
+    setAuthLoading(true);
+    // Check if Apple Authentication is available
+    if (!AppleAuthentication.isAvailableAsync()) {
+      console.error("Apple Sign-In is not available on this device.");
+      return;
     }
-  };
+
+    // Request user information including full name and email
+    const credential =
+      await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      const credentialState = await AppleAuthentication.getCredentialStateAsync(
+        credential.user
+      );
+
+    console.log("credential", credential)
+    console.log("credentialState", credentialState)
+    // if (credential.identityToken && credential.email) {
+    //    // Pass all user information to social sign in handler
+    //   handleSocialSignIn(
+    //     "apple",
+    //     credential.identityToken,
+    //     credential.email,
+    //   );
+
+    // } else {
+    //   console.error("No identity token received from Apple Sign-In");
+    // }
+  } catch (e: unknown) {
+    const error = e as { code?: string; message?: string };
+    if (error.code !== "ERR_CANCELED") {
+      console.error("Apple Sign In Error Details:", {
+        code: error.code,
+        message: error.message,
+        stack: (e as Error).stack,
+      });
+    }
+  } finally {
+    setAuthLoading(false);
+  }
+};
 
   return (
     <View className="flex-1">

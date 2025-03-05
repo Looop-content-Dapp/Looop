@@ -31,6 +31,8 @@ import { useQuery } from "@/hooks/useQuery";
 import { useQueryClient } from '@tanstack/react-query';
 import LoadingScreen from "./loadingScreen";
 import * as ImageCache from 'react-native-expo-image-cache';
+import Share from '../components/bottomSheet/Share';
+import { useRef } from 'react';
 
 interface Track {
   _id: string;
@@ -54,11 +56,11 @@ const MusicDetails = () => {
   const { width } = useWindowDimensions();
   const queryClient = useQueryClient();
   const { id, title, artist, image, type, duration, totalTracks } = useLocalSearchParams();
+
   const [tracks, setTracks] = useState<Track[]>([]);
   const { getTracksFromId } = useQuery();
-  const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
-  const [isAddToPlaylistVisible, setIsAddToPlaylistVisible] = useState(false);
   const [isTruncated, setIsTruncated] = useState(true);
+  const shareBottomSheetRef = useRef(null);
 
   const {
     isAlbumPlaying,
@@ -107,23 +109,6 @@ const MusicDetails = () => {
     type: type as "album" | "single" | "ep",
     coverImage: image as string,
   };
-
-    // Prefetch similar music data
-    useEffect(() => {
-        const prefetchSimilarMusic = async () => {
-          const similarSongs = allSongs.filter(song =>
-            song.artist.name === artist && song._id !== id
-          );
-
-          similarSongs.forEach(song => {
-            queryClient.prefetchQuery(['tracks', song._id], () =>
-              getTracksFromId(song._id)
-            );
-          });
-        };
-
-        prefetchSimilarMusic();
-      }, [id, artist]);
 
   const Spacer = ({ size = 16 }) => <View style={{ height: size }} />;
 
@@ -223,7 +208,7 @@ const convertSecondsToMinutes = (seconds: number) => {
             {
               Icon: MoreHorizontalIcon,
               size: 48,
-              onPress: () => setIsBottomSheetVisible(true),
+              onPress: () => shareBottomSheetRef.current?.expand(),
             },
           ].map((control, index) => (
             <View key={index} style={styles.contentWrapper}>
@@ -315,9 +300,6 @@ const convertSecondsToMinutes = (seconds: number) => {
                 </View>
                 <View>
                   <MoreHorizontalIcon size={24} color="#fff" />
-                  {/* <Text className="text-Grey/06 text-[12px] font-PlusJakartaSansRegular">
-                    {convertSecondsToMinutes(track.duration)} mins
-                  </Text> */}
                 </View>
               </TouchableOpacity>
               {loading && (
@@ -345,24 +327,18 @@ const convertSecondsToMinutes = (seconds: number) => {
           />
         </View>
       </ScrollView>
-
-      <MusicBottomSheet
-        album={{ title, image, tracks }}
-        isVisible={isBottomSheetVisible}
-        closeSheet={() => setIsBottomSheetVisible(false)}
-        openAddToPlaylistSheet={() => {
-          setIsBottomSheetVisible(false);
-          setIsAddToPlaylistVisible(true);
-        }}
-      />
-
-      <AddToPlaylistBottomSheet
-        album={{ title, image, tracks }}
-        isVisible={isAddToPlaylistVisible}
-        closeSheet={() => setIsAddToPlaylistVisible(false)}
-      />
-      </Suspense>
-    </SafeAreaView>
+          </Suspense>
+          <Share
+            ref={shareBottomSheetRef}
+            album={{
+              title: title as string,
+              artist: artist as string,
+              image: image as string,
+              type: type as string,
+              duration: convertSecondsToMinutes(Number(duration))
+            }}
+          />
+        </SafeAreaView>
   );
 };
 
