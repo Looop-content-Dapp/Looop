@@ -121,8 +121,8 @@ const EmailSignUp: React.FC = () => {
         })
           .then(response => response.json())
           .then(userInfo => {
-
-            handleSocialSignIn("google", authentication.accessToken, userInfo.email);
+            console.log(userInfo.email)
+            handleSocialSignIn("google", authentication?.idToken, userInfo.email);
           })
           .catch(error => {
             console.error('Error fetching Google user info:', error);

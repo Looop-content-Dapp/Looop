@@ -57,7 +57,7 @@ export const useAuth = () => {
         // You might want to store the user data in your app's state management
         // and redirect to the main app screen
 
-        router.navigate("/(tabs)");
+        router.navigate("/(musicTabs)");
       }
     },
     onError: (error) => {

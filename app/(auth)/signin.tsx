@@ -16,6 +16,7 @@ import { useEffect, useState, useCallback } from "react";
 import api from "@/config/apiConfig";
 import { AuthRequest, AuthRequestPromptOptions, AuthSessionResult } from 'expo-auth-session';
 import { useLogin } from "@/hooks/useLogin";
+import { useAuth } from "@/hooks/useAuth";
 
 // Complete WebBrowser auth session
 WebBrowser.maybeCompleteAuthSession();
@@ -49,13 +50,17 @@ interface SocialButtonProps {
   onPress: () => void;
   imageSource: ImageSourcePropType;
   text: string;
+  disabled?: boolean;
 }
 
 // Social Button Component
-const SocialButton: React.FC<SocialButtonProps> = ({ onPress, imageSource, text }) => (
+const SocialButton: React.FC<SocialButtonProps> = ({ onPress, imageSource, text, disabled }) => (
   <TouchableOpacity
     onPress={onPress}
-    className="flex-row items-center justify-center gap-x-4 bg-white px-4 py-2 rounded-full w-full"
+    disabled={disabled}
+    className={`flex-row items-center justify-center gap-x-4 ${
+      disabled ? 'bg-gray-300' : 'bg-white'
+    } px-4 py-2 rounded-full w-full`}
   >
     <Image source={imageSource} style={{ width: 40, height: 40 }} />
     <Text className="text-[#040405] font-PlusJakartaSansMedium text-[14px]">
@@ -65,12 +70,8 @@ const SocialButton: React.FC<SocialButtonProps> = ({ onPress, imageSource, text 
 );
 
 const Signin: React.FC = () => {
-  const { mutate: login, isPending, isError, error } = useLogin() as {
-    mutate: (data: FormData, options: { onSuccess: () => void }) => void;
-    isPending: boolean;
-    isError: boolean;
-    error: MutationError | null;
-  };
+  const { mutate: login, isPending, isError, error } = useLogin();
+  const { authenticateUser, isPending: authPending } = useAuth();
   const [authLoading, setAuthLoading] = useState<boolean>(false);
 
   // Google Auth Setup with correct typing
@@ -94,16 +95,21 @@ const Signin: React.FC = () => {
   });
 
   // Handle social sign-in with proper typing
+  // Update handleSocialSignIn
   const handleSocialSignIn = useCallback(async (provider: "google" | "apple", token: string, email: string) => {
     setAuthLoading(true);
-    console.log("token", token)
     try {
+      authenticateUser({
+        channel: provider,
+        email,
+        token,
+      });
     } catch (err: unknown) {
       console.error(`${provider} sign-in error:`, err);
     } finally {
       setAuthLoading(false);
     }
-  }, []);
+  }, [authenticateUser]);
 
   // Google Auth Response Handler
   useEffect(() => {
@@ -278,11 +284,13 @@ const Signin: React.FC = () => {
             onPress={() => promptAsync()}
             imageSource={require("../../assets/images/google.png")}
             text="Sign in with Google"
+            disabled={authPending || authLoading}
           />
           <SocialButton
             onPress={handleAppleSignIn}
             imageSource={require("../../assets/images/apple.png")}
             text="Sign in with Apple"
+            disabled={authPending || authLoading}
           />
         </View>
         <Pressable onPress={() => router.navigate("/(auth)")} className="items-center mx-auto">

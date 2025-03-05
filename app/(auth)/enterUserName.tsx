@@ -44,6 +44,7 @@ const EnterUserName = () => {
     gender: string;
   }>();
   const router = useRouter();
+  console.log("email", email);
   const {
     control,
     handleSubmit,
@@ -76,10 +77,12 @@ const EnterUserName = () => {
     []
   );
 
-  const onSubmit = (data: FormData) => {
+const onSubmit = (data: FormData) => {
+  try {
     if (usernameError) {
       return;
     }
+
     createUser(
       {
         email,
@@ -97,10 +100,23 @@ const EnterUserName = () => {
             params: { email, password, ...data },
           });
         },
-
+        onError: (error) => {
+          console.error("User creation failed:", error);
+          Alert.alert(
+            "Error",
+            "Failed to create account. Please try again later."
+          );
+        },
       }
     );
-  };
+  } catch (error) {
+    console.error("Submission error:", error);
+    Alert.alert(
+      "Error",
+      error instanceof Error ? error.message : "An unexpected error occurred"
+    );
+  }
+};
 
 
   return (

@@ -18,8 +18,6 @@ export const useCreateUser = () => {
   return useMutation({
     mutationFn: async (input: User) => {
       const { data } = await api.post("/api/user/createuser", input);
-      console.log("input", input)
-      console.log("data", data)
       store.dispatch(setUserData(data.data.user));
       return data;
     },
