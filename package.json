@@ -80,6 +80,7 @@
     "react-native-appwrite": "^0.5.0",
     "react-native-confirmation-code-field": "^7.4.0",
     "react-native-elements": "^3.4.3",
+    "react-native-expo-image-cache": "^4.1.0",
     "react-native-gesture-handler": "~2.20.2",
     "react-native-ios-context-menu": "^3.0.0-23",
     "react-native-ios-utilities": "^5.0.0-58",
@@ -112,7 +113,8 @@
     "undefined": "@clerk/shared/authorization",
     "yup": "^1.4.0",
     "zeego": "^2.0.4",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2",
+    "expo-sharing": "~13.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

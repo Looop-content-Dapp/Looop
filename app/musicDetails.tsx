@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, Suspense } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import {
@@ -27,6 +28,9 @@ import AddToPlaylistBottomSheet from "../components/bottomSheet/AddToPlaylistBot
 import useMusicPlayer from "../hooks/useMusicPlayer";
 import { fetchAllAlbumsAndEPs, artistsArr } from "../utils/ArstsisArr";
 import { useQuery } from "@/hooks/useQuery";
+import { useQueryClient } from '@tanstack/react-query';
+import LoadingScreen from "./loadingScreen";
+import * as ImageCache from 'react-native-expo-image-cache';
 
 interface Track {
   _id: string;
@@ -48,13 +52,13 @@ interface Track {
 
 const MusicDetails = () => {
   const { width } = useWindowDimensions();
-  const { id, title, artist, image, type, duration, totalTracks } =
-    useLocalSearchParams();
+  const queryClient = useQueryClient();
+  const { id, title, artist, image, type, duration, totalTracks } = useLocalSearchParams();
   const [tracks, setTracks] = useState<Track[]>([]);
+  const { getTracksFromId } = useQuery();
   const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
   const [isAddToPlaylistVisible, setIsAddToPlaylistVisible] = useState(false);
   const [isTruncated, setIsTruncated] = useState(true);
-  const { getTracksFromId } = useQuery();
 
   const {
     isAlbumPlaying,
@@ -73,11 +77,24 @@ const MusicDetails = () => {
 
   const allSongs = useMemo(() => fetchAllAlbumsAndEPs(artistsArr), [artistsArr]);
 
+  // Use React Query to handle data fetching
   useEffect(() => {
     const fetchTracks = async () => {
-      const fetchedTracks = await getTracksFromId(id as string);
-      setTracks(fetchedTracks.data.tracks);
+      try {
+        // Try to get data from cache first
+        const cachedData = queryClient.getQueryData(['tracks', id]);
+        if (cachedData) {
+          setTracks(cachedData.data.tracks);
+          return;
+        }
+
+        const fetchedTracks = await getTracksFromId(id as string);
+        setTracks(fetchedTracks.data.tracks);
+      } catch (error) {
+        console.error('Error fetching tracks:', error);
+      }
     };
+
     fetchTracks();
   }, [id]);
 
@@ -90,6 +107,23 @@ const MusicDetails = () => {
     type: type as "album" | "single" | "ep",
     coverImage: image as string,
   };
+
+    // Prefetch similar music data
+    useEffect(() => {
+        const prefetchSimilarMusic = async () => {
+          const similarSongs = allSongs.filter(song =>
+            song.artist.name === artist && song._id !== id
+          );
+
+          similarSongs.forEach(song => {
+            queryClient.prefetchQuery(['tracks', song._id], () =>
+              getTracksFromId(song._id)
+            );
+          });
+        };
+
+        prefetchSimilarMusic();
+      }, [id, artist]);
 
   const Spacer = ({ size = 16 }) => <View style={{ height: size }} />;
 
@@ -113,6 +147,11 @@ const convertSecondsToMinutes = (seconds: number) => {
 
   return (
     <SafeAreaView style={styles.container}>
+           <Suspense fallback={
+            <View style={styles.container}>
+            <ActivityIndicator size="large" color="#FF6D1B" />
+  </View>
+}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <ArrowLeft02Icon size={32} color="#D2D3D5" />
@@ -122,12 +161,13 @@ const convertSecondsToMinutes = (seconds: number) => {
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         {/* Album Image */}
         <View style={styles.contentWrapper}>
-          <Image
-            source={{ uri: image }}
+          <ImageCache.Image
+            uri={image as string}
             style={[
               styles.albumImage,
               { width: width * 0.4, height: width * 0.4 },
             ]}
+            tint="dark"
           />
           {loading && (
             <View style={styles.skeletonWrapper}>
@@ -321,6 +361,7 @@ const convertSecondsToMinutes = (seconds: number) => {
         isVisible={isAddToPlaylistVisible}
         closeSheet={() => setIsAddToPlaylistVisible(false)}
       />
+      </Suspense>
     </SafeAreaView>
   );
 };

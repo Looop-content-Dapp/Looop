@@ -1,18 +1,45 @@
-import { View, Text, ImageBackground, StyleSheet } from "react-native";
+import { View, Text, ImageBackground, StyleSheet, Share } from "react-native";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import React, { useState, useEffect } from "react";
 import { TouchableOpacity } from "react-native";
 import { Link05Icon } from "@hugeicons/react-native";
 import * as Contacts from "expo-contacts";
-import ShareModal from "@/components/modals/ShareModal";
+import * as Sharing from 'expo-sharing';
+import { useAppSelector } from "@/redux/hooks";
+import api from "@/config/apiConfig";
 
 const Friends = () => {
   const [contacts, setContacts] = useState([]);
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [referralData, setReferralData] = useState(null);
+  const { userdata } = useAppSelector((auth) => auth.auth);
 
-  const handleShare = () => {
-    setModalVisible(true);
+  const handleFetchReferral = async () => {
+    if (!userdata?._id) return;
+    try {
+      const response = await api.get(`/api/referral/${userdata?._id}`);
+      setReferralData(response.data.data);
+    } catch (error) {
+      console.error('Error fetching referral:', error);
+    }
   };
+
+  const handleShare = async () => {
+    try {
+      const message = `Join me on Looop! Use my referral code: ${referralData?.code}\n\nDownload the app here: [Your App Store Link]`;
+      const result = await Share.share(
+        {
+          message: message,
+          title: 'Share Looop with friends',
+        },
+      );
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
+
+  useEffect(() => {
+    handleFetchReferral();
+  }, [userdata?._id]);
 
   useEffect(() => {
     (async () => {
@@ -53,27 +80,8 @@ const Friends = () => {
           </TouchableOpacity>
         </View>
       </ImageBackground>
-
-      <ShareModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        shareLink="https://example.com/share-link"
-        shareTitle="Check this out!"
-      />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 50,
-  },
-  contactItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-  },
-});
 
 export default Friends;

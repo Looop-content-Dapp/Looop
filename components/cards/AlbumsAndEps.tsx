@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, FlatList, Pressable, StyleSheet } from 'react-native';
 import { MotiView } from 'moti';
 import { useRouter } from 'expo-router';
+import { useQuery } from "@/hooks/useQuery";
 
 interface Song {
   _id: string;
@@ -39,6 +40,16 @@ type Props = {
 
 const AlbumsAndEps: React.FC<Props> = ({ songs, isLoading }) => {
   const router = useRouter();
+  const { getTracksFromId } = useQuery();
+
+  // Prefetch data when hovering over the Pressable
+  const prefetchData = async (id: string) => {
+    try {
+      await getTracksFromId(id);
+    } catch (error) {
+      console.log('Prefetch error:', error);
+    }
+  };
 
   const renderItem = ({ item }: { item: Song }) => {
     return (
@@ -54,6 +65,7 @@ const AlbumsAndEps: React.FC<Props> = ({ songs, isLoading }) => {
             },
           })
         }
+        onHoverIn={() => prefetchData(item._id)}
         style={styles.albumContainer}
       >
         <Image
