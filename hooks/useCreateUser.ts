@@ -12,6 +12,7 @@ type User = {
   age: string;
   gender: string;
   referralCode?: string;
+  provider?: string;
 };
 
 export const useCreateUser = () => {

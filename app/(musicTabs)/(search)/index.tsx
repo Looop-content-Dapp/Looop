@@ -146,7 +146,7 @@ const index = () => {
 />
 
 <ChartListSection
-  title={`Charting in ${location?.country || 'Nigeria'}`}
+  title={`Top songs Worldwide`}
   data={chartingData}
 />
 

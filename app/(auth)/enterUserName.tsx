@@ -44,7 +44,7 @@ const EnterUserName = () => {
     gender: string;
   }>();
   const router = useRouter();
-  console.log("email", email);
+  console.log("useremail", email);
   const {
     control,
     handleSubmit,

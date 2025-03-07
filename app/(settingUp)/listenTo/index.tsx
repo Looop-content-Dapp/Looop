@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet, FlatList, ScrollView, Alert }
 import React, { useLayoutEffect, useState } from "react";
 import { useNavigation, useRouter } from "expo-router";
 import {
-  
+
   ArrowLeft02Icon,
 } from "@hugeicons/react-native";
 import { AppButton } from "@/components/app-components/button";
@@ -50,12 +50,13 @@ const WhatDoYouListenTo = () => {
 
       onError: (error) => {
         Alert.alert("Error", error.message);
+        router.push("/(settingUp)/listenTo/selection");
       },
     }
   );
-    
+
   }
-  
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerTitle: () => (
@@ -75,7 +76,7 @@ const WhatDoYouListenTo = () => {
   return (
     <View className="flex-1 items-center justify-center">
       <MusicCategoryGrid data={data?.data as Genre[]} isLoading={isLoading}
-        selectedGenres={selectedGenres} 
+        selectedGenres={selectedGenres}
         onSelectGenre={handleGenreSelection}
       />
       <View style={styles.buttonContinueButtonContinue}>

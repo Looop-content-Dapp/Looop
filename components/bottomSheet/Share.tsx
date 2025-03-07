@@ -27,23 +27,6 @@ const Share = forwardRef<BottomSheet, { album: ShareProps }>((props, ref) => {
   const [hasPermission, setHasPermission] = useState(false);
   const [contacts, setContacts] = useState([]);
 
-
-  // Request contact permissions on mount
-//   useEffect(() => {
-//     (async () => {
-//       const { status } = await Contacts.requestPermissionsAsync();
-//       if (status === 'granted') {
-//         setHasPermission(true);
-//         const { data } = await Contacts.getContactsAsync({
-//           fields: [Contacts.Fields.Image, Contacts.Fields.Name],
-//         });
-//         setContacts(data.slice(0, 5)); // Limit to 5 contacts
-//       } else {
-//         setHasPermission(false);
-//       }
-//     })();
-//   }, []);
-
   // Handle permission request when button is pressed
   const requestPermission = async () => {
     const { status } = await Contacts.requestPermissionsAsync();
@@ -153,25 +136,25 @@ const Share = forwardRef<BottomSheet, { album: ShareProps }>((props, ref) => {
           </TouchableOpacity>
           <TouchableOpacity style={styles.shareButton}>
             <View style={[styles.iconContainer, { backgroundColor: '#25D366' }]}>
-              <FontAwesome5 name="whatsapp" size={32} color="#FFFFFF" />
+             <Image source={require("../../assets/images/whatsapp_3938041.png")} className='w-[64px] rounded-full h-[64px] rounded-full' />
             </View>
             <Text style={styles.shareLabel}>WhatsApp</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.shareButton}>
             <View style={[styles.iconContainer, { backgroundColor: '#FFFC00' }]}>
-              <FontAwesome5 name="snapchat-ghost" size={32} color="#000000" />
+            <Image source={require("../../assets/images/social_13670393.png")} className='w-[40px] h-[40px]' />
             </View>
             <Text style={styles.shareLabel}>Snapchat story</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.shareButton}>
             <View style={[styles.iconContainer, { backgroundColor: '#FFFFFF' }]}>
-              <FontAwesome5 name="instagram" size={32} color="#FF005F" />
+            <Image source={require("../../assets/images/instagram_2111463.png")} className='w-[32px] h-[32px]' />
             </View>
             <Text style={styles.shareLabel}>Instagram chat</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.shareButton}>
             <View style={[styles.iconContainer, { backgroundColor: '#FFFFFF' }]}>
-              <FontAwesome5 name="twitter" size={32} color="#000000" />
+             <Image source={require("../../assets/images/icons8-twitter-50.png")} className='w-[32px] h-[32px]' />
             </View>
             <Text style={styles.shareLabel}>Share to X</Text>
           </TouchableOpacity>

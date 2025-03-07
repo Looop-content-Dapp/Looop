@@ -26,7 +26,6 @@ export default function MusicTab() {
           borderTopWidth: 0,
         },
         tabBarIconStyle: { marginTop: Platform.OS === "android" ? 10 : 8 },
-        tabBarShowLabel: false,
         headerStyle: {
           backgroundColor: "#040405",
           height: 109,
@@ -39,6 +38,7 @@ export default function MusicTab() {
       <Tabs.Screen
         name="(home)"
         options={{
+        title: "Home",
           tabBarIcon: ({ color, focused }) => (
             <Home11Icon
               size={24}
@@ -51,7 +51,7 @@ export default function MusicTab() {
       <Tabs.Screen
         name="(search)"
         options={{
-          title: "Search",
+          title: "Discover",
           tabBarIcon: ({ color, focused }) => (
             <DiscoverCircleIcon
               size={24}

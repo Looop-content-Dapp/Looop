@@ -17,6 +17,7 @@ type WalletBalanceProps = {
 export default function WalletBalance({ balances, addresses, isLoading, onCopyAddress }: WalletBalanceProps) {
   const [selectedTab, setSelectedTab] = useState("All balances");
   const [currency, setCurrency] = useState<"USD" | "NGN">("USD");
+  console.log(balances, "balances")
 
   const exchangeRate = 1450; // Hardcoded NGN to USD rate; ideally from an API
 

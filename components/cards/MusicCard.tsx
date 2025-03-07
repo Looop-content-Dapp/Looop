@@ -76,19 +76,27 @@ const MusicCard = ({ item, loading }: MusicCardProps) => {
         <Skeleton
           show={loading}
           transition={{ type: "timing", duration: 2000 }}
+          width={120}
+          height={20}
         >
-          <Text className="text-[14px] text-[#fff] font-PlusJakartaSansBold font-normal">
-            {truncateText(item?.title, 15)}
-          </Text>
+          <View className="flex items-center justify-center">
+            <Text className="text-[14px] text-[#fff] font-PlusJakartaSansBold font-normal">
+              {truncateText(item?.title, 15)}
+            </Text>
+          </View>
         </Skeleton>
         <Skeleton
           show={loading}
           transition={{ type: "timing", duration: 2000 }}
           colorMode="dark"
+          width={100}
+          height={16}
         >
-          <Text className="text-[10px] font-PlusJakartaSansBold text-[#787A80] font-normal pt-[4px]">
-            {item?.artist}
-          </Text>
+          <View className="flex items-center justify-center">
+            <Text className="text-[10px] font-PlusJakartaSansBold text-[#787A80] font-normal">
+              {item?.artist}
+            </Text>
+          </View>
         </Skeleton>
       </View>
     </View>

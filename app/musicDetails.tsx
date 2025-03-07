@@ -177,12 +177,18 @@ const convertSecondsToMinutes = (seconds: number) => {
         {/* Title */}
         <View style={styles.contentWrapper}>
           <Text
-            style={[styles.title, { fontSize: width * 0.06 }]}
+            style={[styles.title, { fontSize: width * 0.06, maxWidth: width * 0.8 }]}
             numberOfLines={1}
+            ellipsizeMode="tail"
           >
             {title}
           </Text>
-          <Text className="text-[12px] font-PlusJakartaSansBold text-Grey/06">
+          <Text
+            className="text-[12px] font-PlusJakartaSansBold text-Grey/06"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={{ maxWidth: width * 0.8 }}
+          >
             ¥$, Ye & Ty Dolla Sign
           </Text>
         </View>
@@ -286,18 +292,24 @@ const convertSecondsToMinutes = (seconds: number) => {
                 onPress={() => handleTrackPress(track, index, albumInfo, tracks)}
                 className="flex-row items-center justify-between py-3"
               >
-                <View className="flex-row items-center">
-                  <View>
+                <View className="flex-row items-center flex-1 mr-4">
+                  <View style={{ flex: 1 }}>
                     <Text
                       className={`text-[16px] font-PlusJakartaSansBold ${
                         currentTrackId === track._id
                           ? "text-Orange/08"
                           : "text-[#fff]"
                       }`}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
                     >
                       {track.title}
                     </Text>
-                    <Text className="text-[12px] font-PlusJakartaSansBold text-Grey/06">
+                    <Text
+                      className="text-[12px] font-PlusJakartaSansBold text-Grey/06"
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
                       {track.artist.name}
                     </Text>
                   </View>

@@ -184,7 +184,7 @@ const CommunityOnboarding = () => {
   const handleContinueWithInterests = async () => {
     if (selectedInterests.length > 0 && userdata?._id) {
       try {
-        await saveUserPreference(userdata?._id, selectedInterests);
+        // await saveUserPreference(userdata?._id, selectedInterests);
         setCurrentStep(2);
       } catch (error) {
         console.error("Error saving preferences:", error);
@@ -243,9 +243,9 @@ const CommunityOnboarding = () => {
         </Text>
         <View className="gap-y-[7px]">
           {benefit.map((text) => (
-            <View className="bg-[#12141B] flex-row items-center gap-2 rounded-lg p-[12px]">
+            <View className="bg-[#12141B]  flex-row items-center gap-2 rounded-lg p-[12px]">
               <CheckmarkCircle02Icon size={16} color="#D2D3D5" />
-              <Text className="text-gray-300 font-PlusJakartaSansRegular text-base break-words">
+              <Text className="text-gray-300  font-PlusJakartaSansRegular text-base break-words">
                 {text.text}
               </Text>
             </View>

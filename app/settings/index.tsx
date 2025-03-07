@@ -59,14 +59,14 @@ const index = () => {
         },
     ]
 
-    const filteredSettings = settingsMenuItems.filter(item => 
+    const filteredSettings = settingsMenuItems.filter(item =>
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase())
     )
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
-            <ScrollView 
+            <ScrollView
                 className='flex-1'
                 contentContainerStyle={{
                     paddingHorizontal: horizontalPadding,
@@ -93,9 +93,9 @@ const index = () => {
                 </View>
                 <View className='gap-y-[12px]'>
                     {filteredSettings.map((menu, key) => (
-                        <TouchableOpacity 
-                            onPress={() => router.navigate(menu.route)} 
-                            key={key} 
+                        <TouchableOpacity
+                            onPress={() => router.navigate(menu.route)}
+                            key={key}
                             className='bg-[#0A0B0F] border-2 border-[#12141B] flex-row items-center justify-between rounded-[10px]'
                             style={{ padding: itemPadding, gap: 16 }}
                         >
@@ -103,7 +103,7 @@ const index = () => {
                                 {menu.icon}
                             </View>
                             <View className='flex-1'>
-                                <Text style={{ 
+                                <Text style={{
                                     fontSize: width < 768 ? 16 : 18,
                                     fontFamily: 'PlusJakartaSansMedium',
                                     color: '#f4f4f4'
@@ -124,7 +124,7 @@ const index = () => {
                         </TouchableOpacity>
                     ))}
 
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         className='bg-[#12141B] items-center justify-center mx-auto rounded-[10px]'
                         style={{
                             padding: width < 768 ? 10 : 12,

@@ -1,5 +1,4 @@
-import { View, Text, Image, TouchableOpacity, ImageSourcePropType, Alert } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { View, Text, Image, TouchableOpacity, ImageSourcePropType, Alert, ActivityIndicator } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 import { AppButton } from "@/components/app-components/button";
 import { router } from "expo-router";
@@ -9,16 +8,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSendEmailOTP } from "@/hooks/useVerifyEmail";
 import AuthHeader from "@/components/AuthHeader";
 import { InformationCircleIcon } from "@hugeicons/react-native";
-import * as Google from "expo-auth-session/providers/google";
-import * as AppleAuthentication from "expo-apple-authentication";
 import * as WebBrowser from "expo-web-browser";
-import { useEffect, useState, useCallback } from "react";
-import { AuthRequest, AuthRequestPromptOptions, AuthSessionResult } from 'expo-auth-session';
 import { Pressable } from "react-native";
-import { useAuth } from "@/hooks/useAuth";
-
-// Complete WebBrowser auth session
-WebBrowser.maybeCompleteAuthSession();
+import { useGoogleAuth, useAppleAuth } from "@/hooks/useSocialAuth";
 
 // Validation schema
 const schema = z.object({
@@ -42,23 +34,31 @@ interface MutationError {
 
 // Props for SocialButton component
 interface SocialButtonProps {
-  onPress: () => void;
-  imageSource: ImageSourcePropType;
-  text: string;
-}
+    onPress: () => void;
+    imageSource: ImageSourcePropType;
+    text: string;
+    loading?: boolean;
+  }
 
 // Social Button Component
-const SocialButton: React.FC<SocialButtonProps> = ({ onPress, imageSource, text }) => (
-  <TouchableOpacity
-    onPress={onPress}
-    className="flex-row items-center justify-center gap-x-4 bg-white px-4 py-2 rounded-full w-full"
-  >
-    <Image source={imageSource} style={{ width: 40, height: 40 }} />
-    <Text className="text-[#040405] font-PlusJakartaSansMedium text-[14px]">
-      {text}
-    </Text>
-  </TouchableOpacity>
-);
+const SocialButton: React.FC<SocialButtonProps> = ({ onPress, imageSource, text, loading }) => (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={loading}
+      className="flex-row items-center justify-center gap-x-4 bg-white px-4 py-2 rounded-full w-full"
+    >
+      {loading ? (
+        <ActivityIndicator size="small" color="#040405" />
+      ) : (
+        <>
+          <Image source={imageSource} style={{ width: 40, height: 40 }} />
+          <Text className="text-[#040405] font-PlusJakartaSansMedium text-[14px]">
+            {text}
+          </Text>
+        </>
+      )}
+    </TouchableOpacity>
+  );
 
 const EmailSignUp: React.FC = () => {
   const { mutate: sendOtpEmail, isPending, isError, error } = useSendEmailOTP() as {
@@ -67,19 +67,8 @@ const EmailSignUp: React.FC = () => {
     isError: boolean;
     error: MutationError | null;
   };
-  const [authLoading, setAuthLoading] = useState<boolean>(false);
-
-  // Google Auth Setup with correct typing
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || "776440951072-v1ncd4jb1o8arac8f541p0ghrv24v4ro.apps.googleusercontent.com",
-    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-  }) as [
-    AuthRequest | null,
-    AuthSessionResult | null,
-    (options?: AuthRequestPromptOptions) => Promise<AuthSessionResult>
-  ];
-  console.log("response", response)
+  const { handleGoogleSignIn, loading: googleLoading } = useGoogleAuth();
+  const { handleAppleSignIn, loading: appleLoading } = useAppleAuth();
 
   const {
     control,
@@ -89,47 +78,6 @@ const EmailSignUp: React.FC = () => {
     resolver: zodResolver(schema),
     defaultValues: { email: "" },
   });
-
-  // Handle social sign-in with proper typing
-  const { authenticateUser, isPending: authPending } = useAuth();
-
-  // Update handleSocialSignIn
-  const handleSocialSignIn = useCallback(async (provider: "google" | "apple", token: string, email: string) => {
-    setAuthLoading(true);
-    try {
-      authenticateUser({
-        channel: provider,
-        email,
-        token,
-      });
-    } catch (err: unknown) {
-      console.error(`${provider} sign-in error:`, err);
-    } finally {
-      setAuthLoading(false);
-    }
-  }, [authenticateUser]);
-
-  // Google Auth Response Handler
-  useEffect(() => {
-    if (response?.type === "success") {
-      const { authentication } = response;
-      console.log('auth', authentication, authentication?.accessToken)
-      if (authentication?.accessToken) {
-        // Fetch Google user info to get email
-        fetch('https://www.googleapis.com/userinfo/v2/me', {
-          headers: { Authorization: `Bearer ${authentication.accessToken}` },
-        })
-          .then(response => response.json())
-          .then(userInfo => {
-            console.log(userInfo.email)
-            handleSocialSignIn("google", authentication?.idToken, userInfo.email);
-          })
-          .catch(error => {
-            console.error('Error fetching Google user info:', error);
-          });
-      }
-    }
-  }, [response, handleSocialSignIn]);
 
   // Email Submit Handler
   const onSubmit = (data: FormData): void => {
@@ -141,57 +89,6 @@ const EmailSignUp: React.FC = () => {
         }),
     });
   };
-
-  // Apple Sign In Handler
-const handleAppleSignIn = async (): Promise<void> => {
-  try {
-    setAuthLoading(true);
-    // Check if Apple Authentication is available
-    if (!AppleAuthentication.isAvailableAsync()) {
-      console.error("Apple Sign-In is not available on this device.");
-      return;
-    }
-
-    // Request user information including full name and email
-    const credential =
-      await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-      });
-
-      const credentialState = await AppleAuthentication.getCredentialStateAsync(
-        credential.user
-      );
-
-    console.log("credential", credential)
-    console.log("credentialState", credentialState)
-
-    const userEmail = credential.email || `${credential.user}@privaterelay.appleid.com`;
-
-    if (credential.identityToken) {
-      handleSocialSignIn(
-        "apple",
-        credential.identityToken,
-        userEmail
-      );
-    } else {
-      console.error("No identity token received from Apple Sign-In");
-    }
-  } catch (e: unknown) {
-    const error = e as { code?: string; message?: string };
-    if (error.code !== "ERR_CANCELED") {
-      console.error("Apple Sign In Error Details:", {
-        code: error.code,
-        message: error.message,
-        stack: (e as Error).stack,
-      });
-    }
-  } finally {
-    setAuthLoading(false);
-  }
-};
 
   return (
     <View className="flex-1">
@@ -262,19 +159,21 @@ const handleAppleSignIn = async (): Promise<void> => {
         </View>
 
         <View className="flex-col gap-y-4">
-          <SocialButton
-            onPress={() => promptAsync()}
-            imageSource={require("../../assets/images/google.png")}
-            text="Sign in with Google"
-          />
-          <SocialButton
-            onPress={handleAppleSignIn}
-            imageSource={require("../../assets/images/apple.png")}
-            text="Sign in with Apple"
-          />
+        <SocialButton
+        onPress={handleGoogleSignIn}
+        imageSource={require("../../assets/images/google.png")}
+        text="Sign in with Google"
+       loading={googleLoading}
+      />
+  <SocialButton
+    onPress={handleAppleSignIn}
+    imageSource={require("../../assets/images/apple.png")}
+    text="Sign in with Apple"
+    loading={appleLoading}
+  />
         </View>
 
-        <Pressable onPress={() => router.navigate("/(auth)/signin")} className="items-center mx-auto">
+        <Pressable onPress={() => router.navigate("/(auth)/signin")} className="items-center mx-auto mt-[20%]">
             <Text className="text-[14px] font-PlusJakartaSansRegular text-[#f4f4f4]">
                 Already have an account?
                  <Text className="text-Orange/08 underline font-PlusJakartaSansBold">  Log In</Text>

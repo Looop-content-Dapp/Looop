@@ -54,7 +54,7 @@ const CustomBottomContent = ({ pageIndex }: { pageIndex: number }) => {
         <TouchableOpacity style={styles.button}
           onPress={() => {
             dispatch(updateOnBoarded());
-            router.push("signin")}}
+            router.push("/(auth)")}}
         >
           <Text style={styles.buttonText}>Continue to Sign in</Text>
         </TouchableOpacity>
@@ -65,7 +65,7 @@ const CustomBottomContent = ({ pageIndex }: { pageIndex: number }) => {
 
 export default CustomBottomContent;
 
- 
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
