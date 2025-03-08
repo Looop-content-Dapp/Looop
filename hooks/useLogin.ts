@@ -1,5 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import api from "@/config/apiConfig";
+import store from "@/redux/store";
+import { setUserData } from "@/redux/slices/auth";
 
 interface LoginInput {
   email: string;
@@ -41,9 +43,12 @@ interface LoginResponse {
 }
 
 export const useLogin = () => {
+
   return useMutation<LoginResponse, Error, LoginInput>({
     mutationFn: async (input: LoginInput) => {
       const { data } = await api.post("/api/user/signin", input);
+      console.log("data", data)
+      store.dispatch(setUserData(data.data));
       return data;
     },
   });

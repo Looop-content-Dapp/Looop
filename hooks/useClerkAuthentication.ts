@@ -94,16 +94,14 @@ export const useClerkAuthentication = () => {
     setLoading(true);
     setError(null);
     try {
+      store.dispatch(setUserData(null));
       persistor.purge();
-      const session = await account.getSession("current");
-      if (session) {
-        await account.deleteSession(session.$id);
-        router.replace("/");
-        showToast("Successfully logged out", "success");
-      }
+      router.replace("/");
     } catch (error) {
       console.error("Error during logout:", error);
       showToast("Failed to logout. Please try again.", "error");
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -26,7 +26,7 @@ function AppContent() {
     PlusJakartaSansLight: require("../assets/fonts/PlusJakartaSans-Light.ttf"),
     PlusJakartaSansMedium: require("../assets/fonts/PlusJakartaSans-Medium.ttf"),
     PlusJakartaSansRegular: require("../assets/fonts/PlusJakartaSans-Regular.ttf"),
-    TankerRegular: require("../assets/fonts/Tanker-Regular.otf"),
+    TankerRegular: require("../assets/fonts/Tanker-Regular.ttf"),
   });
 
   useEffect(() => {
@@ -98,6 +98,7 @@ function AppContent() {
           }}
         />
         <Stack.Screen name="wallet" />
+        <Stack.Screen name="comment" />
       </Stack>
     </>
   );
@@ -111,11 +112,11 @@ export default function _RootLayout() {
         <BottomSheetModalProvider>
           <Provider store={store}>
             <PersistGate loading={null} persistor={persistor}>
-              <Pressable className="bg-Orange/08 absolute bottom-[120px] right-[12px] z-[1000px] h-[60px] w-[60px]  items-center justify-center rounded-full" onPress={async () => {
-                router.push("/(musicTabs)")
+              {/* <Pressable className="bg-Orange/08 absolute bottom-[120px] -[12px] z-[1000px] h-[60px] w-[60px]  items-center justify-center rounded-full" onPress={async () => {
+                router.push("/(settingUp)")
               }}>
             <Text className="text-[#fff]">Reset</Text>
-           </Pressable>
+           </Pressable> */}
               <KeyboardProvider>
                 <AppContent />
               </KeyboardProvider>

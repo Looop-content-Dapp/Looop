@@ -23,7 +23,7 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
   }
   }, [item]);
   return (
-    <View className='h-auto gap-y-[16px]'>
+    <View className='h-auto gap-y-[16px] mx-[14px]'>
       <StatusBar style='light' />
 
       <UserSection user={item?.user} loading={!item} />

@@ -618,7 +618,7 @@ export const ONBOARDING_TEXTS = [
     first: {
       text: "stream, share and join the world conversation — your favorite artists are ",
     },
-    second: { text: "Now closer than ever", color: "#A187B5" },
+    second: { text: "Now closer than ever...", color: "#A187B5" },
   },
   {
     first: { text: "decentralizing the community experience — giving " },

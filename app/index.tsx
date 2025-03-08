@@ -36,7 +36,6 @@ export default function Page() {
         />
         <View className="flex-1 items-center bg-[#FF6D1B] justify-center gap-y-3">
           <AppLogo />
-          <ActivityIndicator size={36} className="text-white" />
         </View>
       </SafeAreaView>
     </>

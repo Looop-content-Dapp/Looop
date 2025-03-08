@@ -10,7 +10,7 @@ interface MusicCategoryProps {
 }
 
 const MusicCategory = ({ title, musicData, isLoading }: MusicCategoryProps) => {
-    console.log("MusicCategory", musicData)
+  
   const placeholderData = Array(5).fill({});
   return (
     <View className="h-[254px] gap-y-[16px]">

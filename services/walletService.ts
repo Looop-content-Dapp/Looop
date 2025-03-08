@@ -1,4 +1,4 @@
-import { Provider, CallData } from 'starknet';
+import { CallData, Contract, RpcProvider } from 'starknet';
 import api from '@/config/apiConfig';
 
 export const getXionBalance = async (address: string) => {
@@ -13,28 +13,35 @@ export const getXionBalance = async (address: string) => {
 
 export const getStarknetBalance = async (address: string) => {
   try {
-    const provider = new Provider({
-      sequencer: {
-        baseUrl: process.env.EXPO_PUBLIC_STARKNET_RPC_URL || 'https://free-rpc.nethermind.io/sepolia-juno/v0_7'
-      }
-    } as any);
-
-    const balance = await provider.callContract({
-      contractAddress: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-      entrypoint: "balanceOf",
-      calldata: CallData.compile({ user: address })
+    const provider = new RpcProvider({
+      nodeUrl: 'https://starknet-sepolia.public.blastapi.io/rpc/v0_6'
     });
+
+    const calldata = CallData.compile({ user: address });
+    const response = await provider.callContract({
+      contractAddress: "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
+      entrypoint: "balanceOf",
+      calldata
+    });
+
+    const balance = response.result[0];
+    console.log('Starknet balance:', balance);
 
     return {
       success: true,
       data: {
         address,
-        balance: balance.toString(),
+        balance: balance,
         denom: "ETH"
       },
       message: 'StarkNet balance retrieved successfully'
     };
   } catch (error) {
-    throw new Error('Failed to fetch Starknet balance');
+    console.error('Starknet balance error details:', error);
+    return {
+      success: false,
+      data: null,
+      message: `Failed to fetch Starknet balance: ${error.message || 'Unknown error'}`
+    };
   }
 };
