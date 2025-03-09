@@ -16,7 +16,7 @@ export default function Page() {
       if (onBoarded === false && userdata === null) {
         router.replace("/onboarding2");
       } else if (onBoarded === true && userdata === null) {
-        router.replace("/(auth)");
+        router.replace("/(auth)/userDetail");
       } else {
         router.replace("/(musicTabs)/(home)/");
         // router.replace("/(settingUp)/");

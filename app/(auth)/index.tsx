@@ -1,4 +1,13 @@
-import { View, Text, Image, TouchableOpacity, ImageSourcePropType, Alert, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ImageSourcePropType,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+} from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 import { AppButton } from "@/components/app-components/button";
 import { router } from "expo-router";
@@ -34,41 +43,52 @@ interface MutationError {
 
 // Props for SocialButton component
 interface SocialButtonProps {
-    onPress: () => void;
-    imageSource: ImageSourcePropType;
-    text: string;
-    loading?: boolean;
-  }
+  onPress: () => void;
+  imageSource: ImageSourcePropType;
+  text: string;
+  loading?: boolean;
+}
 
 // Social Button Component
-const SocialButton: React.FC<SocialButtonProps> = ({ onPress, imageSource, text, loading }) => (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={loading}
-      className="flex-row items-center justify-center gap-x-4 bg-white px-4 py-2 rounded-full w-full"
-    >
-      {loading ? (
-        <ActivityIndicator size="small" color="#040405" />
-      ) : (
-        <>
-          <Image source={imageSource} style={{ width: 40, height: 40 }} />
-          <Text className="text-[#040405] font-PlusJakartaSansMedium text-[14px]">
-            {text}
-          </Text>
-        </>
-      )}
-    </TouchableOpacity>
-  );
+const SocialButton: React.FC<SocialButtonProps> = ({
+  onPress,
+  imageSource,
+  text,
+  loading,
+}) => (
+  <TouchableOpacity
+    onPress={onPress}
+    disabled={loading}
+    className="flex-row items-center justify-center bg-white px-4 py-2 rounded-full w-full"
+    style={{ minHeight: 56 }} // Add consistent height
+  >
+    {loading ? (
+      <ActivityIndicator size="small" color="#040405" />
+    ) : (
+      <>
+        <Image source={imageSource} style={{ width: 40, height: 40 }} />
+        <Text className="text-[#040405] font-PlusJakartaSansMedium text-[14px] ml-4">
+          {text}
+        </Text>
+      </>
+    )}
+  </TouchableOpacity>
+);
 
 const EmailSignUp: React.FC = () => {
-  const { mutate: sendOtpEmail, isPending, isError, error } = useSendEmailOTP() as {
+  const {
+    mutate: sendOtpEmail,
+    isPending,
+    isError,
+    error,
+  } = useSendEmailOTP() as {
     mutate: (data: FormData, options: { onSuccess: () => void }) => void;
     isPending: boolean;
     isError: boolean;
     error: MutationError | null;
   };
   const { handleGoogleSignIn, loading: googleLoading } = useGoogleAuth();
-  const { handleAppleSignIn, loading: appleLoading } = useAppleAuth();
+  const { handleAppleSignIn, loading: appleLoading, isAuthenticating } = useAppleAuth();
 
   const {
     control,
@@ -90,8 +110,14 @@ const EmailSignUp: React.FC = () => {
     });
   };
 
+  console.log("isAuthenticating", isAuthenticating);
+  if (isAuthenticating) {
+    return (
+       <ActivityIndicator size="large" color="#FF7A1B" />
+    );
+  }
   return (
-    <View className="flex-1">
+    <ScrollView className="flex-1">
       <View className="flex-1 px-6 gap-12">
         <View className="gap-y-20">
           <AuthHeader
@@ -103,7 +129,8 @@ const EmailSignUp: React.FC = () => {
             <View className="flex-row items-center gap-x-2">
               <InformationCircleIcon size={20} color="#FF1B1B" />
               <Text className="text-[#FF1B1B] font-PlusJakartaSansRegular text-xs">
-                {error?.response?.data.message || "Failed to send email. Please try again."}
+                {error?.response?.data.message ||
+                  "Failed to send email. Please try again."}
               </Text>
             </View>
           )}
@@ -159,28 +186,34 @@ const EmailSignUp: React.FC = () => {
         </View>
 
         <View className="flex-col gap-y-4">
-        <SocialButton
-        onPress={handleGoogleSignIn}
-        imageSource={require("../../assets/images/google.png")}
-        text="Sign in with Google"
-       loading={googleLoading}
-      />
-  <SocialButton
-    onPress={handleAppleSignIn}
-    imageSource={require("../../assets/images/apple.png")}
-    text="Sign in with Apple"
-    loading={appleLoading}
-  />
+          <SocialButton
+            onPress={handleGoogleSignIn}
+            imageSource={require("../../assets/images/google.png")}
+            text="Sign in with Google"
+            loading={googleLoading}
+          />
+          <SocialButton
+            onPress={handleAppleSignIn}
+            imageSource={require("../../assets/images/apple.png")}
+            text="Sign in with Apple"
+            loading={appleLoading}
+          />
         </View>
 
-        <Pressable onPress={() => router.navigate("/(auth)/signin")} className="items-center mx-auto mt-[20%]">
-            <Text className="text-[14px] font-PlusJakartaSansRegular text-[#f4f4f4]">
-                Already have an account?
-                 <Text className="text-Orange/08 underline font-PlusJakartaSansBold">  Log In</Text>
+        <Pressable
+          onPress={() => router.navigate("/(auth)/signin")}
+          className="items-center mx-auto mt-[20%]"
+        >
+          <Text className="text-[14px] font-PlusJakartaSansRegular text-[#f4f4f4]">
+            Already have an account?
+            <Text className="text-Orange/08 underline font-PlusJakartaSansBold">
+              {" "}
+              Log In
             </Text>
+          </Text>
         </Pressable>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 

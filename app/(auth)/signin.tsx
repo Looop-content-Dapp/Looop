@@ -47,7 +47,7 @@ interface SocialButtonProps {
   disabled?: boolean;
 }
 
-// Social Button Component
+
 const SocialButton: React.FC<SocialButtonProps> = ({ onPress, imageSource, text, disabled }) => (
   <TouchableOpacity
     onPress={onPress}
