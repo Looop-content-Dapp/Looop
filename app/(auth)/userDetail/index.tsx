@@ -1,4 +1,11 @@
-import { View, Text, TextInput, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import React, { useState } from "react";
 import AuthHeader from "@/components/AuthHeader";
 import { AppButton } from "@/components/app-components/button";
@@ -57,7 +64,7 @@ const UserDetail = () => {
   }>();
   const router = useRouter();
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
-  
+
   const {
     control,
     handleSubmit,
@@ -67,7 +74,7 @@ const UserDetail = () => {
     defaultValues: {
       dob: "",
       gender: "",
-    }
+    },
   });
 
   const onSubmit = (data: FormData) => {
@@ -98,29 +105,33 @@ const UserDetail = () => {
                 onPress={() => setDatePickerVisible(true)}
                 style={[
                   styles.datePickerButton,
-                  errors.dob ? styles.errorBorder : {}
+                  errors.dob ? styles.errorBorder : {},
                 ]}
               >
                 <Text style={styles.datePickerText}>
                   {value ? value : "Select Date"}
                 </Text>
               </TouchableOpacity>
-              
+
               <DateTimePickerModal
                 isVisible={isDatePickerVisible}
                 mode="date"
                 onConfirm={(date) => {
                   setDatePickerVisible(false);
                   // Format date to YYYY-MM-DD or any format you prefer
-                  const formattedDate = format(date, "MMM dd, yyyy");
-                  onChange(formattedDate);
+                  onChange(format(date, "yyyy-MM-dd"));
                 }}
                 onCancel={() => setDatePickerVisible(false)}
                 maximumDate={new Date()} // Set maximum date as today
                 date={value ? new Date(value) : new Date()}
                 buttonTextColorIOS="#FF7A1B"
                 accentColor="#FF7A1B"
+                backdropStyleIOS={{ backgroundColor: "#1E1E1E" }}
+                pickerStyleIOS={{ backgroundColor: "#1E1E1E" }}
+                textColor="#D2D3D5"
                 themeVariant="dark"
+                
+                
               />
             </>
           )}
@@ -143,11 +154,14 @@ const UserDetail = () => {
                 <View
                   style={[
                     styles.dropdownTrigger,
-                    errors.gender ? styles.errorBorder : {}
+                    errors.gender ? styles.errorBorder : {},
                   ]}
                 >
                   <Text style={styles.dropdownTriggerText}>
-                    {value ? genderOptions.find(option => option.value === value)?.label : "Select"}
+                    {value
+                      ? genderOptions.find((option) => option.value === value)
+                          ?.label
+                      : "Select"}
                   </Text>
                 </View>
               </DropdownMenuTrigger>
@@ -160,11 +174,15 @@ const UserDetail = () => {
                     }}
                     style={[
                       styles.dropdownItem,
-                      value === option.value ? styles.selectedItem : {}
+                      value === option.value ? styles.selectedItem : {},
                     ]}
                   >
-                    <DropdownMenuItemTitle 
-                      style={value === option.value ? styles.selectedItemText : styles.itemText}
+                    <DropdownMenuItemTitle
+                      style={
+                        value === option.value
+                          ? styles.selectedItemText
+                          : styles.itemText
+                      }
                     >
                       {option.label}
                     </DropdownMenuItemTitle>
@@ -208,7 +226,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#2D2D2D"
+    borderColor: "#2D2D2D",
   },
   datePickerText: {
     color: "#D2D3D5",
@@ -223,7 +241,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#2D2D2D"
+    borderColor: "#2D2D2D",
   },
   errorBorder: {
     borderColor: "#FF4D4F",
@@ -259,5 +277,5 @@ const styles = StyleSheet.create({
     color: "#FF7A1B",
     fontFamily: "PlusJakartaSansBold",
     fontSize: 16,
-  }
+  },
 });
