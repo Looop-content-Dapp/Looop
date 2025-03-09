@@ -1,4 +1,4 @@
-import { SafeAreaView, View, Text, FlatList, TouchableOpacity, TextInput, Image } from "react-native";
+import { SafeAreaView, View, Text, FlatList, TouchableOpacity, TextInput, Image, Alert } from "react-native";
 import { router, useNavigation } from "expo-router";
 import WalletBalance from "@/components/wallet/WalletBalance";
 import TransactionHistory from "@/components/wallet/TransactionHistory";
@@ -8,6 +8,7 @@ import { AppBackButton } from "@/components/app-components/back-btn";
 import FilterButton from "@/components/app-components/FilterButton";
 import { useAppSelector } from "@/redux/hooks";
 import { getXionBalance, getStarknetBalance } from '@/services/walletService';
+import * as Clipboard from 'expo-clipboard';
 
 const WalletScreen = () => {
   const navigation = useNavigation();
@@ -123,7 +124,10 @@ const WalletScreen = () => {
             balances={walletData.balances}
             addresses={walletData.addresses}
             isLoading={isLoading}
-            onCopyAddress={(address) => { /* Add copy functionality here */ }}
+            onCopyAddress={async (address) => {
+              await Clipboard.setStringAsync(address);
+               Alert.alert("Address Copied")
+            }}
           />
           {/* Fund with Card Button */}
           <TouchableOpacity className="bg-[#202227] mx-4 my-3 px-[16px] pt-[20px] pb-[19px] rounded-[10px] flex-row justify-between items-center">
