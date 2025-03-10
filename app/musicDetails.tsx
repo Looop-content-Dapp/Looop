@@ -23,14 +23,13 @@ import {
 } from "@hugeicons/react-native";
 import { Skeleton } from "moti/skeleton";
 import MusicCategory from "../components/home/newlyRelease";
-import MusicBottomSheet from "../components/bottomSheet/MusicBottomSheet";
-import AddToPlaylistBottomSheet from "../components/bottomSheet/AddToPlaylistBottomSheet";
 import useMusicPlayer from "../hooks/useMusicPlayer";
 import { fetchAllAlbumsAndEPs, artistsArr } from "../utils/ArstsisArr";
 import { useQuery } from "@/hooks/useQuery";
 import { useQueryClient } from '@tanstack/react-query';
-import LoadingScreen from "./loadingScreen";
 import * as ImageCache from 'react-native-expo-image-cache';
+import Share from '../components/bottomSheet/Share';
+import { useRef } from 'react';
 
 interface Track {
   _id: string;
@@ -51,14 +50,17 @@ interface Track {
 }
 
 const MusicDetails = () => {
+  // Add this new state to track the selected track for sharing
+  const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
+
   const { width } = useWindowDimensions();
   const queryClient = useQueryClient();
   const { id, title, artist, image, type, duration, totalTracks } = useLocalSearchParams();
+
   const [tracks, setTracks] = useState<Track[]>([]);
   const { getTracksFromId } = useQuery();
-  const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
-  const [isAddToPlaylistVisible, setIsAddToPlaylistVisible] = useState(false);
   const [isTruncated, setIsTruncated] = useState(true);
+  const shareBottomSheetRef = useRef(null);
 
   const {
     isAlbumPlaying,
@@ -108,23 +110,6 @@ const MusicDetails = () => {
     coverImage: image as string,
   };
 
-    // Prefetch similar music data
-    useEffect(() => {
-        const prefetchSimilarMusic = async () => {
-          const similarSongs = allSongs.filter(song =>
-            song.artist.name === artist && song._id !== id
-          );
-
-          similarSongs.forEach(song => {
-            queryClient.prefetchQuery(['tracks', song._id], () =>
-              getTracksFromId(song._id)
-            );
-          });
-        };
-
-        prefetchSimilarMusic();
-      }, [id, artist]);
-
   const Spacer = ({ size = 16 }) => <View style={{ height: size }} />;
 
   const toggleTruncate = () => setIsTruncated(!isTruncated);
@@ -144,6 +129,12 @@ const convertSecondsToMinutes = (seconds: number) => {
 
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 };
+
+  // Add this function to handle track menu press
+  const handleTrackMenuPress = (track: Track) => {
+    setSelectedTrack(track);
+    shareBottomSheetRef.current?.expand();
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -186,12 +177,18 @@ const convertSecondsToMinutes = (seconds: number) => {
         {/* Title */}
         <View style={styles.contentWrapper}>
           <Text
-            style={[styles.title, { fontSize: width * 0.06 }]}
+            style={[styles.title, { fontSize: width * 0.06, maxWidth: width * 0.8 }]}
             numberOfLines={1}
+            ellipsizeMode="tail"
           >
             {title}
           </Text>
-          <Text className="text-[12px] font-PlusJakartaSansBold text-Grey/06">
+          <Text
+            className="text-[12px] font-PlusJakartaSansBold text-Grey/06"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={{ maxWidth: width * 0.8 }}
+          >
             ¥$, Ye & Ty Dolla Sign
           </Text>
         </View>
@@ -223,7 +220,7 @@ const convertSecondsToMinutes = (seconds: number) => {
             {
               Icon: MoreHorizontalIcon,
               size: 48,
-              onPress: () => setIsBottomSheetVisible(true),
+              onPress: () => shareBottomSheetRef.current?.expand(),
             },
           ].map((control, index) => (
             <View key={index} style={styles.contentWrapper}>
@@ -292,33 +289,34 @@ const convertSecondsToMinutes = (seconds: number) => {
           {tracks.map((track: Track, index: number) => (
             <View key={track._id}>
               <TouchableOpacity
-                onPress={() =>
-                  handleTrackPress(track, index, albumInfo, tracks)
-                }
+                onPress={() => handleTrackPress(track, index, albumInfo, tracks)}
                 className="flex-row items-center justify-between py-3"
               >
-                <View className="flex-row items-center">
-                  <View>
+                <View className="flex-row items-center flex-1 mr-4">
+                  <View style={{ flex: 1 }}>
                     <Text
                       className={`text-[16px] font-PlusJakartaSansBold ${
                         currentTrackId === track._id
                           ? "text-Orange/08"
                           : "text-[#fff]"
                       }`}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
                     >
                       {track.title}
                     </Text>
-                    <Text className="text-[12px] font-PlusJakartaSansBold text-Grey/06">
+                    <Text
+                      className="text-[12px] font-PlusJakartaSansBold text-Grey/06"
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
                       {track.artist.name}
                     </Text>
                   </View>
                 </View>
-                <View>
+                <TouchableOpacity onPress={() => handleTrackMenuPress(track)}>
                   <MoreHorizontalIcon size={24} color="#fff" />
-                  {/* <Text className="text-Grey/06 text-[12px] font-PlusJakartaSansRegular">
-                    {convertSecondsToMinutes(track.duration)} mins
-                  </Text> */}
-                </View>
+                </TouchableOpacity>
               </TouchableOpacity>
               {loading && (
                 <View style={styles.skeletonWrapper}>
@@ -345,24 +343,18 @@ const convertSecondsToMinutes = (seconds: number) => {
           />
         </View>
       </ScrollView>
-
-      <MusicBottomSheet
-        album={{ title, image, tracks }}
-        isVisible={isBottomSheetVisible}
-        closeSheet={() => setIsBottomSheetVisible(false)}
-        openAddToPlaylistSheet={() => {
-          setIsBottomSheetVisible(false);
-          setIsAddToPlaylistVisible(true);
-        }}
-      />
-
-      <AddToPlaylistBottomSheet
-        album={{ title, image, tracks }}
-        isVisible={isAddToPlaylistVisible}
-        closeSheet={() => setIsAddToPlaylistVisible(false)}
-      />
-      </Suspense>
-    </SafeAreaView>
+          </Suspense>
+          <Share
+            ref={shareBottomSheetRef}
+            album={{
+              title: selectedTrack ? selectedTrack.title : (title as string),
+              artist: selectedTrack ? selectedTrack.artist.name : (artist as string),
+              image: selectedTrack ? selectedTrack.release.artwork.high : (image as string),
+              type: type as string,
+              duration: convertSecondsToMinutes(selectedTrack ? selectedTrack.duration : Number(duration))
+            }}
+          />
+        </SafeAreaView>
   );
 };
 

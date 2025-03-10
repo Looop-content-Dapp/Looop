@@ -11,7 +11,8 @@ module.exports = {
         "PlusJakartaSans-Light": ["PlusJakartaSans-Light"],
         PlusJakartaSansExtraBold: ["PlusJakartaSans-ExtraBold"],
         PlusJakartaSansMedium: ["PlusJakartaSans-Medium"],
-        PlusJakartaSansRegular: ["PlusJakartaSans-Regular"]
+        PlusJakartaSansRegular: ["PlusJakartaSans-Regular"],
+        TankerRegular: ["Tanker-Regular"]
       },
       colors: {
         "Orange/08": "#FF6D1B",

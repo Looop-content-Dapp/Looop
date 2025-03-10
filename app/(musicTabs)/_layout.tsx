@@ -8,6 +8,7 @@ import DraggableButton from "../../components/Draggable/DraggableButton";
 import MusicTab from "../../components/TabSection/MusicTab"; // Import your music tab
 import useMusicPlayer from "../../hooks/useMusicPlayer";
 import MusicPlayer from "../../components/MusicPlayer";
+import StaticButton from "../../components/Draggable/DraggableButton";
 
 export default function _TabsLayout() {
   const screenHeight = Dimensions.get("window").height;
@@ -23,7 +24,7 @@ export default function _TabsLayout() {
       <MusicTab />
 
       {/* Draggable button placed just above the tab bar */}
-      <DraggableButton
+      <StaticButton
         color="#8D4FB4"
         icon={UserGroupIcon}
         route="/(communityTabs)/(feed)"

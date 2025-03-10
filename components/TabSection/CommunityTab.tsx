@@ -17,7 +17,6 @@ export default function CommunityTab() {
           backgroundColor: "#040405",
           borderTopColor: "#040405"
         },
-        tabBarShowLabel: false,
         headerStyle: {
           backgroundColor: "#040405",
           height: 109,
@@ -29,6 +28,7 @@ export default function CommunityTab() {
       <Tabs.Screen
         name='(feed)'
         options={{
+            title: "Feed",
           tabBarIcon: ({ color, focused }) => (
             <Home11Icon size={24} color={color} variant={focused ? "solid" : "stroke"} />
           ),
@@ -40,6 +40,7 @@ export default function CommunityTab() {
       <Tabs.Screen
         name='(explore)'
         options={{
+            title: "Explore",
           tabBarIcon: ({ color, focused }) => (
             <DiscoverCircleIcon size={24} color={color} variant={focused ? "solid" : "stroke"} />
           ),
@@ -51,6 +52,7 @@ export default function CommunityTab() {
       <Tabs.Screen
         name='(notification)'
         options={{
+            title: "Notification",
           tabBarIcon: ({ color, focused }) => (
             <Notification02Icon size={24} color={color} variant={focused ? "solid" : "stroke"} />
           ),
@@ -60,6 +62,7 @@ export default function CommunityTab() {
       <Tabs.Screen
         name='(community)'
         options={{
+            title: "Community",
           tabBarIcon: ({ color, focused }) => (
             <UserGroupIcon size={24} color={color} variant={focused ? "solid" : "stroke"} />
           ),

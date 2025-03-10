@@ -25,7 +25,7 @@ const WalletScreen = () => {
     },
     addresses: [
       { chain: "XION", address: `${userdata?.wallets?.xion?.address?.slice(0, 35) || ''}...` },
-      { chain: "Starknet", address: `${userdata?.wallets?.starknet?.slice(0, 33) || ''}...` },
+      { chain: "Starknet", address: `${userdata?.wallets?.starknet?.address.slice(0, 33) || ''}...` },
     ],
     transactions: [
       { title: "Funded wallet on Starknet", amount: "+$10.4", date: "27-02-25 11:10", source: "From card" },
@@ -42,7 +42,7 @@ const WalletScreen = () => {
       headerLeft: () => <AppBackButton name="Wallet" onBackPress={() => router.back()} />,
     });
   }, [navigation]);
-  
+
 
   // Fetch wallet balances
   useEffect(() => {
@@ -50,7 +50,7 @@ const WalletScreen = () => {
       setIsLoading(true);
       try {
         const xionAddress = userdata?.wallets?.xion?.address;
-        const starknetAddress = userdata?.wallets?.starknet;
+        const starknetAddress = userdata?.wallets?.starknet.address;
         if (!xionAddress || !starknetAddress) {
           throw new Error('Wallet addresses not found');
         }

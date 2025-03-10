@@ -124,41 +124,6 @@ const PostMedia: React.FC<PostMediaProps> = ({ media, engagement }) => {
         };
     }, []);
 
-    // Render waveform bars with gradient progress
-    const renderWaveformBars = () => {
-        const barWidth = 3;
-        const spacing = 0.2;
-        const containerHeight = 35;
-
-        return waveformBars.map((height, index) => {
-            // Calculate a gradual color transition around the progress point
-            const progressPoint = progress * waveformBars.length;
-            const distanceFromProgress = Math.abs(index - progressPoint);
-            const transitionWidth = 8;
-
-            let opacity = 1;
-            if (index < progressPoint) {
-                opacity = 1;
-            } else if (index - progressPoint <= transitionWidth) {
-                opacity = 1 - ((index - progressPoint) / transitionWidth);
-            } else {
-                opacity = 0;
-            }
-
-            return (
-                <Rect
-                    key={index}
-                    x={index * (barWidth + spacing)}
-                    y={(containerHeight - height) / 2}
-                    width={barWidth}
-                    height={height}
-                    fill={`rgba(255, 255, 255, ${index <= progressPoint ? 1 : 0.24})`}
-                    rx="1"
-                />
-            );
-        });
-    };
-
     if (!media) return null;
 
     if (media.type === "image" && media.thumbnail) {

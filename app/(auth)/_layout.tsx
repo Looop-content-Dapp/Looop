@@ -63,7 +63,7 @@ export default function AuthLayout() {
 
 
 
-        <AuthFooter />
+        {/* <AuthFooter /> */}
 
       </SafeAreaView>
     </>
