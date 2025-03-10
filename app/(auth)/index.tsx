@@ -87,8 +87,8 @@ const EmailSignUp: React.FC = () => {
     isError: boolean;
     error: MutationError | null;
   };
-  const { handleGoogleSignIn, loading: googleLoading } = useGoogleAuth();
-  const { handleAppleSignIn, loading: appleLoading, isAuthenticating } = useAppleAuth();
+  const { handleGoogleSignIn, loading: googleLoading, isAuthenticating } = useGoogleAuth();
+  const { handleAppleSignIn, loading: appleLoading, isAuthenticating:isAppleAuthenticating } = useAppleAuth();
 
   const {
     control,
@@ -111,9 +111,11 @@ const EmailSignUp: React.FC = () => {
   };
 
   console.log("isAuthenticating", isAuthenticating);
-  if (isAuthenticating) {
+  if (isAuthenticating || isAppleAuthenticating) {
     return (
+      <View className="flex-1 items-center justify-center">
        <ActivityIndicator size="large" color="#FF7A1B" />
+      </View>
     );
   }
   return (

@@ -118,7 +118,6 @@ const UserDetail = () => {
                 mode="date"
                 onConfirm={(date) => {
                   setDatePickerVisible(false);
-                  // Format date to YYYY-MM-DD or any format you prefer
                   onChange(format(date, "yyyy-MM-dd"));
                 }}
                 onCancel={() => setDatePickerVisible(false)}
@@ -130,8 +129,6 @@ const UserDetail = () => {
                 pickerStyleIOS={{ backgroundColor: "#1E1E1E" }}
                 textColor="#D2D3D5"
                 themeVariant="dark"
-                
-                
               />
             </>
           )}
@@ -172,6 +169,7 @@ const UserDetail = () => {
                     onSelect={() => {
                       onChange(option.value);
                     }}
+                    // @ts-expect-error: style prop is not defined in DropdownMenuItem
                     style={[
                       styles.dropdownItem,
                       value === option.value ? styles.selectedItem : {},
