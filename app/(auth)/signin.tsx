@@ -30,14 +30,7 @@ const schema = z.object({
 // Define form data type from schema
 type FormData = z.infer<typeof schema>;
 
-// Define mutation error type (adjust based on your API response)
-interface MutationError {
-  response?: {
-    data: {
-      message: string;
-    };
-  };
-}
+
 
 // Props for SocialButton component
 interface SocialButtonProps {
@@ -47,7 +40,7 @@ interface SocialButtonProps {
   disabled?: boolean;
 }
 
-// Social Button Component
+
 const SocialButton: React.FC<SocialButtonProps> = ({ onPress, imageSource, text, disabled }) => (
   <TouchableOpacity
     onPress={onPress}

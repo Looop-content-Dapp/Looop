@@ -1,17 +1,16 @@
 import * as Google from "expo-auth-session/providers/google";
 import * as AppleAuthentication from "expo-apple-authentication";
 import * as WebBrowser from "expo-web-browser";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { AuthRequest, AuthRequestPromptOptions, AuthSessionResult } from 'expo-auth-session';
 import { jwtDecode } from "jwt-decode";
 import { useAuth } from "./useAuth";
 
-// Complete WebBrowser auth session
 WebBrowser.maybeCompleteAuthSession();
 
 export const useGoogleAuth = () => {
   const [loading, setLoading] = useState(false);
-  const { authenticateUser } = useAuth();
+  const { authenticateUser, isPending } = useAuth();
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || "776440951072-v1ncd4jb1o8arac8f541p0ghrv24v4ro.apps.googleusercontent.com",
@@ -23,15 +22,13 @@ export const useGoogleAuth = () => {
     (options?: AuthRequestPromptOptions) => Promise<AuthSessionResult>
   ];
 
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    try {
-    const result = await  promptAsync();
-      if (response?.type === 'success' && result.type === "success") {
+  useEffect(() => {
+    const handleResponse = async () => {
+      if (response?.type === 'success') {
         const { authentication } = response;
-        console.log("Google Auth:", authentication)
         if (authentication?.idToken) {
           const decoded = jwtDecode(authentication.idToken);
+          // @ts-expect-error: email is not part of the JWT spec
           const email = decoded.email;
           authenticateUser({
             channel: "google",
@@ -39,25 +36,40 @@ export const useGoogleAuth = () => {
             token: authentication.idToken,
           });
         } else {
-          console.error("Google Auth: No access token received.");
+          console.error("Google Auth: No access token received in authentication object");
         }
+        setLoading(false);
+      } else if (response !== null) {
+        console.error("Google Auth failed:", response);
+        setLoading(false);
       }
+    };
+
+    if (loading && response !== null) {
+      handleResponse();
+    }
+  }, [response, loading]);
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      await promptAsync();
     } catch (error) {
       console.error("Google Auth Error:", error);
-    } finally {
       setLoading(false);
     }
   };
 
   return {
     handleGoogleSignIn,
-    loading
+    loading,
+    isAuthenticating: isPending,
   };
 };
 
 export const useAppleAuth = () => {
   const [loading, setLoading] = useState(false);
-  const { authenticateUser } = useAuth();
+  const { authenticateUser, isPending } = useAuth();
 
   const handleAppleSignIn = useCallback(async () => {
     setLoading(true);
@@ -76,6 +88,7 @@ export const useAppleAuth = () => {
 
       if (credential.identityToken) {
         const decoded = jwtDecode(credential.identityToken);
+        // @ts-expect-error: email is not part of the JWT
         const email = decoded.email;
         authenticateUser({
           channel: "apple",
@@ -101,6 +114,7 @@ export const useAppleAuth = () => {
 
   return {
     handleAppleSignIn,
-    loading
+    loading,
+    isAuthenticating: isPending,
   };
 };
