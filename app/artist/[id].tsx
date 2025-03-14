@@ -102,8 +102,8 @@ const ArtistDetails = () => {
   // Animated header calculations
   const headerHeight = scrollY.interpolate({
     inputRange: [0, 300],
-    outputRange: [SCREEN_HEIGHT * 0.4, SCREEN_HEIGHT * 0.08],
-    extrapolate: 'clamp',
+    outputRange: [SCREEN_HEIGHT * 0.35, SCREEN_HEIGHT * 0.16],
+    extrapolate: 'extend',
   });
 
   const headerOpacity = scrollY.interpolate({
@@ -170,6 +170,7 @@ const ArtistDetails = () => {
             { useNativeDriver: false }
           )}
           scrollEventThrottle={16}
+          bounces={false}
         >
           <View style={styles.contentContainer}>
             <ArtistInfo

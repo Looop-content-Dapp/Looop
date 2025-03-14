@@ -17,7 +17,7 @@ type WalletBalanceProps = {
 export default function WalletBalance({ balances, addresses, isLoading, onCopyAddress }: WalletBalanceProps) {
   const [selectedTab, setSelectedTab] = useState("All balances");
   const [currency, setCurrency] = useState<"USD" | "NGN">("USD");
-  console.log(balances, "balances")
+  console.log(addresses, "balances")
 
   const exchangeRate = 1450; // Hardcoded NGN to USD rate; ideally from an API
 
@@ -87,27 +87,31 @@ export default function WalletBalance({ balances, addresses, isLoading, onCopyAd
       </View>
 
       {/* Wallet Addresses */}
-      <View className="bg-[#202227] p-[20px] gap-y-[12px] mt-[32px] rounded-[10px]">
+      <View className="bg-[#202227] p-[16px] gap-y-[10px] mt-[32px] rounded-[10px]">
         <Text className="text-[14px] text-[#63656B] font-PlusJakartaSansMedium">
           Wallet addresses
         </Text>
-        <View className="gap-y-[16px]">
+        <View className="gap-y-[12px]">
           {addresses.map((addr, index) => (
             <TouchableOpacity
               key={index}
               className="flex-row items-center justify-between"
               onPress={() => onCopyAddress?.(addr.address)}
             >
-              <View className="flex-row items-center gap-x-2">
+              <View className="flex-row items-center gap-x-2 flex-1">
                 <Image
                   source={addr.chain === "XION" ? XIONB : StarknetB}
-                  className="w-6 h-6"
+                  className="w-5 h-5"
                 />
-                <Text className="text-[#f4f4f4] text-[16px] font-PlusJakartaSansMedium">
-                  {addr.address}
+                <Text
+                  className="text-[#f4f4f4] text-[16px] font-PlusJakartaSansMedium flex-1"
+                  numberOfLines={1}
+                  ellipsizeMode="middle"
+                >
+                 {addr.address.slice(0, 38)}...
                 </Text>
               </View>
-              <Copy01Icon size={16} color="#63656B" />
+              <Copy01Icon size={16} color="#63656B" style={{ marginLeft: 8 }} />
             </TouchableOpacity>
           ))}
         </View>

@@ -13,12 +13,15 @@ import {
 } from 'react-native-confirmation-code-field';
 import { AppBackButton } from '@/components/app-components/back-btn';
 import ChainPicker from '@/components/app-components/ChainPicker';
+// Import credit card icon
+import { CreditCardIcon } from "@hugeicons/react-native";
 
 interface CardDetails {
   cardNumber: string;
   expiryDate: string;
   cvv: string;
   cardHolderName: string;
+  amount: string; // Added amount field
 }
 
 const CELL_COUNT = 6;
@@ -36,14 +39,15 @@ const PayWithCard = () => {
     cardNumber: '',
     expiryDate: '',
     cvv: '',
-    cardHolderName: ''
+    cardHolderName: '',
+    amount: '' // Initialize amount field
   });
   const { validatePayment } = useFlutterwavePayment();
   const navigation = useNavigation()
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerLeft: () => <AppBackButton name='Card Payment' onBackPress={() => null} />
+      headerLeft: () => <AppBackButton name='Card Payment' onBackPress={() => router.back()} />
     })
   })
 
@@ -63,12 +67,20 @@ const PayWithCard = () => {
     }
   }, [location]);
 
+  // Add state for card type
+  const [cardType, setCardType] = useState<'visa' | 'mastercard' | null>(null);
+
   const handleInputChange = (field: keyof CardDetails, value: string) => {
-    const sanitizedValue = value.replace(/[^a-zA-Z0-9\s/]/g, '');
-    
+    const sanitizedValue = field === 'amount'
+      ? value.replace(/[^0-9.]/g, '') // Only allow numbers and decimal point for amount
+      : value.replace(/[^a-zA-Z0-9\s/]/g, '');
+
     if (field === 'cardNumber') {
       const formattedValue = sanitizedValue.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
       setCardDetails(prev => ({ ...prev, [field]: formattedValue }));
+
+      // Detect card type based on the card number
+      detectCardType(formattedValue.replace(/\s/g, ''));
     } else if (field === 'expiryDate') {
       const formatted = sanitizedValue
         .replace(/\D/g, '')
@@ -80,12 +92,38 @@ const PayWithCard = () => {
     }
   };
 
+  // Function to detect card type
+  const detectCardType = (cardNumber: string) => {
+    // Clear card type if number is too short
+    if (cardNumber.length < 2) {
+      setCardType(null);
+      return;
+    }
+
+    // Visa cards start with 4
+    if (cardNumber.startsWith('4')) {
+      setCardType('visa');
+    }
+    // Mastercard starts with 51-55 or 2221-2720
+    else if (
+      (cardNumber.startsWith('5') && ['1', '2', '3', '4', '5'].includes(cardNumber[1])) ||
+      (cardNumber.startsWith('2') &&
+        cardNumber.length >= 4 &&
+        parseInt(cardNumber.substring(0, 4)) >= 2221 &&
+        parseInt(cardNumber.substring(0, 4)) <= 2720)
+    ) {
+      setCardType('mastercard');
+    } else {
+      setCardType(null);
+    }
+  };
+
   // Add new states for OTP verification
   const [showOTP, setShowOTP] = useState(false);
   const [otpValue, setOtpValue] = useState('');
   const [flwRef, setFlwRef] = useState('');
   const [verifying, setVerifying] = useState(false);
-  
+
   const ref = useBlurOnFulfill({ value: otpValue, cellCount: CELL_COUNT });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
     value: otpValue,
@@ -95,40 +133,54 @@ const PayWithCard = () => {
   const handleContinue = async () => {
     try {
       setLoading(true);
-      // if (!cardDetails.cardNumber || 
-      //     !cardDetails.expiryDate || 
-      //     !cardDetails.cvv || 
-      //     !cardDetails.cardHolderName) {
-      //   Alert.alert('Validation Error', 'Please fill in all fields');
-      //   return;
-      // }
-  
-      // const [expiryMonth, expiryYear] = cardDetails.expiryDate.split('/');
-      // const txRef = `TX-${Date.now()}`;
-  
-      // // Format card data according to Flutterwave requirements
-      // const payload = {
-      //   card_number: cardDetails.cardNumber.replace(/\s/g, ''),
-      //   cvv: cardDetails.cvv,
-      //   expiry_month: expiryMonth.padStart(2, '0'),
-      //   expiry_year: `20${expiryYear}`,
-      //   currency: currency as Currency,
-      //   amount: '1000',
-      //   email: 'user@example.com',
-      //   fullname: cardDetails.cardHolderName,
-      //   tx_ref: txRef,
-      //   redirect_url: 'https://webhook.site/redirect-url',
-      //   client: 'api'
-      // };
-  
-      // const response = await preAuthenticateCard(payload);
+
+      // Validate all fields including amount
+      if (!cardDetails.cardNumber ||
+          !cardDetails.expiryDate ||
+          !cardDetails.cvv ||
+          !cardDetails.cardHolderName ||
+          !cardDetails.amount) {
+        Alert.alert('Validation Error', 'Please fill in all fields');
+        return;
+      }
+
+      // Validate amount is a valid number
+      const amount = parseFloat(cardDetails.amount);
+      if (isNaN(amount) || amount <= 0) {
+        Alert.alert('Invalid Amount', 'Please enter a valid amount');
+        return;
+      }
+
+      // Uncomment and modify this section when ready to implement actual payment
+      /*
+      const [expiryMonth, expiryYear] = cardDetails.expiryDate.split('/');
+      const txRef = `TX-${Date.now()}`;
+
+      // Format card data according to Flutterwave requirements
+      const payload = {
+        card_number: cardDetails.cardNumber.replace(/\s/g, ''),
+        cvv: cardDetails.cvv,
+        expiry_month: expiryMonth.padStart(2, '0'),
+        expiry_year: `20${expiryYear}`,
+        currency: currency as Currency,
+        amount: cardDetails.amount,
+        email: 'user@example.com', // Replace with user's email
+        fullname: cardDetails.cardHolderName,
+        tx_ref: txRef,
+        redirect_url: 'https://webhook.site/redirect-url',
+        client: 'api'
+      };
+
+      const response = await preAuthenticateCard(payload);
+
+      if (response.data?.auth_model === 'pin' || response.data?.auth_model === 'PIN' || response.data?.auth_url) {
+        setFlwRef(response.data.flw_ref);
+      }
+      */
+
+      // For now, just show OTP screen
       setShowOTP(true);
-  
-      // if (response.data?.auth_model === 'pin' || response.data?.auth_model === 'PIN' || response.data?.auth_url) {
-      //   setFlwRef(response.data.flw_ref);
-       
-      // }
-  
+
     } catch (error) {
       console.error('Payment Error:', error);
       Alert.alert('Error', error instanceof Error ? error.message : 'An error occurred while validating your card');
@@ -140,15 +192,15 @@ const PayWithCard = () => {
   const handleVerify = async () => {
     try {
       setVerifying(true);
-      
+
       const validationPayload = {
         otp: otpValue,
         flw_ref: flwRef,
         type: 'card' as const
       };
-      
+
       const response = await validatePayment(validationPayload);
-      
+
       if (response.status === 'success') {
         router.push({
           pathname: '/payment/MintingSuccess',
@@ -238,28 +290,44 @@ const PayWithCard = () => {
           <Text className="text-[16px] font-PlusJakartaSansMedium text-[#787A80] mt-2">
             Please provide your card information below
           </Text>
-          <View className="mt-4 bg-[#1E1E1E] p-4 rounded-lg">
-            <Text className="text-[14px] font-PlusJakartaSansMedium text-[#FF6D1B]">
-              ⓘ Secure Environment
-            </Text>
-            <Text className="text-[12px] font-PlusJakartaSansRegular text-[#787A80] mt-1">
-              Your card data is encrypted and processed according to PCI DSS requirements
-            </Text>
-          </View>
         </View>
 
         <ChainPicker />
 
         <View className="gap-y-4 mt-[30px]">
+          {/* Amount Field - Added new field */}
           <FormField.TextField
-            label="Card Number"
-            placeholder="•••• •••• •••• ••••"
-            value={cardDetails.cardNumber}
-            onChangeText={(text) => handleInputChange('cardNumber', text)}
+            label={`Amount (${currency})`}
+            placeholder="Enter amount"
+            value={cardDetails.amount}
+            onChangeText={(text) => handleInputChange('amount', text)}
             keyboardType="numeric"
-            maxLength={19}
-            secureTextEntry
           />
+
+          {/* Card Number Field with Card Type Icon */}
+          <View className="relative">
+            <FormField.TextField
+              label="Card Number"
+              placeholder="•••• •••• •••• ••••"
+              value={cardDetails.cardNumber}
+              onChangeText={(text) => handleInputChange('cardNumber', text)}
+              keyboardType="numeric"
+              maxLength={19}
+            />
+            <View className="absolute right-3 top-[38px]">
+            {cardType === 'visa' ? (
+  <Image
+    source={require('@/assets/images/visa-logo.png')}
+    style={{ width: 24, height: 16, resizeMode: 'cover' }}
+  />
+) : (
+  <Image
+    source={require('@/assets/images/mastercard-logo.png')}
+    style={{ width: 24, height: 16, resizeMode: 'contain' }}
+  />
+)}
+            </View>
+          </View>
 
           <View className="flex-row gap-x-4">
             <View className="flex-1">
@@ -302,7 +370,7 @@ const PayWithCard = () => {
           onPress={handleContinue}
           loading={loading}
         />
-        
+
         <View className="mt-6 items-center">
           <Text className="text-[14px] font-PlusJakartaSansMedium text-[#787A80]">
             Protected by

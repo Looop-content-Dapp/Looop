@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef } from 'react';
+import React, { useState, useEffect, forwardRef, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
+  Alert,
 } from 'react-native';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import Icon from 'react-native-vector-icons/Feather';
@@ -13,6 +14,7 @@ import * as Contacts from 'expo-contacts';
 import { Avatar } from 'react-native-elements';
 import { AlertDiamondIcon, CdIcon, FavouriteIcon, Playlist01Icon, Queue01Icon } from '@hugeicons/react-native';
 import { Feather, FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import AddToPlaylistBottomSheet from './AddToPlaylistBottomSheet';
 
 interface ShareProps {
   title?: string;
@@ -26,6 +28,7 @@ const Share = forwardRef<BottomSheet, { album: ShareProps }>((props, ref) => {
   const { album } = props;  // Properly destructure the album prop
   const [hasPermission, setHasPermission] = useState(false);
   const [contacts, setContacts] = useState([]);
+  const [isPlaylistSheetVisible, setIsPlaylistSheetVisible] = useState(false);
 
   // Handle permission request when button is pressed
   const requestPermission = async () => {
@@ -68,135 +71,198 @@ const Share = forwardRef<BottomSheet, { album: ShareProps }>((props, ref) => {
     </View>
   );
 
+  // Handle add to queue functionality
+  const handleAddToQueue = () => {
+    Alert.alert('Success', 'Added to queue');
+    ref.current?.close();
+  };
+
+  // Handle add to favorites functionality
+  const handleAddToFavorites = () => {
+    Alert.alert('Success', 'Added to favorites');
+    ref.current?.close();
+  };
+
+  // Handle see credits functionality
+  const handleSeeCredits = () => {
+    Alert.alert('Credits', `Song: ${album?.title}\nArtist: ${album?.artist}`);
+    ref.current?.close();
+  };
+
+  // Handle report album functionality
+  const handleReportAlbum = () => {
+    Alert.alert(
+      'Report Album',
+      'Why are you reporting this album?',
+      [
+        {
+          text: 'Inappropriate Content',
+          onPress: () => {
+            Alert.alert('Report Submitted', 'Thank you for your feedback');
+            ref.current?.close();
+          },
+        },
+        {
+          text: 'Copyright Violation',
+          onPress: () => {
+            Alert.alert('Report Submitted', 'Thank you for your feedback');
+            ref.current?.close();
+          },
+        },
+        {
+          text: 'Other Issue',
+          onPress: () => {
+            Alert.alert('Report Submitted', 'Thank you for your feedback');
+            ref.current?.close();
+          },
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ]
+    );
+  };
+
   return (
-    <BottomSheet
-      ref={ref}
-      index={-1}
-      snapPoints={['50%']}
-      backgroundStyle={styles.bottomSheet}
-    >
-      <BottomSheetView style={styles.container}>
-        {/* Header with Close Button */}
-        <View className='flex-row items-start justify-between w-full pr-5 mb-[16px]'>
-          <View className='flex-row items-center gap-x-[16px]r'>
-            <Image
-              source={{ uri: album?.image }}
-              className='w-[64px] h-[64px]'
-            />
-            <View className='ml-3 max-w-[200px]'>
-              <Text numberOfLines={1} className='text-white text-[16px] font-PlusJakartaSansBold'>
-                {album?.title}
-              </Text>
-              <Text className='text-[#63656B] text-[12px] font-PlusJakartaSansBold' numberOfLines={1}>
-                {album?.artist} · {album?.duration}
-              </Text>
+    <>
+      <BottomSheet
+        ref={ref}
+        index={-1}
+        snapPoints={['50%']}
+        backgroundStyle={styles.bottomSheet}
+      >
+        <BottomSheetView style={styles.container}>
+          {/* Header with Close Button */}
+          <View className='flex-row items-start justify-between w-full pr-5 mb-[16px]'>
+            <View className='flex-row items-center gap-x-[16px]r'>
+              <Image
+                source={{ uri: album?.image }}
+                className='w-[64px] h-[64px]'
+              />
+              <View className='ml-3 max-w-[200px]'>
+                <Text numberOfLines={1} className='text-white text-[16px] font-PlusJakartaSansBold'>
+                  {album?.title}
+                </Text>
+                <Text className='text-[#63656B] text-[12px] font-PlusJakartaSansBold' numberOfLines={1}>
+                  {album?.artist} · {album?.duration}
+                </Text>
+              </View>
             </View>
+
+          <TouchableOpacity className='bg-[#202227] p-[4px] rounded-[36px]' onPress={() => ref.current?.close()}>
+              <Icon name="x" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
           </View>
 
-        <TouchableOpacity className='bg-[#202227] p-[4px] rounded-[36px]' onPress={() => ref.current?.close()}>
-            <Icon name="x" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-        </View>
+          {/* Share to Friends Section */}
+          <View className='border-b-2 border-[#202227] pb-[16px] pt-[16px]'>
+          <Text style={styles.sectionLabel}>Share to friends:</Text>
+          {hasPermission ? (
+            <FlatList
+              horizontal
+              data={contacts}
+              renderItem={renderContact}
+              keyExtractor={(item) => item.id}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.contactsList}
+            />
+          ) : (
+            <TouchableOpacity
+              style={styles.permissionButton}
+              onPress={requestPermission}
+            >
+              <Text style={styles.permissionText}>Grant Contact Permission</Text>
+            </TouchableOpacity>
+          )}
+          </View>
 
-        {/* Song Details */}
+          {/* Send to Section */}
+          <View className='border-b-2 border-[#202227] pb-[16px] pt-[16px]'>
+          <Text style={styles.sectionLabel}>Send to</Text>
+          <View style={styles.sharingButtons}>
+            <TouchableOpacity style={styles.shareButton}>
+              <View style={[styles.iconContainer, { backgroundColor: '#800080' }]}>
+                <Feather name="link" size={32} color="#FFFFFF" />
+              </View>
+              <Text className='font-PlusJakartaSansMedium' style={styles.shareLabel}>Copylink</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.shareButton}>
+              <View style={[styles.iconContainer, { backgroundColor: '#25D366' }]}>
+               <Image source={require("../../assets/images/whatsapp_3938041.png")} className='w-[64px] rounded-full h-[64px] ' />
+              </View>
+              <Text style={styles.shareLabel}>Share to Whatsapp</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.shareButton}>
+              <View style={[styles.iconContainer, { backgroundColor: '#FFFC00' }]}>
+              <Image source={require("../../assets/images/social_13670393.png")} className='w-[40px] h-[40px]' />
+              </View>
+              <Text style={styles.shareLabel}>Snapchat story</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.shareButton}>
+              <View style={[styles.iconContainer, { backgroundColor: '#FFFFFF' }]}>
+              <Image source={require("../../assets/images/instagram_2111463.png")} className='w-[32px] h-[32px]' />
+              </View>
+              <Text style={styles.shareLabel}>Instagram chat</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.shareButton}>
+              <View style={[styles.iconContainer, { backgroundColor: '#FFFFFF' }]}>
+               <Image source={require("../../assets/images/icons8-twitter-50.png")} className='w-[32px] h-[32px]' />
+              </View>
+              <Text style={styles.shareLabel}>Share to X</Text>
+            </TouchableOpacity>
+          </View>
+          </View>
 
+          {/* Action Buttons */}
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleAddToFavorites}>
+              <View className='bg-[#202227] p-[20px] rounded-[56px]'>
+                <FavouriteIcon size={32} color='#9A9B9F' variant='stroke' />
+              </View>
+              <Text style={styles.actionLabel}>Add to favorites</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => {
+                ref.current?.close();
+                setTimeout(() => setIsPlaylistSheetVisible(true), 300);
+              }}
+            >
+              <View className='bg-[#202227] p-[20px] rounded-[56px]'>
+                <Playlist01Icon size={32} color='#9A9B9F' variant='stroke' />
+              </View>
+              <Text style={styles.actionLabel}>Add to Playlist</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} onPress={handleAddToQueue}>
+              <View className='bg-[#202227] p-[20px] rounded-[56px]'>
+                <Queue01Icon size={32} color='#9A9B9F' variant='stroke' />
+              </View>
+              <Text style={styles.actionLabel}>Add to Queue</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} onPress={handleSeeCredits}>
+              <View className='bg-[#202227] p-[20px] rounded-[56px]'>
+                <CdIcon size={32} color='#9A9B9F' variant='stroke' />
+              </View>
+              <Text style={styles.actionLabel}>See credit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} onPress={handleReportAlbum}>
+              <View className='bg-[#202227] p-[20px] rounded-[56px]'>
+                <AlertDiamondIcon size={32} color='#9A9B9F' variant='stroke' />
+              </View>
+              <Text style={styles.actionLabel}>Report Album</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomSheetView>
+      </BottomSheet>
 
-        {/* Share to Friends Section */}
-        <View className='border-b-2 border-[#202227] pb-[16px] pt-[16px]'>
-        <Text style={styles.sectionLabel}>Share to friends:</Text>
-        {hasPermission ? (
-          <FlatList
-            horizontal
-            data={contacts}
-            renderItem={renderContact}
-            keyExtractor={(item) => item.id}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.contactsList}
-          />
-        ) : (
-          <TouchableOpacity
-            style={styles.permissionButton}
-            onPress={requestPermission}
-          >
-            <Text style={styles.permissionText}>Grant Contact Permission</Text>
-          </TouchableOpacity>
-        )}
-        </View>
-
-
-        {/* Send to Section */}
-        <View className='border-b-2 border-[#202227] pb-[16px] pt-[16px]'>
-        <Text style={styles.sectionLabel}>Send to</Text>
-        <View style={styles.sharingButtons}>
-          <TouchableOpacity style={styles.shareButton}>
-            <View style={[styles.iconContainer, { backgroundColor: '#800080' }]}>
-              <Feather name="link" size={32} color="#FFFFFF" />
-            </View>
-            <Text style={styles.shareLabel}>Copylink</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.shareButton}>
-            <View style={[styles.iconContainer, { backgroundColor: '#25D366' }]}>
-             <Image source={require("../../assets/images/whatsapp_3938041.png")} className='w-[64px] rounded-full h-[64px] rounded-full' />
-            </View>
-            <Text style={styles.shareLabel}>WhatsApp</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.shareButton}>
-            <View style={[styles.iconContainer, { backgroundColor: '#FFFC00' }]}>
-            <Image source={require("../../assets/images/social_13670393.png")} className='w-[40px] h-[40px]' />
-            </View>
-            <Text style={styles.shareLabel}>Snapchat story</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.shareButton}>
-            <View style={[styles.iconContainer, { backgroundColor: '#FFFFFF' }]}>
-            <Image source={require("../../assets/images/instagram_2111463.png")} className='w-[32px] h-[32px]' />
-            </View>
-            <Text style={styles.shareLabel}>Instagram chat</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.shareButton}>
-            <View style={[styles.iconContainer, { backgroundColor: '#FFFFFF' }]}>
-             <Image source={require("../../assets/images/icons8-twitter-50.png")} className='w-[32px] h-[32px]' />
-            </View>
-            <Text style={styles.shareLabel}>Share to X</Text>
-          </TouchableOpacity>
-        </View>
-        </View>
-
-
-        {/* Action Buttons */}
-        <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.actionButton}>
-           <View className='bg-[#202227] p-[20px] rounded-[56px]'>
-             <FavouriteIcon size={32} color='#9A9B9F' variant='stroke' />
-           </View>
-            <Text style={styles.actionLabel}>Add to favorites</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-           <View className='bg-[#202227] p-[20px] rounded-[56px]'>
-             <Playlist01Icon size={32} color='#9A9B9F' variant='stroke' />
-           </View>
-            <Text style={styles.actionLabel}>Add to Playlist</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-           <View className='bg-[#202227] p-[20px] rounded-[56px]'>
-             <Queue01Icon size={32} color='#9A9B9F' variant='stroke' />
-           </View>
-            <Text style={styles.actionLabel}>Add to Queue</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-           <View className='bg-[#202227] p-[20px] rounded-[56px]'>
-             <CdIcon size={32} color='#9A9B9F' variant='stroke' />
-           </View>
-            <Text style={styles.actionLabel}>See credit</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-           <View className='bg-[#202227] p-[20px] rounded-[56px]'>
-             <AlertDiamondIcon size={32} color='#9A9B9F' variant='stroke' />
-           </View>
-            <Text style={styles.actionLabel}>Report Album</Text>
-          </TouchableOpacity>
-        </View>
-      </BottomSheetView>
-    </BottomSheet>
+      {/* Add to Playlist Bottom Sheet */}
+      <AddToPlaylistBottomSheet
+        isVisible={isPlaylistSheetVisible}
+        closeSheet={() => setIsPlaylistSheetVisible(false)}
+        album={album}
+      />
+    </>
   );
 });
 
@@ -274,13 +340,13 @@ const styles = StyleSheet.create({
   sharingButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     marginTop: 8, // Reduced from 1
-    rowGap: 20
+    rowGap: 25
   },
   shareButton: {
     alignItems: 'center',
-    width: '20%',
+    width: "20%",
     marginBottom: 16,
     borderRadius: 56
   },
@@ -294,7 +360,7 @@ const styles = StyleSheet.create({
   shareLabel: {
     color: '#FFFFFF',
     fontSize: 12,
-    marginTop: 8,
+    marginTop: 4,
     textAlign: 'center',
   },
   actionButtons: {
@@ -302,11 +368,11 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     marginTop: 24,
-    paddingHorizontal: 8,
+    paddingHorizontal: 5,
   },
   actionButton: {
     alignItems: 'center',
-    width: '20%',
+    width: 56,
   },
   actionLabel: {
     color: '#FFFFFF',

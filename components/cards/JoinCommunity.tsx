@@ -69,7 +69,6 @@ const JoinCommunity = ({ isLoading, communityData, onJoinPress, isMember = false
 
   return (
     <View style={[styles.communitySection, { height: SCREEN_HEIGHT * 0.25 }]}>
-      <Text style={styles.communityTitle}>Community</Text>
       {isLoading ? (
         <SkeletonLoader />
       ) : communityData ? (
@@ -126,15 +125,7 @@ const JoinCommunity = ({ isLoading, communityData, onJoinPress, isMember = false
 const styles = StyleSheet.create({
   communitySection: {
     paddingHorizontal: 16,
-    marginBottom: 24,
     gap: 16,
-  },
-  communityTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    fontFamily: 'PlusJakartaSansBold',
-    marginBottom: 8,
   },
   communityContainer: {
     height: '80%',

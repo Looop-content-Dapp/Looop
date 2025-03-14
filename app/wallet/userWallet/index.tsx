@@ -25,8 +25,8 @@ const WalletScreen = () => {
       total: 0,
     },
     addresses: [
-      { chain: "XION", address: `${userdata?.wallets?.xion?.address?.slice(0, 35) || ''}...` },
-      { chain: "Starknet", address: `${userdata?.wallets?.starknet?.address.slice(0, 33) || ''}...` },
+      { chain: "XION", address: `${userdata?.wallets?.xion?.address || ''}` },
+      { chain: "Starknet", address: `${userdata?.wallets?.starknet?.address || ''}` },
     ],
     transactions: [
       { title: "Funded wallet on Starknet", amount: "+$10.4", date: "27-02-25 11:10", source: "From card" },
@@ -126,11 +126,14 @@ const WalletScreen = () => {
             isLoading={isLoading}
             onCopyAddress={async (address) => {
               await Clipboard.setStringAsync(address);
-               Alert.alert("Address Copied")
+              Alert.alert("Address Copied")
             }}
           />
           {/* Fund with Card Button */}
-          <TouchableOpacity className="bg-[#202227] mx-4 my-3 px-[16px] pt-[20px] pb-[19px] rounded-[10px] flex-row justify-between items-center">
+          <TouchableOpacity
+            className="bg-[#202227] mx-4 my-3 px-[16px] pt-[20px] pb-[19px] rounded-[10px] flex-row justify-between items-center"
+            onPress={() => router.push('/payment/payWithCard')}
+          >
             <View className="flex-1 flex-row items-center gap-[16px]">
               <CreditCardIcon size={24} color="#FF8A49" variant="stroke" />
               <View>
