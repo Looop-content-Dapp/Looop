@@ -225,7 +225,7 @@ const CreateProfile = () => {
         }}
       >
         <Image
-          source={require("../../assets/images/createProfile.png")}
+          source={require("../../assets/images/createProfile.jpg")}
           resizeMode="contain"
           style={{
             width: width * 0.9, // 90% of screen width
