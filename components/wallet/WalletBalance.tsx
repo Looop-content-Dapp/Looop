@@ -4,20 +4,27 @@ import { XIONB, StarknetB } from "@/assets/images/images";
 import { useState } from "react";
 
 type WalletBalanceProps = {
-  balances: {
+  balances?: {
     xion: number;
     starknet: number;
     total: number;
   };
+  balance?: string; // Add support for string balance format
   addresses: { chain: string; address: string }[];
-  isLoading: boolean;
+  isLoading?: boolean; // Make optional with default value
   onCopyAddress?: (address: string) => void;
 };
 
-export default function WalletBalance({ balances, addresses, isLoading, onCopyAddress }: WalletBalanceProps) {
+export default function WalletBalance({
+  balances,
+  balance,
+  addresses = [],
+  isLoading = false,
+  onCopyAddress
+}: WalletBalanceProps) {
   const [selectedTab, setSelectedTab] = useState("All balances");
   const [currency, setCurrency] = useState<"USD" | "NGN">("USD");
-  console.log(addresses, "balances")
+  console.log(addresses, "balances");
 
   const exchangeRate = 1450; // Hardcoded NGN to USD rate; ideally from an API
 
@@ -28,7 +35,16 @@ export default function WalletBalance({ balances, addresses, isLoading, onCopyAd
     });
   };
 
-  const getDisplayBalance = (amount: number) => {
+  // Handle string balance format
+  const parseStringBalance = (balanceStr: string): number => {
+    if (!balanceStr) return 0;
+    // Remove currency symbol and commas, then parse as float
+    return parseFloat(balanceStr.replace(/[$,₦]/g, '')) || 0;
+  };
+
+  const getDisplayBalance = (amount: number | undefined) => {
+    if (amount === undefined) return "$0.00";
+
     if (currency === "NGN") {
       return `₦${formatNumber(amount * exchangeRate)}`;
     }
@@ -36,6 +52,14 @@ export default function WalletBalance({ balances, addresses, isLoading, onCopyAd
   };
 
   const getCurrentBalance = () => {
+    // If string balance is provided, use that
+    if (balance) {
+      return currency === "NGN"
+        ? `₦${formatNumber(parseStringBalance(balance) * exchangeRate)}`
+        : balance;
+    }
+
+    // Otherwise use the balances object
     switch (selectedTab) {
       case "XION":
         return getDisplayBalance(balances?.xion);
@@ -46,6 +70,7 @@ export default function WalletBalance({ balances, addresses, isLoading, onCopyAd
     }
   };
 
+  // Rest of the component remains the same
   return (
     <View className="px-4 py-6">
       {/* Tab and Currency Selector */}
@@ -86,36 +111,38 @@ export default function WalletBalance({ balances, addresses, isLoading, onCopyAd
         )}
       </View>
 
-      {/* Wallet Addresses */}
-      <View className="bg-[#202227] p-[16px] gap-y-[10px] mt-[32px] rounded-[10px]">
-        <Text className="text-[14px] text-[#63656B] font-PlusJakartaSansMedium">
-          Wallet addresses
-        </Text>
-        <View className="gap-y-[12px]">
-          {addresses.map((addr, index) => (
-            <TouchableOpacity
-              key={index}
-              className="flex-row items-center justify-between"
-              onPress={() => onCopyAddress?.(addr.address)}
-            >
-              <View className="flex-row items-center gap-x-2 flex-1">
-                <Image
-                  source={addr.chain === "XION" ? XIONB : StarknetB}
-                  className="w-5 h-5"
-                />
-                <Text
-                  className="text-[#f4f4f4] text-[16px] font-PlusJakartaSansMedium flex-1"
-                  numberOfLines={1}
-                  ellipsizeMode="middle"
-                >
-                 {addr.address.slice(0, 38)}...
-                </Text>
-              </View>
-              <Copy01Icon size={16} color="#63656B" style={{ marginLeft: 8 }} />
-            </TouchableOpacity>
-          ))}
+{/* Wallet Addresses */}
+<View className="bg-[#202227] p-[16px] gap-y-[10px] mt-[32px] rounded-[10px]">
+  <Text className="text-[14px] text-[#63656B] font-PlusJakartaSansMedium">
+    Wallet addresses
+  </Text>
+  <View className="gap-y-[12px]">
+    {addresses.map((addr, index) => (
+      <TouchableOpacity
+        key={index}
+        className="flex-row items-center justify-between"
+        onPress={() => addr.address && onCopyAddress?.(addr.address)}
+      >
+        <View className="flex-row items-center gap-x-2 flex-1">
+          <Image
+            source={addr.chain === "XION" ? XIONB : StarknetB}
+            className="w-5 h-5"
+          />
+          <Text
+            className="text-[#f4f4f4] text-[16px] font-PlusJakartaSansMedium flex-1"
+            numberOfLines={1}
+            // ellipsizeMode="middle"
+          >
+            {addr.address
+              ? `${addr.address.slice(0, 35)}...`
+              : "No address"}
+          </Text>
         </View>
-      </View>
+        <Copy01Icon size={16} color="#63656B" style={{ marginLeft: 8 }} />
+      </TouchableOpacity>
+    ))}
+  </View>
+</View>
     </View>
   );
 }

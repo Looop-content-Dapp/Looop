@@ -19,6 +19,7 @@ import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { ActivityIndicator } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import WalletBalance from '@/components/wallet/WalletBalance';
+import TransactionHistory from '@/components/wallet/TransactionHistory';
 
 const WalletScreen = () => {
   const [timeFrame, setTimeFrame] = useState('Last 30 days');
@@ -30,15 +31,24 @@ const WalletScreen = () => {
   const { userdata } = useAppSelector((state) => state.auth);
   const navigation = useNavigation()
 
+  // Add sample transactions data
+  const transactions = [
+    { title: "Funded wallet on Starknet", amount: "+$10.4", date: "27-02-25 11:10", source: "From card" },
+      { title: "Joined a tribe", amount: "-$1.2", date: "27-02-25 11:10", source: "Received a collectible" },
+      { title: "Funded wallet on XION", amount: "+$4.6", date: "27-02-25 11:10", source: "From card" },
+      { title: "Funded wallet on Starknet", amount: "+$10.4", date: "27-02-25 11:10", source: "From card" },
+      { title: "Monthly subscription", amount: "-$1", date: "27-02-25 11:10", source: "From the wallet balance" },
+  ];
+
   const networkData = {
     Xion: {
       balance: '$32,578.48',
-      walletAddress: userdata?.wallets?.xion || '',
+      walletAddress: userdata?.wallets?.xion?.address || '',
       icon: require('../../assets/images/xion.png')
     },
     Starknet: {
       balance: '$15,234.92',
-      walletAddress: userdata?.wallets?.starknet || '',
+      walletAddress: userdata?.wallets?.starknet?.address || '',
       icon: require('../../assets/images/starknet.png')
     }
   };
@@ -83,7 +93,16 @@ const WalletScreen = () => {
   // Remove the static currencyRates and use the dynamic rates from the hook
   const formatBalance = (balance: string, currency: string) => {
     try {
+      // Check if rates and the specific currency rate exist
+      if (!rates || !rates[currency]) {
+        return balance; // Return original balance if rates aren't loaded yet
+      }
+
       const numericBalance = parseFloat(balance.replace(/[$,]/g, ''));
+      if (isNaN(numericBalance)) {
+        return balance; // Return original balance if parsing fails
+      }
+
       const convertedBalance = numericBalance * rates[currency].rate;
       const symbol = rates[currency].symbol;
 
@@ -127,11 +146,17 @@ const WalletScreen = () => {
 
         {/* Wallet Balance Component */}
         <WalletBalance
-          balance={networkData[selectedNetwork].balance}
+          balance={networkData[selectedNetwork as keyof typeof networkData].balance}
           addresses={[
-            { chain: selectedNetwork, address: networkData[selectedNetwork].walletAddress }
+            {
+              chain: selectedNetwork,
+              address: networkData[selectedNetwork as keyof typeof networkData].walletAddress || ''
+            }
           ]}
           onCopyAddress={handleCopyAddress}
+          formatBalance={formatBalance}  // Pass the formatBalance function
+          selectedCurrency={selectedCurrency}  // Pass the selected currency
+          rates={rates || {}}  // Pass rates with a fallback empty object
         />
 
         {/* Transaction History */}

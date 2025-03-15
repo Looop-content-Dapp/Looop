@@ -44,11 +44,10 @@ const TribeForm: React.FC<TribeFormProps> = ({ formData, updateFormData }) => {
     <ScrollView
       style={{ flex: 1 }}
       showsVerticalScrollIndicator={false}
-      className="bg-gray-50"
     >
       <View className="gap-y-[32px] px-4 py-6">
         {/* Community Setup Section */}
-        <View className="bg-white rounded-xl p-6 shadow-sm">
+        <View className="rounded-xl p-6 shadow-sm">
           <Text className="text-2xl font-PlusJakartaSansBold text-gray-700 mb-6">
             Create Your Community
           </Text>
@@ -88,7 +87,7 @@ const TribeForm: React.FC<TribeFormProps> = ({ formData, updateFormData }) => {
         </View>
 
         {/* Membership Details Section */}
-        <View className="bg-white rounded-xl p-6 shadow-sm mt-4">
+        <View className=" rounded-xl p-6 shadow-sm mt-4">
           <Text className="text-2xl font-PlusJakartaSansBold text-gray-700 mb-6">
             Membership Details
           </Text>

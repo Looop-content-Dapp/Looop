@@ -12,7 +12,7 @@ import {
   CheckmarkBadge01Icon,
   HeadphonesIcon,
 } from "@hugeicons/react-native"
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import Ellipse from "../../../components/Ellipse";
 import { useRouter } from "expo-router";
 import ArtistReleases from "../../../components/ArtistProfile/ArtistReleases";
@@ -25,25 +25,17 @@ import {
 import api from "@/config/apiConfig";
 import { useAppSelector } from "@/redux/hooks";
 import { Artist } from "@/types/index";
-import * as Animatable from 'react-native-animatable';
 
-interface Community {
-  _id: string;
-  name: string;
-  description: string;
-  createdBy: string;
-  createdAt: string;
-  __v: number;
-}
-
+// Remove unused interfaces
 export type SheetType = 'main' | 'linkBank' | 'transfer' | 'password';
 
-const SkeletonLoader = () => (
-  <View className="animate-pulse">
-    <View className="h-[260px] bg-gray-800" />
+// Simple placeholder component instead of animated skeleton
+const ProfilePlaceholder = () => (
+  <View className="h-full w-full bg-[#1a1a1a]">
+    <View className="h-[260px]" />
     <View className="px-[12px] mt-[40%]">
-      <View className="h-6 w-48 bg-gray-800 rounded mb-2" />
-      <View className="h-4 w-32 bg-gray-800 rounded" />
+      <View className="h-6 w-48 bg-gray-700 rounded mb-2" />
+      <View className="h-4 w-32 bg-gray-700 rounded" />
     </View>
   </View>
 );
@@ -54,17 +46,18 @@ const index = () => {
   const [showStickyTabs, setShowStickyTabs] = useState(false);
   const [artistProfile, setArtistProfile] = useState<Artist>();
   const [isLoading, setIsLoading] = useState(true);
-  const { artistId } = useAppSelector((state) => state.auth);
+  const { userdata } = useAppSelector((state) => state.auth);
   const { navigate } = useRouter();
 
+  // Optimized API call
   const retrieveArtistInfo = async () => {
-    setIsLoading(true);
+    if (!userdata?.artist) return;
+
     try {
-      const response = await api.get(`/api/artist/${artistId}`);
-      if (!response?.data?.data) {
-        throw new Error('Invalid artist data received');
+      const response = await api.get(`/api/artist/${userdata.artist}`);
+      if (response?.data?.data) {
+        setArtistProfile(response.data.data.artist);
       }
-      setArtistProfile(response.data.data.artist);
     } catch (error) {
       console.error('Failed to fetch artist info:', error);
     } finally {
@@ -73,33 +66,34 @@ const index = () => {
   };
 
   useEffect(() => {
-    if(artistId){
+    if(userdata?.artist){
       retrieveArtistInfo();
     }
-  }, [artistId]);
+  }, [userdata?.artist]);
 
-  const headerHeight = scrollY.interpolate({
-    inputRange: [0, 200],
-    outputRange: [Platform.OS === "ios" ? 260 : 260, 60],
-    extrapolate: "clamp",
-  });
-
-  const headerOpacity = scrollY.interpolate({
-    inputRange: [100, 200],
-    outputRange: [0, 1],
-    extrapolate: "clamp",
-  });
-
-  const imageOpacity = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [1, 0],
-    extrapolate: "clamp",
-  });
+  // Memoize animations for better performance
+  const animations = useMemo(() => ({
+    headerHeight: scrollY.interpolate({
+      inputRange: [0, 200],
+      outputRange: [260, 60],
+      extrapolate: "clamp",
+    }),
+    headerOpacity: scrollY.interpolate({
+      inputRange: [100, 200],
+      outputRange: [0, 1],
+      extrapolate: "clamp",
+    }),
+    imageOpacity: scrollY.interpolate({
+      inputRange: [0, 100],
+      outputRange: [1, 0],
+      extrapolate: "clamp",
+    })
+  }), [scrollY]);
 
   const renderTabContent = () => {
     switch (activeTab) {
       case "releases":
-        return <ArtistReleases artistId="" />;
+        return <ArtistReleases artistId={userdata?.artist} />;
       case "collectible":
         return <ArtistCollectible />;
       case "about":
@@ -110,17 +104,10 @@ const index = () => {
   };
 
   return (
-    <View className="flex-1 min-h-screen">
-      <Animated.View style={{ height: headerHeight, opacity: imageOpacity }}>
+    <View className="flex-1 bg-[#0A0A0A]">
+      <Animated.View style={{ height: animations.headerHeight, opacity: animations.imageOpacity }}>
         {isLoading ? (
-          <Animatable.View 
-            animation="pulse" 
-            easing="ease-out" 
-            iterationCount="infinite"
-            className="h-full w-full bg-[#1a1a1a]"
-          >
-            <SkeletonLoader />
-          </Animatable.View>
+          <ProfilePlaceholder />
         ) : (
           <ImageBackground
             source={{
@@ -130,11 +117,12 @@ const index = () => {
               height: hp("40.9%"),
               width: wp("100%"),
             }}
+            resizeMode="cover"
           >
-            <View className="flex-row items-center justify-between w-full mt-[40%] px-[12px]">
-              <View>
+            <View className="flex-row items-center justify-between w-full mt-[45%] px-[20px]">
+              <View className="flex-1 mr-4">
                 <View className="flex-row gap-x-[8px] items-center">
-                  <Text className="text-[24px] font-PlusJakartaSansBold text-[#f4f4f4]">
+                  <Text className="text-[24px] font-PlusJakartaSansBold text-white" numberOfLines={1} ellipsizeMode="tail">
                     {artistProfile?.name}
                   </Text>
                   {artistProfile?.verified === true && (
@@ -145,29 +133,26 @@ const index = () => {
                     />
                   )}
                 </View>
-                <View className="flex-row items-center gap-x-[4px]">
+                <View className="flex-row items-center gap-x-[6px] mt-1">
                   <Text className="text-[14px] font-PlusJakartaSansMedium text-[#A5A6AA]">
-                    {artistProfile?.followers?.toLocaleString()} Followers
+                    {artistProfile?.followers?.toLocaleString() || 0} Followers
                   </Text>
                   <Ellipse />
-                  <Text className="text-[14px] font-PlusJakartaSansMedium text-[#A5A6AA]">
-                    {artistProfile?.monthlyListeners.toLocaleString()} Monthly Listeners
+                  <Text className="text-[14px] font-PlusJakartaSansMedium text-[#A5A6AA]" numberOfLines={1} ellipsizeMode="tail">
+                    {artistProfile?.monthlyListeners?.toLocaleString() || 0} Monthly Listeners
                   </Text>
                 </View>
               </View>
-              <View>
-                <TouchableOpacity className="border border-[#D2D3D5] py-[16px] px-[12px] rounded-[24px]">
-                  <Text className="text-[14px] font-PlusJakartaSansMedium text-[#D2D3D5]">
-                    Change Cover
-                  </Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity className="border border-[#D2D3D5] py-[10px] px-[14px] rounded-[24px] bg-black/40">
+                <Text className="text-[14px] font-PlusJakartaSansMedium text-white">
+                  Change Cover
+                </Text>
+              </TouchableOpacity>
             </View>
           </ImageBackground>
         )}
       </Animated.View>
 
-      {/* Rest of the component remains the same */}
       <Animated.ScrollView
         className="flex-1"
         onScroll={Animated.event(
@@ -181,27 +166,29 @@ const index = () => {
           }
         )}
         scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 30 }}
       >
-        <View className="px-[2px] mt-[10px] gap-y-[24px]">
-          <View className="flex-row items-center gap-x-[10px] mx-auto w-full">
+        <View className="px-[16px] mx-auto mt-[16px] gap-y-[14px]">
+          <View className="flex-row justify-center items-center gap-x-[16px] w-full">
             <TouchableOpacity
               onPress={() => navigate("/(musicTabs)")}
-              className="items-center justify-center rounded-lg overflow-hidden h-[89px] w-[50%] border-2 bg-[#12141B]"
+              className="items-center justify-center rounded-[16px] overflow-hidden h-[89px] flex-1 bg-[#12141B] shadow-md"
             >
-              <View className="gap-2">
+              <View className="gap-2 items-center">
                 <HeadphonesIcon size={24} color="#FF8A49" variant="solid" />
-                <Text className="text-[#f4f4f4] text-[14px] font-PlusJakartaSansMedium">
+                <Text className="text-[#f4f4f4] text-[14px] font-PlusJakartaSansMedium text-center px-2">
                   Back to Listen Mode
                 </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() =>  navigate("/wallet")}
-              className="items-center justify-center rounded-lg overflow-hidden w-[50%] h-[89px] bg-[#12141B]"
+              onPress={() => navigate("/wallet")}
+              className="items-center justify-center rounded-[16px] overflow-hidden flex-1 h-[89px] bg-[#12141B] shadow-md"
             >
-              <View className="gap-2">
+              <View className="gap-2 items-center">
                 <Wallet01Icon size={20} color="#A187B5" variant="stroke" />
-                <Text className="text-[#f4f4f4] text-[14px] font-PlusJakartaSansMedium">
+                <Text className="text-[#f4f4f4] text-[14px] font-PlusJakartaSansMedium text-center px-2">
                   Wallet & Earnings
                 </Text>
               </View>
@@ -209,52 +196,27 @@ const index = () => {
           </View>
         </View>
 
-        <View className="flex-row items-start px-[4px] py-[2px] mt-4">
-          <TouchableOpacity
-            onPress={() => setActiveTab("releases")}
-            className={`py-[24px] px-[24px] ${
-              activeTab === "releases" ? "border-b-[#FF8A49] border" : ""
-            }`}
-          >
-            <Text
-              className={`text-[16px] font-PlusJakartaSansMedium ${
-                activeTab === "releases" ? "text-white" : "text-gray-400"
+        <View className="flex-row items-start px-[4px] py-[2px] mt-4 border-b border-gray-800">
+          {["releases", "collectible", "about"].map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              onPress={() => setActiveTab(tab)}
+              className={`py-[20px] px-[24px] ${
+                activeTab === tab ? "border-b-2 border-[#FF8A49]" : ""
               }`}
             >
-              Releases
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveTab("collectible")}
-            className={`py-[24px] px-[24px] ${
-              activeTab === "collectible" ? "border-b-[#FF8A49] border" : ""
-            }`}
-          >
-            <Text
-              className={`text-[16px] font-PlusJakartaSansMedium ${
-                activeTab === "collectible" ? "text-white" : "text-gray-400"
-              }`}
-            >
-              Collectible
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveTab("about")}
-            className={`py-[24px] px-[24px] ${
-              activeTab === "about" ? "border-b-[#FF8A49] border" : ""
-            }`}
-          >
-            <Text
-              className={`text-[16px] font-PlusJakartaSansMedium ${
-                activeTab === "about" ? "text-white" : "text-gray-400"
-              }`}
-            >
-              About
-            </Text>
-          </TouchableOpacity>
+              <Text
+                className={`text-[16px] font-PlusJakartaSansMedium ${
+                  activeTab === tab ? "text-white" : "text-gray-400"
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
-        <View className="px-4 py-2">{renderTabContent()}</View>
+        <View className="py-4 pb-20">{renderTabContent()}</View>
       </Animated.ScrollView>
     </View>
   );
