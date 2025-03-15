@@ -41,6 +41,13 @@ export default function SettingUpLayout() {
           animation: "slide_from_right",
         }}
       />
+        <Stack.Screen
+        name="permissions"
+        options={{
+          headerShown: false,
+          animation: "slide_from_right",
+        }}
+      />
     </Stack>
   );
 }

@@ -3,6 +3,7 @@ import { View, Text, Image, FlatList, Pressable, StyleSheet } from 'react-native
 import { MotiView } from 'moti';
 import { useRouter } from 'expo-router';
 import { useQuery } from "@/hooks/useQuery";
+import { SkeletonLoader } from '../shared/SkeletonLoader';
 
 interface Song {
   _id: string;
@@ -84,13 +85,61 @@ const AlbumsAndEps: React.FC<Props> = ({ songs, isLoading }) => {
   };
 
   const renderSkeleton = () => (
-    <MotiView
-      from={{ opacity: 0.3 }}
-      animate={{ opacity: 1 }}
-      transition={{ loop: true, type: 'timing', duration: 1000 }}
-      style={styles.skeletonItem}
-    />
+    <View style={styles.albumContainer}>
+      <SkeletonLoader width={199} height={199} />
+      <View style={styles.skeletonTextContainer}>
+        <SkeletonLoader width={160} height={16} borderRadius={4} />
+        <SkeletonLoader width={100} height={12} borderRadius={4} />
+      </View>
+    </View>
   );
+
+  // Update styles
+  const styles = StyleSheet.create({
+    container: {
+      gap: 16,
+      paddingLeft: 14,
+    },
+    header: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginVertical: 8,
+      marginLeft: 8,
+      color: '#fff',
+    },
+    albumContainer: {
+      marginHorizontal: 8,
+      width: 199,
+      height: 250,
+    },
+    albumImage: {
+      width: '100%',
+      height: 199,
+      borderRadius: 24,
+      backgroundColor: '#2a2a2a', // Add background color for image loading
+    },
+    albumTitle: {
+      marginTop: 8,
+      fontSize: 16,
+      color: '#f4f4f4',
+      fontWeight: 'bold',
+    },
+    songCount: {
+      fontSize: 12,
+      color: 'gray',
+    },
+    skeletonItem: {
+      width: 199,
+      height: 250,
+      backgroundColor: '#ccc',
+      borderRadius: 24,
+      marginHorizontal: 8,
+    },
+    skeletonTextContainer: {
+        gap: 8,
+        marginTop: 12,
+      },
+  });
 
   // Filter out duplicate albums based on title
   // Modify the uniqueSongs calculation to handle undefined/null

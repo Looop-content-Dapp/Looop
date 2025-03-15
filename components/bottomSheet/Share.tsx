@@ -15,12 +15,16 @@ import { Avatar } from 'react-native-elements';
 import { AlertDiamondIcon, CdIcon, FavouriteIcon, Playlist01Icon, Queue01Icon } from '@hugeicons/react-native';
 import { Feather, FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import AddToPlaylistBottomSheet from './AddToPlaylistBottomSheet';
+import { useAddTrackToFavorites, useGetUserFavorites } from '@/hooks/useFavourites';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ShareProps {
   title?: string;
   artist?: string;
   image?: string;
   duration?: string;
+  type?: string;
+  id?: string; // Add id to identify the track/album
 }
 
 // Update the component definition to properly handle props
@@ -29,6 +33,36 @@ const Share = forwardRef<BottomSheet, { album: ShareProps }>((props, ref) => {
   const [hasPermission, setHasPermission] = useState(false);
   const [contacts, setContacts] = useState([]);
   const [isPlaylistSheetVisible, setIsPlaylistSheetVisible] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  const addToFavoritesMutation = useAddTrackToFavorites();
+  const { data: favorites } = useGetUserFavorites(userId || '');
+
+  // Get user ID from AsyncStorage
+  useEffect(() => {
+    const getUserId = async () => {
+      try {
+        const storedUserId = await AsyncStorage.getItem('userId');
+        if (storedUserId) {
+          setUserId(storedUserId);
+        }
+      } catch (error) {
+        console.error('Error getting user ID:', error);
+      }
+    };
+
+    getUserId();
+  }, []);
+
+  // Check if the current track/album is in favorites
+  useEffect(() => {
+    if (favorites && album?.id) {
+      const isInFavorites = favorites.tracks?.some((track: any) => track._id === album.id) ||
+                           favorites.releases?.some((release: any) => release._id === album.id);
+      setIsFavorite(isInFavorites);
+    }
+  }, [favorites, album]);
 
   // Handle permission request when button is pressed
   const requestPermission = async () => {
@@ -78,9 +112,25 @@ const Share = forwardRef<BottomSheet, { album: ShareProps }>((props, ref) => {
   };
 
   // Handle add to favorites functionality
-  const handleAddToFavorites = () => {
-    Alert.alert('Success', 'Added to favorites');
-    ref.current?.close();
+  const handleAddToFavorites = async () => {
+    if (!userId || !album?.id) {
+      Alert.alert('Error', 'Unable to add to favorites. Please try again later.');
+      return;
+    }
+
+    try {
+      await addToFavoritesMutation.mutateAsync({
+        userId,
+        trackId: album.id,
+      });
+
+      setIsFavorite(!isFavorite);
+      Alert.alert('Success', isFavorite ? 'Removed from favorites' : 'Added to favorites');
+      ref.current?.close();
+    } catch (error) {
+      console.error('Error adding to favorites:', error);
+      Alert.alert('Error', 'Failed to update favorites. Please try again.');
+    }
   };
 
   // Handle see credits functionality
@@ -218,7 +268,11 @@ const Share = forwardRef<BottomSheet, { album: ShareProps }>((props, ref) => {
           <View style={styles.actionButtons}>
             <TouchableOpacity style={styles.actionButton} onPress={handleAddToFavorites}>
               <View className='bg-[#202227] p-[20px] rounded-[56px]'>
-                <FavouriteIcon size={32} color='#9A9B9F' variant='stroke' />
+                <FavouriteIcon
+                  size={32}
+                  color={isFavorite ? '#FF6D1B' : '#9A9B9F'}
+                  variant={isFavorite ? 'solid' : 'stroke'}
+                />
               </View>
               <Text style={styles.actionLabel}>Add to favorites</Text>
             </TouchableOpacity>

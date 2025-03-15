@@ -73,14 +73,13 @@ const ArtistDetails = () => {
   }, []);
 
   const handleJoinPress = () => {
-    // setShowPaymentSheet(true);
-     router.push({
+    router.push({
       pathname: "/payment",
       params: {
         name: communityData.tribePass.collectibleName,
         image: communityData.tribePass.collectibleImage
       }
-     })
+    })
   };
 
   const handleClosePaymentSheet = () => {
@@ -99,67 +98,69 @@ const ArtistDetails = () => {
     }
   };
 
-  // Animated header calculations
+  // Updated animation calculations
   const headerHeight = scrollY.interpolate({
-    inputRange: [0, 300],
-    outputRange: [SCREEN_HEIGHT * 0.35, SCREEN_HEIGHT * 0.16],
-    extrapolate: 'extend',
+    inputRange: [0, SCREEN_HEIGHT * 0.3],
+    outputRange: [SCREEN_HEIGHT * 0.4, 0],
+    extrapolate: 'clamp',
   });
 
   const headerOpacity = scrollY.interpolate({
-    inputRange: [150, 300],
-    outputRange: [0, 1],
+    inputRange: [0, SCREEN_HEIGHT * 0.2, SCREEN_HEIGHT * 0.3],
+    outputRange: [0, 0.5, 1],
     extrapolate: 'clamp',
   });
 
   const imageOpacity = scrollY.interpolate({
-    inputRange: [0, 150],
+    inputRange: [0, SCREEN_HEIGHT * 0.2],
     outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
+  const headerBackgroundOpacity = scrollY.interpolate({
+    inputRange: [0, SCREEN_HEIGHT * 0.3],
+    outputRange: ['rgba(0,0,0,0)', 'rgba(0,0,0,1)'],
     extrapolate: 'clamp',
   });
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
-        {/* Animated header */}
+        {/* Updated Animated header */}
         <Animated.View
           style={[
             styles.header,
             {
-              opacity: headerOpacity,
-              height: SCREEN_HEIGHT * 0.08,
+              backgroundColor: headerBackgroundOpacity,
+              height: SCREEN_HEIGHT * 0.1,
             },
           ]}
         >
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <ArrowLeft02Icon size={24} color="#fff" />
-          </TouchableOpacity>
+          <View style={styles.headerContent}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backButtonContainer}
+            >
+              <ArrowLeft02Icon size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </Animated.View>
 
-        {/* Parallax Image Background */}
-        <Animated.View style={{ height: headerHeight, opacity: imageOpacity }}>
+        {/* Updated Parallax Image Background */}
+        <Animated.View
+          style={[
+            styles.imageContainer,
+            {
+              height: headerHeight,
+              opacity: imageOpacity,
+            }
+          ]}
+        >
           <ImageBackground
             source={{ uri: image as string }}
             style={styles.imageBackground}
             resizeMode="cover"
-          >
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={[
-                styles.backButton,
-                {
-                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }
-              ]}
-            >
-              <ArrowLeft02Icon size={24} color="#fff" />
-            </TouchableOpacity>
-          </ImageBackground>
+          />
         </Animated.View>
 
         {/* Scrollable content */}
@@ -167,7 +168,7 @@ const ArtistDetails = () => {
           contentContainerStyle={styles.scrollViewContent}
           onScroll={Animated.event(
             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: false }
+            { useNativeDriver: true }
           )}
           scrollEventThrottle={16}
           bounces={false}
@@ -184,63 +185,76 @@ const ArtistDetails = () => {
               isFollowing={isFollowing as boolean}
             />
 
-<JoinCommunity
-  isLoading={isLoading}
-  communityData={communityData}
-  onJoinPress={handleJoinPress}
-  isMember={isMember}
-/>
+            <JoinCommunity
+              isLoading={isLoading}
+              communityData={communityData}
+              onJoinPress={handleJoinPress}
+              isMember={isMember}
+            />
 
-          <ArtistReleases artistId={id as string} />
+            <ArtistReleases artistId={id as string} />
           </View>
-
         </Animated.ScrollView>
 
         <PaymentBottomSheet
-            isVisible={showPaymentSheet}
-            closeSheet={handleClosePaymentSheet}
-            communityData={communityData}
-            onPaymentComplete={handleJoinCommunity}
-          />
-        </View>
-      </GestureHandlerRootView>
+          isVisible={showPaymentSheet}
+          closeSheet={handleClosePaymentSheet}
+          communityData={communityData}
+          onPaymentComplete={handleJoinCommunity}
+        />
+      </View>
+    </GestureHandlerRootView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: "black"
   },
   header: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'black',
-    flexDirection: 'row',
-    zIndex: 10,
+    zIndex: 30,
   },
-  backButton: {
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: '5%',
     marginTop: Platform.OS === 'ios' ? '15%' : '10%',
-    marginLeft: '5%',
+  },
+  backButtonContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1,
   },
   imageBackground: {
     flex: 1,
+    width: '100%',
   },
   scrollViewContent: {
     paddingBottom: '14%',
   },
   contentContainer: {
-    paddingTop: '8%',
-    marginTop: '-10%',
+    paddingTop: '38%',
+    marginTop: '50%',
   },
-  // Payment Bottom Sheet Styles
   paymentContainer: {
     padding: 16,
     alignItems: 'center',
   },
-  // Skeleton styles
   skeletonContainer: {
     backgroundColor: '#2a2a2a',
     borderRadius: 24,

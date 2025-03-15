@@ -351,7 +351,8 @@ const convertSecondsToMinutes = (seconds: number) => {
               artist: selectedTrack ? selectedTrack.artist.name : (artist as string),
               image: selectedTrack ? selectedTrack.release.artwork.high : (image as string),
               type: type as string,
-              duration: convertSecondsToMinutes(selectedTrack ? selectedTrack.duration : Number(duration))
+              duration: convertSecondsToMinutes(selectedTrack ? selectedTrack.duration : Number(duration)),
+              id: selectedTrack ? selectedTrack._id : (id as string) // Add the ID
             }}
           />
         </SafeAreaView>

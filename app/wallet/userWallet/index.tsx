@@ -9,6 +9,7 @@ import FilterButton from "@/components/app-components/FilterButton";
 import { useAppSelector } from "@/redux/hooks";
 import { getXionBalance, getStarknetBalance } from '@/services/walletService';
 import * as Clipboard from 'expo-clipboard';
+import PayWithCard from "@/components/bottomSheet/payWithCard";
 
 const WalletScreen = () => {
   const navigation = useNavigation();
@@ -95,6 +96,7 @@ const WalletScreen = () => {
   }, [userdata]);
 
   const handleTabPress = (tab: string) => setActiveTab(tab);
+  const [showPaymentSheet, setShowPaymentSheet] = useState(false);
 
   return (
     <SafeAreaView className="flex-1">
@@ -132,7 +134,7 @@ const WalletScreen = () => {
           {/* Fund with Card Button */}
           <TouchableOpacity
             className="bg-[#202227] mx-4 my-3 px-[16px] pt-[20px] pb-[19px] rounded-[10px] flex-row justify-between items-center"
-            onPress={() => router.push('/payment/payWithCard')}
+            onPress={() => setShowPaymentSheet(true)}
           >
             <View className="flex-1 flex-row items-center gap-[16px]">
               <CreditCardIcon size={24} color="#FF8A49" variant="stroke" />
@@ -207,6 +209,12 @@ const WalletScreen = () => {
           />
         </View>
       )}
+
+     
+      <PayWithCard
+        isVisible={showPaymentSheet}
+        onClose={() => setShowPaymentSheet(false)}
+      />
     </SafeAreaView>
   );
 };

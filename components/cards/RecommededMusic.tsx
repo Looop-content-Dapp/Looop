@@ -7,13 +7,28 @@ import {
   Pressable,
   ScrollView,
   Image,
+  ActivityIndicator,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.42;
 const CARD_GAP = 16; // Increased gap between cards
 
 const RecommededMusic = ({ data, isLoading, title = "Recommended For You" }) => {
+  const router = useRouter();
+
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <Text className="text-[#F4F4F4] text-[20px] leading-[22px] tracking-[-0.69px] font-PlusJakartaSansBold px-4 mb-4">{title}</Text>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#1DB954" />
+        </View>
+      </View>
+    );
+  }
+
   if (!data || data.length === 0) {
     return null;
   }
@@ -21,6 +36,20 @@ const RecommededMusic = ({ data, isLoading, title = "Recommended For You" }) => 
   // Utility function to truncate text
   const truncateText = (text: string, limit: number) => {
     return text?.length > limit ? `${text.substring(0, limit)}...` : text;
+  };
+
+  // Helper function to get the image URL from different possible structures
+  const getImageUrl = (item: any) => {
+    if (item.release?.artwork?.cover_image?.high) {
+      return item.release.artwork.cover_image.high;
+    } else if (item.release?.artwork?.high) {
+      return item.release.artwork.high;
+    } else if (item.cover) {
+      return item.cover;
+    } else if (item.artist?.profileImage) {
+      return item.artist.profileImage;
+    }
+    return 'https://via.placeholder.com/300'; // Fallback image
   };
 
   const renderExplicitBadge = () => (
@@ -31,7 +60,7 @@ const RecommededMusic = ({ data, isLoading, title = "Recommended For You" }) => 
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <Text className="text-[#F4F4F4] text-[20px] leading-[22px] tracking-[-0.69px] font-PlusJakartaSansBold px-4 mb-4">{title}</Text>
       <View style={styles.cardsContainer}>
         <ScrollView
           horizontal
@@ -46,10 +75,21 @@ const RecommededMusic = ({ data, isLoading, title = "Recommended For You" }) => 
                   styles.card,
                   { opacity: pressed ? 0.8 : 1 }
                 ]}
+                onPress={() => {
+                  router.push({
+                    pathname: `/track/${item._id}`,
+                    params: {
+                      id: item._id,
+                      title: item.title,
+                      artist: typeof item.artist === 'string' ? item.artist : item.artist?.name,
+                      artwork: getImageUrl(item),
+                    }
+                  });
+                }}
               >
                 {/* Album/Track Artwork */}
                 <Image
-                  source={{ uri: item.release.artwork.high || item.cover }}
+                  source={{ uri: getImageUrl(item) }}
                   style={styles.artwork}
                   resizeMode="cover"
                 />
@@ -61,16 +101,23 @@ const RecommededMusic = ({ data, isLoading, title = "Recommended For You" }) => 
                       numberOfLines={1}
                       style={styles.title}
                     >
-                      {truncateText(item.title, 10)}
+                      {truncateText(item.title, 15)}
                     </Text>
                     {item.isExplicit && renderExplicitBadge()}
                   </View>
-                  <Text
-                    numberOfLines={1}
-                    style={styles.artist}
-                  >
-                    {item.artist?.name || item.artist}
-                  </Text>
+                  <View style={styles.artistRow}>
+                    <Text
+                      numberOfLines={1}
+                      style={styles.artist}
+                    >
+                      {typeof item.artist === 'string' ? item.artist : item.artist?.name}
+                    </Text>
+                    {item.release?.type && (
+                      <Text style={styles.typeLabel}>
+                        {item.release.type}
+                      </Text>
+                    )}
+                  </View>
                 </View>
               </Pressable>
             </View>
@@ -87,7 +134,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 16,
@@ -97,11 +144,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollViewContent: {
-    paddingHorizontal: 16, // Padding on both sides
-    gap: CARD_GAP, // This creates space between cards
+    paddingHorizontal: 16,
+    gap: CARD_GAP,
   },
   cardWrapper: {
-    marginRight: CARD_GAP, // Explicit gap between cards
+    marginRight: CARD_GAP,
   },
   card: {
     width: CARD_WIDTH,
@@ -126,10 +173,25 @@ const styles = StyleSheet.create({
     color: '#fff',
     flex: 1,
   },
+  artistRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    gap: 6,
+  },
   artist: {
     fontSize: 14,
     color: '#999',
-    marginTop: 4,
+  },
+  typeLabel: {
+    fontSize: 14,
+    color: '#999',
+    backgroundColor: 'rgba(29, 185, 84, 0.1)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    overflow: 'hidden',
+    textTransform: 'capitalize',
   },
   explicitBadges: {
     backgroundColor: '#999',
@@ -141,6 +203,11 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 10,
     fontWeight: '600',
+  },
+  loadingContainer: {
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

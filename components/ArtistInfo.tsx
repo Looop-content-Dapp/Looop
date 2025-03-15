@@ -2,9 +2,9 @@ import { View, Text, Pressable, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 import { formatNumber } from '../utils/ArstsisArr';
 import { CheckmarkBadge01Icon } from '@hugeicons/react-native';
-import { useQuery } from '../hooks/useQuery';
-import axios from 'axios';
+import { useFollowArtist } from '@/hooks/useFollowArtist';
 import { useAppSelector } from '@/redux/hooks';
+import { showToast } from '@/config/ShowMessage';
 
 interface ArtistInfoProps {
   image?: string;
@@ -26,25 +26,35 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
   isFollowing,
 }) => {
   const [followed, setFollowed] = useState(isFollowing);
-  const { followArtist } = useQuery();
   const { userdata } = useAppSelector((state) => state.auth);
+  const { handleFollowArtist, isLoading } = useFollowArtist();
 
-  const handleFollowArtist = async () => {
+  const onFollowPress = async () => {
     if (!userdata?._id) {
-      console.error('User ID is required to follow an artist');
+      showToast("Please log in to follow artists", "error");
       return;
     }
 
     try {
-      const res = await followArtist(userdata._id, index);
-      setFollowed(true);
-      console.log(`Successfully followed artist: ${name}`, res);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error('Failed to follow artist:', error.response?.data);
+      // Toggle the UI state immediately for better UX
+      setFollowed(prev => !prev);
+
+      // Call the follow artist function from the hook
+      const result = await handleFollowArtist(userdata._id, index);
+
+      // If the API call fails, revert the UI state
+      if (result === null) {
+        setFollowed(prev => !prev);
+        showToast("Failed to follow artist", "error");
       } else {
-        console.error('Unexpected error:', error);
+        // Log success
+        console.log(`Successfully ${result ? 'followed' : 'unfollowed'} artist: ${name}`);
       }
+    } catch (error) {
+      // Revert UI state on error
+      setFollowed(prev => !prev);
+      console.error('Error following artist:', error);
+      showToast("Failed to follow artist", "error");
     }
   };
 
@@ -80,7 +90,8 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
         </View>
 
         <TouchableOpacity
-          onPress={handleFollowArtist}
+          onPress={onFollowPress}
+          disabled={isLoading}
           className={`border px-6 py-2.5 rounded-full items-center ${
             followed
               ? 'border-2 border-[#12141B] bg-Gr'
@@ -88,7 +99,7 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
           }`}
         >
           <Text className="text-white text-xs font-normal">
-            {followed ? 'Following' : 'Follow'}
+            {isLoading ? 'Loading...' : followed ? 'Following' : 'Follow'}
           </Text>
         </TouchableOpacity>
       </View>

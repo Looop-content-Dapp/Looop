@@ -6,22 +6,28 @@ import {
   FlatList,
   Image,
   ListRenderItemInfo,
+  ActivityIndicator,
 } from "react-native";
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import { Search01Icon } from "@hugeicons/react-native";
 import { router, useNavigation } from "expo-router";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
-import { useQuery } from "../../hooks/useQuery";
 import { AppBackButton } from "@/components/app-components/back-btn";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { useAppSelector } from "@/redux/hooks";
+import { useFollowingArtists, Artist } from "@/hooks/useFollowingArtists";
+
+// Define the interface for the artist data
+interface IFollowing extends Artist {}
 
 const ProfileFollowing = () => {
-  const [artistFollowing, setArtistFollowing] = useState<IFollowing[]>([]);
-  const { fetchFollowingArtists } = useQuery();
+  const [page, setPage] = useState<number>(1);
   const navigation = useNavigation();
-
   const { userdata } = useAppSelector((state) => state.auth);
-  const dispatch = useAppDispatch();
+
+  // Use the new hook to fetch following artists
+  const { data, isLoading, error } = useFollowingArtists(userdata?._id || '', page);
+  console.log(data?.data?.artists, "followings")
+  const artistFollowing = data?.data?.artists || [];
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -32,15 +38,12 @@ const ProfileFollowing = () => {
     });
   }, [navigation]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (userdata) {
-        const res = await fetchFollowingArtists(userdata._id);
-        setArtistFollowing(res.data);
-      }
-    };
-    fetchData();
-  }, []);
+  // Function to handle loading more artists when reaching the end of the list
+  const handleLoadMore = () => {
+    if (data?.data?.pagination?.hasMore) {
+      setPage(prev => prev + 1);
+    }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, minHeight: "100%" }}>
@@ -57,6 +60,22 @@ const ProfileFollowing = () => {
         </Text>
       </Pressable>
 
+      {/* Loading indicator */}
+      {isLoading && artistFollowing.length === 0 && (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#f4f4f4" />
+        </View>
+      )}
+
+      {/* Error message */}
+      {error && (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-[#f4f4f4] font-PlusJakartaSansMedium">
+            Failed to load following artists
+          </Text>
+        </View>
+      )}
+
       {/* List of Artists */}
       <FlatList
         data={artistFollowing}
@@ -65,6 +84,13 @@ const ProfileFollowing = () => {
           <FollowingCard item={item} />
         )}
         contentContainerStyle={{ paddingHorizontal: 24 }}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          data?.data?.pagination?.hasMore && isLoading ? (
+            <ActivityIndicator size="small" color="#f4f4f4" style={{ marginVertical: 20 }} />
+          ) : null
+        }
       />
     </SafeAreaView>
   );
@@ -78,15 +104,15 @@ const FollowingCard = ({ item }: { item: IFollowing }) => {
     <View className="flex-row items-center justify-between py-[12px]">
       <View className="flex-row items-center gap-x-[12px]">
         <Image
-          source={{ uri: item.artist.images[0].url }}
+          source={{ uri: item.profileImage }}
           style={{ width: 48, height: 48, borderRadius: 24 }}
         />
         <View>
           <Text className="text-[#f4f4f4] font-PlusJakartaSansBold text-[16px]">
-            {item.artist.name}
+            {item.name}
           </Text>
           <Text className="text-[#787A80] font-PlusJakartaSansRegular text-[14px]">
-            Tribestars
+            {item.followers.toLocaleString()} followers
           </Text>
         </View>
       </View>

@@ -1,5 +1,4 @@
-// MusicCategory.js
-import { View, ScrollView, Text } from "react-native";
+import { View, ScrollView, Text, ActivityIndicator } from "react-native";
 import React from "react";
 import MusicCard from "../cards/MusicCard";
 
@@ -10,36 +9,46 @@ interface MusicCategoryProps {
 }
 
 const MusicCategory = ({ title, musicData, isLoading }: MusicCategoryProps) => {
-  
   const placeholderData = Array(5).fill({});
+
   return (
-    <View className="h-[254px] gap-y-[16px]">
-      <Text className="text-[#F4F4F4] text-[16px] font-normal font-PlusJakartaSansBold">
+    <View className="mb-8">
+      <Text className="text-[#F4F4F4] text-[22px] font-bold font-PlusJakartaSansBold px-4 mb-4">
         {title}
       </Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 16, paddingRight: 16 }}
-      >
-        {(isLoading ? placeholderData : musicData).map(
-          (item: any, index: number) => (
+
+      {isLoading ? (
+        <View className="h-[180px] justify-center items-center">
+          <ActivityIndicator size="large" color="#1DB954" />
+        </View>
+      ) : musicData.length === 0 ? (
+        <View className="h-[100px] justify-center items-center">
+          <Text className="text-[#999] text-[14px]">No items to display</Text>
+        </View>
+      ) : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 16, paddingHorizontal: 16 }}
+        >
+          {musicData.map((item: any, index: number) => (
             <MusicCard
               key={index}
-              loading={isLoading}
+              loading={false}
               item={{
                 id: item._id,
                 title: item?.title,
-                artist: item?.artist?.name,
-                image: item?.cover_image,
+                artist: item?.artist?.name || item?.artist,
+                image: item?.cover_image || item?.artwork?.high || item?.cover,
                 type: item?.type,
                 duration: item?.metadata?.duration,
                 totalTracks: item?.metadata?.totalTracks,
+                releaseDate: item?.releaseDate,
               }}
             />
-          )
-        )}
-      </ScrollView>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 };

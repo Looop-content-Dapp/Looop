@@ -11,6 +11,7 @@ import RecommededMusic from "../../../components/cards/RecommededMusic";
 import { useQuery } from "../../../hooks/useQuery";
 import { useAppSelector } from "@/redux/hooks";
 import { StatusBar } from "expo-status-bar";
+import { useUserFeed } from "../../../hooks/useUserFeed";
 
 const Index = () => {
   const { currentTrack } = useMusicPlayer();
@@ -23,6 +24,9 @@ const Index = () => {
     getDailyMixes,
   } = useQuery();
 
+  // Use the new useUserFeed hook
+  const { data: userFeedData, isLoading: userFeedLoading } = useUserFeed(userdata?._id as string);
+
   const [newReleases, setNewReleases] = useState([]);
   const [recommendedMusic, setRecommendedMusic] = useState([]);
   const [followedArtistReleases, setFollowedArtistReleases] = useState<
@@ -32,43 +36,27 @@ const Index = () => {
   const [allArtists, setAllArtists] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
+useEffect(() => {
+  const fetchDailyMixes = async () => {
+    try {
+      setLoading(true);
+      const dailyMixesResponse = await getDailyMixes(userdata?._id as string);
+      setDailyMixes(dailyMixesResponse?.data.mixes ?? []);
+    } catch (error) {
+      console.log("Error fetching daily mixes:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        // Fetch all data in parallel
-        const [
-          releasesResponse,
-          artistsResponse,
-          recommendationsResponse,
-          followedReleasesResponse,
-          dailyMixesResponse,
-        ] = await Promise.all([
-          getAllReleases(),
-          getAllArtists(),
-          getDashboardRecommendations(userdata?._id as string),
-          getFollowedArtistsReleases(userdata?._id as string),
-          getDailyMixes(userdata?._id as string),
-        ]);
+  fetchDailyMixes();
+}, []);
 
-        setNewReleases(releasesResponse.data);
-        setDailyMixes(dailyMixesResponse?.data.mixes ?? []);
-        setAllArtists(artistsResponse.data);
-        setRecommendedMusic(recommendationsResponse.data);
-        setFollowedArtistReleases(
-          followedReleasesResponse?.data.releases.thisMonth ?? []
-        );
-        console.log(JSON.stringify(artistsResponse), "artist response");
-      } catch (error) {
-        console.log("Error fetching dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
+  // Extract data from userFeed
+  const followedArtists = userFeedData?.data?.followedArtists || [];
+  const recommendedArtists = userFeedData?.data?.recommendedArtists || [];
+  const suggestedTracks = userFeedData?.data?.suggestedTracks || [];
+  const recentReleases = userFeedData?.data?.recentReleases || [];
 
   return (
     <>
@@ -80,7 +68,7 @@ const Index = () => {
           contentContainerStyle={{
             paddingBottom: currentTrack ? 90 : 30,
             paddingTop: 32,
-            paddingLeft: 16,
+            paddingLeft: 6,
           }}
         >
           {/* Daily Mixes */}
@@ -90,37 +78,41 @@ const Index = () => {
             title="Your Daily Mixes"
           />
 
-          {/* <Text className="text-[#ffffff] text-[14px] font-PlusJakartaSansBold">Amazing sounds Coming Soon</Text> */}
-
-          {/* New Releases Section */}
-          {/* <NewlyReleased
-            musicData={newReleases}
-            isLoading={loading}
-            title="New Releases"
-          /> */}
-
-          {/* Followed Artists' New Releases */}
-          {/* {followedArtistReleases.length !== 0 && (
-            <NewlyReleased
-              musicData={followedArtistReleases}
-              isLoading={loading}
-              title="New From Artists You Follow"
+          {/* Followed Artists Section - only show if there's data */}
+          {followedArtists.length > 0 && (
+            <BasedOnSubscription
+              data={followedArtists}
+              isLoading={userFeedLoading}
+              title="Artists You Follow"
             />
-          )} */}
+          )}
 
-          {/* Personalized Recommendations */}
-          {/* <RecommededMusic
-            data={recommendedMusic}
-            isLoading={loading}
-            title="Recommended For You"
-          /> */}
+          {/* Recent Releases Section - only show if there's data */}
+          {recentReleases.length > 0 && (
+            <NewlyReleased
+              musicData={recentReleases}
+              isLoading={userFeedLoading}
+              title="Recent Releases"
+            />
+          )}
 
-          {/* Artists to Explore */}
-          <BasedOnSubscription
-            data={allArtists}
-            isLoading={loading}
-            title="New Discographies to Explore"
-          />
+          {/* Recommended Artists Section - only show if there's data */}
+          {recommendedArtists.length > 0 && (
+            <BasedOnSubscription
+              data={recommendedArtists}
+              isLoading={userFeedLoading}
+              title="Some artist for you to explore..."
+            />
+          )}
+
+          {/* Suggested Tracks Section - only show if there's data */}
+          {suggestedTracks.length > 0 && (
+            <RecommededMusic
+              data={suggestedTracks}
+              isLoading={userFeedLoading}
+              title="Rythms you'll love..."
+            />
+          )}
         </ScrollView>
       </View>
     </>

@@ -3,6 +3,7 @@ import { View, Text, Image, FlatList, Pressable, StyleSheet } from 'react-native
 import { Songs, Album, EP } from '../../utils/types';
 import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
+import { SkeletonLoader } from '../shared/SkeletonLoader';
 
 type Props = {
   songs: any;
@@ -29,13 +30,35 @@ const Singles: React.FC<Props> = ({ songs, isLoading }) => {
   }
 
   const renderSkeleton = () => (
-    <MotiView
-      from={{ opacity: 0.3 }}
-      animate={{ opacity: 1 }}
-      transition={{ loop: true, type: 'timing', duration: 1000 }}
-      style={styles.skeletonItem}
-    />
+    <View style={styles.singleContainer}>
+      <SkeletonLoader width={150} height={199} />
+      <View style={styles.skeletonTextContainer}>
+        <SkeletonLoader width={130} height={16} borderRadius={4} />
+        <SkeletonLoader width={70} height={12} borderRadius={4} />
+      </View>
+    </View>
   );
+
+  // Update styles
+  const styles = StyleSheet.create({
+    singleContainer: {
+      width: 150,
+      height: 250,
+      marginHorizontal: 8,
+      marginVertical: 24,
+    },
+    skeletonTextContainer: {
+      gap: 8,
+      marginTop: 12,
+    },
+    skeletonItem: {
+        width: 199,
+        height: 250,
+        backgroundColor: '#ccc',
+        borderRadius: 24,
+        marginHorizontal: 8,
+      },
+  })
 
   return (
     <View className='gap-y-[16px] pl-[14px]'>
