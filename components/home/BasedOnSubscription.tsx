@@ -72,7 +72,7 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
               createdAt: item?.createdAt,
               updatedAt: item?.updatedAt,
               isActive: item?.isActive,
-              isFollowing: followers?.includes(userdata?._id),
+              isFollowing: String(followers?.includes(userdata?._id)), // Convert to string
               noOfFollowers: followers.length,
             },
           });

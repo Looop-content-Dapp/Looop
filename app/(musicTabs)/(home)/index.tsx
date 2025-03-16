@@ -17,23 +17,12 @@ const Index = () => {
   const { currentTrack } = useMusicPlayer();
   const { userdata } = useAppSelector((state) => state.auth);
   const {
-    getAllReleases,
-    getAllArtists,
-    getDashboardRecommendations,
-    getFollowedArtistsReleases,
     getDailyMixes,
   } = useQuery();
 
   // Use the new useUserFeed hook
   const { data: userFeedData, isLoading: userFeedLoading } = useUserFeed(userdata?._id as string);
-
-  const [newReleases, setNewReleases] = useState([]);
-  const [recommendedMusic, setRecommendedMusic] = useState([]);
-  const [followedArtistReleases, setFollowedArtistReleases] = useState<
-    ArtistsYouFollowThisMonth[]
-  >([]);
   const [dailyMixes, setDailyMixes] = useState<DailyMixesMix[]>([]);
-  const [allArtists, setAllArtists] = useState([]);
   const [loading, setLoading] = useState(true);
 
 useEffect(() => {
@@ -67,7 +56,7 @@ useEffect(() => {
           contentContainerClassName="space-y-[4px]"
           contentContainerStyle={{
             paddingBottom: currentTrack ? 90 : 30,
-            paddingTop: 32,
+            paddingTop: 12,
             paddingLeft: 6,
           }}
         >

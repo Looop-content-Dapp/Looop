@@ -9,10 +9,11 @@ type WalletBalanceProps = {
     starknet: number;
     total: number;
   };
-  balance?: string; // Add support for string balance format
+  balance?: string;
   addresses: { chain: string; address: string }[];
-  isLoading?: boolean; // Make optional with default value
+  isLoading?: boolean;
   onCopyAddress?: (address: string) => void;
+  usdcPrice?: number; // Add usdcPrice prop
 };
 
 export default function WalletBalance({
@@ -20,13 +21,13 @@ export default function WalletBalance({
   balance,
   addresses = [],
   isLoading = false,
-  onCopyAddress
+  onCopyAddress,
+  usdcPrice = 1 // Default to 1 if not provided
 }: WalletBalanceProps) {
   const [selectedTab, setSelectedTab] = useState("All balances");
   const [currency, setCurrency] = useState<"USD" | "NGN">("USD");
-  console.log(addresses, "balances");
 
-  const exchangeRate = 1450; // Hardcoded NGN to USD rate; ideally from an API
+  const exchangeRate = 1450;
 
   const formatNumber = (num: number) => {
     return num.toLocaleString('en-US', {
@@ -35,31 +36,27 @@ export default function WalletBalance({
     });
   };
 
-  // Handle string balance format
-  const parseStringBalance = (balanceStr: string): number => {
-    if (!balanceStr) return 0;
-    // Remove currency symbol and commas, then parse as float
-    return parseFloat(balanceStr.replace(/[$,₦]/g, '')) || 0;
-  };
-
   const getDisplayBalance = (amount: number | undefined) => {
     if (amount === undefined) return "$0.00";
 
+    const usdAmount = amount * usdcPrice;
+
     if (currency === "NGN") {
-      return `₦${formatNumber(amount * exchangeRate)}`;
+      return `₦${formatNumber(usdAmount * exchangeRate)}`;
     }
-    return `$${formatNumber(amount)}`;
+    return `$${formatNumber(usdAmount)}`;
   };
 
   const getCurrentBalance = () => {
-    // If string balance is provided, use that
     if (balance) {
+      const numericBalance = parseFloat(balance.replace(/[$,₦]/g, '')) || 0;
+      const usdAmount = numericBalance * usdcPrice;
+
       return currency === "NGN"
-        ? `₦${formatNumber(parseStringBalance(balance) * exchangeRate)}`
-        : balance;
+        ? `₦${formatNumber(usdAmount * exchangeRate)}`
+        : `$${formatNumber(usdAmount)}`;
     }
 
-    // Otherwise use the balances object
     switch (selectedTab) {
       case "XION":
         return getDisplayBalance(balances?.xion);

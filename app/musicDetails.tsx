@@ -246,7 +246,7 @@ const convertSecondsToMinutes = (seconds: number) => {
           <View className="items-center justify-center gap-y-[16px]">
             <View className="flex-row items-center">
               <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansBold font-normal">
-                {tracks.length} Songs
+                {tracks?.length} Songs
               </Text>
               <Pressable className="bg-Grey/06 h-[4px] w-[4px] m-[4px] font-normal" />
               <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansBold font-normal">
@@ -286,7 +286,7 @@ const convertSecondsToMinutes = (seconds: number) => {
 
         {/* Track List */}
         <View style={styles.trackListContainer}>
-          {tracks.map((track: Track, index: number) => (
+          {tracks?.map((track: Track, index: number) => (
             <View key={track._id}>
               <TouchableOpacity
                 onPress={() => handleTrackPress(track, index, albumInfo, tracks)}

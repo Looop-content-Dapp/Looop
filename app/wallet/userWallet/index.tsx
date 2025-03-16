@@ -7,9 +7,9 @@ import { useLayoutEffect, useState, useEffect } from "react";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import FilterButton from "@/components/app-components/FilterButton";
 import { useAppSelector } from "@/redux/hooks";
-import { getXionBalance, getStarknetBalance } from '@/services/walletService';
 import * as Clipboard from 'expo-clipboard';
 import PayWithCard from "@/components/bottomSheet/payWithCard";
+import { useWalletBalance } from "@/hooks/useWalletBalance";
 
 const WalletScreen = () => {
   const navigation = useNavigation();
@@ -17,6 +17,7 @@ const WalletScreen = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('Last 30 days');
   const [isLoading, setIsLoading] = useState(true);
   const { userdata } = useAppSelector(state => state.auth);
+  const { data: walletBalanceData, isLoading: loading } = useWalletBalance(userdata?.id);
   const filterOptions = ['Last 7 days', 'Last 30 days', 'Last 90 days', 'All time'];
 
   const [walletData, setWalletData] = useState({
@@ -48,52 +49,23 @@ const WalletScreen = () => {
 
   // Fetch wallet balances
   useEffect(() => {
-    const fetchBalances = async () => {
-      setIsLoading(true);
-      try {
-        const xionAddress = userdata?.wallets?.xion?.address;
-        const starknetAddress = userdata?.wallets?.starknet.address;
-        if (!xionAddress || !starknetAddress) {
-          throw new Error('Wallet addresses not found');
-        }
+    if (walletBalanceData) {
+      const xionBalance = walletBalanceData.data.xion.balances.reduce(
+        (total, balance) => total + balance.usdValue,
+        0
+      );
+      const starknetBalance = walletBalanceData.data.starknet.balance.usdValue;
 
-        let xionBalance = 0;
-        let starknetBalance = 0;
-
-        // Fetch XION balance
-        try {
-          const xionData = await getXionBalance(xionAddress);
-          xionBalance = parseFloat(xionData.data.balance) / 1000000;
-        } catch (error: any) {
-          console.error('Error fetching XION balance:', error.message);
-        }
-
-        // Fetch Starknet balance
-        try {
-          const starknetData = await getStarknetBalance(starknetAddress);
-          starknetBalance = Number(BigInt(starknetData.data.balance) / BigInt(1e18));
-        } catch (error: any) {
-          console.error('Error fetching Starknet balance:', error.message);
-        }
-
-        // Update state with fetched balances
-        setWalletData(prev => ({
-          ...prev,
-          balances: {
-            xion: xionBalance,
-            starknet: starknetBalance,
-            total: xionBalance + starknetBalance,
-          },
-        }));
-      } catch (error) {
-        console.error('Error in fetchBalances:', error.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchBalances();
-  }, [userdata]);
+      setWalletData(prev => ({
+        ...prev,
+        balances: {
+          xion: xionBalance,
+          starknet: starknetBalance,
+          total: xionBalance + starknetBalance,
+        },
+      }));
+    }
+  }, [walletBalanceData]);
 
   const handleTabPress = (tab: string) => setActiveTab(tab);
   const [showPaymentSheet, setShowPaymentSheet] = useState(false);
@@ -126,6 +98,7 @@ const WalletScreen = () => {
             balances={walletData.balances}
             addresses={walletData.addresses}
             isLoading={isLoading}
+            usdcPrice={walletBalanceData?.data?.usdcPrice}
             onCopyAddress={async (address) => {
               await Clipboard.setStringAsync(address);
               Alert.alert("Address Copied")
@@ -210,7 +183,7 @@ const WalletScreen = () => {
         </View>
       )}
 
-     
+
       <PayWithCard
         isVisible={showPaymentSheet}
         onClose={() => setShowPaymentSheet(false)}

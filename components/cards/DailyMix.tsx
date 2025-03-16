@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   Dimensions,
   StyleSheet,
+  ImageBackground,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { MaterialIcons } from "@expo/vector-icons";
-import { getGradientColors } from "../../utils";
 import DailyMixSkeleton from "../SkeletonLoading/DailyMixSkelton";
+import { PlayIcon } from '@hugeicons/react-native'
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.7;
@@ -23,23 +23,18 @@ const DailyMixCard = ({
   mix: DailyMixesMix;
   onPress: () => void;
 }) => {
-  const colors = getGradientColors(mix.genre);
   return (
     <TouchableOpacity
       style={styles.cardContainer}
       onPress={onPress}
       activeOpacity={0.9}
     >
-      <LinearGradient
-        colors={[colors.start, colors.end]}
+      <ImageBackground
+        source={{ uri: mix.artwork }}
         style={styles.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        resizeMode="cover"
       >
-        {/* Optional Pattern Overlay */}
-        <View style={styles.pattern} />
-
-        {/* Content Container */}
+        <View style={styles.overlay} />
         <View style={styles.contentContainer}>
           <Text style={styles.title} className="capitalize" numberOfLines={2}>
             {mix.name}
@@ -49,17 +44,14 @@ const DailyMixCard = ({
           </Text>
 
           <View style={styles.footer}>
-            <MaterialIcons
-              name="playlist-play"
-              size={24}
+          <PlayIcon
+              size={34}
               color="rgba(255,255,255,0.9)"
+              variant="solid"
             />
-            <Text style={styles.trackCount}>
-              {mix.tracks?.length || 0} tracks
-            </Text>
           </View>
         </View>
-      </LinearGradient>
+      </ImageBackground>
     </TouchableOpacity>
   );
 };
@@ -129,14 +121,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
   },
-  pattern: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0.3,
-    // Add pattern if desired
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.4)',
   },
   contentContainer: {
     padding: 20,

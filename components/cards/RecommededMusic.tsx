@@ -12,8 +12,8 @@ import {
 import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.42;
-const CARD_GAP = 16; // Increased gap between cards
+const CARD_WIDTH = width * 0.32;
+const CARD_GAP = 12; // Increased gap between cards
 
 const RecommededMusic = ({ data, isLoading, title = "Recommended For You" }) => {
   const router = useRouter();
@@ -47,7 +47,7 @@ const RecommededMusic = ({ data, isLoading, title = "Recommended For You" }) => 
     } else if (item.cover) {
       return item.cover;
     } else if (item.artist?.profileImage) {
-      return item.artist.profileImage;
+      return item?.artist?.profileImage;
     }
     return 'https://via.placeholder.com/300'; // Fallback image
   };
@@ -77,12 +77,15 @@ const RecommededMusic = ({ data, isLoading, title = "Recommended For You" }) => 
                 ]}
                 onPress={() => {
                   router.push({
-                    pathname: `/track/${item._id}`,
+                    pathname: "/musicDetails",
                     params: {
-                      id: item._id,
+                      id: item.release._id,
                       title: item.title,
                       artist: typeof item.artist === 'string' ? item.artist : item.artist?.name,
-                      artwork: getImageUrl(item),
+                      image: getImageUrl(item),
+                      type: item.release?.type || 'album',
+                      duration: item.duration || 0,
+                      totalTracks: item.totalTracks || 1
                     }
                   });
                 }}

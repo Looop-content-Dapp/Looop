@@ -40,8 +40,10 @@ const ArtistDetails = () => {
     isVerified,
     id,
     isFollowing,
-    noOfFollowers
+    noOfFollowers,
+    followers
   } = useLocalSearchParams();
+  console.log("index", followers)
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [communityData, setCommunityData] = useState<any | null>(null);
@@ -51,6 +53,8 @@ const ArtistDetails = () => {
   const [isMember, setIsMember] = useState(false);
   const router = useRouter();
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
+  console.log("id", isFollowing)
+
 
   const toggleDescription = useCallback(() => {
     setIsExpanded((prev) => !prev);
@@ -182,7 +186,7 @@ const ArtistDetails = () => {
               follower={"12459"}
               isVerfied={isVerified as string}
               index={id as string}
-              isFollowing={isFollowing as boolean}
+              isFollow={followers?.includes(userdata?._id)} // Direct boolean check
             />
 
             <JoinCommunity

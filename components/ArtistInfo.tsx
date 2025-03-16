@@ -1,11 +1,12 @@
 import { View, Text, Pressable, TouchableOpacity } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatNumber } from '../utils/ArstsisArr';
 import { CheckmarkBadge01Icon } from '@hugeicons/react-native';
 import { useFollowArtist } from '@/hooks/useFollowArtist';
 import { useAppSelector } from '@/redux/hooks';
 import { showToast } from '@/config/ShowMessage';
 
+// Update the interface
 interface ArtistInfoProps {
   image?: string;
   name: string;
@@ -14,7 +15,7 @@ interface ArtistInfoProps {
   follower: string;
   isVerfied: string;
   index: string;
-  isFollowing: boolean;
+  isFollow: boolean;  // Change to boolean
 }
 
 const ArtistInfo: React.FC<ArtistInfoProps> = ({
@@ -23,11 +24,16 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
   follower,
   isVerfied,
   index,
-  isFollowing,
+  isFollow,
 }) => {
-  const [followed, setFollowed] = useState(isFollowing);
+  const [followed, setFollowed] = useState(false); // Initialize as false
+
+  useEffect(() => {
+    setFollowed(isFollow); // Update when prop changes
+  }, [isFollow]);
   const { userdata } = useAppSelector((state) => state.auth);
   const { handleFollowArtist, isLoading } = useFollowArtist();
+  console.log("isFollow", isFollow)
 
   const onFollowPress = async () => {
     if (!userdata?._id) {
@@ -99,9 +105,10 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
           }`}
         >
           <Text className="text-white text-xs font-normal">
-            {isLoading ? 'Loading...' : followed ? 'Following' : 'Follow'}
+            {followed ? 'Following' : 'Follow'}
           </Text>
         </TouchableOpacity>
+
       </View>
     </View>
   );
