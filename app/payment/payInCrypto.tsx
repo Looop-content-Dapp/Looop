@@ -10,26 +10,93 @@ import {
   import { AppBackButton } from "@/components/app-components/back-btn";
   import { AppButton } from "@/components/app-components/button";
 import ChainPicker from "@/components/app-components/ChainPicker";
+import { useWalletBalance } from "@/hooks/useWalletBalance";
+import { useJoinCommunity } from "@/hooks/useJoinCommunity";
+import { useAppSelector } from "@/redux/hooks";
 
   const payInCrypto = () => {
-    const {name, image} = useLocalSearchParams();
+    const {
+      name,
+      image,
+      communityId,
+      collectionAddress,
+      type,
+      userAddress
+    } = useLocalSearchParams();
     const navigation = useNavigation();
     const router = useRouter()
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const { userdata } = useAppSelector((state) => state.auth);
 
+    const { data: walletData, isLoading: isBalanceLoading } = useWalletBalance(userdata?._id || "");
+    const joinCommunity = useJoinCommunity();
 
     useLayoutEffect(() => {
       navigation.setOptions({
-        headerLeft: () => <AppBackButton name="Crypto Payment" onBackPress={() => router.back()} />
+        headerLeft: () => (
+          <AppBackButton
+            name="Crypto Payment"
+            onBackPress={() => router.back()}
+          />
+        ),
       });
     }, [navigation]);
 
-    const showTestModeAlert = () => {
-      Alert.alert(
-        "Test Mode",
-        "This is a test version of crypto payments. Real transactions are not enabled in this build.",
-        [{ text: "OK", onPress: () => setIsModalVisible(true) }]
-      );
+    const checkBalanceAndProceed = async () => {
+      if (isBalanceLoading) {
+        Alert.alert("Loading", "Please wait while we fetch your balance");
+        return;
+      }
+
+      if (!walletData?.data?.xion?.balances?.[0]) {
+        Alert.alert("Error", "Unable to fetch wallet balance. Please try again later.");
+        return;
+      }
+
+      try {
+        const xionBalance = walletData.data.xion.balances[0];
+        const usdcBalance = xionBalance.amountFloat || 0;
+        const requiredAmount = 2; // Fixed amount for tribe pass
+
+        if (usdcBalance < requiredAmount) {
+          Alert.alert(
+            "Insufficient Balance",
+            `You need ${requiredAmount} USDC to mint this tribe pass. Your current balance is ${usdcBalance.toFixed(2)} USDC.`,
+            [{ text: "OK" }]
+          );
+          return;
+        }
+
+        setIsLoading(true);
+        const transactionReference = `P-C-${new Date().toISOString().slice(0,10)}-${Math.random().toString(36).substring(2,12).toUpperCase()}`;
+
+        const result = await joinCommunity.mutateAsync({
+          type: "xion",
+          userId: userdata?._id || "",
+          communityId: communityId as string,
+          collectionAddress: collectionAddress as string,
+          userAddress: userAddress as string,
+          transactionReference,
+        });
+
+        if (result.status === "success") {
+          Alert.alert(
+            "Success",
+            "Successfully joined the community!",
+            [
+              {
+                text: "OK",
+                onPress: () => router.push("/(settingUp)/communityOnboarding"),
+              },
+            ]
+          );
+        }
+      } catch (error) {
+        Alert.alert("Error", "Failed to join community. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     return (
@@ -81,9 +148,9 @@ import ChainPicker from "@/components/app-components/ChainPicker";
         <View className="px-[24px] pb-[24px]">
           <AppButton.Primary
             color="#FF6D1B"
-            text="Continue (Test Mode)"
-            loading={false}
-            onPress={showTestModeAlert}
+            text={isBalanceLoading ? "Checking Balance..." : "Continue (Test Mode)"}
+            loading={isBalanceLoading}
+            onPress={checkBalanceAndProceed}
           />
         </View>
       </View>

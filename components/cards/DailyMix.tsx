@@ -11,6 +11,7 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import DailyMixSkeleton from "../SkeletonLoading/DailyMixSkelton";
 import { PlayIcon } from '@hugeicons/react-native'
+import { Image } from "react-native";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.7;
@@ -35,6 +36,10 @@ const DailyMixCard = ({
         resizeMode="cover"
       >
         <View style={styles.overlay} />
+        <Image
+          source={require("../../assets/images/logo-orange.png")}
+          style={styles.logo}
+        />
         <View style={styles.contentContainer}>
           <Text style={styles.title} className="capitalize" numberOfLines={2}>
             {mix.name}
@@ -44,7 +49,7 @@ const DailyMixCard = ({
           </Text>
 
           <View style={styles.footer}>
-          <PlayIcon
+            <PlayIcon
               size={34}
               color="rgba(255,255,255,0.9)"
               variant="solid"
@@ -124,6 +129,14 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  logo: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    width: 50,
+    height: 50,
+    resizeMode: 'contain',
   },
   contentContainer: {
     padding: 20,

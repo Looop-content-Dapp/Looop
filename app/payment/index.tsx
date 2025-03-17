@@ -17,7 +17,7 @@ import Payaza, {
 } from "react-native-payaza";
 
 const Index = () => {
-  const { name, image } = useLocalSearchParams();
+  const { name, image, communityId, collectionAddress, type, userAddress } = useLocalSearchParams();
   const navigation = useNavigation();
   const router = useRouter();
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -33,7 +33,65 @@ const Index = () => {
     });
   }, [navigation]);
 
+  // Update USDC payment handler in the modal
+  <AppButton.Primary
+    color="#FF6D1B"
+    text="Pay with USDC"
+    loading={false}
+    icon={
+      <Image
+        source={require("../../assets/images/usdc-icon.png")}
+        className="w-5 h-5"
+      />
+    }
+    onPress={() => {
+      setIsModalVisible(false);
+      router.push({
+        pathname: "/payment/payInCrypto",
+        params: {
+          name,
+          image,
+          price: 2,
+          communityId,
+          collectionAddress,
+          type: "xion",
+          userAddress: userdata?.wallets?.xion,
+        },
+      });
+    }}
+  />
+
+  const handleSuccess = async (response: PayazaSuccessResponse) => {
+    try {
+      const { payaza_reference } = response.data;
+      Alert.alert(
+        "Payment Successful",
+        `Transaction reference: ${payaza_reference}`
+      );
+      setIsModalVisible(false);
+      router.push({
+        pathname: "/payment/success",
+        params: {
+          name,
+          image,
+          reference: payaza_reference,
+          communityId,
+          collectionAddress,
+          type: "xion",
+          userAddress: userdata?.wallets?.xion,
+        },
+      });
+    } catch (error) {
+      Alert.alert(
+        "Verification Failed",
+        "Unable to verify your payment. Please contact support."
+      );
+    }
+  };
+
   const payNow = () => {
+    const transactionReference = `P-C-${new Date().toISOString().slice(0,10)}-${Math.random().toString(36).substring(2,12).toUpperCase()}`;
+
     payaza.current?.createTransaction({
       amount: Number(2),
       connectionMode: PayazaConnectionMode.TEST_CONNECTION_MODE,
@@ -42,37 +100,13 @@ const Index = () => {
       lastName: "<last name>",
       phoneNumber: userdata?.tel as string,
       currencyCode: "USD",
-      transactionReference: "transaction_reference",
+      transactionReference,
     });
   };
 
   const handleError = (response: PayazaErrorResponse) => {
     Alert.alert(response.data.message, "Error Occurred");
   };
-  
-  const handleSuccess = async (response: PayazaSuccessResponse) => {
-      try {
-        const { payaza_reference, message } = response.data;
-        Alert.alert(
-          "Payment Successful",
-          `Transaction reference: ${payaza_reference}`
-        );
-        setIsModalVisible(false);
-        router.push({
-          pathname: "/payment/success",
-          params: {
-            name: name,
-            image: image,
-            reference: payaza_reference
-          }
-        });
-      } catch (error) {
-        Alert.alert(
-          "Verification Failed",
-          "Unable to verify your payment. Please contact support."
-        );
-      }
-    };
 
   return (
     <View className="flex-1 bg-[#0A0B0F]">
@@ -151,26 +185,30 @@ const Index = () => {
                 </View>
 
                 <AppButton.Primary
-                  color="#FF6D1B"
-                  text="Pay with USDC"
-                  loading={false}
-                  icon={
-                    <Image
-                      source={require("../../assets/images/usdc-icon.png")}
-                      className="w-5 h-5"
-                    />
-                  }
-                  onPress={() => {
-                    setIsModalVisible(false);
-                    router.push({
-                      pathname: "/payment/payInCrypto",
-                      params: {
-                        name: name,
-                        image: image,
-                        price: 2,
-                      },
-                    });
-                  }}
+                color="#FF6D1B"
+                text="Pay with USDC"
+                loading={false}
+                icon={
+                <Image
+                source={require("../../assets/images/usdc-icon.png")}
+                className="w-5 h-5"
+                />
+                }
+                onPress={() => {
+                setIsModalVisible(false);
+                router.push({
+                pathname: "/payment/payInCrypto",
+                params: {
+                name: name,
+                image: image,
+                price: 2,
+                communityId: communityId,
+                collectionAddress: collectionAddress,
+                type: "xion",
+                userAddress: userdata?.wallets.xion.address,
+                },
+                });
+                }}
                 />
 
                 <Text className="text-gray-500 text-center my-4">Or</Text>

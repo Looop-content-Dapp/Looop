@@ -63,7 +63,7 @@ const WelcomeToLooop = () => {
           <View className='gap-y-[12px] mt-[30%] items-center justify-center mx-auto w-[90%]'>
             <Pressable
               onPress={() => router.push("/(settingUp)/musicSetup")}
-              className='py-[15px] px-[16px] flex-row items-center gap-x-[24px] bg-[#202227] justify-between w-full'>
+              className='py-[15px] px-[16px] flex-row items-center gap-x-[24px] bg-[#202227] justify-between w-full rounded-[10px]'>
               <HeadphonesIcon size={24} color='#FF6D1B' variant='solid' />
               <View className='flex-1'>
                 <Text className='text-Grey/06 font-PlusJakartaSansBold text-[14px]'>
@@ -76,9 +76,9 @@ const WelcomeToLooop = () => {
               <ArrowRight02Icon size={24} color='#787A80' variant='solid' />
             </Pressable>
 
-            {/* <Pressable
+            <Pressable
               onPress={() => router.push("/(settingUp)/communityOnboarding")}
-              className='py-[15px] px-[16px] flex-row items-center gap-x-[16px] bg-[#202227] justify-between w-full'>
+              className='py-[15px] px-[16px] flex-row items-center gap-x-[16px] bg-[#202227] justify-between w-full rounded-[10px]'>
               <UserGroupIcon size={24} color='#FF6D1B' variant='stroke' />
               <View className='flex-1'>
                 <Text className='text-Grey/06 font-PlusJakartaSansBold text-[14px]'>
@@ -89,7 +89,7 @@ const WelcomeToLooop = () => {
                 </Text>
               </View>
               <ArrowRight02Icon size={24} color='#787A80' variant='solid' />
-            </Pressable> */}
+            </Pressable>
           </View>
         </ScrollView>
       </SafeAreaView>

@@ -80,16 +80,6 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
       }}
       className="items-center gap-y-[8px] mb-2"
     >
-      <MotiView
-        transition={{
-          type: "timing",
-          duration: 1000,
-          loop: true,
-        }}
-        animate={{
-          opacity: loading || isImageLoading ? [0.5, 1] : 1,
-        }}
-      >
         <Skeleton
           colorMode="dark"
           radius="round"
@@ -110,7 +100,6 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
             />
           )}
         </Skeleton>
-      </MotiView>
       <MotiView
         transition={{
           type: "timing",
