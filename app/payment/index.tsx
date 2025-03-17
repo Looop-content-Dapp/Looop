@@ -54,8 +54,8 @@ const Index = () => {
           price: 2,
           communityId,
           collectionAddress,
-          type: "xion",
-          userAddress: userdata?.wallets?.xion,
+          type: type,
+          userAddress: userAddress,
         },
       });
     }}
@@ -129,27 +129,25 @@ const Index = () => {
             </Text>
           </View>
 
-          <View className="px-[8px] pt-[8px] pb-[32px] aspect-[3/4] border-[0.5px] border-[#787A80] bg-[#0A0B0F] gap-y-[16px] rounded-[32px] shadow-lg">
+          <View className="px-[8px] pt-[8px] pb-[24px] border-[0.5px] border-[#787A80] bg-[#0A0B0F] rounded-[32px] mt-[24px] mb-[24px]">
             <Image
               source={{ uri: image as string }}
-              className="w-full h-[70%] rounded-[24px]"
+              className="w-full aspect-square rounded-[24px]"
               style={{ resizeMode: "cover" }}
             />
-            <View className="flex-row items-end px-[16px]">
-              <View className="flex-1 gap-y-[8px]">
-                <Text className="text-[28px] text-[#FAFBFB] font-PlusJakartaSansBold">
-                  {name as string}
-                </Text>
-                <View className="flex-row items-center w-[93px] bg-[#A187B5] py-[8px] rounded-[56px] px-[12px]">
-                  <Text className="text-[#0A0B0F] text-[14px] font-PlusJakartaSansBold">
-                    $2/month
+             <Text numberOfLines={1} className="text-[24px] text-[#FAFBFB] font-PlusJakartaSansBold pl-[16px] pt-[6px]">{name}</Text>
+             <View className="flex-row items-center justify-between px-[16px] mt-[8px]">
+              <View className="flex-1">
+                <View className="flex-row items-center self-start bg-[#A187B5] py-[6px] rounded-[56px] px-[12px]">
+                  <Text className="text-[#0A0B0F] text-[14px] font-PlusJakartaSansBold" numberOfLines={1}>
+                    $5/month
                   </Text>
                 </View>
               </View>
               <Image
                 source={require("../../assets/images/logo-gray.png")}
-                className="w-[49px] h-[22px]"
-                style={{ resizeMode: "cover" }}
+                className="w-[49px] h-[22px] ml-[16px]"
+                style={{ resizeMode: "contain" }}
               />
             </View>
           </View>
@@ -206,6 +204,7 @@ const Index = () => {
                 collectionAddress: collectionAddress,
                 type: "xion",
                 userAddress: userdata?.wallets.xion.address,
+                currentRoute: `/artist/${communityId}`,
                 },
                 });
                 }}

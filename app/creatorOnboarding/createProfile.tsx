@@ -58,7 +58,7 @@ const CreateProfile = () => {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerShown: currentFlow === "CREATE_PROFILE",
+      headerShown: true,
       headerLeft: () => (
         <AppBackButton
           name="Set up creator profile"

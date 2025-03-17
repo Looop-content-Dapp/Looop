@@ -1,9 +1,7 @@
 // PostCard.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Pressable, Text } from 'react-native';
-import { IWaveformRef } from '@simform_solutions/react-native-audio-waveform';
 import { Skeleton } from 'moti/skeleton';
-import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import UserSection from '../post/UserSection';
 import PostMedia from '../post/PostMedia';

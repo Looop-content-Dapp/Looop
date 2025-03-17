@@ -41,7 +41,8 @@ const ArtistDetails = () => {
     id,
     isFollowing,
     noOfFollowers,
-    followers
+    followers,
+    joinSuccess
   } = useLocalSearchParams();
   console.log("index", followers)
   const [isExpanded, setIsExpanded] = useState(false);
@@ -81,10 +82,22 @@ const ArtistDetails = () => {
       pathname: "/payment",
       params: {
         name: communityData.tribePass.collectibleName,
-        image: communityData.tribePass.collectibleImage
-      }
-    })
+        image: communityData.tribePass.collectibleImage,
+        communityId: communityData._id,
+        collectionAddress: communityData.tribePass.contractAddress,
+        type: "xion",
+        userAddress: userdata?.wallets?.xion?.address,
+        currentRoute: `/artist/${id}`,
+      },
+    });
   };
+
+  // Add this effect to handle the return navigation
+  useEffect(() => {
+    if (joinSuccess === 'true') {
+      setIsMember(true);
+    }
+  }, [useLocalSearchParams()]);
 
   const handleClosePaymentSheet = () => {
     setShowPaymentSheet(false);

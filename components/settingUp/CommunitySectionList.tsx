@@ -33,7 +33,6 @@ const CommunityCard = memo(
     onJoin: (id: string) => void;
     isSelected: boolean;
   }) => {
-    console.log("community", community)
     return (
       <View style={styles.card}>
         <TouchableOpacity
@@ -46,9 +45,14 @@ const CommunityCard = memo(
             resizeMode="cover"
           />
           {isSelected && (
-            <View style={styles.checkmarkOverlay}>
+            <MotiView
+              from={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'timing', duration: 300 }}
+              style={styles.checkmarkOverlay}
+            >
               <Tick01Icon size={24} color="#040405" />
-            </View>
+            </MotiView>
           )}
         </TouchableOpacity>
         <Text style={styles.communityName} numberOfLines={1}>

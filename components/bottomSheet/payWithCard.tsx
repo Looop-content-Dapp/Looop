@@ -14,6 +14,7 @@ import {
 import ChainPicker from '@/components/app-components/ChainPicker';
 import { CreditCardIcon } from "@hugeicons/react-native";
 import BottomSheet from '@gorhom/bottom-sheet';
+import { useAppSelector } from '@/redux/hooks';
 
 interface CardDetails {
   cardNumber: string;
@@ -47,6 +48,7 @@ const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
     amount: ''
   });
   const { validatePayment } = useFlutterwavePayment();
+  const { userdata }  = useAppSelector((auth) => auth.auth)
 
   // Bottom sheet reference
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -271,7 +273,7 @@ const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
             </Text>
           </View>
 
-          <ChainPicker />
+          <ChainPicker userId={userdata?._id} />
 
           <View className="gap-y-4 mt-[30px]">
             {/* Amount Field */}

@@ -32,9 +32,15 @@ export const useWalletBalance = (userId: string) => {
   return useQuery<WalletBalanceResponse>({
     queryKey: ['wallet-balance', userId],
     queryFn: async () => {
-      const { data } = await api.get(`/user/wallet-balance/${userId}`);
-      return data;
+      try {
+        const { data } = await api.get(`/user/wallet-balance/${userId}`);
+        return data;
+      } catch (error) {
+        throw new Error('Failed to fetch wallet balance');
+      }
     },
-    enabled: !!userId, // Only run the query if userId is provided
+    enabled: !!userId,
+    staleTime: 30000, // Cache the data for 30 seconds
+    refetchOnWindowFocus: true,
   });
 };

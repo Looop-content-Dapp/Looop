@@ -11,9 +11,6 @@
       "supportsTablet": true,
       "usesAppleSignIn": true,
       "bundleIdentifier": "com.looop.music",
-    //   "entitlements": {
-    //     "com.apple.developer.signin": ["Default"]
-    //  },
       "infoPlist": {
         "NSMicrophoneUsageDescription": "This app requires microphone access to play and record audio.",
         "NSContactsUsageDescription": "This app needs access to your contacts to demonstrate its functionality.",
@@ -61,7 +58,6 @@
         {
           "image": "./assets/splash.png",
           "imageWidth": 1500,
-        //   "resizeMode": "cover",
           "backgroundColor": "#FF6D1B"
         }
       ],

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocalSearchParams } from "expo-router";
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useNavigation } from "expo-router";
@@ -12,6 +13,7 @@ import { useAppSelector } from "@/redux/hooks";
 
 const CommunityOnboarding = () => {
   const navigation = useNavigation();
+  const params = useLocalSearchParams();
   const { data: communities, isLoading } = useGetCommunities();
   const { userdata } = useAppSelector((state) => state.auth);
   const [selectedCommunities, setSelectedCommunities] = useState<string[]>([]);
@@ -35,7 +37,7 @@ const CommunityOnboarding = () => {
       return;
     }
 
-    if (!userdata?.wallets?.xion) {
+    if (!userdata?.wallets?.xion.address) {
       showToast("Xion wallet not found", "error");
       return;
     }
@@ -48,7 +50,8 @@ const CommunityOnboarding = () => {
         communityId: selectedCommunity._id,
         collectionAddress: selectedCommunity.tribePass.contractAddress,
         type: "xion",
-        userAddress: userdata.wallets.xion,
+        userAddress: userdata.wallets.xion.address,
+        currentRoute: "/(settingUp)/communityOnboarding",
       },
     });
   };
@@ -60,6 +63,20 @@ const CommunityOnboarding = () => {
     }
     router.push("/(musicTabs)");
   };
+
+  useEffect(() => {
+    if (params.joinedCommunityId && params.joinSuccess === 'true') {
+      setSelectedCommunities(prev =>
+        prev.includes(params.joinedCommunityId as string)
+          ? prev
+          : [...prev, params.joinedCommunityId as string]
+      );
+    } else if (params.joinedCommunityId && params.joinSuccess === 'false') {
+      setSelectedCommunities(prev =>
+        prev.filter(id => id !== params.joinedCommunityId)
+      );
+    }
+  }, [params]);
 
   return (
     <SafeAreaView style={styles.container}>
