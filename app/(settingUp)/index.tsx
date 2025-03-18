@@ -14,37 +14,19 @@ import {
 } from "react-native-responsive-screen";
 const WelcomeToLooop = () => {
   return (
-    <>
-      <StatusBar
-        backgroundColor="#8D4FB4"
-        translucent={true}
-        barStyle="light-content"
-      />
-
-      <View style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 365,
-        backgroundColor: "#8D4FB4",
-        zIndex: -1
-      }} />
-
-      <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1, }}>
+ <ScrollView contentContainerStyle={{ flexGrow: 1, }}>
           <View style={{ width: "100%", height:
-          hp("40%"), overflow: 'hidden' }} className='items-center '>
+          hp("50%"), overflow: 'hidden' }} className='items-center '>
 
             <ImageBackground
               source={welcomeBg as ImageSourcePropType}
-              resizeMode='cover'
+              resizeMode='contain'
               style={{ width: '100%', height: '100%', backgroundColor: "#8D4FB4" }}
             >
-              <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
+              <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', marginTop: 55 }}>
                 <Image
                   source={welcome as ImageSourcePropType}
-                  resizeMode='cover'
+                  resizeMode='contain'
                   style={{ width: '100%', height: '100%' }}
                 />
               </View>
@@ -60,7 +42,7 @@ const WelcomeToLooop = () => {
             </Text>
           </View>
 
-          <View className='gap-y-[12px] mt-[30%] items-center justify-center mx-auto w-[90%]'>
+          <View className='gap-y-[12px] mt-[20%] items-center justify-center mx-auto w-[90%]'>
             <Pressable
               onPress={() => router.push("/(settingUp)/musicSetup")}
               className='py-[15px] px-[16px] flex-row items-center gap-x-[24px] bg-[#202227] justify-between w-full rounded-[10px]'>
@@ -92,8 +74,6 @@ const WelcomeToLooop = () => {
             </Pressable>
           </View>
         </ScrollView>
-      </SafeAreaView>
-    </>
   )
 }
 

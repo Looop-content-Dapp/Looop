@@ -97,7 +97,7 @@ const WalletScreen = () => {
           <WalletBalance
             balances={walletData.balances}
             addresses={walletData.addresses}
-            isLoading={isLoading}
+            isLoading={loading}
             usdcPrice={walletBalanceData?.data?.usdcPrice}
             onCopyAddress={async (address) => {
               await Clipboard.setStringAsync(address);

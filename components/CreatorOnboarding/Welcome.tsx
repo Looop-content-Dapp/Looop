@@ -1,12 +1,19 @@
 import { View, Text, StyleSheet, useWindowDimensions, Image } from 'react-native'
 import React from 'react'
+import { useRouter } from 'expo-router'
+import { AppBackButton } from '@/components/app-components/back-btn'
 
 const Welcome = () => {
     const { width, height } = useWindowDimensions();
+    const { back } = useRouter();
 
     const styles = StyleSheet.create({
       container: {
         flex: 1,
+      },
+      backButtonContainer: {
+        paddingHorizontal: width * 0.05,
+        paddingVertical: 16,
       },
       headerContainer: {
         alignItems: "center",
@@ -62,13 +69,20 @@ const Welcome = () => {
       },
     });
   return (
-    <View>
-        <View style={styles.headerContainer}>
-          <Image
-            source={require("../../assets/images/creatormode.png")}
-            style={styles.image}
-            resizeMode="cover"
-          />
+    <View style={styles.container}>
+      <View style={styles.backButtonContainer}>
+        <AppBackButton
+          name="Back"
+          onBackPress={back}
+        />
+      </View>
+
+      <View style={styles.headerContainer}>
+        <Image
+          source={require("../../assets/images/creatormode.png")}
+          style={styles.image}
+          resizeMode="cover"
+        />
           <Text style={styles.title}>
             Welcome to{"\n"}
             <Text style={styles.purpleText}>Creator mode</Text>

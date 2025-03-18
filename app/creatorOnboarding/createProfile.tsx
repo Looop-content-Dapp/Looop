@@ -215,23 +215,30 @@ const CreateProfile = () => {
     <ScrollView
       contentContainerStyle={{
         flexGrow: 1,
-        paddingBottom: 100, // Space for the bottom button
+        paddingBottom: 100,
       }}
     >
       <View
         style={{
           flex: 1,
-          paddingHorizontal: width * 0.05, // 5% padding on each side
+          paddingHorizontal: width * 0.05,
         }}
       >
+        <View style={{ paddingVertical: 16 }}>
+          <AppBackButton
+            name="Back"
+            onBackPress={back}
+          />
+        </View>
+
         <Image
-          source={require("../../assets/images/createProfile.jpg")}
+          source={require("../../assets/images/creator.png")}
           resizeMode="contain"
           style={{
-            width: width * 0.9, // 90% of screen width
-            height: height * 0.4, // 40% of screen height
+            width: width * 0.9,
+            height: height * 0.4,
             alignSelf: "center",
-            marginTop: height * 0.05, // 5% of screen height
+            marginTop: height * 0.05,
           }}
         />
         <View

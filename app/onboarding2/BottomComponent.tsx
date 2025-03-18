@@ -57,7 +57,7 @@ const CustomBottomContent = ({ pageIndex }: { pageIndex: number }) => {
             router.push("/(auth)")
           }}
         >
-          <Text style={styles.buttonText}>Continue to Sign in</Text>
+          <Text className="text-[16px] font-PlusJakartaSansMedium text-[#f4f4f4]">Continue to Sign in</Text>
         </TouchableOpacity>
       </View>
     </View>

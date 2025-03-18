@@ -72,19 +72,19 @@ const CreatorForm = ({
   onSocialAccountChange,
 }: CreatorFormProps) => {
   const { data} = useGetGenre();
-  const { 
-    isVerified, 
-    userData, 
-    loading, 
-    error, 
-    startVerification 
+  const {
+    isVerified,
+    userData,
+    loading,
+    error,
+    startVerification
   } = useTwitterAuth();
-  
+
   error && console.error("Twitter verification error:", error);
   const genres = data?.data || [];
   const [isValidating, setIsValidating] = useState(false);
   const [validationStatus, setValidationStatus] = useState(null);
-  
+
   const [type, setType] = useState("");
 
   const social = [
@@ -103,7 +103,7 @@ const CreatorForm = ({
       socialIcon: <FontAwesome6 name="tiktok" size={18} color="#ffffff" />,
     },
   ];
-  
+
 
   const getStatusIcon = () => {
     if (isValidating) {
@@ -122,11 +122,11 @@ const CreatorForm = ({
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      
+
       <View style={{}}>
         <Text style={styles.sectionTitle}>Basic Information</Text>
 
-        
+
         <View style={{ alignItems: "center", marginBottom: 40 }}>
           <TouchableOpacity
             style={styles.imageUpload}
@@ -147,7 +147,7 @@ const CreatorForm = ({
           </View>
         </View>
 
-        
+
         <View style={{ gap: 16 }}>
           <View className="relative w-full">
             <FormField.TextField
@@ -157,7 +157,7 @@ const CreatorForm = ({
               onChangeText={(text) => {
                 onFormChange("stageName", text);
                 setType("name");
-                
+
                 setValidationStatus(null);
               }}
             />
@@ -168,7 +168,7 @@ const CreatorForm = ({
             )}
           </View>
 
-          
+
 
           <FormField.MultiSelectField
             description="Search and add main genres you create songs in. Don’t worry, you could always change your style later"
@@ -181,7 +181,7 @@ const CreatorForm = ({
         </View>
       </View>
 
-      
+
       <View style={{ marginTop: 20, marginBottom: 20 }}>
         <Text style={styles.sectionTitle}>Location and Biography</Text>
         <View style={{ gap: 16 }}>
@@ -230,7 +230,7 @@ const CreatorForm = ({
         </View>
       </View>
 
-      
+
       <View style={{ marginTop: 20, marginBottom: 20 }}>
         <Text style={styles.sectionTitle}>Media & Links</Text>
         <View style={{ gap: 16 }}>
@@ -243,7 +243,7 @@ const CreatorForm = ({
         </View>
       </View>
 
-      
+
       <View style={{ marginTop: 20, marginBottom: 20 }}>
         <Text style={styles.sectionTitle}>Connect Social Accounts</Text>
         <View style={styles.socialContainer}>
@@ -265,7 +265,6 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 120,
     flexGrow: 1,
-    backgroundColor: "#0A0B0F",
   },
   sectionTitle: {
     fontSize: 20,
