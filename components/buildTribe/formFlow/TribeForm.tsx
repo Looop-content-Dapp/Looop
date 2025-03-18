@@ -70,6 +70,7 @@ const TribeForm: React.FC<TribeFormProps> = ({ formData, updateFormData }) => {
               required
               helperText="Choose a unique name for your community"
               className="bg-gray-50 rounded-lg"
+
             />
 
             <FormField.TextField
@@ -78,7 +79,7 @@ const TribeForm: React.FC<TribeFormProps> = ({ formData, updateFormData }) => {
               onChangeText={(value) => updateFormData('description', value)}
               multiline
               numberOfLines={4}
-              maxLength={150}
+              maxLength={250}
               required
               helperText="Tell others what your community is about"
               className="bg-gray-50 rounded-lg"
@@ -128,7 +129,7 @@ const TribeForm: React.FC<TribeFormProps> = ({ formData, updateFormData }) => {
               onChangeText={(value) => updateFormData('CollectibleDescription', value)}
               multiline
               numberOfLines={4}
-              maxLength={150}
+              maxLength={250}
               helperText="Describe what members get access to"
               className="bg-gray-50 rounded-lg"
             />

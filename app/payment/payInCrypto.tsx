@@ -4,6 +4,7 @@ import {
     Image,
     ScrollView,
     Alert,
+    TouchableOpacity
   } from "react-native";
   import React, { useLayoutEffect, useState } from "react";
   import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
@@ -45,45 +46,60 @@ import { nativeEnum } from "zod";
     }, [navigation]);
 
     const checkBalanceAndProceed = async () => {
-
-
       try {
         setIsLoading(true);
+        console.log('Starting join community process:', {
+          userId: userdata?._id,
+          communityId,
+          type
+        });
+
         const result = await joinCommunity.mutateAsync({
           userId: userdata?._id || "",
           communityId: communityId as string,
           type: type as string,
-          collectionAddress: collectionAddress as string,
         });
 
+        console.log('Join community result:', result);
+
         if (result.status === "success") {
-            router.push(`${currentRoute}`)
+          router.replace({
+            pathname: `${currentRoute}`,
+            params: {
+                joinSuccess: "true",
+                joinedCommunityId: communityId
+            }
+          });
           Alert.alert(
             "Success",
             "Successfully joined the community!",
-            [
-              {
-                text: "OK",
-                onPress: () => {
-                  router.back();
-                },
-              },
-            ]
+            [{ text: "OK" }]
           );
+        } else {
+          throw new Error('Join community response was not successful');
         }
-      } catch (error) {
-        router.push(`${currentRoute}`)
+      } catch (error: any) {
+        console.error('Join community error details:', {
+          error: error.message,
+          response: error.response?.data.error,
+          stack: error.stack
+        });
+
+        const errorMessage = error.response?.data?.error ||
+                           error.response?.data?.error ||
+                           "Failed to join community. Please try again.";
+
+                           router.replace({
+                            pathname: `${currentRoute}`,
+                            params: {
+                                joinSuccess: "false",
+                                joinedCommunityId: communityId
+                            }
+                          });
         Alert.alert(
           "Error",
-          "Failed to join community. Please try again.",
-          [
-            {
-              text: "OK",
-              onPress: () => {
-                router.replace(`${currentRoute}`)
-              },
-            },
-          ]
+          errorMessage,
+          [{ text: "OK" }]
         );
       } finally {
         setIsLoading(false);
@@ -146,6 +162,9 @@ import { nativeEnum } from "zod";
             disabled={isLoading}
             onPress={checkBalanceAndProceed}
           />
+          {/* <TouchableOpacity onPress={checkBalanceAndProceed} className="w-full bg-[#FF6D1B]">
+            <Text>Continue (Test Mode)</Text>
+          </TouchableOpacity> */}
         </View>
       </View>
     );

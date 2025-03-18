@@ -12,6 +12,7 @@ import { useQuery } from "../../../hooks/useQuery";
 import { useAppSelector } from "@/redux/hooks";
 import { StatusBar } from "expo-status-bar";
 import { useUserFeed } from "../../../hooks/useUserFeed";
+import { Skeleton } from "moti/skeleton";
 
 const Index = () => {
   const { currentTrack } = useMusicPlayer();
@@ -69,11 +70,13 @@ useEffect(() => {
 
           {/* Followed Artists Section - only show if there's data */}
           {followedArtists.length > 0 && (
-            <BasedOnSubscription
+         <Skeleton>
+               <BasedOnSubscription
               data={followedArtists}
               isLoading={userFeedLoading}
               title="Artists You Follow"
             />
+         </Skeleton>
           )}
 
           {/* Recent Releases Section - only show if there's data */}

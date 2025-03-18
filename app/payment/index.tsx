@@ -17,11 +17,12 @@ import Payaza, {
 } from "react-native-payaza";
 
 const Index = () => {
-  const { name, image, communityId, collectionAddress, type, userAddress } = useLocalSearchParams();
+  const { name, image, communityId, collectionAddress, type, userAddress, currentRoute } = useLocalSearchParams();
   const navigation = useNavigation();
   const router = useRouter();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { userdata } = useAppSelector((state) => state.auth);
+  console.log(userdata)
 
   const payaza = React.useRef<IPayaza>(null);
 
@@ -109,7 +110,7 @@ const Index = () => {
   };
 
   return (
-    <View className="flex-1 bg-[#0A0B0F]">
+    <View className="flex-1">
       <AppButton.Primary
         color="#FF6D1B"
         text="Continue to Payment"
@@ -204,7 +205,7 @@ const Index = () => {
                 collectionAddress: collectionAddress,
                 type: "xion",
                 userAddress: userdata?.wallets.xion.address,
-                currentRoute: `/artist/${communityId}`,
+                currentRoute: currentRoute,
                 },
                 });
                 }}

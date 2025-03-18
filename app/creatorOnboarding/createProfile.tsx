@@ -58,7 +58,7 @@ const CreateProfile = () => {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerShown: true,
+      headerShown: currentFlow === "CREATE_PROFILE",
       headerLeft: () => (
         <AppBackButton
           name="Set up creator profile"
@@ -160,7 +160,7 @@ const CreateProfile = () => {
       // Construct form payload with social media handles from form data
       const formPayload = {
         artistname: formData.stageName,
-        email: user?.email,
+        email: userdata?.email,
         profileImage: formData.profileImage,
         bio: formData.bio,
         genres: selectedGenres,

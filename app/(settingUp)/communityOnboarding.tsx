@@ -61,7 +61,7 @@ const CommunityOnboarding = () => {
       showToast("Please select at least 1 community", "error");
       return;
     }
-    router.push("/(musicTabs)");
+    router.push("/(settingUp)/musicSetup/(steps)");
   };
 
   useEffect(() => {

@@ -33,7 +33,7 @@ export const useWalletBalance = (userId: string) => {
     queryKey: ['wallet-balance', userId],
     queryFn: async () => {
       try {
-        const { data } = await api.get(`/user/wallet-balance/${userId}`);
+        const { data } = await api.get(`/api/user/wallet-balance/${userId}`);
         return data;
       } catch (error) {
         throw new Error('Failed to fetch wallet balance');

@@ -49,10 +49,8 @@ const BuildTribeForm = () => {
     "collectibleImage": formData?.collectibleMedia,
     "collectibleType": formData?.collectibleType,
     "artistId": artistId,
-    "artistAddress": userdata?.wallets?.xion,
     "communitySymbol":formData?.communitySymbol
     }
-    console.log(payload)
      try {
         const response = await api.post("/api/community/createcommunity", payload)
         console.log(JSON.stringify(response))
@@ -62,7 +60,7 @@ const BuildTribeForm = () => {
             Alert.alert("Error", "Failed to create community. Please try again.");
         }
       } catch (error) {
-       console.log("error creating community", error)
+       console.log("error creating community", error.message)
        Alert.alert("Error", "Something went wrong. Please try again.");
       }
   }
