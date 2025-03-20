@@ -1,8 +1,6 @@
 import React from 'react';
 import { View, Text, Image, FlatList, Pressable, StyleSheet } from 'react-native';
-import { Songs, Album, EP } from '../../utils/types';
 import { useRouter } from 'expo-router';
-import { MotiView } from 'moti';
 import { SkeletonLoader } from '../shared/SkeletonLoader';
 
 type Props = {

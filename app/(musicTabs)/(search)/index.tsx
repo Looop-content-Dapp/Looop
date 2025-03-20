@@ -128,8 +128,8 @@ const index = () => {
       >
         <Pressable
           onPress={() => route.navigate("/(search)/musicSearch")}
-          style={{ width: wp("95%") }}
-          className="flex-row items-center bg-transparent gap-x-[24px] py-[12px] mt-[24px] mx-[24px] pl-[12px] pr-[46px] border border-[#12141B] h-[48px]"
+          style={{ width: wp("90%") }}
+          className="flex-row items-center bg-transparent rounded-[10px] gap-x-[24px] py-[12px] mt-[24px] mx-[24px] pl-[12px] pr-[46px] border border-[#12141B] h-[48px]"
         >
           <Search01Icon size={24} color="#787A80" />
           <Text className="text-[#787A80]">

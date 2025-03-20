@@ -112,11 +112,11 @@ export default function _RootLayout() {
         <BottomSheetModalProvider>
           <Provider store={store}>
             <PersistGate loading={null} persistor={persistor}>
-              <Pressable className="bg-Orange/08 absolute bottom-[120px] -[12px] z-[1000px] h-[60px] w-[60px]  items-center justify-center rounded-full" onPress={async () => {
-                router.push("/creatorOnboarding")
+              {/* <Pressable className="bg-Orange/08 absolute bottom-[120px] -[12px] z-[1000px] h-[60px] w-[60px]  items-center justify-center rounded-full" onPress={async () => {
+                router.push("/(artisteTabs)/(tribe)")
               }}>
             <Text className="text-[#fff]">Reset</Text>
-           </Pressable>
+           </Pressable> */}
               <KeyboardProvider>
                 <AppContent />
               </KeyboardProvider>

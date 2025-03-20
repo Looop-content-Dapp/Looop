@@ -19,6 +19,7 @@ interface CommunitySectionListProps {
   sections: Community[];
   onJoin: (communityId: string) => void;
   selectedCommunities: string[];
+  userId: string; // Add userId prop
 }
 
 const CARD_WIDTH = width * 0.3;
@@ -67,6 +68,7 @@ const CommunitySectionList: React.FC<CommunitySectionListProps> = ({
   sections,
   onJoin,
   selectedCommunities,
+  userId,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredCommunities, setFilteredCommunities] = useState(sections);
@@ -102,7 +104,10 @@ const CommunitySectionList: React.FC<CommunitySectionListProps> = ({
           <CommunityCard
             community={item}
             onJoin={onJoin}
-            isSelected={selectedCommunities.includes(item._id)}
+            isSelected={
+              selectedCommunities.includes(item._id) ||
+              item.members?.some(member => member.userId._id === userId)
+            }
           />
         )}
         keyExtractor={(item) => item._id}

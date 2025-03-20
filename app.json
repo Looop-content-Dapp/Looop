@@ -3,7 +3,7 @@
     "name": "Looop",
     "slug": "looop",
     "scheme": "looop",
-    "version": "1.1",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -115,6 +115,6 @@
         "projectId": "1d164336-acca-4487-8db1-3188eb5d89fb"
       }
     },
-    "owner": "josephweb3"
+    "owner": "Ivan Dubin"
   }
 }

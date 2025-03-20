@@ -368,6 +368,8 @@ PODS:
   - hermes-engine (0.76.6):
     - hermes-engine/Pre-built (= 0.76.6)
   - hermes-engine/Pre-built (0.76.6)
+  - ImageColors (2.4.0):
+    - ExpoModulesCore
   - libwebp (1.3.2):
     - libwebp/demux (= 1.3.2)
     - libwebp/mux (= 1.3.2)
@@ -380,6 +382,7 @@ PODS:
   - libwebp/sharpyuv (1.3.2)
   - libwebp/webp (1.3.2):
     - libwebp/sharpyuv
+  - OnrampKit (0.3.6)
   - OpenSSL-Universal (3.3.2000)
   - RCT-Folly (2024.01.01.00):
     - boost
@@ -1694,6 +1697,9 @@ PODS:
     - React
   - react-native-netinfo (11.4.1):
     - React-Core
+  - react-native-onramp (0.4.3):
+    - OnrampKit (= 0.3.6)
+    - React-Core
   - react-native-quick-crypto (0.7.12):
     - DoubleConversion
     - glog
@@ -2222,6 +2228,7 @@ DEPENDENCIES:
   - "giphy-react-native-sdk (from `../node_modules/@giphy/react-native-sdk`)"
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
+  - ImageColors (from `../node_modules/react-native-image-colors/ios`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
@@ -2260,6 +2267,7 @@ DEPENDENCIES:
   - react-native-libsodium (from `../node_modules/react-native-libsodium`)
   - "react-native-menu (from `../node_modules/@react-native-menu/menu`)"
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
+  - "react-native-onramp (from `../node_modules/@onramp.money/onramp-react-native-sdk`)"
   - react-native-quick-crypto (from `../node_modules/react-native-quick-crypto`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
@@ -2307,6 +2315,7 @@ SPEC REPOS:
     - DGSwiftUtilities
     - Giphy
     - libwebp
+    - OnrampKit
     - OpenSSL-Universal
     - SocketRocket
 
@@ -2416,6 +2425,8 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-2024-11-12-RNv0.76.2-5b4aa20c719830dcf5684832b89a6edb95ac3d64
+  ImageColors:
+    :path: "../node_modules/react-native-image-colors/ios"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -2488,6 +2499,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-menu/menu"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
+  react-native-onramp:
+    :path: "../node_modules/@onramp.money/onramp-react-native-sdk"
   react-native-quick-crypto:
     :path: "../node_modules/react-native-quick-crypto"
   react-native-safe-area-context:
@@ -2624,7 +2637,9 @@ SPEC CHECKSUMS:
   giphy-react-native-sdk: ec94ea7f55159a66797b8ba137f703f6f0d0a476
   glog: 08b301085f15bcbb6ff8632a8ebaf239aae04e6a
   hermes-engine: 1949ca944b195a8bde7cbf6316b9068e19cf53c6
+  ImageColors: 88be684570585c07ae2750bff34eb7b78bfc53b4
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
+  OnrampKit: d1a1b640d406a03909159dc5ce7009d2958d9d2b
   OpenSSL-Universal: b60a3702c9fea8b3145549d421fdb018e53ab7b4
   RCT-Folly: bf5c0376ffe4dd2cf438dcf86db385df9fdce648
   RCTDeprecation: 063fc281b30b7dc944c98fe53a7e266dab1a8706
@@ -2662,6 +2677,7 @@ SPEC CHECKSUMS:
   react-native-libsodium: cdbe0fdeed3e7a30dde0cf0c874c070c0a5d3f4e
   react-native-menu: 27f634374481525b27e2123611aa4c6477324f92
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
+  react-native-onramp: adde39378e435cd6be1e86212723bddf8b52a45f
   react-native-quick-crypto: ea669adcbc2ba9749e8b75739e97547e7f3e20e2
   react-native-safe-area-context: 142fade490cbebbe428640b8cbdb09daf17e8191
   react-native-slider: 5ff41e8c14bb9227ed5450ef76c70d27615e3795

@@ -549,7 +549,6 @@ export const useQuery = () => {
   const getSinglesForArtist = useCallback(async (artistId: string) => {
     try {
       const response = await api.get(`/api/song/artist/${artistId}/singles`);
-      console.log("Singles fetched successfully:", response.data)
       return response.data;
     } catch (error) {
       console.error("Error fetching singles for artist:", error);

@@ -63,13 +63,6 @@ import { nativeEnum } from "zod";
         console.log('Join community result:', result);
 
         if (result.status === "success") {
-          router.replace({
-            pathname: `${currentRoute}`,
-            params: {
-                joinSuccess: "true",
-                joinedCommunityId: communityId
-            }
-          });
           Alert.alert(
             "Success",
             "Successfully joined the community!",
@@ -88,14 +81,6 @@ import { nativeEnum } from "zod";
         const errorMessage = error.response?.data?.error ||
                            error.response?.data?.error ||
                            "Failed to join community. Please try again.";
-
-                           router.replace({
-                            pathname: `${currentRoute}`,
-                            params: {
-                                joinSuccess: "false",
-                                joinedCommunityId: communityId
-                            }
-                          });
         Alert.alert(
           "Error",
           errorMessage,

@@ -109,15 +109,7 @@ const EmailSignUp: React.FC = () => {
         }),
     });
   };
-
-  console.log("isAuthenticating", isAuthenticating);
-  if (isAuthenticating || isAppleAuthenticating) {
-    return (
-      <View className="flex-1 items-center justify-center">
-       <ActivityIndicator size="large" color="#FF7A1B" />
-      </View>
-    );
-  }
+  
   return (
     <ScrollView className="flex-1">
       <View className="flex-1 px-6 gap-12">
@@ -192,19 +184,19 @@ const EmailSignUp: React.FC = () => {
             onPress={handleGoogleSignIn}
             imageSource={require("../../assets/images/google.png")}
             text="Sign in with Google"
-            loading={googleLoading}
+            loading={googleLoading || isAuthenticating}
           />
           <SocialButton
             onPress={handleAppleSignIn}
             imageSource={require("../../assets/images/apple.png")}
             text="Sign in with Apple"
-            loading={appleLoading}
+            loading={appleLoading || isAppleAuthenticating}
           />
         </View>
 
         <Pressable
           onPress={() => router.navigate("/(auth)/signin")}
-          className="items-center mx-auto mt-[20%]"
+          className="items-center mx-auto mt-[10%]"
         >
           <Text className="text-[14px] font-PlusJakartaSansRegular text-[#f4f4f4]">
             Already have an account?

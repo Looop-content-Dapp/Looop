@@ -39,18 +39,28 @@ interface OAuthPayload {
 export const useAuth = () => {
   const verifyOAuthToken = async (payload: OAuthPayload): Promise<OAuthResponse> => {
     console.log('Attempting OAuth verification with payload:', payload)
-    const response = await api.post("/api/oauth/auth", payload);
-    console.log("Auth response", response.data)
-    return response.data;
+    try {
+      const response = await api.post("/api/oauth/auth", payload);
+      console.log("Auth response", response.data)
+      return response.data;
+    } catch (error) {
+      console.error("API Error:", error);
+      throw error; // Re-throw to be caught by mutation error handler
+    }
   };
 
   const { mutate: authenticateUser, isPending, error } = useMutation({
     mutationFn: verifyOAuthToken,
     onSuccess: (response) => {
       console.log('OAuth mutation succeeded:', response)
+      if (!response.data) {
+        console.error("Invalid response format:", response);
+        return;
+      }
+
       if (response.data.isNewUser) {
         console.log("New user detected, redirecting to user details:", response.data.user)
-        router.navigate({
+        router.push({
           pathname: "/(auth)/userDetail",
           params: {
             email: response.data.user.email,
@@ -61,7 +71,7 @@ export const useAuth = () => {
       } else {
         console.log("Existing user detected, redirecting to music tabs:", response.data.user)
         store.dispatch(setUserData(response.data.user));
-        router.navigate("/(musicTabs)");
+        router.push("/(musicTabs)");
       }
     },
     onError: (error: any) => {
@@ -71,6 +81,7 @@ export const useAuth = () => {
         status: error.response?.status,
         data: error.response?.data
       });
+      // You might want to show an error message to the user here
     },
   });
 

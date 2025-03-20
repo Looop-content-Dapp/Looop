@@ -7,7 +7,7 @@ import {
     ScrollView,
   } from 'react-native';
   import { useNavigation } from '@react-navigation/native';
-  import React, { useEffect } from 'react';
+  import React, { useEffect, useState } from 'react';
   import { SafeAreaView } from 'react-native-safe-area-context';
   import {
     ArrowLeft02Icon,
@@ -29,8 +29,28 @@ import {
   import * as Haptics from 'expo-haptics';
   import useMusicPlayer from '../hooks/useMusicPlayer';
 import { useQuery } from '../hooks/useQuery';
+import { getColors } from 'react-native-image-colors';
+import { BlurView } from 'expo-blur';
+
+  // Add this function near the top of your component
+  const getContrastColor = (bgColor: string) => {
+    // Convert hex to RGB
+    const r = parseInt(bgColor.slice(1, 3), 16);
+    const g = parseInt(bgColor.slice(3, 5), 16);
+    const b = parseInt(bgColor.slice(5, 7), 16);
+
+    // Calculate luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    // Return white for dark backgrounds, black for light backgrounds
+    return luminance > 0.5 ? '#000000' : '#FFFFFF';
+  };
+
 
   const NowPlaying = () => {
+    const [backgroundColor, setBackgroundColor] = useState('#000000');
+    const [textColor, setTextColor] = useState('#FFFFFF');
+    const [subTextColor, setSubTextColor] = useState('#D2D3D5');
     const { cover, albumTitle } = useLocalSearchParams();
     const navigation = useNavigation();
     const {
@@ -52,7 +72,7 @@ import { useQuery } from '../hooks/useQuery';
     const [trackDuration] = React.useState(180); // 3 minutes in seconds
     const progressRef = React.useRef(progress);
     progressRef.current = progress;
-    
+
 
     // const handleLikePress = async () => {
     //     try {
@@ -127,8 +147,40 @@ import { useQuery } from '../hooks/useQuery';
       return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     };
 
+    useEffect(() => {
+      const fetchColors = async () => {
+        const imageUrl = cover || albumInfo?.coverImage;
+        if (imageUrl) {
+          try {
+            const result = await getColors(imageUrl, {
+              fallback: '#000000',
+              cache: true,
+            });
+
+            let bgColor = '#000000';
+            if (result.platform === 'android') {
+              bgColor = result.dominant;
+            } else if (result.platform === 'ios') {
+              bgColor = result.background;
+            }
+
+            setBackgroundColor(bgColor);
+            const mainColor = getContrastColor(bgColor);
+            setTextColor(mainColor);
+            setSubTextColor(mainColor === '#FFFFFF' ? '#D2D3D5' : '#666666');
+          } catch (error) {
+            setBackgroundColor('#000000');
+            setTextColor('#FFFFFF');
+            setSubTextColor('#D2D3D5');
+          }
+        }
+      };
+
+      fetchColors();
+    }, [cover, albumInfo?.coverImage]);
+
     return (
-      <SafeAreaView style={{ flex: 1, minHeight: '100%' }} className="bg-black">
+      <SafeAreaView style={{ flex: 1, minHeight: '100%', backgroundColor }}>
         <ScrollView showsHorizontalScrollIndicator={false}>
           <View className='flex-row items-center justify-between px-[24px]'>
             <View className="flex-row items-center gap-x-[8px]">
@@ -138,14 +190,22 @@ import { useQuery } from '../hooks/useQuery';
                   navigation.goBack();
                 }}
               >
-                <ArrowLeft02Icon size={32} color='#fff' />
+                <ArrowLeft02Icon size={32} color={textColor} />
               </Pressable>
-              <View>
-                <Text className="text-[#787A80] text-[14px] font-PlusJakartaSansMedium">Playing from</Text>
-                <Text className="text-[#D2D3D5] text-[16px] font-PlusJakartaSansMedium overflow-x-hidden">"{albumTitle || albumInfo?.title}"</Text>
-              </View>
+              <View className="flex-1">
+              <Text style={{ color: subTextColor }} className="text-[14px] font-PlusJakartaSansMedium">
+                Playing from
+              </Text>
+              <Text
+                style={{ color: textColor }}
+                className="text-[16px] font-PlusJakartaSansMedium"
+                numberOfLines={1}
+              >
+                "{albumTitle || albumInfo?.title}"
+              </Text>
             </View>
-            <MoreHorizontalIcon color="#fff" />
+            </View>
+            <MoreHorizontalIcon color={textColor} />
           </View>
 
           <View className="relative">
@@ -155,28 +215,37 @@ import { useQuery } from '../hooks/useQuery';
               resizeMode='cover'
             />
             <LinearGradient
-              colors={['transparent', '#000000']}
-              locations={[0.5, 1]}
+              colors={['transparent', backgroundColor, backgroundColor]}
+              locations={[0.2, 0.8, 1]}
               className="absolute bottom-0 z-40 w-full h-[400px]"
+              style={{ opacity: 0.95 }}
             />
           </View>
 
           <View className='px-[24px] my-[24px]'>
-            <View className='flex-row items-center justify-between'>
-              <View>
-                <Text className='text-[24px] font-PlusJakartaSansMedium text-[#f4f4f4]'>
-                  {currentTrack?.title}
-                </Text>
-                <Text className='text-[14px] font-PlusJakartaSansRegular text-[#D2D3D5]'>
-                  {/* {currentTrack?.artist?.join(', ')} */}
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+          <View className='flex-row items-center justify-between'>
+            <View className="flex-1 mr-4">
+              <Text
+                style={{ color: textColor }}
+                className='text-[24px] font-PlusJakartaSansMedium'
+                numberOfLines={2}
               >
-                <FavouriteIcon size={32} color='#787A80' />
-              </TouchableOpacity>
+                {currentTrack?.title}
+              </Text>
+              <Text
+                style={{ color: subTextColor }}
+                className='text-[14px] font-PlusJakartaSansRegular'
+                numberOfLines={1}
+              >
+                {/* {currentTrack?.artist?.join(', ')} */}
+              </Text>
             </View>
+            <TouchableOpacity
+              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+            >
+              <FavouriteIcon size={32} color={subTextColor} />
+            </TouchableOpacity>
+          </View>
 
             {/* Progress Bar */}
             <View className="mt-">
@@ -191,70 +260,95 @@ import { useQuery } from '../hooks/useQuery';
                 onValueChange={setProgress}
               />
               <View className="flex-row justify-between">
-                <Text className="text-[#D2D3D5]">{formatTime(progress)}</Text>
-                <Text className="text-[#D2D3D5]">3:00</Text>
+              <Text style={{ color: subTextColor }}>{formatTime(progress)}</Text>
+              <Text style={{ color: subTextColor }}>3:00</Text>
               </View>
             </View>
 
             {/* Player Controls */}
-            <View className="flex-row items-center justify-between mt-">
-      <TouchableOpacity
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          toggleShuffleMode();
-        }}
-        className="w-[48px] h-[48px] items-center justify-center"
-      >
-        <ShuffleIcon size={24} color={shuffle ? "#FF6D1B" : "#D2D3D5"} />
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={handlePrevious}
-        className="w-[48px] h-[48px] items-center justify-center"
-      >
-        <Backward01Icon size={40} color="#fff" variant='solid' />
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={togglePlayPause}
-        className="bg-[#FAFBFB] w-[88px] h-[88px] rounded-full items-center justify-center"
-      >
-        {isPlaying ? (
-          <PauseIcon size={40} color="#0A0B0F" variant='solid' />
-        ) : (
-          <PlayIcon size={40} color="#0A0B0F" fill="#fff" variant='solid' />
-        )}
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={handleNext}
-        className="w-[48px] h-[48px] items-center justify-center"
-      >
-        <NextIcon size={40} color="#fff" variant='solid' />
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          toggleRepeatMode();
-        }}
-        className="w-[48px] h-[48px] items-center justify-center"
-      >
-        <RepeatIcon size={24} color={repeat ? "#FF6D1B" : "#D2D3D5"} />
-      </TouchableOpacity>
-    </View>
-
-            <View className='flex-row items-center justify-between px-[24px] border border-[#12141B] rounded-[24px] p-[12px] mt-[24px]'>
-              <TouchableOpacity>
-                <Queue02Icon size={32} color='#787A80'/>
+            <View className="flex-row items-center justify-between mt-8">
+              <TouchableOpacity
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  toggleShuffleMode();
+                }}
+                className="w-[48px] h-[48px] items-center justify-center"
+              >
+                <ShuffleIcon size={24} color={shuffle ? "#FF6D1B" : subTextColor} />
               </TouchableOpacity>
-              <TouchableOpacity>
-                <Playlist01Icon size={32} color='#787A80' />
+
+              <TouchableOpacity
+                onPress={handlePrevious}
+                className="w-[48px] h-[48px] items-center justify-center"
+              >
+                <Backward01Icon size={32} color={textColor} variant='solid' />
               </TouchableOpacity>
-              <TouchableOpacity>
-                <Share05Icon size={32} color='#787A80' />
+
+              <TouchableOpacity
+                onPress={togglePlayPause}
+                className="items-center justify-center"
+                style={{
+                  width: 88,
+                  height: 88,
+                  borderRadius: 44,
+                  backgroundColor: textColor,
+                  shadowColor: backgroundColor,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 8,
+                }}
+              >
+                {isPlaying ? (
+                  <PauseIcon
+                    size={40}
+                    color={backgroundColor}
+                    variant='solid'
+                    style={{ opacity: 0.9 }}
+                  />
+                ) : (
+                  <PlayIcon
+                    size={40}
+                    color={backgroundColor}
+                    variant='solid'
+                    style={{ opacity: 0.9 }}
+                  />
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleNext}
+                className="w-[48px] h-[48px] items-center justify-center"
+              >
+                <NextIcon size={32} color={textColor} variant='solid' />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  toggleRepeatMode();
+                }}
+                className="w-[48px] h-[48px] items-center justify-center"
+              >
+                <RepeatIcon size={24} color={repeat ? "#FF6D1B" : subTextColor} />
               </TouchableOpacity>
             </View>
+
+            {/* Bottom controls with blur effect */}
+            <BlurView intensity={20} className='mt-8 rounded-[24px] overflow-hidden'>
+              <View className='flex-row items-center justify-between px-[24px] p-[12px]'
+                    style={{ borderColor: `${subTextColor}40` }}>
+                <TouchableOpacity>
+                  <Queue02Icon size={32} color={subTextColor}/>
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Playlist01Icon size={32} color={subTextColor} />
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Share05Icon size={32} color={subTextColor} />
+                </TouchableOpacity>
+              </View>
+            </BlurView>
           </View>
         </ScrollView>
       </SafeAreaView>

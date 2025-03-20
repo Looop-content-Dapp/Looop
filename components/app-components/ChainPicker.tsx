@@ -7,7 +7,7 @@ const ChainPicker = ({ userId }: { userId: string }) => {
     const [selectedNetwork, setSelectedNetwork] = useState('Xion');
     const networkOptions = ['Xion', 'Starknet'];
     const { data: walletData, isLoading } = useWalletBalance(userId);
-    console.log(walletData, "wall")
+
 
     const networkIcon = (
         <Image

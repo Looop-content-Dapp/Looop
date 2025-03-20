@@ -13,12 +13,14 @@ import TribeForm, { FormData } from './formFlow/TribeForm';
 
 const STEPS = {
     BASIC: 'basic',
+    MEMBERSHIP: 'membership',
     PREVIEW: 'preview',
     SUCCESS: 'success'
   };
 
 const STEP_COLORS = {
   [STEPS.BASIC]: '#A187B5',
+  [STEPS.MEMBERSHIP]: '#87A1B5',
   [STEPS.PREVIEW]: '#87B5A1'
 };
 
@@ -72,20 +74,23 @@ const BuildTribeForm = () => {
   const renderCurrentStep = () => {
     switch (currentStep) {
       case STEPS.BASIC:
+      case STEPS.MEMBERSHIP:
         return <TribeForm
-        formData={formData}
-        updateFormData={updateFormData}
-        // errors={errors}
+          formData={formData}
+          updateFormData={updateFormData}
+          currentStep={currentStep}
+          STEPS={STEPS}
         />;
       case STEPS.PREVIEW:
         return <Preview formData={formData}/>;
-        case STEPS.SUCCESS:
-            return <TribeSuccessScreen tribeName={formData} />;
+      case STEPS.SUCCESS:
+        return <TribeSuccessScreen tribeName={formData} />;
       default:
-        return<TribeForm
-        formData={formData}
-        updateFormData={updateFormData}
-        // errors={errors}
+        return <TribeForm
+          formData={formData}
+          updateFormData={updateFormData}
+          currentStep={currentStep}
+          STEPS={STEPS}
         />;
     }
   };
@@ -93,20 +98,37 @@ const BuildTribeForm = () => {
   const handleNext = () => {
     switch (currentStep) {
       case STEPS.BASIC:
-        if (formData.tribeName && formData.description && formData.coverImage && formData.collectibleName  && formData.CollectibleDescription && formData.collectibleMedia) {
-            setCurrentStep(STEPS.PREVIEW);
+        // Validate basic info
+        if (!formData.tribeName || !formData.description || !formData.coverImage) {
+          Alert.alert("Required Fields", "Please fill in all required fields");
+          return;
         }
+        setCurrentStep(STEPS.MEMBERSHIP);
         break;
+
+      case STEPS.MEMBERSHIP:
+        // Validate membership info
+        if (!formData.collectibleName || !formData.CollectibleDescription ||
+            !formData.collectibleMedia || !formData.communitySymbol) {
+          Alert.alert("Required Fields", "Please fill in all required fields");
+          return;
+        }
+        setCurrentStep(STEPS.PREVIEW);
+        break;
+
       case STEPS.PREVIEW:
-        handleCreateCommunity()
+        handleCreateCommunity();
         break;
     }
   };
 
   const handleBack = () => {
     switch (currentStep) {
-      case STEPS.PREVIEW:
+      case STEPS.MEMBERSHIP:
         setCurrentStep(STEPS.BASIC);
+        break;
+      case STEPS.PREVIEW:
+        setCurrentStep(STEPS.MEMBERSHIP);
         break;
       default:
         back();

@@ -32,6 +32,13 @@ interface SearchResult {
   };
 }
 
+interface SearchParams {
+    query: string;
+    resultType?: string;
+    limit?: number;
+    sort?: string;
+  }
+
 interface SearchSection {
   items: SearchResult[];
   total: number;
@@ -45,19 +52,25 @@ interface SearchResults {
   playlists?: SearchSection;
 }
 
-const renderSearchItem = ({ item, onPress }: { item: any; onPress?: () => void }) => {
+const renderSearchItem = ({ item, onItemPress }: { item: any; onItemPress: (item: any, type: string) => void }) => {
+    console.log("displayImage", item)
   // Default type based on available properties
   let displayType = item.type ||
     (item.name ? 'artist' :
      item.title ? 'track' :
      'unknown');
-     console.log("search", item)
 
-  const displayImage = item?.artwork?.high || item?.release?.artwork?.high || item?.artist?.image || '';
+     const displayImage = displayType === 'artist'
+     ? (item.profileImage || item.image || '')
+     : (item?.artwork?.high || item?.release?.artwork?.high || item?.artist?.image || '');
+
   const displayTitle = item?.title || item?.name || 'Untitled';
 
   return (
-    <Pressable className="flex-row items-center py-3" onPress={onPress}>
+    <Pressable
+      className="flex-row items-center py-3"
+      onPress={() => onItemPress(item, displayType)}
+    >
       <Image
         source={{ uri: displayImage }}
         className={`w-12 h-12 ${displayType === 'artist' ? 'rounded-full' : 'rounded'}`}
@@ -72,6 +85,14 @@ const renderSearchItem = ({ item, onPress }: { item: any; onPress?: () => void }
     </Pressable>
   );
 };
+
+// Add these component definitions before the MusicSearch component
+
+const LoadingSpinner = () => (
+  <View className="flex-1 justify-center items-center">
+    <ActivityIndicator size="large" color="#FF6D1B" />
+  </View>
+);
 
 const RecentSearches = ({
   searches,
@@ -110,23 +131,19 @@ const RecentSearches = ({
   </View>
 );
 
-const LoadingSpinner = () => (
-  <View className="flex-1 justify-center items-center">
-    <ActivityIndicator size="large" color="#FF6D1B" />
-  </View>
-);
-
 const MusicSearch = () => {
+    const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('')
     const [activeTab, setActiveTab] = useState('All')
     const [searchResults, setSearchResults] = useState<SearchResults>({})
     const [recentSearches, setRecentSearches] = useState<string[]>([])
     const [isLoading, setIsLoading] = useState(false)
-    const router = useRouter()
     const { search, getRecentSearches, clearRecentSearches } = useQuery()
 
     // Map display names to result types
-    const tabsMap = {
+    type TabType = 'All' | 'Songs' | 'Artists' | 'Albums' | 'Playlists';
+
+    const tabsMap: Record<TabType, string> = {
       'All': 'all',
       'Songs': 'track',
       'Artists': 'artist',
@@ -164,13 +181,14 @@ const MusicSearch = () => {
 
       setIsLoading(true)
       try {
-        const resultType = tabsMap[activeTab]
+        const resultType = tabsMap[activeTab as TabType]
         const response = await search({
           query,
           type: resultType === 'all' ? undefined : resultType,
           limit: 20,
           sort: 'relevance'
         })
+        console.log("response", response)
         setSearchResults(response.data)
       } catch (error) {
         console.error('Search error:', error)
@@ -227,13 +245,56 @@ const MusicSearch = () => {
           data={results}
           className="px-4"
           keyExtractor={(item) => `${item.type || 'unknown'}-${item._id}`}
-          renderItem={({ item }) => renderSearchItem({ item })}
+          renderItem={({ item }) => renderSearchItem({
+            item,
+            onItemPress: handleItemPress
+          })}
           ListEmptyComponent={() => (
             <Text className="text-[#787A80] text-center py-4">No results found</Text>
           )}
         />
       )
     }
+
+    const handleItemPress = (item: any, displayType: string) => {
+      switch (displayType) {
+        case 'artist':
+          router.push({
+            pathname: `/artist/${item._id}`,
+            params: {
+              id: item._id,
+              name: item.name,
+              image: item.profileImage || item?.artwork?.high || item?.artist?.image
+            }
+          });
+          break;
+
+        case 'track':
+        case 'release':
+          router.push({
+            pathname: '/musicDetails',
+            params: {
+              id: item._id,
+              title: item.title || item.name,
+              image: item?.artwork?.high || item?.release?.artwork?.high,
+              type: displayType,
+              artist: item.artist?.name
+            }
+          });
+          break;
+
+        case 'playlist':
+          router.push({
+            pathname: '/(musicTabs)/(library)/playlistDetails',
+            params: {
+              id: item._id,
+              title: item.title || item.name,
+              image: item?.artwork?.high
+            }
+          });
+          break;
+      }
+    };
 
     return (
       <SafeAreaView style={{flex: 1}} className="bg-[#000000]">

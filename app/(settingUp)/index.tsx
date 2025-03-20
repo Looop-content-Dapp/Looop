@@ -14,7 +14,7 @@ import {
 } from "react-native-responsive-screen";
 const WelcomeToLooop = () => {
   return (
- <ScrollView contentContainerStyle={{ flexGrow: 1, }}>
+ <View style={{ flexGrow: 1}}>
           <View style={{ width: "100%", height:
           hp("50%"), overflow: 'hidden' }} className='items-center '>
 
@@ -42,7 +42,7 @@ const WelcomeToLooop = () => {
             </Text>
           </View>
 
-          <View className='gap-y-[12px] mt-[20%] items-center justify-center mx-auto w-[90%]'>
+          <View style={{ width: wp("95%")}} className='gap-y-[12px] mt-[10%] items-center justify-center mx-auto'>
             <Pressable
               onPress={() => router.push("/(settingUp)/musicSetup")}
               className='py-[15px] px-[16px] flex-row items-center gap-x-[24px] bg-[#202227] justify-between w-full rounded-[10px]'>
@@ -73,7 +73,7 @@ const WelcomeToLooop = () => {
               <ArrowRight02Icon size={24} color='#787A80' variant='solid' />
             </Pressable>
           </View>
-        </ScrollView>
+        </View>
   )
 }
 

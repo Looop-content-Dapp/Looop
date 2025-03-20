@@ -10,6 +10,8 @@ import { useAppSelector } from "@/redux/hooks";
 import * as Clipboard from 'expo-clipboard';
 import PayWithCard from "@/components/bottomSheet/payWithCard";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
+import {startOnrampSDK, onRampSDKNativeEvent} from '@onramp.money/onramp-react-native-sdk';
+import { widthPercentageToDP as wp} from 'react-native-responsive-screen'
 
 const WalletScreen = () => {
   const navigation = useNavigation();
@@ -17,7 +19,7 @@ const WalletScreen = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('Last 30 days');
   const [isLoading, setIsLoading] = useState(true);
   const { userdata } = useAppSelector(state => state.auth);
-  const { data: walletBalanceData, isLoading: loading } = useWalletBalance(userdata?.id);
+  const { data: walletBalanceData, isLoading: loading } = useWalletBalance(userdata?._id);
   const filterOptions = ['Last 7 days', 'Last 30 days', 'Last 90 days', 'All time'];
 
   const [walletData, setWalletData] = useState({
@@ -50,10 +52,7 @@ const WalletScreen = () => {
   // Fetch wallet balances
   useEffect(() => {
     if (walletBalanceData) {
-      const xionBalance = walletBalanceData.data.xion.balances.reduce(
-        (total, balance) => total + balance.usdValue,
-        0
-      );
+      const xionBalance = walletBalanceData.data.xion.balances[0].usdValue
       const starknetBalance = walletBalanceData.data.starknet.balance.usdValue;
 
       setWalletData(prev => ({
@@ -69,6 +68,34 @@ const WalletScreen = () => {
 
   const handleTabPress = (tab: string) => setActiveTab(tab);
   const [showPaymentSheet, setShowPaymentSheet] = useState(false);
+
+  const handleFundWithFiat = () => {
+    startOnrampSDK({
+        appId: 1, // Replace this with the appID obtained during onboarding
+        walletAddress: "xion1dm77sl3ny2sxzuqwue4fmx2tmyp34memsm4qpp", // Replace with the user's wallet address
+        flowType: 1, // 1 -> Onramp, 2 -> Offramp, 3 -> Merchant checkout
+        fiatType: 6, // 1 -> INR, 2 -> TRY (Turkish Lira) etc. visit Fiat Currencies page to view full list of supported fiat currencies
+        paymentMethod: 1, // 1 -> Instant transfer (UPI), 2 -> Bank transfer (IMPS/FAST)
+        // ... Include other configuration options here
+       network: "NOBLE",
+       coinCode: "usdc",
+       paymentAddress: "xion1dm77sl3ny2sxzuqwue4fmx2tmyp34memsm4qpp"
+    });
+  }
+
+  useEffect(() => {
+    const onRampEventListener = onRampSDKNativeEvent.addListener(
+      'widgetEvents',
+      eventData => {
+        // Handle all events here
+        console.log('Received onRampEvent:', eventData);
+      },
+    );
+
+    return () => {
+      onRampEventListener.remove();
+    };
+  }, []);
 
   return (
     <SafeAreaView className="flex-1">
@@ -107,7 +134,7 @@ const WalletScreen = () => {
           {/* Fund with Card Button */}
           <TouchableOpacity
             className="bg-[#202227] mx-4 my-3 px-[16px] pt-[20px] pb-[19px] rounded-[10px] flex-row justify-between items-center"
-            onPress={() => setShowPaymentSheet(true)}
+            onPress={handleFundWithFiat}
           >
             <View className="flex-1 flex-row items-center gap-[16px]">
               <CreditCardIcon size={24} color="#FF8A49" variant="stroke" />
@@ -132,7 +159,7 @@ const WalletScreen = () => {
           </View>
         </>
       ) : (
-        <View className="flex-1">
+        <>
           {/* Collectibles Search */}
           <View className="mx-4 my-4">
             <View className="bg-[#111318] py-[15px] rounded-[10px] px-4 flex-row items-center gap-x-[12px] border border-[#202227]">
@@ -150,37 +177,64 @@ const WalletScreen = () => {
               {
                 id: '1',
                 title: 'Rave Pass',
-                price: '$2/month',
+                price: '$5/month',
+                image: require('../../../assets/images/reave-pass.png'),
+              },
+              {
+                id: '1',
+                title: 'Rave Pass',
+                price: '$5/month',
                 image: require('../../../assets/images/reave-pass.png'),
               },
             ]}
             numColumns={2}
-            contentContainerStyle={{ padding: 16 }}
+            contentContainerStyle={{
+              padding: 16,
+              alignItems: 'center',
+              gap: 16
+            }}
+            columnWrapperStyle={{
+              gap: 16,
+              justifyContent: 'center'
+            }}
             renderItem={({ item }) => (
               <TouchableOpacity
-                className="w-[50%] h-[262px] p-[4px] m-2 bg-[#202227] rounded-[10px]"
+                style={{ width: wp('45%') }}
+                className="h-[262px] bg-[#111318] rounded-[10px] border-2 border-[#202227] overflow-hidden"
                 onPress={() => { /* Handle collectible press */ }}
               >
                 <Image
                   source={item.image}
-                  className="w-full h-[60%]"
+                  className="w-full h-[140px]"
                   resizeMode="cover"
                 />
-                <View className="p-3 px-[12px]">
-                  <Text className="text-white font-PlusJakartaSansMedium text-[16px]">
-                    {item.title}
-                  </Text>
-                  <View className="bg-[#A187B5] self-start rounded-full mt-[38px] px-3 py-1">
-                    <Text className="text-[#111318] text-[14px] font-PlusJakartaSansMedium">
-                      {item.price}
+                <View className="flex-1 p-3">
+                  <View className="flex-1">
+                    <Text className="text-[#f4f4f4] font-PlusJakartaSansMedium text-[16px] leading-[22px]">
+                      {item.title}
                     </Text>
+                    <Text className="text-[#63656B] font-PlusJakartaSansMedium text-[12px] leading-[16px] mt-1">
+                      {item.title}
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center justify-between w-full mt-3">
+                    <View className="bg-[#202227] border-[0.5px] border-[#63656B] rounded-full px-3 py-1">
+                      <Text className="text-[#f4f4f4] text-[12px] font-PlusJakartaSansMedium">
+                        Tribes
+                      </Text>
+                    </View>
+                    <Image
+                      source={require("../../../assets/images/logo-gray.png")}
+                      className="w-[40px] h-[18px]"
+                      resizeMode="contain"
+                    />
                   </View>
                 </View>
               </TouchableOpacity>
             )}
             keyExtractor={item => item.id}
           />
-        </View>
+        </>
       )}
 
 

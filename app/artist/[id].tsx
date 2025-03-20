@@ -11,7 +11,7 @@ import {
   Image,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft02Icon } from '@hugeicons/react-native';
+import { ArrowLeft02Icon, PlayIcon, ShuffleIcon } from '@hugeicons/react-native';
 import ArtistInfo from '../../components/ArtistInfo';
 import JoinCommunity from '../../components/cards/JoinCommunity';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
@@ -177,7 +177,16 @@ const ArtistDetails = () => {
             source={{ uri: image as string }}
             style={styles.imageBackground}
             resizeMode="cover"
-          />
+          >
+            <View className='absolute bottom-[10%] right-[6%] flex-row items-center'>
+              {/* <TouchableOpacity style={styles.iconButton}>
+                <ShuffleIcon size={24} color="#fff" />
+              </TouchableOpacity> */}
+              <TouchableOpacity>
+                <PlayIcon size={56} color="#FF7A1B" variant='solid' />
+              </TouchableOpacity>
+            </View>
+          </ImageBackground>
         </Animated.View>
 
         {/* Scrollable content */}
@@ -206,7 +215,7 @@ const ArtistDetails = () => {
               isLoading={isLoading}
               communityData={communityData}
               onJoinPress={handleJoinPress}
-              isMember={isMember}
+              userId={userdata?._id}
             />
 
             <ArtistReleases artistId={id as string} />
@@ -312,6 +321,21 @@ const styles = StyleSheet.create({
   toggleDescriptionText: {
     color: '#fff',
     marginTop: 8,
+  },
+  iconContainer: {
+    position: 'absolute',
+    bottom: '10%',
+    left: '5%',
+    flexDirection: 'row',
+    gap: 12,
+  },
+  iconButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 50,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

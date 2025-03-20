@@ -25,20 +25,30 @@ export const useGoogleAuth = () => {
   useEffect(() => {
     const handleResponse = async () => {
       if (response?.type === 'success') {
-        const { authentication } = response;
-        if (authentication?.idToken) {
+        try {
+          const { authentication } = response;
+          if (!authentication?.idToken) {
+            throw new Error("No ID token received from Google");
+          }
+
           const decoded = jwtDecode(authentication.idToken);
           // @ts-expect-error: email is not part of the JWT spec
           const email = decoded.email;
-          authenticateUser({
+
+          if (!email) {
+            throw new Error("No email found in Google token");
+          }
+
+          await authenticateUser({
             channel: "google",
             email,
             token: authentication.idToken,
           });
-        } else {
-          console.error("Google Auth: No access token received in authentication object");
+        } catch (error) {
+          console.error("Google Auth Processing Error:", error);
+        } finally {
+          setLoading(false);
         }
-        setLoading(false);
       } else if (response !== null) {
         console.error("Google Auth failed:", response);
         setLoading(false);
@@ -48,7 +58,7 @@ export const useGoogleAuth = () => {
     if (loading && response !== null) {
       handleResponse();
     }
-  }, [response, loading]);
+  }, [response, loading, authenticateUser]);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -75,8 +85,7 @@ export const useAppleAuth = () => {
     setLoading(true);
     try {
       if (!await AppleAuthentication.isAvailableAsync()) {
-        console.error("Apple Sign-In is not available on this device.");
-        return;
+        throw new Error("Apple Sign-In is not available on this device.");
       }
 
       const credential = await AppleAuthentication.signInAsync({
@@ -86,18 +95,23 @@ export const useAppleAuth = () => {
         ],
       });
 
-      if (credential.identityToken) {
-        const decoded = jwtDecode(credential.identityToken);
-        // @ts-expect-error: email is not part of the JWT
-        const email = decoded.email;
-        authenticateUser({
-          channel: "apple",
-          email,
-          token: credential.identityToken,
-        });
-      } else {
-        console.error("No identity token received from Apple Sign-In");
+      if (!credential.identityToken) {
+        throw new Error("No identity token received from Apple Sign-In");
       }
+
+      const decoded = jwtDecode(credential.identityToken);
+      // @ts-expect-error: email is not part of the JWT
+      const email = decoded.email;
+
+      if (!email) {
+        throw new Error("No email found in Apple token");
+      }
+
+      await authenticateUser({
+        channel: "apple",
+        email,
+        token: credential.identityToken,
+      });
     } catch (e: unknown) {
       const error = e as { code?: string; message?: string };
       if (error.code !== "ERR_CANCELED") {
@@ -111,6 +125,7 @@ export const useAppleAuth = () => {
       setLoading(false);
     }
   }, [authenticateUser]);
+
 
   return {
     handleAppleSignIn,

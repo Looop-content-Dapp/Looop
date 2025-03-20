@@ -26,7 +26,6 @@ const ArtistReleases = ({artistId}: Props) => {
                 const albumData = await getAlbumsAndEP(artistId);
                 setArtistAlbums(albumData?.data || []); // Added null check
                 const singlesData = await getSinglesForArtist(artistId);
-                console.log("Singles",singlesData?.data)
                 setArtistSingles(singlesData?.data || []); // Added null check
             } catch (error) {
                 console.error("Error fetching data:", error);

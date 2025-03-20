@@ -12,7 +12,7 @@ import { showToast } from "@/config/ShowMessage";
 import { useAppSelector } from "@/redux/hooks";
 
 const CommunityOnboarding = () => {
-  const navigation = useNavigation();
+    const navigation = useNavigation();
   const params = useLocalSearchParams();
   const { data: communities, isLoading } = useGetCommunities();
   const { userdata } = useAppSelector((state) => state.auth);
@@ -65,18 +65,16 @@ const CommunityOnboarding = () => {
   };
 
   useEffect(() => {
-    if (params.joinedCommunityId && params.joinSuccess === 'true') {
-      setSelectedCommunities(prev =>
-        prev.includes(params.joinedCommunityId as string)
-          ? prev
-          : [...prev, params.joinedCommunityId as string]
-      );
-    } else if (params.joinedCommunityId && params.joinSuccess === 'false') {
-      setSelectedCommunities(prev =>
-        prev.filter(id => id !== params.joinedCommunityId)
-      );
+    if (communities && userdata?._id) {
+      const userCommunities = communities
+        .filter(community =>
+          community.members?.some(member => member.userId._id === userdata._id)
+        )
+        .map(community => community._id);
+
+      setSelectedCommunities(userCommunities);
     }
-  }, [params]);
+  }, [communities, userdata]);
 
   return (
     <SafeAreaView style={styles.container}>
