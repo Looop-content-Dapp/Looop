@@ -20,6 +20,7 @@ import PaymentBottomSheet from '../../components/Subscribe/PaymentBottomsheet';
 import ArtistReleases from '../../components/ArtistProfile/ArtistReleases';
 import api from '@/config/apiConfig';
 import { useAppSelector } from '@/redux/hooks';
+import { useArtistCommunity } from '@/hooks/useArtistCommunity';
 
 interface CommunityData {
   _id: string;
@@ -44,47 +45,22 @@ const ArtistDetails = () => {
     followers,
     joinSuccess
   } = useLocalSearchParams();
-  console.log("index", followers)
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [communityData, setCommunityData] = useState<any | null>(null);
-  const [showPaymentSheet, setShowPaymentSheet] = useState(false);
   const { userdata } = useAppSelector((state) => state.auth)
   const scrollY = useRef(new Animated.Value(0)).current;
   const [isMember, setIsMember] = useState(false);
+  const { data: communityData, isLoading } = useArtistCommunity(id as string);
   const router = useRouter();
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
   console.log("id", isFollowing)
-
-
-  const toggleDescription = useCallback(() => {
-    setIsExpanded((prev) => !prev);
-  }, []);
-
-  useEffect(() => {
-    const fetchArtistCommunity = async () => {
-      try {
-        setIsLoading(true);
-        const response = await api.get(`/api/community/${id as string}`)
-        setCommunityData(response?.data?.data);
-      } catch (error) {
-        console.error('Error fetching artist community:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchArtistCommunity();
-  }, []);
 
   const handleJoinPress = () => {
     router.push({
       pathname: "/payment",
       params: {
-        name: communityData.tribePass.collectibleName,
-        image: communityData.tribePass.collectibleImage,
-        communityId: communityData._id,
-        collectionAddress: communityData.tribePass.contractAddress,
+        name: communityData?.tribePass?.collectibleName,
+        image: communityData?.tribePass?.collectibleImage,
+        communityId: communityData?._id,
+        collectionAddress: communityData?.tribePass?.contractAddress,
         type: "xion",
         userAddress: userdata?.wallets?.xion?.address,
         currentRoute: `/artist/${id}`,
@@ -98,22 +74,6 @@ const ArtistDetails = () => {
       setIsMember(true);
     }
   }, [useLocalSearchParams()]);
-
-  const handleClosePaymentSheet = () => {
-    setShowPaymentSheet(false);
-  };
-
-  const handleJoinCommunity = async () => {
-    if (communityData) {
-      try {
-        if (userdata?._id) {
-          handleClosePaymentSheet();
-        }
-      } catch (error) {
-        console.error('Error joining community:', error);
-      }
-    }
-  };
 
   // Updated animation calculations
   const headerHeight = scrollY.interpolate({
@@ -182,9 +142,9 @@ const ArtistDetails = () => {
               {/* <TouchableOpacity style={styles.iconButton}>
                 <ShuffleIcon size={24} color="#fff" />
               </TouchableOpacity> */}
-              <TouchableOpacity>
+              {/* <TouchableOpacity>
                 <PlayIcon size={56} color="#FF7A1B" variant='solid' />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </ImageBackground>
         </Animated.View>
@@ -221,13 +181,6 @@ const ArtistDetails = () => {
             <ArtistReleases artistId={id as string} />
           </View>
         </Animated.ScrollView>
-
-        <PaymentBottomSheet
-          isVisible={showPaymentSheet}
-          closeSheet={handleClosePaymentSheet}
-          communityData={communityData}
-          onPaymentComplete={handleJoinCommunity}
-        />
       </View>
     </GestureHandlerRootView>
   );

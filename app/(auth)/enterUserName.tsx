@@ -39,14 +39,15 @@ const schema = z.object({
 });
 const EnterUserName = () => {
   const { mutate: createUser, isPending, error, isError } = useCreateUser();
-  const { email, password, dob, gender } = useLocalSearchParams<{
+  const { email, password, dob, gender, oauthProvider } = useLocalSearchParams<{
     email: string;
     password: string;
     dob: string;
     gender: string;
+    oauthProvider?: "google" | "apple";
   }>();
   const router = useRouter();
-  console.log("useremail", email);
+  console.log("useremail", oauthProvider);
   // Add watch to useForm destructuring
   const {
     control,
@@ -98,12 +99,13 @@ const onSubmit = (data: FormData) => {
     createUser(
       {
         email,
-        password,
+        password: password ? password : "",
         age: calculateAge(dob).toLocaleString(),
         fullname: data.name,
         username: data.username,
         gender,
         referralCode: data.referralCode,
+        oauthprovider: oauthProvider
       },
       {
         onSuccess: () => {

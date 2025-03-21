@@ -7,7 +7,7 @@ import {
   Alert,
 } from "react-native";
 import React, { useCallback, useEffect, useLayoutEffect, useState } from "react";
-import { MoreHorizontalIcon, Setting06Icon, Settings02Icon, Share05Icon, Wallet02Icon } from "@hugeicons/react-native";
+import { Settings02Icon, Share05Icon, Wallet02Icon } from "@hugeicons/react-native";
 import { Avatar } from "react-native-elements";
 import {
   ProfilePlaylist,
@@ -27,7 +27,6 @@ const profile = () => {
   const navigation = useNavigation();
 
   const { userdata } = useAppSelector((state) => state.auth);
-  console.log(userdata?.artist)
   const dispatch = useAppDispatch();
   const router = useRouter()
 
@@ -147,7 +146,7 @@ useEffect(() => {
             className="items-center "
           >
             <Text className="text-[20px] font-PlusJakartaSansBold text-[#f4f4f4]">
-              {formatNumber(userdata?.favouriteArtists?.length as number)}
+              {formatNumber(userdata?.following?.toString() as string ?? 0)}
             </Text>
             <Text className="text-[12px] font-PlusJakartaSansBold text-[#D2D3D5]">
               Following
@@ -161,7 +160,7 @@ useEffect(() => {
             className="items-center"
           >
             <Text className="text-[20px] font-PlusJakartaSansBold text-[#f4f4f4]">
-              {formatNumber(userdata?.friendsCount ?? 0)}
+              {formatNumber(userdata?.friends?.length.toString() as string ?? 0)}
             </Text>
             <Text className="text-[12px] font-PlusJakartaSansBold text-[#D2D3D5]">
               Friends

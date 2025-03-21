@@ -45,15 +45,17 @@ const ChartItem = ({ position, title, artist, imageUrl, duration, onPress }: Cha
 const ChartListSection = ({ title, data }: ChartListSectionProps) => {
   return (
     <View className="mt-6" style={{ width: wp("100%") }}>
-     <View className="flex-row items-start justify-between">
-     <Text className="text-[#F4F4F4] text-[24px] font-PlusJakartaSansMedium px-6 mb-4">
-        {title}
-      </Text>
-      <TouchableOpacity className="flex-row items-center gap-x-[8px]">
-        <Text className="text-[16px] font-PlusJakartaSansMedium text-[#9A9B9F]">See all</Text>
-        <ArrowRight01Icon size={24} color="#9A9B9F" variant="stroke" />
-      </TouchableOpacity>
-     </View>
+     <View style={{ width: wp("100%") }}>
+      <View className="flex-row items-center justify-between px-6 mb-4">
+        <Text className="text-[#F4F4F4] text-[22px] font-PlusJakartaSansMedium">
+          {title}
+        </Text>
+        <TouchableOpacity className="flex-row items-center gap-x-[4px]">
+          <Text className="text-[16px] font-PlusJakartaSansMedium text-[#9A9B9F]">See all</Text>
+          <ArrowRight01Icon size={24} color="#9A9B9F" variant="stroke" />
+        </TouchableOpacity>
+      </View>
+      </View>
       <View className="border-t border-[#12141B]">
         {data.map((item, index) => (
           <ChartItem key={index} {...item} />

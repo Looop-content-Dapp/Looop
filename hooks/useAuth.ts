@@ -51,7 +51,7 @@ export const useAuth = () => {
 
   const { mutate: authenticateUser, isPending, error } = useMutation({
     mutationFn: verifyOAuthToken,
-    onSuccess: (response) => {
+    onSuccess: (response, variables) => {
       console.log('OAuth mutation succeeded:', response)
       if (!response.data) {
         console.error("Invalid response format:", response);
@@ -66,11 +66,12 @@ export const useAuth = () => {
             email: response.data.user.email,
             oauthId: response.data.user._id,
             isOAuth: "true",
+            oauthProvider: variables.channel
           },
         });
       } else {
-        console.log("Existing user detected, redirecting to music tabs:", response.data.user)
-        store.dispatch(setUserData(response.data.user));
+        console.log("Existing user detected, redirecting to music tabs:", response.data)
+        store.dispatch(setUserData(response.data));
         router.push("/(musicTabs)");
       }
     },

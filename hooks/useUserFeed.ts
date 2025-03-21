@@ -52,5 +52,9 @@ export const useUserFeed = (userId: string) => {
       const { data } = await api.get<UserFeedResponse>(`/api/user/feed/${userId}`);
       return data;
     },
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    staleTime: 10000, // Consider data stale after 10 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchIntervalInBackground: false, // Only refresh when tab is active
   });
 };

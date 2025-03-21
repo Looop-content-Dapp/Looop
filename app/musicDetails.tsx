@@ -30,6 +30,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import * as ImageCache from 'react-native-expo-image-cache';
 import Share from '../components/bottomSheet/Share';
 import { useRef } from 'react';
+import { useTracksByMusic } from "@/hooks/useTracksByMusic";
 
 interface Track {
   _id: string;
@@ -79,26 +80,13 @@ const MusicDetails = () => {
 
   const allSongs = useMemo(() => fetchAllAlbumsAndEPs(artistsArr), [artistsArr]);
 
-  // Use React Query to handle data fetching
+  const { data: tracksData, isLoading } = useTracksByMusic(id as string);
+
   useEffect(() => {
-    const fetchTracks = async () => {
-      try {
-        // Try to get data from cache first
-        const cachedData = queryClient.getQueryData(['tracks', id]);
-        if (cachedData) {
-          setTracks(cachedData.data.tracks);
-          return;
-        }
-
-        const fetchedTracks = await getTracksFromId(id as string);
-        setTracks(fetchedTracks.data.tracks);
-      } catch (error) {
-        console.error('Error fetching tracks:', error);
-      }
-    };
-
-    fetchTracks();
-  }, [id]);
+    if (tracksData) {
+      setTracks(tracksData?.data?.tracks);
+    }
+  }, [tracksData]);
 
   useEffect(() => {
     loadAlbumData(id as string, type as string);

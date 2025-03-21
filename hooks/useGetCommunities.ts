@@ -29,5 +29,9 @@ export const useGetCommunities = () => {
       const { data } = await api.get("/api/community");
       return data.data as Community[];
     },
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    staleTime: 10000, // Consider data stale after 10 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchIntervalInBackground: false, // Only refresh when tab is active
   });
 };

@@ -46,7 +46,7 @@ const SkeletonLoader = () => {
       from={{ opacity: 0.6 }}
       animate={{ opacity: 1 }}
       transition={{ loop: true, duration: 1000 }}
-      className="bg-[#2a2a2a] rounded-3xl p-4 justify-center"
+      className="bg-[#2a2a2a] rounded-3xl p-4 my-6 justify-center"
       style={{ height: height * 0.2 }}
     >
       <View className="h-3 bg-[#3a3a3a] mb-2 rounded-md" style={{ width: width * 0.6 }} />

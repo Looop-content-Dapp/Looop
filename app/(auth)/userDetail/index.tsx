@@ -54,10 +54,12 @@ import {
 
   const UserDetail = () => {
     const [showPicker, setShowPicker] = useState(false);
-    const { email, password } = useLocalSearchParams<{
+    const { email, password, oauthProvider } = useLocalSearchParams<{
       email: string;
       password: string;
+      oauthProvider?: "google" | "apple";
     }>();
+    console.log(email, password, oauthProvider);
     const defaultStyles = useDefaultStyles();
     const [selected, setSelected] = useState<DateType>();
     const router = useRouter();
@@ -78,7 +80,7 @@ import {
       console.log(data);
       router.navigate({
         pathname: "/(auth)/enterUserName",
-        params: { email, password, ...data },
+        params: { email, password, oauthProvider, ...data },
       });
     };
 

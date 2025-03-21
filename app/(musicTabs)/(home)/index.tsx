@@ -80,13 +80,13 @@ useEffect(() => {
           )}
 
           {/* Recent Releases Section - only show if there's data */}
-          {recentReleases.length > 0 && (
+          {/* {recentReleases.length > 0 && (
             <NewlyReleased
               musicData={recentReleases}
               isLoading={userFeedLoading}
               title="Recent Releases"
             />
-          )}
+          )} */}
 
           {/* Recommended Artists Section - only show if there's data */}
           {recommendedArtists.length > 0 && (

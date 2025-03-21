@@ -12,12 +12,13 @@ type User = {
   age: string;
   gender: string;
   referralCode?: string;
-  provider?: string;
+  oauthprovider?: "google" | "apple";
 };
 
 export const useCreateUser = () => {
   return useMutation({
     mutationFn: async (input: User) => {
+        console.log("Attempting to create user", input)
       const { data } = await api.post("/api/user/createuser", input);
       store.dispatch(setUserData(data.data.user));
       return data;
