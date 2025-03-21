@@ -32,8 +32,11 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
         duration: 20000
       }} show={isLoading}>
         <Pressable className='gap-y-[16px]'>
-          <Text className='text-Green/01 font-PlusJakartaSansRegular'>{item?.content}</Text>
-          <PostMedia media={item?.media} engagement={item?.engagement} />
+          <Text className='text-Green/01 text-[16px] font-PlusJakartaSansRegular'>{item?.content}</Text>
+          <PostMedia
+         media={item.media}
+    engagement={{ plays: 5, shares: 0 }}
+     />
         </Pressable>
       </Skeleton>
 

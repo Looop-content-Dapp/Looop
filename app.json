@@ -105,7 +105,13 @@
           "locationWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location to provide location-based services and show relevant content based on where you are."
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
+        }
+      ]
     ],
     "extra": {
       "router": {

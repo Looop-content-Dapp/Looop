@@ -13,9 +13,23 @@ type TransactionHistoryProps = {
 };
 
 export default function TransactionHistory({ transactions }: TransactionHistoryProps) {
+  if (!transactions || transactions.length === 0) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Text className="text-[#FFFFFF] text-[16px] font-PlusJakartaSansRegular mb-2">
+          No transactions yet
+        </Text>
+        <Text className="text-[#63656B] text-[14px] font-PlusJakartaSansMedium text-center px-4">
+          Perform a transaction to see your transaction history
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <FlatList
       data={transactions}
+      scrollEnabled={false}
       keyExtractor={(item, index) => index.toString()}
       renderItem={({ item }) => (
         <View className="flex-row justify-between px-4 py-4 bg-[#111318] mb-[16px] border-b border-[#12141B]">

@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 40,
     fontFamily: "PlusJakartaSansBold",
-    color: "#D2D3D5",
+    color: "#f4f4f4",
   },
   headerSubtitle: {
     fontSize: 14,

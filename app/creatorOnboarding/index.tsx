@@ -19,11 +19,12 @@ import { ClaimStatus } from "@/types/index";
 import Celebration from "@/assets/svg/Celebration";
 import { useAppSelector } from "@/redux/hooks";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useCheckArtistClaim } from "@/hooks/useCheckArtistClaim"
 
 const LoadingScreen = () => {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  
+
   return (
     <View style={{
       flex: 1,
@@ -40,32 +41,15 @@ const LoadingScreen = () => {
 }
 
 const CreatorModeWelcome = () => {
-  const [claimStatus, setClaimStatus] = useState<ClaimStatus>("NOT_SUBMITTED");
   const [showLoadingScreen, setShowLoadingScreen] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);  
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { claimId } = useAppSelector((state) => state.auth);
   const { push } = useRouter();
 
-  const checkArtistClaimStatus = async () => {
-    if (!claimId){
-        setClaimStatus("NOT_SUBMITTED")
-        setIsLoading(false);
-        return;
-    }
-    try {
-      setIsLoading(true);
-      const response = await api.get(`/api/artistclaim/status/${claimId}`);
-      setClaimStatus(response.data.data.status);
-    } catch (error) {
-      console.error("Error checking claim status:", error);
-      setClaimStatus("NOT_SUBMITTED");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data, isLoading } = useCheckArtistClaim(claimId);
+  const claimStatus = data?.status || "NOT_SUBMITTED";
 
   // Initial load
   useEffect(() => {
@@ -75,13 +59,6 @@ const CreatorModeWelcome = () => {
 
     return () => clearTimeout(timer);
   }, []);
-
-  // Refresh on screen focus
-  useFocusEffect(
-    React.useCallback(() => {
-      checkArtistClaimStatus();
-    }, [claimId])
-  );
 
   if (isLoading || showLoadingScreen) {
     return <LoadingScreen />;
@@ -103,10 +80,6 @@ const CreatorModeWelcome = () => {
           pathname: "/creatorOnboarding/ContractSigning",
           params: { flow: claimStatus }
         });
-        break;
-      case "pending":
-        setIsLoading(true);
-        await checkArtistClaimStatus();
         break;
     }
   };
@@ -239,7 +212,7 @@ const CreatorModeWelcome = () => {
         translucent={true}
         barStyle="light-content"
       />
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
         bounces={false}
         showsVerticalScrollIndicator={false}

@@ -30,7 +30,7 @@ export const useHeader = ({title}: {title: string}) => {
       </View>
     ),
     headerRight: () => (
-      <View className="flex-row items-center gap-x-[10px] px-4">
+      <View className="flex-row items-center gap-x-[16px] px-4">
         <Notification02Icon
           size={24}
           color="#787A80"

@@ -26,8 +26,8 @@ const AudioWaveform: React.FC<WaveformProps> = ({
   onSeek,
   barCount = 100,
   height = 35,
-  barWidth = 3,
-  barSpacing = 0.2,
+  barWidth = 2,
+  barSpacing = 0.9,
   playedColor = '#FFFFFF',
   unplayedColor = 'rgba(255, 255, 255, 0.24)',
   showPlayButton = true,
@@ -80,7 +80,11 @@ const AudioWaveform: React.FC<WaveformProps> = ({
   };
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <View style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      width: '100%',
+    }}>
       {showPlayButton && (
         <TouchableOpacity
           onPress={onPlayPause}
@@ -94,22 +98,23 @@ const AudioWaveform: React.FC<WaveformProps> = ({
           }}
         >
           {isPlaying ? (
-            <PauseIcon size={24} color="#fff" variant="solid" />
+            <PauseIcon size={Math.floor(playButtonSize * 0.6)} color="#fff" variant="solid" />
           ) : (
-            <PlayIcon size={24} color="#fff" variant="solid" />
+            <PlayIcon size={Math.floor(playButtonSize * 0.6)} color="#fff" variant="solid" />
           )}
         </TouchableOpacity>
       )}
 
-      <Svg
-        height={height}
-        width={barCount * (barWidth + barSpacing)}
-        style={{ marginLeft: showPlayButton ? 10 : 0 }}
-        onStartShouldSetResponder={() => true}
-        onResponderGrant={handleSeek}
-      >
-        {renderWaveformBars()}
-      </Svg>
+      <View style={{ flex: 1, marginLeft: showPlayButton ? 10 : 0 }}>
+        <Svg
+          height={height}
+          width="100%"
+          onStartShouldSetResponder={() => true}
+          onResponderGrant={handleSeek}
+        >
+          {renderWaveformBars()}
+        </Svg>
+      </View>
     </View>
   );
 };

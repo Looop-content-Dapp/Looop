@@ -15,6 +15,7 @@ import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { useAppSelector } from "@/redux/hooks";
 import { useFollowingArtists, Artist } from "@/hooks/useFollowingArtists";
+import { formatNumber } from "@/utils/ArstsisArr";
 
 // Define the interface for the artist data
 interface IFollowing extends Artist {}
@@ -26,7 +27,6 @@ const ProfileFollowing = () => {
 
   // Use the new hook to fetch following artists
   const { data, isLoading, error } = useFollowingArtists(userdata?._id || '', page);
-  console.log(data?.data?.artists, "followings")
   const artistFollowing = data?.data?.artists || [];
 
   useLayoutEffect(() => {
@@ -112,7 +112,7 @@ const FollowingCard = ({ item }: { item: IFollowing }) => {
             {item.name}
           </Text>
           <Text className="text-[#787A80] font-PlusJakartaSansRegular text-[14px]">
-            {item.followers.toLocaleString()} followers
+            {formatNumber(item.followers.toLocaleString())} followers
           </Text>
         </View>
       </View>

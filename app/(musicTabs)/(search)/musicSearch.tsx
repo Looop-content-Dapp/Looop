@@ -139,6 +139,7 @@ const MusicSearch = () => {
     const [recentSearches, setRecentSearches] = useState<string[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const { search, getRecentSearches, clearRecentSearches } = useQuery()
+    console.log("results", searchResults)
 
     // Map display names to result types
     type TabType = 'All' | 'Songs' | 'Artists' | 'Albums' | 'Playlists';

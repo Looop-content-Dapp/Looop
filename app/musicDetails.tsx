@@ -51,24 +51,25 @@ interface Track {
 }
 
 const MusicDetails = () => {
-  // Add this new state to track the selected track for sharing
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [isTruncated, setIsTruncated] = useState(true);
 
   const { width } = useWindowDimensions();
-  const queryClient = useQueryClient();
-  const { id, title, artist, image, type, duration, totalTracks } = useLocalSearchParams();
-
-  const [tracks, setTracks] = useState<Track[]>([]);
-  const { getTracksFromId } = useQuery();
-  const [isTruncated, setIsTruncated] = useState(true);
   const shareBottomSheetRef = useRef(null);
+  const { id, title, artist, image, type, duration } = useLocalSearchParams();
+  console.log(type)
+
+  const { data: tracksData, isLoading: tracksLoading } = useTracksByMusic(
+    id as string,
+    type === 'track' ? 'track' : 'release'
+  );
+  console.log("tracksData", tracksData)
 
   const {
     isAlbumPlaying,
-    currentPlayingIndex,
     isLiked,
-    isSaved,
-    loading,
+    loading: playerLoading,
     currentTrackId,
     shuffle,
     handlePlayPause,
@@ -78,25 +79,31 @@ const MusicDetails = () => {
     toggleShuffle,
   } = useMusicPlayer();
 
-  const allSongs = useMemo(() => fetchAllAlbumsAndEPs(artistsArr), [artistsArr]);
+  // Combine loading states
+  const isLoading = playerLoading || tracksLoading;
 
-  const { data: tracksData, isLoading } = useTracksByMusic(id as string);
-
-  useEffect(() => {
-    if (tracksData) {
-      setTracks(tracksData?.data?.tracks);
-    }
-  }, [tracksData]);
-
-  useEffect(() => {
-    loadAlbumData(id as string, type as string);
-  }, [id, type]);
-
-  const albumInfo = {
+  const albumInfo = useMemo(() => ({
     title: title as string,
     type: type as "album" | "single" | "ep",
     coverImage: image as string,
-  };
+  }), [title, type, image]);
+
+  // Single effect to handle tracks data and album loading
+  useEffect(() => {
+    if (tracksData?.data?.tracks) {
+      const newTracks = tracksData.data.tracks;
+      setTracks(newTracks);
+
+      // Update album info if it's a single track
+      if (type === 'track' && newTracks.length === 1) {
+        const track = newTracks[0];
+        albumInfo.title = track.title;
+        albumInfo.coverImage = track.release.artwork.high;
+      }
+    }
+
+    loadAlbumData(id as string, type as string);
+  }, [tracksData, id, type]);
 
   const Spacer = ({ size = 16 }) => <View style={{ height: size }} />;
 
@@ -141,14 +148,16 @@ const convertSecondsToMinutes = (seconds: number) => {
         {/* Album Image */}
         <View style={styles.contentWrapper}>
           <ImageCache.Image
-            uri={image as string}
+            uri={type === 'track' && tracks[0]
+              ? tracks[0].release.artwork.high
+              : (image as string)}
             style={[
               styles.albumImage,
               { width: width * 0.4, height: width * 0.4 },
             ]}
             tint="dark"
           />
-          {loading && (
+          {isLoading && (
             <View style={styles.skeletonWrapper}>
               <Skeleton
                 colorMode="dark"
@@ -252,7 +261,7 @@ const convertSecondsToMinutes = (seconds: number) => {
               </Pressable>
             </View>
           </View>
-          {loading && (
+          {isLoading && (
             <View style={styles.skeletonWrapper}>
               <Skeleton
                 colorMode="dark"
@@ -274,76 +283,70 @@ const convertSecondsToMinutes = (seconds: number) => {
 
         {/* Track List */}
         <View style={styles.trackListContainer}>
-          {tracks?.map((track: Track, index: number) => (
-            <View key={track._id}>
-              <TouchableOpacity
-                onPress={() => handleTrackPress(track, index, albumInfo, tracks)}
-                className="flex-row items-center justify-between py-3"
-              >
-                <View className="flex-row items-center flex-1 mr-4">
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      className={`text-[16px] font-PlusJakartaSansBold ${
-                        currentTrackId === track._id
-                          ? "text-Orange/08"
-                          : "text-[#fff]"
-                      }`}
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
-                    >
-                      {track.title}
-                    </Text>
-                    <Text
-                      className="text-[12px] font-PlusJakartaSansBold text-Grey/06"
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
-                    >
-                      {track.artist.name}
-                    </Text>
+          {isLoading ? (
+            // Show skeletons while loading
+            Array.from({ length: 3 }).map((_, index) => (
+              <View key={index} style={styles.skeletonWrapper}>
+                <Skeleton
+                  colorMode="dark"
+                  width="100%"
+                  height={60}
+                  radius={4}
+                />
+              </View>
+            ))
+          ) : (
+            tracks?.map((track: Track, index: number) => (
+              <View key={track._id}>
+                <TouchableOpacity
+                  onPress={() => handleTrackPress(track, index, albumInfo, tracks)}
+                  className="flex-row items-center justify-between py-3"
+                >
+                  <View className="flex-row items-center flex-1 mr-4">
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        className={`text-[16px] font-PlusJakartaSansBold ${
+                          currentTrackId === track._id
+                            ? "text-Orange/08"
+                            : "text-[#fff]"
+                        }`}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
+                        {track.title}
+                      </Text>
+                      <Text
+                        className="text-[12px] font-PlusJakartaSansBold text-Grey/06"
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
+                        {track.artist.name}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-                <TouchableOpacity onPress={() => handleTrackMenuPress(track)}>
-                  <MoreHorizontalIcon size={24} color="#fff" />
+                  <TouchableOpacity onPress={() => handleTrackMenuPress(track)}>
+                    <MoreHorizontalIcon size={24} color="#fff" />
+                  </TouchableOpacity>
                 </TouchableOpacity>
-              </TouchableOpacity>
-              {loading && (
-                <View style={styles.skeletonWrapper}>
-                  <Skeleton
-                    colorMode="dark"
-                    width="100%"
-                    height={60}
-                    radius={4}
-                  />
-                </View>
-              )}
-            </View>
-          ))}
+              </View>
+            ))
+          )}
         </View>
+        </ScrollView>
+      </Suspense>
 
-        <Spacer size={30} />
-
-        {/* Similar Music */}
-        <View style={styles.similarMusicContainer}>
-          <MusicCategory
-            musicData={allSongs}
-            title={`Similar to ${title}`}
-            isLoading={loading}
-          />
-        </View>
-      </ScrollView>
-          </Suspense>
-          <Share
-            ref={shareBottomSheetRef}
-            album={{
-              title: selectedTrack ? selectedTrack.title : (title as string),
-              artist: selectedTrack ? selectedTrack.artist.name : (artist as string),
-              image: selectedTrack ? selectedTrack.release.artwork.high : (image as string),
-              type: type as string,
-              duration: convertSecondsToMinutes(selectedTrack ? selectedTrack.duration : Number(duration)),
-              id: selectedTrack ? selectedTrack._id : (id as string) // Add the ID
-            }}
-          />
-        </SafeAreaView>
+      <Share
+        ref={shareBottomSheetRef}
+        album={{
+          title: selectedTrack ? selectedTrack.title : (title as string),
+          artist: selectedTrack ? selectedTrack.artist.name : (artist as string),
+          image: selectedTrack ? selectedTrack.release.artwork.high : (image as string),
+          type: type as string,
+          duration: convertSecondsToMinutes(selectedTrack ? selectedTrack.duration : Number(duration)),
+          id: selectedTrack ? selectedTrack._id : (id as string)
+        }}
+      />
+    </SafeAreaView>
   );
 };
 

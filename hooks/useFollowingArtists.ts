@@ -30,7 +30,6 @@ export const useFollowingArtists = (userId: string, page: number = 1, limit: num
     queryKey: ['followingArtists', userId, page, limit],
     queryFn: async () => {
       try {
-        // Updated to match the backend API endpoint structure
         const { data } = await api.get(`/api/user/following/${userId}`, {
             params: {
               page,
@@ -47,5 +46,7 @@ export const useFollowingArtists = (userId: string, page: number = 1, limit: num
     enabled: !!userId && userId.length > 0,
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 30 * 1000, // Auto refresh every 30 seconds
+    refetchIntervalInBackground: true, // Continue refreshing even when the window is in the background
   });
 };
