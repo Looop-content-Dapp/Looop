@@ -32,10 +32,10 @@ const accountInfo = () => {
             route: "/settings/(account-info)/personalInfo"
         },
         {
-            title: "Change  your password",
+            title: "Change your password",
             description: "Ensure your account stays protected by resetting your password.",
             icon: <LockPasswordIcon size={24} color='#787A80' variant='stroke' />,
-             route: "/settings/accountInfo"
+            route: "/settings/(account-info)/change-password"
         },
     ]
 
@@ -45,24 +45,6 @@ const accountInfo = () => {
 
     const confirmDelete = async () => {
         try {
-            // First get the current session
-            const session = await account.getSession('current');
-            console.log(session.$id)
-            if (!session) {
-                throw new Error('No active session found');
-            }
-
-     const res =  account.listIdentities()
-   
-
-            // Delete the session first
-            await account.deleteSession(session.$id);
-
-            
-            // Then delete the account
-           await account.deleteIdentity(session.userId);
-            
-            // Close modal and navigate to login
             setShowDeleteModal(false);
             router.replace('/');
         } catch (error) {
@@ -92,7 +74,7 @@ const accountInfo = () => {
                     ))
                 }
             </View>
-            <TouchableOpacity 
+            <TouchableOpacity
                 onPress={handleDeletePress}
                 className='bg-[#1D0607] gap-x-[8px] flex-row items-center justify-center mx-auto py-[20px] px-[32px] rounded-[10px]'
             >
@@ -112,11 +94,11 @@ const accountInfo = () => {
                         <Text className="text-[20px] font-PlusJakartaSansBold text-[#f4f4f4] mb-[16px]">
                             Are you sure?
                         </Text>
-                        
+
                         <Text className="text-[14px] font-PlusJakartaSansMedium text-[#787A80] mb-[24px]">
                             Before you delete your account, please note that:
                         </Text>
-                        
+
                         <View className="gap-y-[12px] mb-[24px]">
                             <Text className="text-[14px] text-[#D2D3D5]">• All your data will be permanently deleted</Text>
                             <Text className="text-[14px] text-[#D2D3D5]">• You'll lose access to your music and playlists</Text>
@@ -124,7 +106,7 @@ const accountInfo = () => {
                         </View>
 
                         <View className="flex-row gap-x-[12px]">
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 onPress={() => setShowDeleteModal(false)}
                                 className="flex-1 py-[16px] bg-[#1D2029] rounded-[10px]"
                             >
@@ -132,8 +114,8 @@ const accountInfo = () => {
                                     Cancel
                                 </Text>
                             </TouchableOpacity>
-                            
-                            <TouchableOpacity 
+
+                            <TouchableOpacity
                                 onPress={confirmDelete}
                                 disabled={loading}
                                 className="flex-1 py-[16px] bg-[#2A1215] rounded-[10px]"

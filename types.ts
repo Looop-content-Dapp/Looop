@@ -4,32 +4,64 @@ interface SignInResponse {
 }
 
 interface Wallets {
-    starknet: string;
-    xion: string;
-  }
+    starknet: {
+      address: string | null;
+      balance: number;
+    } | null;
+    xion: {
+      address: string;
+      mnemonic: string;
+      balance: number;
+    } | null;
+}
 
 interface SignInUserData {
     _id: string;
     email: string;
     username: string;
+    fullname: string;
+    age: string;
+    gender: 'male' | 'female';
     password: string;
     profileImage: string | null;
     bio: string | null;
     isPremium: boolean;
-    tel: string | null;
-    role: 'LISTENER' | string;
+    tel: number | null;
+    location: {
+      country: string | null;
+      state: string | null;
+      city: string | null;
+    };
+    socialLinks: {
+      instagram: string | null;
+      twitter: string | null;
+      facebook: string | null;
+      website: string | null;
+    };
+    preferences: {
+      favoriteGenres: string[];
+      language: string;
+      notifications: {
+        email: boolean;
+        push: boolean;
+      };
+    };
+    role: 'LISTENER' | 'ARTIST' | 'ADMIN';
     wallets: Wallets;
-    oauthTokens: any[];
-    following: number;
-    friendsCount: number;
-    artistPlayed: number;
-    favouriteArtists: any[];
-    preferences: any[];
+    nftContracts: Array<{
+      contractAddress: string;
+      communityId: string;
+      mintedAt: string;
+    }>;
+    oauthTokens: string[];
+    artist: string;
+    referralCode: string;
+    referralCount: number;
+    referralCodeUsed: string[];
     createdAt: string;
     updatedAt: string;
     __v: number;
-    artist: string | any
-  }
+}
 
 // following artist
 interface IFollowing {

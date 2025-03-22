@@ -44,12 +44,11 @@ export const useHeader = ({title}: {title: string}) => {
                 ? userdata?.profileImage
                 : "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
           }}
-          size={30}
+          size={35}
           rounded
           onPress={() => router.push("/(profile)") }
           avatarStyle={{
             borderWidth: 2,
-            borderColor: "#FF7700",
           }}
         />
       </View>
