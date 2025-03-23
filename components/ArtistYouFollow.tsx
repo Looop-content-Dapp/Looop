@@ -5,7 +5,7 @@ import { artistsArr } from '../utils/ArstsisArr'
 
 const ArtistYouFollow = () => {
   return (
-    <View className='pl-[24px] gap-y-[16px] pt-[32px] h-[284px]'>
+    <View className='gap-y-[16px] pt-[32px] h-[284px]'>
       <Text className='text-[20px] text-[#fff] font-PlusJakartaSansMedium'>Artist You Follow</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{
         gap: 16

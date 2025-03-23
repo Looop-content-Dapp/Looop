@@ -5,23 +5,21 @@ import {
   StyleSheet,
   View,
   Pressable,
-  Platform,
-  Alert,
   Text,
   Animated,
   PanResponder,
-  Dimensions,
 } from 'react-native';
-import * as ScreenOrientation from 'expo-screen-orientation';
 
-const videoSource = {
-  uri: 'https://media.gettyimages.com/id/1429694626/video/front-row-paris-fashion-week-womenswear-spring-summer-2023.mp4?s=mp4-640x640-gi&k=20&c=sxzWNI4OE5hB54L8nF4hEH_vb5fVY0AcsuzSmfZ9w98='
-};
+interface VideoScreenProps {
+  videoUrl: string;
+}
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-
-export default function VideoScreen() {
+export default function VideoScreen({ videoUrl }: VideoScreenProps) {
   const videoRef = useRef<Video>(null);
+  // Replace videoSource with:
+  const videoSource = {
+    uri: videoUrl 
+  };
   const controlsOpacity = useRef(new Animated.Value(1)).current;
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);

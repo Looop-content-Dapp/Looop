@@ -48,17 +48,36 @@ const CreatorModeWelcome = () => {
   const { claimId } = useAppSelector((state) => state.auth);
   const { push } = useRouter();
 
-  const { data, isLoading } = useCheckArtistClaim(claimId);
+  const { data, isLoading, refetch } = useCheckArtistClaim(claimId);
   const claimStatus = data?.status || "NOT_SUBMITTED";
+  console.log('claim status', claimStatus)
 
-  // Initial load
+  // Polling interval in milliseconds (e.g., every 30 seconds)
+  const POLLING_INTERVAL = 30000;
+
+  // Initial load and polling setup
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowLoadingScreen(false);
     }, 500);
 
-    return () => clearTimeout(timer);
-  }, []);
+    // Set up polling
+    const interval = setInterval(() => {
+      refetch();
+    }, POLLING_INTERVAL);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
+  }, [refetch]);
+
+  // Refresh when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   if (isLoading || showLoadingScreen) {
     return <LoadingScreen />;

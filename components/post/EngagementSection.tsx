@@ -1,20 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Pressable } from 'react-native';
-import { FavouriteIcon, Comment02Icon, Share05Icon, LaughingIcon, SurpriseIcon, AngryIcon, Sad01Icon, } from '@hugeicons/react-native';
-import { Link, router } from 'expo-router';
-import { LongPressGestureHandler, State } from 'react-native-gesture-handler';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { FavouriteIcon, Comment02Icon, Share05Icon } from '@hugeicons/react-native';
+import { router } from 'expo-router';
 import Reanimated, { withSpring, useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
+import { Engagement, Actions } from '../../utils/types';
 
 interface EngagementSectionProps {
-  engagement: {
-    likes: number;
-    comments: number;
-    shares: number;
-  };
-  actions: {
-    like: boolean;
-  };
-  index: number;
+  engagement: Engagement;
+  actions: Actions;
+  index: string;
 }
 
 const EngagementSection: React.FC<EngagementSectionProps> = ({ engagement, actions, index }) => {
@@ -32,6 +26,13 @@ const EngagementSection: React.FC<EngagementSectionProps> = ({ engagement, actio
     setLiked(!liked);
   };
 
+  const handleCommentPress = () => {
+    router.push({
+      pathname: '/comments',
+      params: { postId: index }
+    });
+  };
+
   return (
     <View className="m-2 flex-row items-center justify-between">
         <View className='flex-row items-center gap-x-8'>
@@ -41,17 +42,15 @@ const EngagementSection: React.FC<EngagementSectionProps> = ({ engagement, actio
             <Text className="text-[#787A80]">{engagement?.likes}</Text>
             </TouchableOpacity>
           </Reanimated.View>
-      <TouchableOpacity onPress={() =>  router.navigate({
-        pathname: `/comment`,
-        params: {
-          id: index
-        }
-      })} className='border border-[#202227] py-[8px] pl-[10px] pr-[16px] flex-row items-center gap-x-[4px] rounded-[24px]'>
-          <Comment02Icon  variant="stroke" size={20} color="#787A80" />
-         <Text className="text-[#787A80]">{engagement?.comments}</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleCommentPress}
+            className='border border-[#202227] py-[8px] pl-[10px] pr-[16px] flex-row items-center gap-x-[4px] rounded-[24px]'
+          >
+            <Comment02Icon variant="stroke" size={20} color="#787A80" />
+            <Text className="text-[#787A80]">{engagement?.comments}</Text>
+          </TouchableOpacity>
         </View>
-      <Share05Icon variant="stroke" size={20} color="#787A80" />
+        <Share05Icon variant="stroke" size={20} color="#787A80" />
     </View>
   );
 };

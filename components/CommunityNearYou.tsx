@@ -5,7 +5,7 @@ import CommunityBigCard from './cards/CommunityBigCard'
 
 const CommunityNearYou = () => {
   return (
-    <View className='pl-[24px] gap-y-[16px]'>
+    <View className='gap-y-[16px]'>
       <Text className='text-[20px] text-[#fff] font-PlusJakartaSansMedium'>Based on music you listen to</Text>
       <FlatList
       showsHorizontalScrollIndicator={false} data={communities}

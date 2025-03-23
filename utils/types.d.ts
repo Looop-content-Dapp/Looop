@@ -1,7 +1,3 @@
-// types.ts
-
-// Basic building blocks
-
 export interface User {
     name: string;
     verified: boolean;
@@ -14,9 +10,7 @@ export interface User {
 
   export interface Media {
     type: MediaType;
-    duration?: string; // for audio
-    audioWaveform?: string; // for audio
-    thumbnail?: string[]; // for image and video
+   url: string[]
   }
 
   export interface Engagement {

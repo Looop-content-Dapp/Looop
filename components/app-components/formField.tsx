@@ -509,12 +509,12 @@ const PickerField = ({
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{label}</Text>
-              {/* <TouchableOpacity
+              <TouchableOpacity
                 onPress={() => setModalVisible(false)}
-                className="flex-row justify-between items-center bg-Orange/08 px-[20px] py-[9px] rounded-[12px]"
+                className="flex-row justify-between items-center"
                >
                 <Text className="text-[#f4f4f4] font-PlusJakartaSansMedium text-[16px]">Save</Text>
-              </TouchableOpacity> */}
+              </TouchableOpacity>
             </View>
 
             {

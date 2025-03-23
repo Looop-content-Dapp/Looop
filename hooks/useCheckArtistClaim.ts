@@ -12,7 +12,8 @@ export const useCheckArtistClaim = (claimId: string | null) => {
       const response = await api.get(`/api/artistclaim/status/${claimId}`);
       return response.data.data;
     },
-    refetchInterval: 5000, // Auto refresh every 5 seconds
-    enabled: !!claimId, // Only run query if claimId exists
+    refetchOnWindowFocus: true,
+    staleTime: 0,
+    enabled: !!claimId,
   });
 };

@@ -45,6 +45,10 @@ interface SignInUserData {
         email: boolean;
         push: boolean;
       };
+      currency: 'USD' | 'EUR' | 'GBP' | 'NGN' | 'GHS' | 'KES' | 'ZAR';
+      chain: 'XION' | 'STARKNET';
+      theme: 'light' | 'dark' | 'system';
+      displayMode: 'compact' | 'comfortable';
     };
     role: 'LISTENER' | 'ARTIST' | 'ADMIN';
     wallets: Wallets;

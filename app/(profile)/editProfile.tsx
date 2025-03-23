@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
-import { Avatar } from "react-native-elements";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { SafeAreaView } from "react-native";
@@ -59,21 +58,34 @@ const EditProfile = () => {
   }
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  // Update the initial state
   const [profileData, setProfileData] = useState<ProfileFormData>(() => ({
     username: userdata.username,
-    fullName: userdata.fullName ?? "",
-    profileImage: userdata.profileImage ?? "",
-    bio: userdata.bio ?? "",
-    phoneNumber: userdata.phoneNumber ?? "",
-    country: userdata.country ?? "",
-    city: userdata.city ?? "",
-    dateOfBirth: userdata.dateOfBirth ?? "",
-    favoriteGenres: userdata.favoriteGenres ?? [],
-    websiteUrl: userdata.websiteUrl ?? "",
+    email: userdata.email,
+    fullname: userdata.fullname ?? "",
+    age: userdata.age ?? "",
+    gender: userdata.gender ?? undefined,
+    profileImage: userdata.profileImage ?? null,
+    bio: userdata.bio ?? null,
+    tel: userdata.tel?.toString() ?? null, // Convert to string if exists
+    location: {
+      country: userdata.location?.country ?? null,
+      state: userdata.location?.state ?? null,
+      city: userdata.location?.city ?? null
+    },
     socialLinks: {
-      twitter: userdata.socialLinks?.twitter ?? "",
-      instagram: userdata.socialLinks?.instagram ?? "",
-      tiktok: userdata.socialLinks?.tiktok ?? "",
+      instagram: userdata.socialLinks?.instagram ?? null,
+      twitter: userdata.socialLinks?.twitter ?? null,
+      facebook: userdata.socialLinks?.facebook ?? null,
+      website: userdata.socialLinks?.website ?? null
+    },
+    preferences: {
+      favoriteGenres: userdata.preferences?.favoriteGenres ?? [],
+      language: userdata.preferences?.language ?? "en",
+      notifications: {
+        email: userdata.preferences?.notifications?.email ?? false,
+        push: userdata.preferences?.notifications?.push ?? false
+      }
     }
   }));
 
@@ -192,11 +204,12 @@ const handleImagePick = async () => {
   return (
     <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-[#040405]">
       <AppBackButton name="Edit Profile" onBackPress={() => router.back()} />
-
       <ScrollView contentContainerStyle={styles.container}>
+        {/* Basic Information Section */}
         <View>
           <Text style={styles.sectionTitle}>Basic Information</Text>
 
+          {/* Profile Image Section - remains unchanged */}
           <View style={{ alignItems: "center", marginBottom: 40 }}>
             <TouchableOpacity
               style={styles.imageUpload}
@@ -223,6 +236,7 @@ const handleImagePick = async () => {
           </View>
 
           <View style={{ gap: 16 }}>
+            {/* Username - remains unchanged */}
             <View>
               <FormField.TextField
                 label="Username"
@@ -231,16 +245,52 @@ const handleImagePick = async () => {
                 editable={false}
                 style={[styles.input, styles.disabledInput]}
               />
-              <Text style={styles.helperText}>Username cannot be changed</Text>
             </View>
-            {renderTextField("Full Name", "fullName", "Enter your full name")}
+
+            {/* Email */}
+            <FormField.TextField
+              label="Email"
+              placeholder="Enter email"
+              value={profileData.email}
+              editable={false}
+              style={[styles.input, styles.disabledInput]}
+            />
+
+            {/* Full Name */}
+            {renderTextField("Full Name", "fullname", "Enter your full name")}
+
+            {/* Age */}
+            <View>
+       <FormField.TextField
+        label="Age"
+        placeholder="Enter age"
+        value={profileData.age}
+        editable={false}
+      style={[styles.input, styles.disabledInput]}
+    />
+  </View>
+
+            {/* Gender */}
+            <View>
+              <FormField.TextField
+                label="Gender"
+                placeholder="Select gender"
+                value={profileData.gender}
+                editable={false}
+                style={[styles.input, styles.disabledInput]}
+              />
+            </View>
+
+            {/* Bio */}
             {renderTextField("Bio", "bio", "Tell us about yourself", {
               multiline: true,
               numberOfLines: 4,
               textAlignVertical: "top",
               style: [styles.input, { minHeight: 120 }],
             })}
-            {renderTextField("Phone Number", "phoneNumber", "+1234567890", {
+
+            {/* Phone Number */}
+            {renderTextField("Phone Number", "tel", "+1234567890", {
               keyboardType: "phone-pad",
               style: styles.input,
             })}
@@ -253,17 +303,46 @@ const handleImagePick = async () => {
             <FormField.PickerField
               label="Country"
               placeholder="Select your country"
-              value={profileData.country}
-              onSelect={(value) => handleFormChange("country", value)}
+              value={profileData.location.country ?? ""}
+              onSelect={(value) => handleFormChange("location", { ...profileData.location, country: value })}
               options={countries}
+            />
+
+            <FormField.TextField
+              label="State/Province"
+              placeholder="Enter state/province"
+              value={profileData.location.state ?? ""}
+              onChangeText={(text) => handleFormChange("location", { ...profileData.location, state: text })}
             />
 
             <FormField.TextField
               label="City"
               placeholder="Enter your city"
-              value={profileData.city}
-              onChangeText={(text) => handleFormChange("city", text)}
+              value={profileData.location.city ?? ""}
+              onChangeText={(text) => handleFormChange("location", { ...profileData.location, city: text })}
             />
+          </View>
+        </View>
+
+        <View style={{ marginTop: 20 }}>
+          <Text style={styles.sectionTitle}>Preferences</Text>
+          <View style={{ gap: 16 }}>
+            <FormField.PickerField
+              label="Language"
+              placeholder="Select language"
+              value={profileData.preferences.language}
+              onSelect={(value) => handleFormChange("preferences", {
+                ...profileData.preferences,
+                language: value
+              })}
+              options={[
+                { label: "English", value: "en" },
+                { label: "Spanish", value: "es" },
+                // Add more languages as needed
+              ]}
+            />
+
+            {/* Add more preference fields as needed */}
           </View>
         </View>
 
@@ -273,39 +352,35 @@ const handleImagePick = async () => {
             <FormField.TextField
               label="Website"
               placeholder="Your website URL"
-              value={profileData.websiteUrl}
-              onChangeText={(text) => handleFormChange("websiteUrl", text)}
+              value={profileData.socialLinks.website ?? ""}
+              onChangeText={(text) => handleSocialLinkChange("website", text)}
             />
 
             <FormField.TextField
               label="Twitter"
               placeholder="@username"
-              value={profileData.socialLinks?.twitter || ""}
+              value={profileData.socialLinks.twitter ?? ""}
               onChangeText={(text) => handleSocialLinkChange("twitter", text)}
-              error={errors["socialLinks.twitter"]}
             />
 
             <FormField.TextField
               label="Instagram"
               placeholder="@username"
-              value={profileData.socialLinks?.instagram || ""}
+              value={profileData.socialLinks.instagram ?? ""}
               onChangeText={(text) => handleSocialLinkChange("instagram", text)}
-              error={errors["socialLinks.instagram"]}
-
             />
 
             <FormField.TextField
-              label="TikTok"
-              placeholder="@username"
-              value={profileData.socialLinks?.tiktok || ""}
-              onChangeText={(text) => handleSocialLinkChange("tiktok", text)}
-              error={errors["socialLinks.tiktok"]}
-
+              label="Facebook"
+              placeholder="Profile URL"
+              value={profileData.socialLinks.facebook ?? ""}
+              onChangeText={(text) => handleSocialLinkChange("facebook", text)}
             />
           </View>
         </View>
       </ScrollView>
 
+      {/* Footer - remains unchanged */}
       <View style={styles.footer}>
         <TouchableOpacity
           onPress={handleSave}
@@ -396,12 +471,15 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   input: {
-    backgroundColor: "#1A1A1A",
+    backgroundColor: "transparent",
     borderRadius: 12,
     padding: 16,
     color: "#F4F4F4",
     fontFamily: "PlusJakartaSans-Regular",
     fontSize: 16,
+    borderColor: "#63656B",
+    borderWidth: 0.3,
+    borderStyle: "solid",
   },
   disabledInput: {
     backgroundColor: "#0A0A0A",

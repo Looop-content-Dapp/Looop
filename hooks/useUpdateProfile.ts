@@ -5,25 +5,60 @@ import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 
 export const profileSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  fullName: z.string().min(2, "Full name is required"),
-  bio: z.string().optional().default(""),
-  phoneNumber: z.string().optional().default(""),
-  country: z.string().optional().default(""),
-  city: z.string().optional().default(""),
-  dateOfBirth: z.string().optional().default(""),
-  favoriteGenres: z.array(z.string()).optional().default([]),
-  websiteUrl: z.string().url().optional().default("").or(z.literal("")),
-  profileImage: z.string().optional().default(""),
-  socialLinks: z.object({
-    twitter: z.string().optional().default(""),
-    instagram: z.string().optional().default(""),
-    tiktok: z.string().optional().default(""),
-  }).optional().default({
-    twitter: "",
-    instagram: "",
-    tiktok: "",
+  username: z.string().min(3, "Username must be at least 3 characters").readonly(),
+  email: z.string().email("Invalid email address").readonly(),
+  fullname: z.string().optional(),
+  age: z.string().optional().readonly(),
+  gender: z.enum(['male', 'female']).optional().readonly(),
+  bio: z.string().nullable().default(null),
+  tel: z.string().nullable().default(null),
+  location: z.object({
+    country: z.string().nullable().default(null),
+    state: z.string().nullable().default(null),
+    city: z.string().nullable().default(null),
+  }).default({
+    country: null,
+    state: null,
+    city: null
   }),
+  socialLinks: z.object({
+    instagram: z.string().nullable().default(null),
+    twitter: z.string().nullable().default(null),
+    facebook: z.string().nullable().default(null),
+    website: z.string().nullable().default(null),
+  }).default({
+    instagram: null,
+    twitter: null,
+    facebook: null,
+    website: null,
+  }),
+  preferences: z.object({
+    favoriteGenres: z.array(z.string()).default([]),
+    language: z.string().default('en'),
+    notifications: z.object({
+      email: z.boolean().default(false),
+      push: z.boolean().default(false),
+    }).default({
+      email: false,
+      push: false,
+    }),
+    currency: z.enum(['USD', 'EUR', 'GBP', 'NGN', 'GHS', 'KES', 'ZAR']).default('USD'),
+    chain: z.enum(['XION', 'STARKNET']).default('XION'),
+    theme: z.enum(['light', 'dark', 'system']).default('system'),
+    displayMode: z.enum(['compact', 'comfortable']).default('comfortable'),
+  }).default({
+    favoriteGenres: [],
+    language: 'en',
+    notifications: {
+      email: false,
+      push: false,
+    },
+    currency: 'USD',
+    chain: 'XION',
+    theme: 'system',
+    displayMode: 'comfortable',
+  }),
+  profileImage: z.string().nullable().default(null),
 });
 
 export type ProfileFormData = z.infer<typeof profileSchema>;
@@ -34,9 +69,7 @@ export const useUpdateProfile = () => {
   return useMutation({
     mutationFn: async ({ userId, data }: { userId: string; data: ProfileFormData }) => {
       try {
-        // Validate the data before sending
         const validatedData = profileSchema.parse(data);
-
         const response = await api.patch(`/api/user/profile/${userId}`, validatedData);
 
         if (response.data?.user) {

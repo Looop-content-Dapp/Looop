@@ -1,7 +1,11 @@
 import React from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 
-export const ImageGrid = ({ thumbnails }) => {
+interface ImageGridProps {
+  thumbnails: string[];
+}
+
+export const ImageGrid: React.FC<ImageGridProps> = ({ thumbnails }) => {
 
   const renderImageGrid = () => {
     if (thumbnails.length === 4) {
