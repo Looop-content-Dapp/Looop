@@ -1,60 +1,118 @@
-import { View, Text, ImageBackground } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, ImageBackground, Pressable } from 'react-native';
 import React from 'react';
-import { CheckmarkBadge01Icon, UserGroupIcon, UserSharingIcon } from '@hugeicons/react-native';
+import { CheckmarkBadge01Icon } from '@hugeicons/react-native';
 import { BlurView } from 'expo-blur';
 import { Skeleton } from 'moti/skeleton';
-
-type CommunityInterface = {
-    id: number;
-    title: string;
-    subtitle: string;
-    members: string;
-    moderators: number;
-    backgroundColor: string;
-    artist: string;
-    image: string;
-};
+import { Community } from '@/hooks/useGetCommunities';
+import { router } from 'expo-router';
 
 type Props = {
-    item: CommunityInterface;
+    item: Community;
+    userdata?: any; // Add proper type
 };
 
-const CommunityBigCard = ({ item }: Props) => {
+const CommunityBigCard = ({ item, userdata }: Props) => {
+    const handleRoute = () => {
+        const isMember = item?.members?.some((member) => member._id === userdata?._id) || false;
+
+        if (!isMember) {
+            router.push({
+                pathname: "/payment",
+                params: {
+                    name: item.communityName,
+                    image: item.tribePass?.collectibleImage,
+                    communityId: item._id,
+                    collectionAddress: item.tribePass?.contractAddress,
+                    type: "xion",
+                    userAddress: userdata?.wallets?.xion?.address,
+                    currentRoute: "/(communityTabs)/(explore)/search",
+                },
+            });
+        } else {
+            router.navigate({
+                pathname: '/communityDetails',
+                params: {
+                    id: item._id,
+                    name: item.communityName,
+                    image: item.coverImage,
+                    description: item.description,
+                    noOfMembers: item.memberCount,
+                }
+            });
+        }
+    };
+
     return (
-        <Skeleton
-        colorMode='dark'
-        transition={{
-            type: "timing",
-            duration: 2000
-        }}
-        >
-        <ImageBackground
-            source={{
-                uri: item?.image,
-            }}
-            className="h-[389px] w-[283px] rounded-[34px] overflow-hidden"
-        >
-            <View className='bg-Grey/08 rounded-[24px] flex-row items-center gap-x-[6px]' style={{position: "absolute", top: 0, margin: 16, paddingHorizontal: 12, paddingVertical: 8}}>
-                <Text className='text-[12px] font-PlusJakartaSansBold text-[#fff]'>{item?.artist}</Text>
-                <CheckmarkBadge01Icon size={14} color='#ffff' variant='solid' />
-            </View>
-            <BlurView
-            intensity={60}
-                style={{borderRadius: 50, height: "40%", position: "absolute", bottom: 0, width: "100%" }}
+        <Pressable onPress={handleRoute}>
+            <Skeleton
+                colorMode='dark'
+                transition={{
+                    type: "timing",
+                    duration: 2000
+                }}
             >
-                <View className="flex-1 justify-center p-6">
-                    <Text className="text-white font-PlusJakartaSansBold text-[20px] font-bold mb-2">{item?.title}</Text>
-                    <Text className="text-white text-[14px] font-PlusJakartaSansRegular mb-4">{item?.subtitle}</Text>
-                    <View className="flex-row w-full">
-                        <View className='flex-row bg-[#ffffff33] p-[10px] items-center gap-x-2 rounded-[10px]'>
-                        <Text className="text-white text-[12px] font-PlusJakartaSansBold">{item?.members} Members</Text>
-                     </View>
+                <ImageBackground
+                    source={{
+                        uri: item?.coverImage,
+                    }}
+                    className="h-[389px] w-[283px] bg-Grey/06 rounded-[34px] overflow-hidden"
+                    resizeMode="cover"
+                >
+                    <View
+                        className='bg-[#ffffff14] backdrop-blur-md rounded-[24px] flex-row items-center gap-x-[6px]'
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            margin: 16,
+                            paddingHorizontal: 12,
+                            paddingVertical: 8
+                        }}
+                    >
+                        <Text
+                            className='text-[12px] font-PlusJakartaSansBold text-[#fff]'
+                            numberOfLines={1}
+                        >
+                            {item?.tribePass.collectibleName}
+                        </Text>
+                        <CheckmarkBadge01Icon size={14} color='#ffff' variant='solid' />
                     </View>
-                </View>
-            </BlurView>
-        </ImageBackground>
-     </Skeleton>
+                    <BlurView
+                        intensity={60}
+                        tint="dark"
+                        style={{
+                            borderTopLeftRadius: 32,
+                            borderTopRightRadius: 32,
+                            height: "45%",
+                            position: "absolute",
+                            bottom: 0,
+                            width: "100%"
+                        }}
+                    >
+                        <View className="flex-1 justify-end p-6 gap-y-2">
+                            <Text
+                                className="text-white font-PlusJakartaSansBold text-[20px] font-bold"
+                                numberOfLines={1}
+                            >
+                                {item?.communityName}
+                            </Text>
+                            <Text
+                                className="text-[#ffffff] text-[14px] font-PlusJakartaSansRegular"
+                                numberOfLines={2}
+                            >
+                                {item?.description}
+                            </Text>
+                            <View className="flex-row w-full mt-2">
+                                <View className='flex-row bg-[#ffffff1a] p-[10px] items-center gap-x-2 rounded-[10px]'>
+                                    <Text className="text-white text-[12px] font-PlusJakartaSansBold">
+                                        {item?.memberCount.toLocaleString()} Members
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
+                    </BlurView>
+                </ImageBackground>
+             </Skeleton>
+        </Pressable>
     );
 };
 

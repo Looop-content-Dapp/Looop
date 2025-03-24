@@ -8,16 +8,68 @@ import { useSearch } from '../../../hooks/useSearch';
 import { BlurView } from 'expo-blur';
 import { formatNumber } from '@/utils/ArstsisArr';
 
+// Import types from useSearch
+type Artist = {
+    _id: string;
+    name: string;
+    profileImage: string;
+    verified: boolean;
+    type: "artist";
+    tribeStars: string;
+};
+
+type Community = {
+    _id: string;
+    communityName: string;
+    description: string;
+    coverImage: string;
+    tribePass: {
+        collectibleName: string;
+        collectibleDescription: string;
+        collectibleImage: string;
+        collectibleType: string;
+        contractAddress: string;
+        communitySymbol: string;
+        transactionHash: string;
+    };
+    memberCount: number;
+    artist: Artist;
+    members: Array<{
+        _id: string;
+        email: string;
+        profileImage: string;
+    }>;
+    type: "community";
+};
+
+type Post = {
+    _id: string;
+    title: string;
+    content: string;
+    media: string[];
+    postType: string;
+    category: string;
+    likeCount: number;
+    commentCount: number;
+    createdAt: string;
+    artist: Artist;
+    community: {
+        _id: string;
+        communityName: string;
+    };
+    type: "post";
+};
+
 const SearchScreen = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState<'posts' | 'tribes' | 'artistes'>();
     const navigation = useNavigation();
     const dispatch = useAppDispatch();
     const recentSearches = useAppSelector(state => state.search.recentSearches);
+    const { userdata } = useAppSelector(state => state.auth);
 
     const { data, isLoading } = useSearch(searchQuery, activeFilter);
     const results = data?.data?.results || [];
-    console.log("result:", results)
 
     const handleRecentSearchPress = (search: string) => {
         setSearchQuery(search);
@@ -65,77 +117,101 @@ const SearchScreen = () => {
         })
     }, [searchQuery])
 
-    const handleResultPress = (item: any, type: 'post' | 'artist' | 'community') => {
+    const handleResultPress = (item: Post | Artist | Community, type: 'post' | 'artist' | 'community') => {
         switch (type) {
             case 'post':
+                const post = item as Post;
                 router.navigate({
                     pathname: 'post',
-                    params: { postId: item.id }
+                    params: { postId: post._id }
                 });
                 break;
             case 'artist':
+                const artist = item as Artist;
                 router.navigate({
                     pathname: 'artist',
-                    params: { artistId: item.id }
+                    params: { artistId: artist._id }
                 });
                 break;
             case 'community':
-                router.navigate({
-                    pathname: 'community',
-                    params: { communityId: item.id }
-                });
+                const community = item as Community;
+                const isMember = community?.members?.some((member) => member._id === userdata?._id) || false;
+
+                if (!isMember) {
+                    router.push({
+                        pathname: "/payment",
+                        params: {
+                            name: community.communityName,
+                            image: community.tribePass?.collectibleImage,
+                            communityId: community._id,
+                            collectionAddress: community.tribePass?.contractAddress,
+                            type: "xion",
+                            userAddress: userdata?.wallets?.xion?.address,
+                            currentRoute: "/(communityTabs)/(explore)/search",
+                        },
+                    });
+                } else {
+                    router.navigate({
+                        pathname: '/communityDetails',
+                        params: {
+                            id: community._id,
+                            name: community.communityName,
+                            image: community.coverImage,
+                            description: community.description,
+                            noOfMembers: community.memberCount,
+                        }
+                    });
+                }
                 break;
         }
     };
 
-    // Update renderPostSection's Pressable onPress
-    const renderPostSection = (data: any[]) => {
+    const renderPostSection = (data: Post[]) => {
         if (!data || data.length === 0) return null;
 
         return (
             <View className="mb-6">
                 <Text className="text-[#f4f4f4] text-xl font-semibold mb-4 px-4">Posts from your tribes</Text>
                 <View className="px-4">
-                    {data.map((item, index) => (
+                    {data.map((post, index) => (
                         <Pressable
-                            key={index}
+                            key={post._id}
                             className="mb-4"
-                            onPress={() => handleResultPress(item, 'post')}
+                            onPress={() => handleResultPress(post, 'post')}
                         >
                             <View className="bg-[#202227] rounded-[16px] p-4">
                                 <View className="flex-row items-center mb-3">
                                     <Image
-                                        source={{ uri: item.author?.profileImage }}
+                                        source={{ uri: post.artist.profileImage }}
                                         className="w-8 h-8 rounded-full"
                                     />
                                     <View className="flex-row items-center flex-1 ml-2">
-                                        <Text className="text-[#f4f4f4] font-medium">{item.author?.name}</Text>
-                                        {item.author?.verified && (
+                                        <Text className="text-[#f4f4f4] font-medium">{post.artist.name}</Text>
+                                        {post.artist.verified && (
                                             <CheckmarkBadge01Icon size={16} color="#fff" className="ml-1" />
                                         )}
                                     </View>
-                                    <Text className="text-[#63656B] text-[12px]">1h</Text>
+                                    <Text className="text-[#63656B] text-[12px]">{post.createdAt}</Text>
                                 </View>
-                                <Text className="text-[#f4f4f4] text-[14px]">{item.content}</Text>
-                                {item.media && item.media.length > 0 && (
+                                <Text className="text-[#f4f4f4] text-[14px]">{post.content}</Text>
+                                {post.media && post.media.length > 0 && (
                                     <View className="flex-row flex-wrap mt-3">
-                                        {item.media.map((media: string, index: number) => (
+                                        {post.media.map((media, mediaIndex) => (
                                             <Image
-                                                key={index}
+                                                key={mediaIndex}
                                                 source={{ uri: media }}
                                                 className={`rounded-lg ${
-                                                    item.media.length === 1 ? 'w-full h-[200px]' :
-                                                    item.media.length === 2 ? 'w-[49%] h-[150px]' :
+                                                    post.media.length === 1 ? 'w-full h-[200px]' :
+                                                    post.media.length === 2 ? 'w-[49%] h-[150px]' :
                                                     'w-[32%] h-[100px]'
-                                                } ${index > 0 ? 'ml-[1%]' : ''}`}
+                                                } ${mediaIndex > 0 ? 'ml-[1%]' : ''}`}
                                             />
                                         ))}
                                     </View>
                                 )}
                                 <View className="flex-row items-center mt-3">
-                                    <Text className="text-[#63656B] text-[14px]">{item.likes || '5.2k'}</Text>
-                                    <Text className="text-[#63656B] text-[14px] ml-4">{item.comments || '1.1k'}</Text>
-                                    <Text className="text-[#63656B] text-[14px] ml-4">{item.views || '12.2k'}</Text>
+                                    <Text className="text-[#63656B] text-[14px]">{post.likeCount}</Text>
+                                    <Text className="text-[#63656B] text-[14px] ml-4">{post.commentCount}</Text>
                                 </View>
                             </View>
                         </Pressable>
@@ -145,14 +221,17 @@ const SearchScreen = () => {
         );
     };
 
-    // Update renderSection's Pressable onPress
-    const renderSection = (title: string, data: any[], type: 'artist' | 'community') => {
+    const renderSection = <T extends Artist | Community>(
+        title: string,
+        data: T[],
+        type: 'artist' | 'community'
+    ) => {
         if (!data || data.length === 0) return null;
 
         return (
             <View className="mb-6">
                 <Text className="text-[#9A9B9F] text-[20px] font-PlusJakartaSansMedium mb-4 px-4">{title}</Text>
-                <FlatList
+                <FlatList<T>
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     data={data}
@@ -165,7 +244,7 @@ const SearchScreen = () => {
                                 onPress={() => handleResultPress(item, 'artist')}
                             >
                                 <ImageBackground
-                                    source={{ uri: item.profileImage }}
+                                    source={{ uri: (item as Artist).profileImage }}
                                     className="w-full h-full rounded-[20px] bg-Grey/06 overflow-hidden"
                                     resizeMode="cover"
                                 >
@@ -176,23 +255,27 @@ const SearchScreen = () => {
                                     >
                                         <View className="flex-1 justify-end p-4">
                                             <View className="flex-row items-center gap-x-1">
-                                                <Text className="text-[#f4f4f4] text-[14px] font-semibold">{item.name}</Text>
-                                                {item.verified && (
+                                                <Text numberOfLines={1} className="text-[#f4f4f4] text-[14px] font-semibold">
+                                                    {(item as Artist).name}
+                                                </Text>
+                                                {(item as Artist).verified && (
                                                     <CheckmarkBadge01Icon size={16} color='#f4f4f4' variant='solid' />
                                                 )}
                                             </View>
-                                            <Text className="text-[#63656B] text-[12px] mt-1">{item?.followers} Tribestars</Text>
+                                            <Text className="text-[#63656B] text-[12px] mt-1">
+                                                {(item as Artist).tribeStars} Tribestars
+                                            </Text>
                                         </View>
                                     </BlurView>
                                 </ImageBackground>
                             </Pressable>
-                            ) : (
-                                <Pressable
+                        ) : (
+                            <Pressable
                                 className="w-[283px] h-[320px]"
                                 onPress={() => handleResultPress(item, 'community')}
                             >
                                 <ImageBackground
-                                    source={{ uri: item.coverImage }}
+                                    source={{ uri: (item as Community).coverImage }}
                                     className="w-full h-full rounded-[20px] bg-Grey/06 overflow-hidden"
                                     resizeMode="cover"
                                 >
@@ -203,21 +286,25 @@ const SearchScreen = () => {
                                     >
                                         <View className="flex-1 justify-end p-6">
                                             <View className="flex-row items-center gap-x-1">
-                                                <Text className="text-[#f4f4f4] text-[16px] font-semibold">{item.communityName}</Text>
-                                                {item.verified && (
+                                                <Text className="text-[#f4f4f4] text-[16px] font-semibold">
+                                                    {(item as Community).communityName}
+                                                </Text>
+                                                {(item as Community).artist.verified && (
                                                     <CheckmarkBadge01Icon size={24} color='#f4f4f4' variant='solid' />
                                                 )}
                                             </View>
-                                            <Text className="text-[#63656B] text-[14px] mt-1">{formatNumber(item?.memberCount as string)} Members</Text>
+                                            <Text className="text-[#63656B] text-[14px] mt-1">
+                                                {formatNumber((item as Community).memberCount.toString())} Members
+                                            </Text>
                                         </View>
                                     </BlurView>
                                 </ImageBackground>
                             </Pressable>
-                            )
-                        )}
-                    />
-                </View>
-            );
+                        )
+                    )}
+                />
+            </View>
+        );
     };
 
     return (
@@ -284,8 +371,8 @@ const SearchScreen = () => {
                     showsVerticalScrollIndicator={false}
                 >
                     {renderPostSection(results.filter(item => item.type === 'post'))}
-                    {renderSection('Artistes', results.filter(item => item.type === 'artist'), 'artist')}
-                    {renderSection('Bubbling Communities', results.filter(item => item.type === 'community'), 'community')}
+                    {renderSection<Artist>('Artistes', results.filter((item): item is Artist => item.type === 'artist'), 'artist')}
+                    {renderSection<Community>('Bubbling Communities', results.filter((item): item is Community => item.type === 'community'), 'community')}
 
                     {results.length === 0 && (
                         <View className="flex-1 justify-center items-center pt-8">

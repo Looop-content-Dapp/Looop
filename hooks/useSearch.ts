@@ -10,8 +10,20 @@ type Artist = {
     tribeStars: string;
 };
 
-type ArtistSearchResult = Artist & {
-  totalReleases?: number;
+type Member = {
+  _id: string;
+  email: string;
+  profileImage: string;
+};
+
+type TribePass = {
+  collectibleName: string;
+  collectibleDescription: string;
+  collectibleImage: string;
+  collectibleType: string;
+  contractAddress: string;
+  communitySymbol: string;
+  transactionHash: string;
 };
 
 type Community = {
@@ -19,8 +31,10 @@ type Community = {
   communityName: string;
   description: string;
   coverImage: string;
+  tribePass: TribePass;
   memberCount: number;
   artist: Artist;
+  members: Member[];
   type: "community";
 };
 
@@ -40,35 +54,6 @@ type Post = {
     communityName: string;
   };
   type: "post";
-};
-
-type CommunitySearchResponse = {
-  status: string;
-  message: string;
-  data: {
-    results: (Community | Post)[];
-    total: number;
-    filter: string;
-  };
-};
-
-type ArtistSearchResponse = {
-  success: boolean;
-  message: string;
-  data: {
-    tracks: { items: any[]; total: number; hasMore: boolean };
-    artists: { items: ArtistSearchResult[]; total: number; hasMore: boolean };
-    releases: { items: any[]; total: number; hasMore: boolean };
-    playlists: { items: any[]; total: number; hasMore: boolean };
-  };
-  metadata: {
-    query: string;
-    pagination: {
-      current: number;
-      limit: number;
-      totalResults: number;
-    };
-  };
 };
 
 type SearchResponse = {

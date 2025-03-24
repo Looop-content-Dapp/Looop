@@ -13,6 +13,8 @@ import { useAppSelector } from "@/redux/hooks";
 import { StatusBar } from "expo-status-bar";
 import { useUserFeed } from "../../../hooks/useUserFeed";
 import { Skeleton } from "moti/skeleton";
+import { useFollowedCommunities } from "@/hooks/useFollowedCommunities";
+import CommunityCard from "@/components/cards/CommunityCard";
 
 const Index = () => {
   const { currentTrack } = useMusicPlayer();
@@ -21,7 +23,8 @@ const Index = () => {
     getDailyMixes,
   } = useQuery();
 
-  // Use the new useUserFeed hook
+  const { data: communities, isLoading: communitiesLoading } = useFollowedCommunities(userdata?._id as string);
+  console.log("communities", communities)
   const { data: userFeedData, isLoading: userFeedLoading } = useUserFeed(userdata?._id as string);
   const [dailyMixes, setDailyMixes] = useState<DailyMixesMix[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +51,7 @@ useEffect(() => {
   const suggestedTracks = userFeedData?.data?.suggestedTracks || [];
   const recentReleases = userFeedData?.data?.recentReleases || [];
 
+
   return (
     <>
       <StatusBar translucent={true} backgroundColor="#040405" style="light" />
@@ -68,6 +72,16 @@ useEffect(() => {
             title="Your Daily Mixes"
           />
 
+      {communities && communities.length > 0 && (
+            <Skeleton show={communitiesLoading}>
+              <CommunityCard
+                data={communities}
+                isLoading={communitiesLoading}
+                title="Your Communities"
+              />
+            </Skeleton>
+          )}
+
           {/* Followed Artists Section - only show if there's data */}
           {followedArtists.length > 0 && (
          <Skeleton>
@@ -78,15 +92,6 @@ useEffect(() => {
             />
          </Skeleton>
           )}
-
-          {/* Recent Releases Section - only show if there's data */}
-          {/* {recentReleases.length > 0 && (
-            <NewlyReleased
-              musicData={recentReleases}
-              isLoading={userFeedLoading}
-              title="Recent Releases"
-            />
-          )} */}
 
           {/* Recommended Artists Section - only show if there's data */}
           {recommendedArtists.length > 0 && (
