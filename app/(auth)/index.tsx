@@ -20,6 +20,11 @@ import { InformationCircleIcon } from "@hugeicons/react-native";
 import * as WebBrowser from "expo-web-browser";
 import { Pressable } from "react-native";
 import { useGoogleAuth, useAppleAuth } from "@/hooks/useSocialAuth";
+import {
+    useAbstraxionAccount,
+    useAbstraxionSigningClient,
+  } from "@burnt-labs/abstraxion-react-native";
+import { useEffect } from 'react';
 
 // Validation schema
 const schema = z.object({
@@ -89,6 +94,16 @@ const EmailSignUp: React.FC = () => {
   };
   const { handleGoogleSignIn, loading: googleLoading, isAuthenticating } = useGoogleAuth();
   const { handleAppleSignIn, loading: appleLoading, isAuthenticating:isAppleAuthenticating } = useAppleAuth();
+  const {
+    data: account,
+    logout,
+    login,
+    isConnected,
+    isConnecting,
+  } = useAbstraxionAccount();
+  console.log(login, "login")
+  const { client, signArb } = useAbstraxionSigningClient();
+  console.log(account)
 
   const {
     control,
@@ -109,7 +124,30 @@ const EmailSignUp: React.FC = () => {
         }),
     });
   };
-  
+
+  const handleLogin = async() => {
+    try {
+        console.log('User is connected and logged in', isConnected, isConnecting)
+        console.log('Attempting to login with Xion...');
+        await login()
+        console.log('Xion login successful');
+
+    } catch (error: any) {
+        console.error('Xion login error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name,
+            cause: error.cause
+        });
+
+        // Optionally alert the user
+        Alert.alert(
+            'Login Error',
+            'Failed to sign in with Xion. Please try again.'
+        );
+    }
+  }
+
   return (
     <ScrollView className="flex-1">
       <View className="flex-1 px-6 gap-12">
@@ -192,6 +230,7 @@ const EmailSignUp: React.FC = () => {
             text="Sign in with Apple"
             loading={appleLoading || isAppleAuthenticating}
           />
+        
         </View>
 
         <Pressable

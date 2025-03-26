@@ -27,25 +27,18 @@ import {
   import { LinearGradient } from 'expo-linear-gradient';
   import Slider from '@react-native-community/slider';
   import * as Haptics from 'expo-haptics';
-  import useMusicPlayer from '../hooks/useMusicPlayer';
-import { useQuery } from '../hooks/useQuery';
-import { getColors } from 'react-native-image-colors';
-import { BlurView } from 'expo-blur';
+  import { useQuery } from '../hooks/useQuery';
+  import { getColors } from 'react-native-image-colors';
+  import { BlurView } from 'expo-blur';
+import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
 
-  // Add this function near the top of your component
   const getContrastColor = (bgColor: string) => {
-    // Convert hex to RGB
     const r = parseInt(bgColor.slice(1, 3), 16);
     const g = parseInt(bgColor.slice(3, 5), 16);
     const b = parseInt(bgColor.slice(5, 7), 16);
-
-    // Calculate luminance
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-    // Return white for dark backgrounds, black for light backgrounds
     return luminance > 0.5 ? '#000000' : '#FFFFFF';
   };
-
 
   const NowPlaying = () => {
     const [backgroundColor, setBackgroundColor] = useState('#000000');
@@ -65,86 +58,40 @@ import { BlurView } from 'expo-blur';
       toggleRepeatMode,
       next,
       previous,
-    } = useMusicPlayer();
-    const { retrieveUserId, saveAlbum,likeSong}= useQuery()
+      currentTime,
+      duration,
+      buffering,
+      seekTo,
+    } = useMusicPlayerContext();
+    const { retrieveUserId, saveAlbum, likeSong } = useQuery();
 
-    const [progress, setProgress] = React.useState(0);
-    const [trackDuration] = React.useState(180); // 3 minutes in seconds
-    const progressRef = React.useRef(progress);
-    progressRef.current = progress;
-
-
-    // const handleLikePress = async () => {
-    //     try {
-    //         const userId = await retrieveUserId();
-    //         if (!userId) return;
-
-    //         if (type === 'album') {
-    //             await saveAlbum(userId, id as string);
-    //             await likeSong(userId, id as string);
-    //             setIsSaved(true);
-    //             setIsLiked(true);
-    //         } else {
-    //             await likeSong(userId, id as string);
-    //             setIsLiked(true);
-    //         }
-    //     } catch (error) {
-    //         console.error("Error liking/saving:", error);
-    //     }
-    // };
-
-    useEffect(() => {
-      let interval: NodeJS.Timeout;
-      if (isPlaying) {
-        interval = setInterval(() => {
-          setProgress((prev) => {
-            if (prev >= 1) {
-              clearInterval(interval);
-              next(); // Automatically play next track
-              return 0;
-            }
-            return prev + 0.01;
-          });
-        }, 1000);
-      }
-      return () => clearInterval(interval);
-    }, [isPlaying, next]);
-
-    // Reset progress when track changes
-    useEffect(() => {
-      setProgress(0);
-    }, [currentTrack?._id]);
+    const formatTime = (seconds: number) => {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = Math.floor(seconds % 60);
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
 
     const handlePrevious = async () => {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      // If track has played for more than 3 seconds, restart it
-      if (progressRef.current * trackDuration > 3) {
-        setProgress(0);
+      if (currentTime > 3) {
+        seekTo(0);
       } else {
         previous();
       }
     };
 
     const togglePlayPause = async () => {
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        if (isPlaying) {
-          pause();
-        } else if (currentTrack) {
-          play(currentTrack, albumInfo!);
-        }
-      };
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      if (isPlaying) {
+        pause(); // Changed from stop() to pause()
+      } else if (currentTrack) {
+        play(currentTrack, albumInfo!);
+      }
+    };
 
     const handleNext = async () => {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       next();
-      setProgress(0); // Reset progress for new track
-    };
-
-    const formatTime = (progress: number) => {
-      const totalSeconds = Math.floor(progress * trackDuration);
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
-      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     };
 
     useEffect(() => {
@@ -156,14 +103,12 @@ import { BlurView } from 'expo-blur';
               fallback: '#000000',
               cache: true,
             });
-
             let bgColor = '#000000';
             if (result.platform === 'android') {
               bgColor = result.dominant;
             } else if (result.platform === 'ios') {
               bgColor = result.background;
             }
-
             setBackgroundColor(bgColor);
             const mainColor = getContrastColor(bgColor);
             setTextColor(mainColor);
@@ -175,14 +120,13 @@ import { BlurView } from 'expo-blur';
           }
         }
       };
-
       fetchColors();
     }, [cover, albumInfo?.coverImage]);
 
     return (
       <SafeAreaView style={{ flex: 1, minHeight: '100%', backgroundColor }}>
         <ScrollView showsHorizontalScrollIndicator={false}>
-          <View className='flex-row items-center justify-between px-[24px]'>
+          <View className="flex-row items-center justify-between px-[24px]">
             <View className="flex-row items-center gap-x-[8px]">
               <Pressable
                 onPress={() => {
@@ -193,17 +137,17 @@ import { BlurView } from 'expo-blur';
                 <ArrowLeft02Icon size={32} color={textColor} />
               </Pressable>
               <View className="flex-1">
-              <Text style={{ color: subTextColor }} className="text-[14px] font-PlusJakartaSansMedium">
-                Playing from
-              </Text>
-              <Text
-                style={{ color: textColor }}
-                className="text-[16px] font-PlusJakartaSansMedium"
-                numberOfLines={1}
-              >
-                "{albumTitle || albumInfo?.title}"
-              </Text>
-            </View>
+                <Text style={{ color: subTextColor }} className="text-[14px] font-PlusJakartaSansMedium">
+                  Playing from
+                </Text>
+                <Text
+                  style={{ color: textColor }}
+                  className="text-[16px] font-PlusJakartaSansMedium"
+                  numberOfLines={1}
+                >
+                  "{albumTitle || albumInfo?.title}"
+                </Text>
+              </View>
             </View>
             <MoreHorizontalIcon color={textColor} />
           </View>
@@ -211,8 +155,8 @@ import { BlurView } from 'expo-blur';
           <View className="relative">
             <Image
               source={{ uri: cover || albumInfo?.coverImage }}
-              className='w-full h-[400px] mt-[19px]'
-              resizeMode='cover'
+              className="w-full h-[400px] mt-[19px]"
+              resizeMode="cover"
             />
             <LinearGradient
               colors={['transparent', backgroundColor, backgroundColor]}
@@ -222,46 +166,47 @@ import { BlurView } from 'expo-blur';
             />
           </View>
 
-          <View className='px-[24px] my-[24px]'>
-          <View className='flex-row items-center justify-between'>
-            <View className="flex-1 mr-4">
-              <Text
-                style={{ color: textColor }}
-                className='text-[24px] font-PlusJakartaSansMedium'
-                numberOfLines={2}
+          <View className="px-[24px] my-[24px]">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1 mr-4">
+                <Text
+                  style={{ color: textColor }}
+                  className="text-[24px] font-PlusJakartaSansMedium"
+                  numberOfLines={2}
+                >
+                  {currentTrack?.title}
+                </Text>
+                <Text
+                  style={{ color: subTextColor }}
+                  className="text-[14px] font-PlusJakartaSansRegular"
+                  numberOfLines={1}
+                >
+                  {/* {currentTrack?.artist?.join(', ')} */}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
               >
-                {currentTrack?.title}
-              </Text>
-              <Text
-                style={{ color: subTextColor }}
-                className='text-[14px] font-PlusJakartaSansRegular'
-                numberOfLines={1}
-              >
-                {/* {currentTrack?.artist?.join(', ')} */}
-              </Text>
+                <FavouriteIcon size={32} color={subTextColor} />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
-            >
-              <FavouriteIcon size={32} color={subTextColor} />
-            </TouchableOpacity>
-          </View>
 
             {/* Progress Bar */}
-            <View className="mt-">
+            <View className="mt-4">
               <Slider
                 style={{ width: '100%', height: 40 }}
                 minimumValue={0}
                 maximumValue={1}
-                value={progress}
+                value={duration > 0 ? currentTime / duration : 0}
                 minimumTrackTintColor="#FF6D1B"
                 maximumTrackTintColor="#4D4D4D"
                 thumbTintColor="#FF6D1B"
-                onValueChange={setProgress}
+                onValueChange={(value) => seekTo(value * duration)}
+                disabled={buffering}
               />
               <View className="flex-row justify-between">
-              <Text style={{ color: subTextColor }}>{formatTime(progress)}</Text>
-              <Text style={{ color: subTextColor }}>3:00</Text>
+                <Text style={{ color: subTextColor }}>{formatTime(currentTime)}</Text>
+                <Text style={{ color: subTextColor }}>{formatTime(duration)}</Text>
               </View>
             </View>
 
@@ -281,7 +226,7 @@ import { BlurView } from 'expo-blur';
                 onPress={handlePrevious}
                 className="w-[48px] h-[48px] items-center justify-center"
               >
-                <Backward01Icon size={32} color={textColor} variant='solid' />
+                <Backward01Icon size={32} color={textColor} variant="solid" />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -300,19 +245,9 @@ import { BlurView } from 'expo-blur';
                 }}
               >
                 {isPlaying ? (
-                  <PauseIcon
-                    size={40}
-                    color={backgroundColor}
-                    variant='solid'
-                    style={{ opacity: 0.9 }}
-                  />
+                  <PauseIcon size={40} color={backgroundColor} variant="solid" style={{ opacity: 0.9 }} />
                 ) : (
-                  <PlayIcon
-                    size={40}
-                    color={backgroundColor}
-                    variant='solid'
-                    style={{ opacity: 0.9 }}
-                  />
+                  <PlayIcon size={40} color={backgroundColor} variant="solid" style={{ opacity: 0.9 }} />
                 )}
               </TouchableOpacity>
 
@@ -320,7 +255,7 @@ import { BlurView } from 'expo-blur';
                 onPress={handleNext}
                 className="w-[48px] h-[48px] items-center justify-center"
               >
-                <NextIcon size={32} color={textColor} variant='solid' />
+                <NextIcon size={32} color={textColor} variant="solid" />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -335,11 +270,13 @@ import { BlurView } from 'expo-blur';
             </View>
 
             {/* Bottom controls with blur effect */}
-            <BlurView intensity={20} className='mt-8 rounded-[24px] overflow-hidden'>
-              <View className='flex-row items-center justify-between px-[24px] p-[12px]'
-                    style={{ borderColor: `${subTextColor}40` }}>
+            <BlurView intensity={20} className="mt-8 rounded-[24px] overflow-hidden">
+              <View
+                className="flex-row items-center justify-between px-[24px] p-[12px]"
+                style={{ borderColor: `${subTextColor}40` }}
+              >
                 <TouchableOpacity>
-                  <Queue02Icon size={32} color={subTextColor}/>
+                  <Queue02Icon size={32} color={subTextColor} />
                 </TouchableOpacity>
                 <TouchableOpacity>
                   <Playlist01Icon size={32} color={subTextColor} />

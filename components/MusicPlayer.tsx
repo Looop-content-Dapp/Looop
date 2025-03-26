@@ -1,22 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Image, Pressable, Platform } from 'react-native';
-import useMusicPlayer from '../hooks/useMusicPlayer';
 import { NextIcon, PauseIcon, PlayIcon } from '@hugeicons/react-native';
 import { useRouter } from 'expo-router';
 import { getColors } from 'react-native-image-colors';
-import { widthPercentageToDP as wp} from 'react-native-responsive-screen'
+import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
+import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
 
 const getContrastColor = (hexColor: string) => {
-    // Convert hex to RGB
-    const r = parseInt(hexColor.slice(1, 3), 16);
-    const g = parseInt(hexColor.slice(3, 5), 16);
-    const b = parseInt(hexColor.slice(5, 7), 16);
-
-    // Calculate luminance
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-    return luminance > 0.5 ? '#000000' : '#FFFFFF';
-  };
+  const r = parseInt(hexColor.slice(1, 3), 16);
+  const g = parseInt(hexColor.slice(3, 5), 16);
+  const b = parseInt(hexColor.slice(5, 7), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5 ? '#000000' : '#FFFFFF';
+};
 
 const MusicPlayer = () => {
   const [backgroundColor, setBackgroundColor] = useState('#0a0b0f');
@@ -28,9 +24,9 @@ const MusicPlayer = () => {
     isPlaying,
     pause,
     play,
-    nextTrack,
-  } = useMusicPlayer();
-  const {navigate} = useRouter();
+    next,
+  } = useMusicPlayerContext();
+  const { navigate } = useRouter();
 
   useEffect(() => {
     const fetchColors = async () => {
@@ -67,62 +63,68 @@ const MusicPlayer = () => {
 
   const handlePlayPause = () => {
     if (isPlaying) {
-      pause();
+      pause(); // Changed from stop() to pause()
     } else {
-      // Resume playing the current track with current album info
       play(currentTrack, albumInfo);
     }
   };
 
   const handleNext = () => {
-    nextTrack();
+    next();
   };
 
   return (
     <View
-      className='h-[80px] flex-row items-center justify-between absolute bottom-[74px] left-0 right-0'
+      className="h-[80px] flex-row items-center justify-between absolute bottom-[74px] left-0 right-0"
       style={{
         backgroundColor,
         width: wp("100%"),
         paddingHorizontal: 16,
-      }}>
+      }}
+    >
       <Pressable
-        onPress={() => navigate({
-          pathname: "/nowPlaying",
-          params: {
-            cover: albumInfo?.coverImage,
-            albumTitle: albumInfo?.title,
-            title: currentTrack?.title
-          }
-        })}
-        className='flex-1 flex-row items-center gap-x-[12px]'>
+        onPress={() =>
+          navigate({
+            pathname: "/nowPlaying",
+            params: {
+              cover: albumInfo?.coverImage,
+              albumTitle: albumInfo?.title,
+              title: currentTrack?.title,
+            },
+          })
+        }
+        className="flex-1 flex-row items-center gap-x-[12px]"
+      >
         <Image
           source={{ uri: albumInfo?.coverImage }}
-          className='w-[60px] h-[60px] rounded-md'
+          className="w-[60px] h-[60px] rounded-md"
         />
-        <View className='flex-1 mr-4'>
+        <View className="flex-1 mr-4">
           <Text
-            className='text-[16px] font-PlusJakartaSansMedium'
+            className="text-[16px] font-PlusJakartaSansMedium"
             numberOfLines={1}
-            style={{ color: textColor }}>
+            style={{ color: textColor }}
+          >
             {currentTrack.title}
           </Text>
-          <View className='flex-row items-center flex-wrap'>
+          <View className="flex-row items-center flex-wrap">
             <Text
-              className='text-[12px] font-PlusJakartaSansBold'
+              className="text-[12px] font-PlusJakartaSansBold"
               numberOfLines={1}
-              style={{ color: subtextColor }}>
-              {currentTrack.artist.name}
+              style={{ color: subtextColor }}
+            >
+              {currentTrack?.artist?.name}
             </Text>
-            {currentTrack.featuredArtists && currentTrack.featuredArtists.length > 0 && (
+            {currentTrack?.featuredArtists && currentTrack?.featuredArtists.length > 0 && (
               <>
                 <Text style={{ color: subtextColor }}> • </Text>
-                {currentTrack.featuredArtists.map((artist, index) => (
+                {currentTrack?.featuredArtists?.map((artist, index) => (
                   <Text
                     key={artist._id}
-                    className='text-[12px] font-PlusJakartaSansBold'
+                    className="text-[12px] font-PlusJakartaSansBold"
                     numberOfLines={1}
-                    style={{ color: subtextColor }}>
+                    style={{ color: subtextColor }}
+                  >
                     {index > 0 ? `, ${artist.name}` : artist.name}
                   </Text>
                 ))}
@@ -132,19 +134,19 @@ const MusicPlayer = () => {
         </View>
       </Pressable>
 
-    <View className='flex-row items-center gap-x-[20px]'>
-      <TouchableOpacity onPress={handlePlayPause}>
-        {isPlaying ? (
-          <PauseIcon size={28} color={textColor} variant='solid'/>
-        ) : (
-          <PlayIcon size={28} color={textColor} variant='solid'/>
-        )}
-      </TouchableOpacity>
-      <TouchableOpacity onPress={handleNext}>
-        <NextIcon size={28} color={textColor} variant='solid'/>
-      </TouchableOpacity>
+      <View className="flex-row items-center gap-x-[20px]">
+        <TouchableOpacity onPress={handlePlayPause}>
+          {isPlaying ? (
+            <PauseIcon size={28} color={textColor} variant="solid" />
+          ) : (
+            <PlayIcon size={28} color={textColor} variant="solid" />
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleNext}>
+          <NextIcon size={28} color={textColor} variant="solid" />
+        </TouchableOpacity>
+      </View>
     </View>
-  </View>
   );
 };
 

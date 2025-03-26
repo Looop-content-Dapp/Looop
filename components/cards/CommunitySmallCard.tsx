@@ -4,6 +4,7 @@ import React from 'react';
 import { ImageBackground, View, Text, Pressable } from 'react-native';
 import { formatNumber } from '../../utils/ArstsisArr';
 import { router } from 'expo-router';
+import { useAppSelector } from '@/redux/hooks';
 
 interface ItemProps {
   id: string;
@@ -20,12 +21,17 @@ interface ItemProps {
 
 type Props = {
   item: ItemProps;
-  userdata?: any;
 }
 
-const CommunitySmallCard = ({ item, userdata }: Props) => {
+const CommunitySmallCard = ({ item }: Props) => {
+    const { userdata } = useAppSelector((state) => state.auth);
+
   const handleRoute = () => {
-    const isMember = item?.members?.some((member) => member._id === userdata?._id) || false;
+    if(!userdata?._id) return console.log("pls login first")
+
+        const isMember = Array.isArray(item.members) && item.members.length > 0
+            ? item.members.some(member => member.userId._id === userdata?._id)
+            : false;
 
     if (!isMember) {
       router.push({

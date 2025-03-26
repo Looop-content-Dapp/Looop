@@ -1,13 +1,48 @@
 import api from "@/config/apiConfig";
 import { useQuery } from "@tanstack/react-query";
 
+type Genre = {
+    _id: string;
+    name: string;
+    image: string;
+    description: string;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+};
+
+type SocialLinks = {
+    spotify: string | null;
+    instagram: string | null;
+    twitter: string | null;
+    facebook: string | null;
+    website: string | null;
+    _id: string;
+};
+
 type Artist = {
     _id: string;
     name: string;
+    email: string;
     profileImage: string;
+    biography: string;
+    country: string;
+    city: string;
+    websiteurl: string;
+    monthlyListeners: number;
     verified: boolean;
+    verifiedAt: string | null;
+    socialLinks: SocialLinks;
+    popularity: number;
+    roles: string[];
+    labels: string[];
+    genres: Genre[];
     type: "artist";
     tribeStars: string;
+    followers: string[];
+    followersCount: number;
+    topTracks: any[]; // You might want to define a more specific type for tracks
+    communities: number;
 };
 
 type Member = {

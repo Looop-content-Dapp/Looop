@@ -6,7 +6,7 @@ import { useAppSelector } from '@/redux/hooks'
 
 const ArtistYouFollow = () => {
     const { userdata } = useAppSelector((state) => state.auth)
-  const { data: communities, isLoading } = useFollowedCommunities(userdata?._id || '');
+    const { data: communities, isLoading } = useFollowedCommunities(userdata?._id || '');
 
   if (isLoading || !communities?.length) {
     return null;

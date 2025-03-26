@@ -11,27 +11,58 @@ export interface TribePass {
   transactionHash: string;
 }
 
+interface User {
+  _id: string;
+  name?: string;
+  email: string;
+  profileImage: string;
+  verified?: boolean;
+}
+
+interface Member {
+  _id: string;
+  userId: {
+    _id: string;
+    email: string;
+    profileImage: string;
+  };
+  communityId: string;
+  joinDate: string;
+  __v: number;
+}
+
 export interface Community {
   _id: string;
   communityName: string;
   description: string;
   coverImage: string;
   tribePass: TribePass;
+  createdBy: User;
   status: string;
   memberCount: number;
+  NFTToken: number;
+  createdAt: string;
+  updatedAt: string;
+  members: Member[];
   isJoined?: boolean;
+}
+
+interface ApiResponse {
+  status: string;
+  message: string;
+  data: Community[];
 }
 
 export const useGetCommunities = () => {
   return useQuery({
     queryKey: ["communities"],
     queryFn: async () => {
-      const { data } = await api.get("/api/community");
-      return data.data as Community[];
+      const { data } = await api.get<ApiResponse>("/api/community");
+      return data.data;
     },
-    refetchOnWindowFocus: true, // Refetch when window regains focus
-    staleTime: 10000, // Consider data stale after 10 seconds
-    refetchInterval: 30000, // Refresh every 30 seconds
-    refetchIntervalInBackground: false, // Only refresh when tab is active
+    refetchOnWindowFocus: true,
+    staleTime: 10000,
+    refetchInterval: 30000,
+    refetchIntervalInBackground: true,
   });
 };

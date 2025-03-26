@@ -1,19 +1,26 @@
-import { View, Text, ImageBackground, Pressable } from 'react-native';
+import { View, Text, ImageBackground, Pressable, Alert } from 'react-native';
 import React from 'react';
 import { CheckmarkBadge01Icon } from '@hugeicons/react-native';
 import { BlurView } from 'expo-blur';
 import { Skeleton } from 'moti/skeleton';
 import { Community } from '@/hooks/useGetCommunities';
 import { router } from 'expo-router';
+import { useAppSelector } from '@/redux/hooks';
 
 type Props = {
     item: Community;
-    userdata?: any; // Add proper type
 };
 
-const CommunityBigCard = ({ item, userdata }: Props) => {
+const CommunityBigCard = ({ item}: Props) => {
+    const { userdata } = useAppSelector((state) => state.auth);
+
     const handleRoute = () => {
-        const isMember = item?.members?.some((member) => member._id === userdata?._id) || false;
+        if(!userdata?._id) return console.log("pls login first")
+
+            // Fixed member check logic
+            const isMember = Array.isArray(item.members) && item.members.length > 0
+                ? item.members.some(member => member.userId._id === userdata?._id)
+                : false;
 
         if (!isMember) {
             router.push({

@@ -2,17 +2,24 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import type { Community } from '@/hooks/useFollowedCommunities';
 import { router } from 'expo-router';
+import { useAppSelector } from '@/redux/hooks';
 
 type CommunityCardProps = {
   data: Community[];
   isLoading: boolean;
   title: string;
-  userdata?: any;
 };
 
-const CommunityCard = ({ data, isLoading, title, userdata }: CommunityCardProps) => {
+const CommunityCard = ({ data, isLoading, title }: CommunityCardProps) => {
+    const { userdata } = useAppSelector((state) => state.auth)
+
   const handleRoute = (community: Community) => {
-    const isMember = community?.members?.some((member) => member._id === userdata?._id) || false;
+    if(!userdata?._id) return console.log("pls login first")
+
+        // Fixed member check logic
+        const isMember = Array.isArray(community.members) && community.members.length > 0
+            ? community.members.some(member => member.userId._id === userdata?._id)
+            : false;
 
     if (!isMember) {
       router.push({

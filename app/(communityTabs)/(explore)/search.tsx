@@ -9,13 +9,48 @@ import { BlurView } from 'expo-blur';
 import { formatNumber } from '@/utils/ArstsisArr';
 
 // Import types from useSearch
+type Genre = {
+    _id: string;
+    name: string;
+    image: string;
+    description: string;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+};
+
+type SocialLinks = {
+    spotify: string | null;
+    instagram: string | null;
+    twitter: string | null;
+    facebook: string | null;
+    website: string | null;
+    _id: string;
+};
+
 type Artist = {
     _id: string;
     name: string;
+    email: string;
     profileImage: string;
+    biography: string;
+    country: string;
+    city: string;
+    websiteurl: string;
+    monthlyListeners: number;
     verified: boolean;
+    verifiedAt: string | null;
+    socialLinks: SocialLinks;
+    popularity: number;
+    roles: string[];
+    labels: string[];
+    genres: Genre[];
     type: "artist";
     tribeStars: string;
+    followers: string[];
+    followersCount: number;
+    topTracks: any[]; // You might want to define a more specific type for tracks
+    communities: number;
 };
 
 type Community = {
@@ -122,15 +157,23 @@ const SearchScreen = () => {
             case 'post':
                 const post = item as Post;
                 router.navigate({
-                    pathname: 'post',
+                    pathname: '/post',
                     params: { postId: post._id }
                 });
                 break;
             case 'artist':
                 const artist = item as Artist;
                 router.navigate({
-                    pathname: 'artist',
-                    params: { artistId: artist._id }
+                    pathname: `/artist/${artist._id}`,
+                    params: {
+                        id: artist._id,
+                        name: artist.name,
+                        image: artist.profileImage,
+                        isFollowing: artist.followers?.includes(userdata?._id as string) ? "true" : "false",
+                        noOfFollowers: artist.followersCount,
+                        followers: artist.followers,
+                        bio: artist.biography,
+                    }
                 });
                 break;
             case 'community':

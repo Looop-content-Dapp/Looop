@@ -24,7 +24,7 @@ const Index = () => {
   } = useQuery();
 
   const { data: communities, isLoading: communitiesLoading } = useFollowedCommunities(userdata?._id as string);
-  console.log("communities", communities)
+
   const { data: userFeedData, isLoading: userFeedLoading } = useUserFeed(userdata?._id as string);
   const [dailyMixes, setDailyMixes] = useState<DailyMixesMix[]>([]);
   const [loading, setLoading] = useState(true);

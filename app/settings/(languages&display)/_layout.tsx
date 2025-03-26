@@ -5,7 +5,7 @@ import { Stack } from 'expo-router'
 export default function _Setttingslayout() {
   return (
     <Stack
-    screenOptions={{
+      screenOptions={{
         headerShown: true,
         contentStyle: {
           backgroundColor: "#040405",
@@ -17,6 +17,8 @@ export default function _Setttingslayout() {
       }}
     >
       <Stack.Screen name="index" />
+      <Stack.Screen name="language" />
+      <Stack.Screen name="display" />
     </Stack>
   )
 }

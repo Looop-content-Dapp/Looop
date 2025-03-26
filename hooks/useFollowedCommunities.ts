@@ -52,5 +52,8 @@ export const useFollowedCommunities = (userId: string) => {
       const { data } = await api.get(`/api/community/followed/${userId}`);
       return data.data as Community[];
     },
+    refetchInterval: 10000, // Refetch every 10 seconds
+    refetchIntervalInBackground: false, // Only refetch when window is focused
+    staleTime: 5000, // Consider data stale after 5 seconds
   });
 };
