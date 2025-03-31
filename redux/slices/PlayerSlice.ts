@@ -166,6 +166,11 @@ const playerSlice = createSlice({
       state.playlist = action.payload;
       state.currentIndex = 0;
     },
+    stopTrack: (state) => {
+        state.isPlaying = false;
+        state.track = null;
+        state.currentTrackId = null;
+      },
   },
 });
 
@@ -180,6 +185,7 @@ export const {
   playNextTrack,
   playPreviousTrack,
   setPlaylist,
+  stopTrack
 } = playerSlice.actions;
 
 export default playerSlice.reducer;

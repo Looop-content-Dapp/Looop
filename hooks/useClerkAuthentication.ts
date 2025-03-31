@@ -5,7 +5,7 @@ import { account } from "@/appWrite";
 import store, { persistor } from "@/redux/store";
 import { setClaimId, setUserData } from "@/redux/slices/auth";
 import api from "@/config/apiConfig";
-import { showToast } from "@/config/ShowMessage";
+import { showToast } from "@/components/ShowMessage";
 
 /**
  * Custom hook to handle authentication with OAuth providers

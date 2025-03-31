@@ -59,6 +59,7 @@ interface SignInUserData {
     }>;
     oauthTokens: string[];
     artist: string;
+    artistClaim: string | null;
     referralCode: string;
     referralCount: number;
     referralCodeUsed: string[];

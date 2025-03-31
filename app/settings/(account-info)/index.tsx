@@ -7,7 +7,7 @@ import { AppBackButton } from '@/components/app-components/back-btn'
 import { useClerkAuthentication } from '@/hooks/useClerkAuthentication'
 import { useAppSelector } from '@/redux/hooks'
 import { account } from '@/appWrite'
-import { showToast } from '@/config/ShowMessage'
+import { showToast } from '@/components/ShowMessage'
 
 const accountInfo = () => {
     const navigation = useNavigation()

@@ -22,7 +22,8 @@
         "NSLocationAlwaysUsageDescription": "This app needs access to your location to provide location-based services and show relevant content based on where you are, even when the app is in the background.",
         "UIBackgroundModes": [
           "location",
-          "fetch"
+          "fetch",
+          "audio"
         ]
       }
     },
@@ -42,7 +43,9 @@
         "android.permission.ACCESS_BACKGROUND_LOCATION",
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",
-        "android.permission.WRITE_CONTACTS"
+        "android.permission.WRITE_CONTACTS",
+        "FOREGROUND_SERVICE",
+        "WAKE_LOCK"
       ]
     },
     "web": {
@@ -71,16 +74,14 @@
       [
         "expo-av",
         {
-          "isIosBackgroundAudioEnabled": true,
-          "android": {
-            "playbackAlwaysInForeground": false
-          }
+          "microphonePermission": false,
+          "backgroundMode": true
         }
       ],
       [
         "expo-media-library",
         {
-          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to let you upload cover images and collectibles.",
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
           "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
           "isAccessMediaLocationEnabled": true
         }

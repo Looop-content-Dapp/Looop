@@ -1,12 +1,7 @@
-// Feed.tsx
-
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 import React, { useContext } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MusicNote03Icon } from '@hugeicons/react-native';
-import DraggableButton from '../../../components/Draggable/DraggableButton';
 
-const Feed = () => {
+const index = () => {
   return (
     <View style={{ flex: 1, minHeight: '100%' }}>
 
@@ -14,4 +9,4 @@ const Feed = () => {
   );
 };
 
-export default Feed;
+export default index;

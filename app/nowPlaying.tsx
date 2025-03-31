@@ -47,22 +47,22 @@ import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
     const { cover, albumTitle } = useLocalSearchParams();
     const navigation = useNavigation();
     const {
-      isPlaying,
-      currentTrack,
-      albumInfo,
-      shuffle,
-      repeat,
-      play,
-      pause,
-      toggleShuffleMode,
-      toggleRepeatMode,
-      next,
-      previous,
-      currentTime,
-      duration,
-      buffering,
-      seekTo,
-    } = useMusicPlayerContext();
+        isPlaying,
+        currentTrack,
+        albumInfo,
+        shuffle,
+        repeat,
+        play,
+        pause,
+        toggleShuffleMode,
+        toggleRepeatMode,
+        next,
+        previous,
+        currentTime,
+        duration,
+        buffering,
+        seekTo,
+      } = useMusicPlayerContext();
     const { retrieveUserId, saveAlbum, likeSong } = useQuery();
 
     const formatTime = (seconds: number) => {
@@ -81,13 +81,19 @@ import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
     };
 
     const togglePlayPause = async () => {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      if (isPlaying) {
-        pause(); // Changed from stop() to pause()
-      } else if (currentTrack) {
-        play(currentTrack, albumInfo!);
-      }
-    };
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        try {
+          if (!currentTrack || !albumInfo) return;
+
+          if (isPlaying) {
+            await pause();
+          } else {
+            await play(currentTrack, albumInfo);
+          }
+        } catch (error) {
+          console.error("Error toggling play/pause:", error);
+        }
+      };
 
     const handleNext = async () => {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

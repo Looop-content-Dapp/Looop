@@ -23,8 +23,8 @@ const ChainPicker = ({ userId }: { userId: string }) => {
         return amount.toFixed(3);
     };
 
-    const xionBalance = walletData?.data.xion.balances[0]?.amountFloat || 0;
-    const starknetBalance = walletData?.data.starknet.balance.balanceFloat || 0;
+    const xionBalance = walletData?.data?.xion?.balances[0]?.amountFloat || 0;
+    const starknetBalance = walletData?.data?.starknet?.balance?.balanceFloat || 0;
     const totalBalance = xionBalance + starknetBalance;
 
     const renderBalance = (balance: number) => {

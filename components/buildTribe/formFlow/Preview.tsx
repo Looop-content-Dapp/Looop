@@ -15,16 +15,16 @@ const Preview = ({ formData }) => {
 
       {/* Tribe Info */}
       <View className="p-5">
-        <Text className="text-[28px] font-bold text-white mb-2.5">
+        <Text className="text-[28px] font-PlusJakartaSansBold text-white mb-2.5">
           {formData?.tribeName}
         </Text>
 
-        <Text className="text-base text-white opacity-80 mb-[30px]">
+        <Text className="text-[14px] text-[#f4f4f4] mb-[30px] font-PlusJakartaSansRegular">
           {formData?.description}
         </Text>
 
         {/* Tribe Pass Section */}
-        <Text className="text-base font-bold text-white mb-5">
+        <Text className="text-[20px] font-bold text-[#f4f4f4] mb-5">
           Tribe pass
         </Text>
 
@@ -36,10 +36,10 @@ const Preview = ({ formData }) => {
           />
 
           <View className="flex-row items-center justify-between w-full px-[10px] py-[16px]">
-            <Text className="text-[24px] font-bold text-white mb-2">
+            <Text className="text-[24px] font-PlusJakartaSansBold text-white mb-2">
               {formData?.collectibleName}
             </Text>
-            <Image source={require("../../../assets/images/logo-gray.png")} />
+            <Image source={require("../../../assets/images/logo-gray.png")} className='w-[49px] h-[22px]' />
           </View>
         </View>
 

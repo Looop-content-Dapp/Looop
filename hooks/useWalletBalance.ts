@@ -1,5 +1,7 @@
 import api from "@/config/apiConfig";
+import { useAppSelector } from "@/redux/hooks";
 import { useQuery } from "@tanstack/react-query";
+import { Alert } from "react-native";
 
 type WalletBalanceResponse = {
   status: string;
@@ -28,19 +30,21 @@ type WalletBalanceResponse = {
   };
 };
 
-export const useWalletBalance = (userId: string) => {
+export const useWalletBalance = () => {
+  const { userdata } = useAppSelector((auth) => auth.auth);
+
   return useQuery<WalletBalanceResponse>({
-    queryKey: ['wallet-balance', userId],
+    queryKey: ['wallet-balance', userdata?._id],
     queryFn: async () => {
-      try {
-        const { data } = await api.get(`/api/user/wallet-balance/${userId}`);
-        return data;
-      } catch (error) {
-        throw new Error('Failed to fetch wallet balance');
+      if (!userdata?._id) {
+        Alert.alert("Please login first");
+        throw new Error("User not logged in");
       }
+      const { data } = await api.get(`/api/user/wallet-balance/${userdata._id}`);
+      return data;
     },
-    enabled: !!userId,
-    staleTime: 30000, // Cache the data for 30 seconds
+    enabled: !!userdata?._id,
+    staleTime: 30000,
     refetchOnWindowFocus: true,
   });
 };

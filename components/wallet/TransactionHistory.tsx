@@ -1,18 +1,26 @@
-// components/TransactionHistory.tsx
-import { View, Text, FlatList } from "react-native";
+import { View, Text, FlatList, ActivityIndicator } from "react-native";
 
 type Transaction = {
-  title: string;
-  amount: string;
-  date: string;
-  source: string;
-};
+    title: string;
+    amount: string;
+    date: string;
+    source: string;
+  };
 
-type TransactionHistoryProps = {
-  transactions: Transaction[];
-};
+  type TransactionHistoryProps = {
+    transactions: Transaction[];
+    isLoading?: boolean;
+  };
 
-export default function TransactionHistory({ transactions }: TransactionHistoryProps) {
+export default function TransactionHistory({ transactions, isLoading }: TransactionHistoryProps) {
+    if (isLoading) {
+        return (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color="#FF8A49" />
+          </View>
+        );
+      }
+
   if (!transactions || transactions.length === 0) {
     return (
       <View className="flex-1 items-center justify-center">

@@ -164,22 +164,26 @@ const useMusicPlayer = () => {
   );
 
  // Update the play function to handle transitions better
-const play = useCallback(
+ const play = useCallback(
     async (track: ExtendedTrack, albumInfo: AlbumInfo, playlist?: ExtendedTrack[]) => {
       try {
         if (!userdata?._id) return;
 
-        // Only stop and unload if we're playing a different track
-        if (soundRef.current && currentTrack?._id !== track._id) {
+        // If the same track is already loaded, just toggle play/pause
+        if (currentTrack?._id === track._id && soundRef.current) {
+          const status = await soundRef.current.getStatusAsync();
+          if (status.isLoaded) {
+            await soundRef.current.playAsync();
+            dispatch(playTrack({ track, albumInfo, playlist }));
+            return;
+          }
+        }
+
+        // Stop and unload previous track
+        if (soundRef.current) {
           await soundRef.current.stopAsync();
           await soundRef.current.unloadAsync();
           soundRef.current = null;
-        }
-
-        // Don't create new sound instance if the same track is already playing
-        if (currentTrack?._id === track._id && soundRef.current) {
-          await soundRef.current.playAsync();
-          return;
         }
 
         // Clear any existing timeouts
@@ -235,10 +239,13 @@ const play = useCallback(
   const pause = useCallback(async () => {
     try {
       if (soundRef.current) {
-        await soundRef.current.pauseAsync();
+        const status = await soundRef.current.getStatusAsync();
+        if (status.isLoaded) {
+          await soundRef.current.pauseAsync();
+          dispatch(pauseTrack());
+          setState((prev) => ({ ...prev, isAlbumPlaying: false }));
+        }
       }
-      dispatch(pauseTrack());
-      setState((prev) => ({ ...prev, isAlbumPlaying: false }));
     } catch (error) {
       console.error("Error pausing track:", error);
     }

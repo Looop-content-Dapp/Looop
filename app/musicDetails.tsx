@@ -114,58 +114,46 @@ const MusicDetails = () => {
       : description.text;
   }, [description.text]);
 
-//   useEffect(() => {
-//     return () => {
-//       // Only stop if we're navigating to a different album
-//       if (currentTrack && !tracks.some(t => t._id === currentTrack._id)) {
-//         stop();
-//       }
-//     };
-//   }, [currentTrack, tracks, stop]);
+ // Update handleTrackPress function
+const handleTrackPress = useCallback(async (track: ExtendedTrack, index: number) => {
+    try {
+      if (!tracks) return;
 
-  // Update handleTrackPress to handle cross-album playback
-  const handleTrackPress = useCallback(async (track: ExtendedTrack, index: number) => {
-    if (tracks) {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-      // Always stop current track if it's from a different album
-      if (currentTrack && !tracks.some(t => t._id === currentTrack._id)) {
-        await stop();
-        await new Promise(resolve => setTimeout(resolve, 50));
-      }
 
       // Handle same track toggle
       if (currentTrack?._id === track._id) {
         if (isPlaying) {
-          pause();
+          await pause();
         } else {
-          play(track, albumInfo, tracks);
+          await play(track, albumInfo, tracks);
         }
         return;
       }
 
       // Play new track
       await play(track, albumInfo, tracks);
+    } catch (error) {
+      console.error("Error handling track press:", error);
     }
-  }, [tracks, play, pause, stop, currentTrack, albumInfo, isPlaying]);
+  }, [tracks, play, pause, currentTrack, albumInfo, isPlaying]);
 
-  // Update handlePlayPause with similar logic
+  // Update handlePlayPause function
   const handlePlayPause = useCallback(async () => {
-    if (!tracks?.length) return;
+    try {
+      if (!tracks?.length) return;
 
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    if (isCurrentAlbumPlaying) {
-      pause();
-    } else {
-      // Stop if current track is from different album
-      if (currentTrack && !tracks.some(t => t._id === currentTrack._id)) {
-        await stop();
-        await new Promise(resolve => setTimeout(resolve, 50));
+      if (isCurrentAlbumPlaying) {
+        await pause();
+      } else {
+        await play(tracks[0], albumInfo, tracks);
       }
-      await play(tracks[0], albumInfo, tracks);
+    } catch (error) {
+      console.error("Error handling play/pause:", error);
     }
-  }, [isCurrentAlbumPlaying, tracks, currentTrack, albumInfo, play, pause, stop]);
+  }, [isCurrentAlbumPlaying, tracks, albumInfo, play, pause]);
 
   const handleTrackMenuPress = useCallback((track: Track) => {
     setSelectedTrack(track);

@@ -4,7 +4,7 @@ import { formatNumber } from '../utils/ArstsisArr';
 import { CheckmarkBadge01Icon } from '@hugeicons/react-native';
 import { useFollowArtist } from '@/hooks/useFollowArtist';
 import { useAppSelector } from '@/redux/hooks';
-import { showToast } from '@/config/ShowMessage';
+import { showToast } from '@/components/ShowMessage';
 
 // Update the interface
 interface ArtistInfoProps {
@@ -33,7 +33,6 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
   }, [isFollow]);
   const { userdata } = useAppSelector((state) => state.auth);
   const { handleFollowArtist, isLoading } = useFollowArtist();
-  console.log("isFollow", isFollow)
 
   const onFollowPress = async () => {
     if (!userdata?._id) {

@@ -42,35 +42,16 @@ const TribeSuccessScreen = ({ tribeName  }: Prop) => {
           Successfully
         </Text>
 
-        <View style={{
-          backgroundColor: '#0A0B0F',
-          borderRadius: 16,
-          padding: 8,
-          width: '100%',
-          marginBottom: 32,
-          height: 448
-        }}>
+        <View className="bg-[#111318] rounded-[20px] overflow-hidden mb-[30px] p-2 border-[0.5px] border-[#63656B]">
           <Image
             source={{ uri: tribeName?.coverImage }}
-            style={{
-              width: '100%',
-              height: 320,
-              borderRadius: 12,
-              marginBottom: 16
-            }}
+            className="w-full h-[300px] object-cover"
           />
-          <Text style={{
-            color: '#fff',
-            fontSize: 20,
-            fontFamily: 'PlusJakartaSansBold'
-          }}>
-            {tribeName?.tribeName}
-          </Text>
-          <View style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginTop: 8
-          }}>
+
+          <View className="flex-row items-center justify-between w-full px-[10px] py-[16px]">
+            <Text className="text-[24px] font-PlusJakartaSansBold text-white mb-2">
+              {tribeName?.tribeName}
+            </Text>
             <View style={{
               backgroundColor: '#2EBD85',
               paddingHorizontal: 12,
@@ -85,12 +66,12 @@ const TribeSuccessScreen = ({ tribeName  }: Prop) => {
                 fontFamily: 'PlusJakartaSansMedium',
                 marginRight: 4
               }}>
-               <CheckmarkBadge01Icon
-                   size={24}
-                   variant="solid"
-                   color="#2DD881"
-                 />
                 Minted
+                <CheckmarkBadge01Icon
+                   size={16}
+                   variant="solid"
+                   color="#111318"
+                 />
               </Text>
             </View>
           </View>

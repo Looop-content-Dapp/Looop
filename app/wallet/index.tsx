@@ -8,12 +8,9 @@ import { countries } from '@/data/data';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import * as Clipboard from 'expo-clipboard';
 
-// Import components
-import WalletBalance from '@/components/wallet/WalletBalance';
 import WithdrawFunds from '@/components/wallet/WithdrawFunds';
 import ConnectedAccounts from '@/components/wallet/ConnectedAccounts';
 import Earnings from '@/components/wallet/Earnings';
-import CurrencySelector from '@/components/wallet/CurrencySelector';
 import EarningsBalance from '@/components/wallet/EarningsBalance';
 
 const WalletScreen = () => {

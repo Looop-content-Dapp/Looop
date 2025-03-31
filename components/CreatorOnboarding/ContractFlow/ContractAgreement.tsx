@@ -18,10 +18,13 @@ const ContractAgreement = () => {
        })
     }, [])
   return (
-    <ScrollView contentInsetAdjustmentBehavior="automatic" className='mx-[24px]'>
+    <ScrollView contentInsetAdjustmentBehavior="automatic" className='mx-[24px]' contentContainerStyle={{
+        paddingBlock: 156,
+        flexGrow: 1
+    }}>
         <View className='gap-y-[16px] mx-auto w-[100%]'>
             <Text className='text-[24px] font-PlusJakartaSansMedium text-[#f4f4f4]'>Looop for Creators Agreement</Text>
-            <View className='bg-[#12141B] p-[16px] gap-y-[8px]'>
+            <View className='bg-[#202227] p-[16px] gap-y-[8px] rounded-[28px]'>
                 <View className='bg-[#0A0B0F] flex-row items-center gap-x-2 py-[8px] pl-[8px] pr-[16px] w-[148px] rounded-[24px]'>
                     <InformationCircleIcon size={18} color='#A5A6AA' variant='stroke' />
                     <Text className='text-[#A5A6AA] text-[14px] font-PlusJakartaSansBold'>Important note</Text>

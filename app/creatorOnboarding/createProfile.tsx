@@ -24,9 +24,6 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 type ProfileFlowState = "INTRO" | "CREATE_PROFILE";
 
 const CreateProfile = () => {
-  const { data } = useCurrentUser();
-
-  const user = data?.data;
   const [currentFlow, setCurrentFlow] = useState<ProfileFlowState>("INTRO");
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [selectedCountry, setSelectedCountry] = useState("");

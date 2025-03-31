@@ -72,25 +72,15 @@ useEffect(() => {
             title="Your Daily Mixes"
           />
 
-      {communities && communities.length > 0 && (
-            <Skeleton show={communitiesLoading}>
-              <CommunityCard
-                data={communities}
-                isLoading={communitiesLoading}
-                title="Your Communities"
-              />
-            </Skeleton>
-          )}
+
 
           {/* Followed Artists Section - only show if there's data */}
           {followedArtists.length > 0 && (
-         <Skeleton>
-               <BasedOnSubscription
-              data={followedArtists}
-              isLoading={userFeedLoading}
-              title="Artists You Follow"
-            />
-         </Skeleton>
+          <BasedOnSubscription
+          data={followedArtists}
+          isLoading={userFeedLoading}
+          title="Artists You Follow"
+        />
           )}
 
           {/* Recommended Artists Section - only show if there's data */}
@@ -100,6 +90,16 @@ useEffect(() => {
               isLoading={userFeedLoading}
               title="Some artist for you to explore..."
             />
+          )}
+
+         {communities && communities.length > 0 && (
+            <Skeleton show={communitiesLoading}>
+              <CommunityCard
+                data={communities}
+                isLoading={communitiesLoading}
+                title="Communities from your Follows"
+              />
+            </Skeleton>
           )}
 
           {/* Suggested Tracks Section - only show if there's data */}

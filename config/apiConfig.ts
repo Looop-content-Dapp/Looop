@@ -1,6 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import store from "@/redux/store";
-import { showToast } from "./ShowMessage";
+import { showToast } from "../components/ShowMessage";
 
 interface RetryConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -11,11 +11,8 @@ interface ApiResponse {
   [key: string]: any;
 }
 
-// Custom Toast Component
-
-
 // Configure environment variables
-const API_URL = "https://looop-backend-gxjh.onrender.com";
+const API_URL = "http://localhost:9001";
 const API_TIMEOUT = process.env.API_TIMEOUT || 30000;
 
 const api = axios.create({

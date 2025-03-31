@@ -10,6 +10,7 @@ import api from '@/config/apiConfig';
 import { useRouter } from 'expo-router';
 import TribeSuccessScreen from './TribeSuccessScreen';
 import TribeForm, { FormData } from './formFlow/TribeForm';
+import { useCreateCommunity } from '@/hooks/useCreateCommunity';
 
 const STEPS = {
     BASIC: 'basic',
@@ -27,7 +28,7 @@ const STEP_COLORS = {
 const BuildTribeForm = () => {
   const [currentStep, setCurrentStep] = useState(STEPS.BASIC);
   const [isSuccess, setIsSuccess] = useState(false);
-  const { back } = useRouter()
+  const { back, push } = useRouter()
   const [formData, setFormData] = useState<FormData>({
     tribeName: '',
     description: '',
@@ -39,32 +40,46 @@ const BuildTribeForm = () => {
     communitySymbol: ""
   });
   const scrollViewRef = useRef(null);
-  const { userdata, artistId } = useAppSelector((state) => state.auth);
+  const { userdata } = useAppSelector((state) => state.auth);
+  const createCommunityMutation = useCreateCommunity();
 
   const handleCreateCommunity =  async() => {
-     const payload = {
-    "communityName": formData?.tribeName,
-    "description": formData?.description,
-    "coverImage": formData?.coverImage,
-    "collectibleName": formData?.collectibleName,
-    "collectibleDescription":formData?.CollectibleDescription,
-    "collectibleImage": formData?.collectibleMedia,
-    "collectibleType": formData?.collectibleType,
-    "artistId": artistId,
-    "communitySymbol":formData?.communitySymbol
-    }
-     try {
-        const response = await api.post("/api/community/createcommunity", payload)
-        console.log(JSON.stringify(response))
-        if(response.data.status === "success"){
-            setCurrentStep(STEPS.SUCCESS);
-        }else{
-            Alert.alert("Error", "Failed to create community. Please try again.");
-        }
-      } catch (error) {
-       console.log("error creating community", error.message)
-       Alert.alert("Error", "Something went wrong. Please try again.");
+    if (!userdata?.artist) {
+        Alert.alert("Error", "Artist ID is required");
+        return;
       }
+
+    const payload = {
+        communityName: formData?.tribeName,
+        description: formData?.description,
+        coverImage: formData?.coverImage,
+        collectibleName: formData?.collectibleName,
+        collectibleDescription: formData?.CollectibleDescription,
+        collectibleImage: formData?.collectibleMedia,
+        collectibleType: formData?.collectibleType,
+        artistId: userdata?.artist,
+        communitySymbol: formData?.communitySymbol
+      };
+
+      createCommunityMutation.mutate(payload, {
+        onSuccess: (data) => {
+            Alert.alert(
+                "Success",
+                "Community Created successfully!",
+                [{
+                    text: "OK",
+                    onPress: () => setCurrentStep(STEPS.SUCCESS)
+                }]
+            );
+
+        },
+        onError: (error: any) => {
+            Alert.alert(
+                "Error",
+                error?.message || "Failed to Create a Community. Please try again."
+            );
+        }
+    });
   }
 
   const updateFormData = (field: any, value: any) => {

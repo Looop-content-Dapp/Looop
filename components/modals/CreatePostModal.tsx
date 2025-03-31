@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, Image, TextInput, ScrollView, Alert } from "react-native";
-import { Image02Icon, Gif01Icon, VoiceIcon, Calendar01Icon} from "@hugeicons/react-native";
+import { Image02Icon, Gif01Icon, VoiceIcon, Calendar01Icon, CheckmarkBadge01Icon} from "@hugeicons/react-native";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetView,
@@ -8,8 +8,12 @@ import BottomSheet, {
 import { Audio, Video } from 'expo-av';
 import useFileUpload, { FileType, UploadedFile } from '../../hooks/useFileUpload';
 import AudioWaveform from '../animated/AudioWaveForm';
-import { useQuery } from '../../hooks/useQuery';
 import { Portal } from "@gorhom/portal";
+import { useCreatePost } from '@/hooks/useCreatePost';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { useAppSelector } from '@/redux/hooks';
 
 interface CreatePostBottomSheetProps {
   isVisible: boolean;
@@ -25,18 +29,41 @@ interface AudioState {
     sound: Audio.Sound | null;
   }
 
+  // Update the schema to include selectedFiles
+  const postSchema = yup.object({
+    content: yup.string()
+      .max(150, 'Post content cannot exceed 150 characters')
+      .when('selectedFiles', {
+        is: (files: UploadedFile[]) => !files?.length,
+        then: (schema) => schema.required('Please add some text or media to your post'),
+        otherwise: (schema) => schema.optional()
+      }),
+    category: yup.string().oneOf(['artwork', 'music', 'photography', 'design', 'other']).required(),
+    selectedFiles: yup.array().of(yup.mixed()).default([])
+  });
+
+  interface UploadedFile {
+  uri: string;
+  type: string;
+  name: string;
+  size: number;
+  width?: number;
+  height?: number;
+  duration?: number;
+}
+
+
+  type FormData = yup.InferType<typeof postSchema>;
+
   // Define the proper types for categories
 type PostCategory = 'artwork' | 'music' | 'photography' | 'design' | 'other';
-type PostVisibility = 'public' | 'private' | 'unlisted';
-type PostStatus = 'draft' | 'published' | 'archived';
+type PostVisibility = 'public' | 'private' | 'community';
+type PostStatus = 'draft' | 'published';
+type PostType = 'regular' | 'event' | 'announcement';
 
-const CreatePostModal = ({ isVisible, onClose, community, defaultCategory = 'other'  }: CreatePostBottomSheetProps) => {
-  // States
-  const [postText, setPostText] = useState('');
+const CreatePostModal = ({ isVisible, onClose, community, defaultCategory = 'other' }: CreatePostBottomSheetProps) => {
   const [selectedFiles, setSelectedFiles] = useState<UploadedFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [category, setCategory] = useState<PostCategory>(defaultCategory);
-
   // New audio-related states
   const [audioStates, setAudioStates] = useState<Record<string, AudioState>>({});
 
@@ -45,8 +72,30 @@ const CreatePostModal = ({ isVisible, onClose, community, defaultCategory = 'oth
   const videoRef = useRef<Video>(null);
 
   // Custom hook
-  const { pickFile, removeFile, isLoading } = useFileUpload();
-  const { createPost } = useQuery()
+  // Add new states for upload progress
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const { userdata } = useAppSelector((auth) => auth.auth)
+
+  // Modified custom hook usage
+  const {
+    pickFile,
+    removeFile,
+    isLoading: isFileLoading,
+    error: fileError,
+    progress,
+    clearCache
+  } = useFileUpload();
+  const { mutate: createPost, isLoading: isCreatingPost } = useCreatePost();
+
+    // Update the form setup
+    const { control, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>({
+        resolver: yupResolver(postSchema),
+        defaultValues: {
+          content: '',
+          category: defaultCategory,
+        }
+      });
 
   // Variables
   const snapPoints = useMemo(() => ['60%', '90%'], []);
@@ -71,61 +120,78 @@ const CreatePostModal = ({ isVisible, onClose, community, defaultCategory = 'oth
   };
 
    // Handle post submission
-   const handleCreatePost = async () => {
+   const onSubmit = async (data: FormData) => {
     if (isSubmitting) return;
-
-    if (!selectedFiles.length) {
-      Alert.alert('Error', 'Please add at least one media file');
-      return;
-    }
 
     try {
       setIsSubmitting(true);
 
       const postData = {
-        content: postText.trim(),
+        content: data.content?.trim() || '',
+        title: '',
+        postType: 'regular' as PostType,
         media: convertFilesToMediaFormat(selectedFiles),
-        artistId: "",
-        category: category as PostCategory,
+        artistId: userdata?.artist || '',
+        communityId: community?._id || '',
+        category: data.category as PostCategory,
         visibility: 'public' as PostVisibility,
         status: 'published' as PostStatus,
-        tags: [] // You can add tags functionality if needed
+        type: (selectedFiles.length > 1 ? 'multiple' : 'single') as 'multiple' | 'single',
+        tags: [],
+        genre: community?.genre || ''
       };
-      console.log("postdata", postData)
+      console.log(postData, "postdata")
 
-    //   await createPost(postData);
+      createPost(postData, {
+        onSuccess: () => {
+          setValue('content', '');
+          setSelectedFiles([]);
+          clearCache();
+          onClose();
+          Alert.alert('Success', 'Post created successfully');
+        },
+        onError: (error: any) => {
+          Alert.alert(
+            'Error',
+            error?.message || 'Failed to create post. Please try again.'
+          );
+        }
+      });
 
-      // Reset form and close modal
-      setPostText('');
-      setSelectedFiles([]);
-      onClose();
-
-      Alert.alert('Success', 'Post created successfully');
     } catch (error) {
       console.error('Error creating post:', error);
-      Alert.alert(
-        'Error',
-        'Failed to create post. Please try again.'
-      );
+      Alert.alert('Error', 'Failed to create post. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+
   // File handling functions
   const handleFilePick = async (type: FileType) => {
     try {
-      console.log('Picking file of type:', type);
+      setIsUploading(true);
       const result = await pickFile(type);
-      console.log('Pick result:', result);
+
       if (result?.success && result.file) {
         setSelectedFiles(prev => {
           const newFile = result.file;
           return newFile ? [...prev, newFile] : prev;
         });
+
+        // Update progress
+        setUploadProgress(progress);
+      } else if (result?.error) {
+        Alert.alert('Upload Error', result.error);
       }
     } catch (error) {
       console.error('Error picking file:', error);
+      Alert.alert(
+        'Error',
+        'Failed to upload file. Please try again.'
+      );
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -226,15 +292,18 @@ const CreatePostModal = ({ isVisible, onClose, community, defaultCategory = 'oth
         {(['artwork', 'music', 'photography', 'design', 'other'] as PostCategory[]).map((cat) => (
           <TouchableOpacity
             key={cat}
-            onPress={() => setCategory(cat)}
+            onPress={() => setValue('category', cat)}
             className={`mr-2 px-4 py-2 rounded-full ${
-              category === cat ? 'bg-blue-500' : 'bg-gray-700'
+              watch('category') === cat ? 'bg-blue-500' : 'bg-gray-700'
             }`}
           >
             <Text className="text-white capitalize">{cat}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
+      {errors.category && (
+        <Text className="text-red-500 text-sm mt-1">{errors.category.message}</Text>
+      )}
     </View>
   );
 
@@ -345,15 +414,31 @@ const CreatePostModal = ({ isVisible, onClose, community, defaultCategory = 'oth
     []
   );
 
+  const handleEventButtonPress = () => {
+    Alert.alert(
+      'Coming Soon',
+      'Event creation feature will be available soon!'
+    );
+  };
+
+
+  const handleClose = useCallback(() => {
+    setValue('content', '');
+    setValue('category', defaultCategory);
+    setSelectedFiles([]);
+    clearCache();
+    onClose();
+  }, [setValue, defaultCategory, clearCache, onClose]);
+
+
   React.useEffect(() => {
     if (isVisible) {
       bottomSheetRef.current?.expand();
     } else {
       bottomSheetRef.current?.close();
-      setPostText('');
-      setSelectedFiles([]);
+      handleClose();
     }
-  }, [isVisible]);
+  }, [isVisible, setValue, defaultCategory]);
 
   return (
   <Portal>
@@ -370,29 +455,34 @@ const CreatePostModal = ({ isVisible, onClose, community, defaultCategory = 'oth
       <BottomSheetView className="flex-1">
         {/* Header */}
         <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-800">
-          <TouchableOpacity onPress={onClose}>
-            <Text className="text-gray-400 text-[16px]">Cancel</Text>
-          </TouchableOpacity>
-          <Text className="text-white text-[18px] font-semibold">Create post</Text>
-          <TouchableOpacity onPress={handleCreatePost}>
-            <Text className="text-gray-600 text-[16px]">Post</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity onPress={handleClose}>
+              <Text className="text-gray-400 text-[16px]">Cancel</Text>
+            </TouchableOpacity>
+            <Text className="text-white text-[18px] font-semibold">Create post</Text>
+            <TouchableOpacity
+              onPress={handleSubmit(onSubmit)}
+              disabled={isSubmitting || isCreatingPost}
+            >
+              <Text className={`text-[16px] ${
+                isSubmitting || isCreatingPost ? 'text-gray-500' : 'text-blue-500'
+              }`}>
+                {isSubmitting || isCreatingPost ? 'Posting...' : 'Post'}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
         {/* User Info */}
         <View className="flex-row items-center px-4 py-3">
           <Image
-            source={{ uri: community.coverImage }}
+            source={{ uri: community?.createdBy?.profileImage }}
             className="w-10 h-10 rounded-full bg-gray-700"
           />
           <View className="ml-3">
             <View className="flex-row items-center">
-              <Text className="text-white text-[16px] font-semibold">
-                {community?.name || "Rema"}
+              <Text className="text-white text-[16px] font-PlusJakartaSansMedium">
+                {community?.createdBy?.name || "Rema"}
               </Text>
-              <View className="bg-[#00BA88] w-4 h-4 rounded-full ml-2 items-center justify-center">
-                <Text className="text-white text-[10px]">✓</Text>
-              </View>
+                <CheckmarkBadge01Icon size={16} variant='solid' color='#2DD881' />
             </View>
           </View>
         </View>
@@ -400,17 +490,33 @@ const CreatePostModal = ({ isVisible, onClose, community, defaultCategory = 'oth
         <ScrollView className="flex-1">
           {/* Text Input Area */}
           <View className="px-4 py-3">
-            <TextInput
-              multiline
-              numberOfLines={4}
-              maxLength={150}
-              placeholder="What's on your mind?"
-              placeholderTextColor="#787A80"
-              value={postText}
-              onChangeText={setPostText}
-              className="text-white text-[16px] h-[120px]"
+            <Controller
+              control={control}
+              name="content"
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <TextInput
+                    multiline
+                    numberOfLines={4}
+                    maxLength={150}
+                    placeholder="What's on your mind?"
+                    placeholderTextColor="#63656B"
+                    value={value}
+                    onChangeText={onChange}
+                    keyboardType="default"
+                    autoCapitalize="sentences"
+                    autoCorrect={true}
+                    className="text-white text-[20px] min-h-[120px] p-2"
+                  />
+                  {errors.content && (
+                    <Text className="text-red-500 text-sm mt-1">{errors.content.message}</Text>
+                  )}
+                </>
+              )}
             />
+
           </View>
+
           {/* Media Preview */}
           {selectedFiles.length > 0 && (
             <ScrollView
@@ -423,38 +529,56 @@ const CreatePostModal = ({ isVisible, onClose, community, defaultCategory = 'oth
           )}
         </ScrollView>
 
+
         {/* Action Buttons */}
-        <View className="px-4 pb-8 space-y-4 absolute bottom-[120px] right-0 left-0">
+        <View className="px-4 pb-8 space-y-4 absolute bottom-0 right-0 left-0 bg-[#040405] border-t border-gray-800">
           <TouchableOpacity
             className="flex-row items-center py-3 border-t border-gray-800"
             onPress={() => handleFilePick(FileType.IMAGE)}
-            disabled={isLoading}
+            disabled={isFileLoading || isUploading}
           >
-            <Image02Icon size={24} color="#787A80" />
-            <Text className="text-gray-400 ml-3">Add a photo/video</Text>
+            <Image02Icon size={24} color={isFileLoading || isUploading ? "#4B4D52" : "#787A80"} />
+            <Text className={`text-[16px] font-PlusJakartaSansMedium ml-3 ${
+              isFileLoading || isUploading ? "text-[#4B4D52]" : "text-[#D2D3D5]"
+            }`}>
+              Add a photo/video
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             className="flex-row items-center py-3 border-t border-gray-800"
             onPress={() => handleFilePick(FileType.GIF)}
-            disabled={isLoading}
+            disabled={isFileLoading || isUploading}
           >
-            <Gif01Icon size={24} color="#787A80" />
-            <Text className="text-gray-400 ml-3">Add a GIF file</Text>
+            <Gif01Icon size={24} color={isFileLoading || isUploading ? "#4B4D52" : "#787A80"} />
+            <Text className={`text-[16px] font-PlusJakartaSansMedium ml-3 ${
+              isFileLoading || isUploading ? "text-[#4B4D52]" : "text-[#D2D3D5]"
+            }`}>
+              Add a GIF file
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             className="flex-row items-center py-3 border-t border-gray-800"
             onPress={() => handleFilePick(FileType.AUDIO)}
-            disabled={isLoading}
+            disabled={isFileLoading || isUploading}
           >
-            <VoiceIcon size={24} color="#787A80" />
-            <Text className="text-gray-400 ml-3">Add audio file</Text>
+            <VoiceIcon size={24} color={isFileLoading || isUploading ? "#4B4D52" : "#787A80"} />
+            <Text className={`text-[16px] font-PlusJakartaSansMedium ml-3 ${
+              isFileLoading || isUploading ? "text-[#4B4D52]" : "text-[#D2D3D5]"
+            }`}>
+              Add audio file
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity className="flex-row items-center py-3 border-t border-gray-800">
-            <Calendar01Icon size={24} color="#FF5733" />
-            <Text className="text-[#FF5733] ml-3">Create an event</Text>
+          <TouchableOpacity
+            className="flex-row items-center py-3 border-t border-gray-800"
+            onPress={handleEventButtonPress}
+          >
+            <Calendar01Icon size={24} color="#FF8A49" />
+            <Text className="text-[#FF8A49] text-[16px] font-PlusJakartaSansMedium ml-3">
+              Create an event (Coming Soon)
+            </Text>
           </TouchableOpacity>
         </View>
       </BottomSheetView>

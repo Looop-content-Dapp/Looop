@@ -8,7 +8,7 @@ import { AppButton } from "@/components/app-components/button";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { useLayoutEffect } from "react";
 import CommunitySectionList from "@/components/settingUp/CommunitySectionList";
-import { showToast } from "@/config/ShowMessage";
+import { showToast } from "@/components/ShowMessage";
 import { useAppSelector } from "@/redux/hooks";
 
 const CommunityOnboarding = () => {

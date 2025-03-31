@@ -61,15 +61,22 @@ const MusicPlayer = () => {
 
   if (!currentTrack || !albumInfo) return null;
 
-  const handlePlayPause = () => {
-    if (isPlaying) {
-      pause(); // Changed from stop() to pause()
-    } else {
-      play(currentTrack, albumInfo);
+  const handlePlayPause = async () => {
+    if (!currentTrack || !albumInfo) return;
+
+    try {
+      if (isPlaying) {
+        await pause();
+      } else {
+        await play(currentTrack, albumInfo);
+      }
+    } catch (error) {
+      console.error("Error handling play/pause:", error);
     }
   };
 
   const handleNext = () => {
+    if (!currentTrack || !albumInfo) return;
     next();
   };
 

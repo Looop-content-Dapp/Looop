@@ -230,7 +230,13 @@ const EmailSignUp: React.FC = () => {
             text="Sign in with Apple"
             loading={appleLoading || isAppleAuthenticating}
           />
-        
+         {/* <SocialButton
+            onPress={() => login()}
+            imageSource={require("../../assets/images/apple.png")}
+            text="Sign in with Apple"
+            loading={appleLoading || isAppleAuthenticating}
+          /> */}
+
         </View>
 
         <Pressable

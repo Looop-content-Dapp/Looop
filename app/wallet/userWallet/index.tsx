@@ -10,8 +10,38 @@ import { useAppSelector } from "@/redux/hooks";
 import * as Clipboard from 'expo-clipboard';
 import PayWithCard from "@/components/bottomSheet/payWithCard";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
-import {startOnrampSDK, onRampSDKNativeEvent} from '@onramp.money/onramp-react-native-sdk';
 import { widthPercentageToDP as wp} from 'react-native-responsive-screen'
+import { useTransaction } from "@/hooks/useTransaction";
+import { useRouter } from "expo-router";
+
+type APITransaction = {
+  title?: string;
+  type: 'funding' | 'withdrawal';
+  amount: number;
+  currency: string;
+  createdAt: string;
+  source: 'card' | 'wallet';
+};
+
+type Transaction = {
+  title: string;
+  amount: string;
+  date: string;
+  source: 'card' | 'wallet';
+};
+
+type WalletData = {
+  balances: {
+    xion: number;
+    starknet: number;
+    total: number;
+  };
+  addresses: Array<{
+    chain: string;
+    address: string;
+  }>;
+  transactions: Transaction[];
+};
 
 const WalletScreen = () => {
   const navigation = useNavigation();
@@ -19,10 +49,12 @@ const WalletScreen = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('Last 30 days');
   const [isLoading, setIsLoading] = useState(true);
   const { userdata } = useAppSelector(state => state.auth);
-  const { data: walletBalanceData, isLoading: loading } = useWalletBalance(userdata?._id);
+  const { data: walletBalanceData, isLoading: loading } = useWalletBalance();
+  const { data: transactions, isLoading: transactionsLoading } = useTransaction(userdata?._id || '');
   const filterOptions = ['Last 7 days', 'Last 30 days', 'Last 90 days', 'All time'];
+  const router = useRouter();
 
-  const [walletData, setWalletData] = useState({
+  const [walletData, setWalletData] = useState<WalletData>({
     balances: {
       xion: 0,
       starknet: 0,
@@ -32,9 +64,7 @@ const WalletScreen = () => {
       { chain: "XION", address: `${userdata?.wallets?.xion?.address || ''}` },
       { chain: "Starknet", address: `${userdata?.wallets?.starknet?.address || ''}` },
     ],
-    transactions: [
-
-    ],
+    transactions: [], // Now properly typed as Transaction[]
   });
 
   // Set navigation header
@@ -45,11 +75,26 @@ const WalletScreen = () => {
   }, [navigation]);
 
 
+    // Update walletData when transactions are loaded
+    useEffect(() => {
+        if (transactions) {
+          setWalletData(prev => ({
+            ...prev,
+            transactions: (transactions as APITransaction[]).map(tx => ({
+              title: tx?.title || tx.type,
+              amount: `${tx.type === 'funding' ? '+' : '-'}${tx.amount} ${tx.currency}`,
+              date: new Date(tx.createdAt).toLocaleDateString(),
+              source: tx.source
+            }))
+          }));
+        }
+      }, [transactions]);
+
   // Fetch wallet balances
   useEffect(() => {
     if (walletBalanceData) {
-      const xionBalance = walletBalanceData.data.xion.balances[0].usdValue
-      const starknetBalance = walletBalanceData.data.starknet.balance.usdValue;
+        const xionBalance = walletBalanceData?.data?.xion?.balances?.[0]?.usdValue ?? 0;
+      const starknetBalance = walletBalanceData?.data?.starknet?.balance?.usdValue ?? 0;
 
       setWalletData(prev => ({
         ...prev,
@@ -65,33 +110,7 @@ const WalletScreen = () => {
   const handleTabPress = (tab: string) => setActiveTab(tab);
   const [showPaymentSheet, setShowPaymentSheet] = useState(false);
 
-  const handleFundWithFiat = () => {
-    startOnrampSDK({
-        appId: 1, // Replace this with the appID obtained during onboarding
-        walletAddress: "xion1dm77sl3ny2sxzuqwue4fmx2tmyp34memsm4qpp", // Replace with the user's wallet address
-        flowType: 1, // 1 -> Onramp, 2 -> Offramp, 3 -> Merchant checkout
-        fiatType: 6, // 1 -> INR, 2 -> TRY (Turkish Lira) etc. visit Fiat Currencies page to view full list of supported fiat currencies
-        paymentMethod: 1, // 1 -> Instant transfer (UPI), 2 -> Bank transfer (IMPS/FAST)
-        // ... Include other configuration options here
-       network: "NOBLE",
-       coinCode: "usdc",
-       paymentAddress: "xion1dm77sl3ny2sxzuqwue4fmx2tmyp34memsm4qpp"
-    });
-  }
 
-  useEffect(() => {
-    const onRampEventListener = onRampSDKNativeEvent.addListener(
-      'widgetEvents',
-      eventData => {
-        // Handle all events here
-        console.log('Received onRampEvent:', eventData);
-      },
-    );
-
-    return () => {
-      onRampEventListener.remove();
-    };
-  }, []);
 
   return (
     <SafeAreaView className="flex-1">
@@ -124,8 +143,8 @@ const WalletScreen = () => {
         {activeTab === 'Balances' ? (
           <>
             <WalletBalance
-              balances={walletData.balances}
-              addresses={walletData.addresses}
+              balances={walletData?.balances}
+              addresses={walletData?.addresses}
               isLoading={loading}
               usdcPrice={walletBalanceData?.data?.usdcPrice}
               onCopyAddress={async (address) => {
@@ -135,14 +154,14 @@ const WalletScreen = () => {
             />
             {/* Fund with Card Button */}
             <TouchableOpacity
+             onPress={() => router.push('/wallet/fund')}
               className="bg-[#202227] mx-4 my-3 px-[16px] pt-[20px] pb-[19px] rounded-[10px] flex-row justify-between items-center"
-              onPress={handleFundWithFiat}
             >
               <View className="flex-1 flex-row items-center gap-[16px]">
                 <CreditCardIcon size={24} color="#FF8A49" variant="stroke" />
                 <View>
-                  <Text className="text-[16px] text-[#f4f4f4] font-PlusJakartaSansMedium">Fund with card</Text>
-                  <Text className="text-[14px] text-[#63656B] font-PlusJakartaSansMedium">Fund with Debit or Credit cards</Text>
+                  <Text className="text-[16px] text-[#f4f4f4] font-PlusJakartaSansMedium">Fund with Wallet</Text>
+                  <Text className="text-[14px] text-[#63656B] font-PlusJakartaSansMedium">Fund with wallet with several options</Text>
                 </View>
               </View>
               <ArrowRight01Icon size={24} color="#FF8A49" />
@@ -157,7 +176,10 @@ const WalletScreen = () => {
                   onOptionSelect={setSelectedPeriod}
                 />
               </View>
-              <TransactionHistory transactions={walletData.transactions} />
+         <TransactionHistory
+             transactions={walletData.transactions}
+              isLoading={transactionsLoading}
+          />
             </View>
           </>
         ) : (

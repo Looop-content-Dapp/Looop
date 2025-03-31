@@ -7,6 +7,7 @@ import { router, SplashScreen, Stack } from "expo-router";
 import { GiphySDK } from "@giphy/react-native-sdk";
 import { PersistGate } from "redux-persist/integration/react";
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { playbackService } from '@/services/PlaybackService';
 
 import { useFonts } from "expo-font";
 import "../global.css";
@@ -15,7 +16,10 @@ import store, { persistor } from "../redux/store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Pressable, Text } from "react-native";
 import { MusicPlayerProvider } from "@/context/MusicPlayerContext";
+import TrackPlayer from "react-native-track-player";
 
+// Register the playback service
+TrackPlayer.registerPlaybackService(() => playbackService);
 
 GiphySDK.configure({ apiKey: "R25Je48LLUMFnuTOGV2kibJO2xFGSR6i" });
 SplashScreen.preventAutoHideAsync();

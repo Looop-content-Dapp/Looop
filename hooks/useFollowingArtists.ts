@@ -46,7 +46,7 @@ export const useFollowingArtists = (userId: string, page: number = 1, limit: num
     enabled: !!userId && userId.length > 0,
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchInterval: 30 * 1000, // Auto refresh every 30 seconds
+    refetchInterval: 5000,
     refetchIntervalInBackground: true, // Continue refreshing even when the window is in the background
   });
 };

@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { router, useNavigation } from "expo-router";
 import { useQuery } from "../../../../hooks/useQuery";
-import { showToast } from "@/config/ShowMessage";
+import { showToast } from "@/components/ShowMessage";
 import { AppButton } from "@/components/app-components/button";
 import { useAppSelector } from "@/redux/hooks";
 import ArtistSectionList from "@/components/settingUp/ArtistSectionList";

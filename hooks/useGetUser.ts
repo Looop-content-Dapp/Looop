@@ -13,9 +13,6 @@ export const useGetUser = (userId?: string) => {
     },
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: true,
-    refetchInterval: 30 * 1000,
-    onError: (error) => {
-      console.error('❌ Error fetching user data:', error);
-    }
+    refetchInterval: 5000,
   });
 };

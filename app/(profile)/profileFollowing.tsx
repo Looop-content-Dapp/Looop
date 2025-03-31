@@ -16,6 +16,8 @@ import { AppBackButton } from "@/components/app-components/back-btn";
 import { useAppSelector } from "@/redux/hooks";
 import { useFollowingArtists, Artist } from "@/hooks/useFollowingArtists";
 import { formatNumber } from "@/utils/ArstsisArr";
+import { useFollowArtist } from '@/hooks/useFollowArtist';
+import { showToast } from '@/components/ShowMessage';
 
 // Define the interface for the artist data
 interface IFollowing extends Artist {}
@@ -100,6 +102,36 @@ export default ProfileFollowing;
 
 // Following Card Component
 const FollowingCard = ({ item }: { item: IFollowing }) => {
+  const [isFollowing, setIsFollowing] = useState(true); // Initialize as true since this is the Following list
+  const { userdata } = useAppSelector((state) => state.auth);
+  const { handleFollowArtist, isLoading } = useFollowArtist();
+
+  const onFollowPress = async () => {
+    if (!userdata?._id) {
+      showToast("Please log in to follow artists", "error");
+      return;
+    }
+
+    try {
+      // Toggle the UI state immediately for better UX
+      setIsFollowing(prev => !prev);
+
+      // Call the follow artist function from the hook
+      const result = await handleFollowArtist(userdata._id, item._id);
+
+      // If the API call fails, revert the UI state
+      if (result === null) {
+        setIsFollowing(prev => !prev);
+        showToast("Failed to update follow status", "error");
+      }
+    } catch (error) {
+      // Revert UI state on error
+      setIsFollowing(prev => !prev);
+      console.error('Error updating follow status:', error);
+      showToast("Failed to update follow status", "error");
+    }
+  };
+
   return (
     <View className="flex-row items-center justify-between py-[12px]">
       <View className="flex-row items-center gap-x-[12px]">
@@ -116,9 +148,15 @@ const FollowingCard = ({ item }: { item: IFollowing }) => {
           </Text>
         </View>
       </View>
-      <Pressable className="px-[24px] py-[8px] bg-[#1C1C1E] rounded-[24px]">
+      <Pressable
+        onPress={onFollowPress}
+        disabled={isLoading}
+        className={`px-[24px] py-[8px] rounded-[24px] ${
+          isFollowing ? 'bg-[#1C1C1E]' : 'bg-transparent border border-[#787A80]'
+        }`}
+      >
         <Text className="text-[#f4f4f4] font-PlusJakartaSansMedium">
-          Following
+          {isFollowing ? 'Following' : 'Follow'}
         </Text>
       </Pressable>
     </View>

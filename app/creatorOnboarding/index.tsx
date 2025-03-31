@@ -45,12 +45,10 @@ const CreatorModeWelcome = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const { claimId } = useAppSelector((state) => state.auth);
   const { push } = useRouter();
 
-  const { data, isLoading, refetch } = useCheckArtistClaim(claimId);
+  const { data, isLoading, refetch } = useCheckArtistClaim();
   const claimStatus = data?.status || "NOT_SUBMITTED";
-  console.log('claim status', claimStatus)
 
   // Polling interval in milliseconds (e.g., every 30 seconds)
   const POLLING_INTERVAL = 30000;
