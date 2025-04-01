@@ -1,9 +1,11 @@
-import { View, Text, ImageBackground, TouchableOpacity, Animated, ScrollView } from "react-native";
-import { ArrowLeft02Icon, PencilEdit02Icon, Add01Icon } from "@hugeicons/react-native";
 import React, { useRef, useState } from 'react';
-import CreatePostModal from "../modals/CreatePostModal";
+import { View, Text, ImageBackground, TouchableOpacity, Animated, ActivityIndicator } from "react-native";
+import { Add01Icon, ArrowLeft02Icon } from "@hugeicons/react-native";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { heightPercentageToDP as hp, widthPercentageToDP as wp} from 'react-native-responsive-screen'
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import PostCard from '../cards/PostCard';
+import { Post, useGetCommunityPosts } from "@/hooks/useCreateCommunity";
+import CreatePostModal from "../modals/CreatePostModal";
 
 // Types for the Tribe Pass NFT details
 interface TribePass {
@@ -35,29 +37,92 @@ interface ArtistCommunityDetailProps {
   community: Community;
 }
 
+// Update FeedItem type
+type FeedItem = {
+  id: string;
+  content: string;
+  media: Array<{
+    type: string;
+    url: string;
+    mimeType: string;
+    size: number;
+    _id: string;
+  }>;
+  user: {
+    name: string;
+    profileImage: string;
+    verified: boolean;
+    communityInfo?: {
+      name: string;
+      description: string;
+    };
+  };
+  engagement: {
+    likes: number;
+    comments: number;
+    shares: number;
+  };
+  actions?: {
+    like: boolean;
+  };
+  createdAt: string;
+};
+
+// Update transform function
+const transformToFeedItem = (post: Post): FeedItem => ({
+  id: post._id,
+  content: post.content,
+  media: post.media,
+  user: {
+    name: post.artistId.name,
+    profileImage: post.artistId.profileImage,
+    verified: post.artistId.verified,
+    // communityInfo: {
+    //   name: community.communityName,
+    //   description: community.description
+    // }
+  },
+  engagement: {
+    likes: post.likeCount,
+    comments: post.commentCount,
+    shares: post.shareCount
+  },
+  actions: {
+    like: post.likes.length > 0
+  },
+  createdAt: post.createdAt
+});
+
+const HEADER_MAX_HEIGHT = 200;
+const HEADER_MIN_HEIGHT = 80;
+const TAB_HEIGHT = 50;
+
+// Remove the duplicate transformToFeedItem function from the component scope
+// Keep only the one defined at file scope and update it to include community
+
 const ArtistCommunityDetails = ({ community }: ArtistCommunityDetailProps) => {
   const [activeTab, setActiveTab] = useState('posts');
   const [showCreatePost, setShowCreatePost] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
-  const [showStickyTabs, setShowStickyTabs] = useState(false);
-
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const { data: communityData, isLoading } = useGetCommunityPosts(community._id);
+
 
   // Interpolate values for animations
   const headerHeight = scrollY.interpolate({
-    inputRange: [0, 200],
-    outputRange: [260, 60],
+    inputRange: [0, HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT],
+    outputRange: [HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
     extrapolate: 'clamp',
   });
 
-  const headerOpacity = scrollY.interpolate({
-    inputRange: [100, 200],
+  const stickyHeaderOpacity = scrollY.interpolate({
+    inputRange: [0, HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
 
   const imageOpacity = scrollY.interpolate({
-    inputRange: [0, 100],
+    inputRange: [0, HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT],
     outputRange: [1, 0],
     extrapolate: 'clamp',
   });
@@ -65,199 +130,225 @@ const ArtistCommunityDetails = ({ community }: ArtistCommunityDetailProps) => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'posts':
-        return <View className="h-[1000px]"><Text className="text-white">Posts Content</Text></View>;
+        return (
+          <View className="min-h-[200px]">
+            {isLoading ? (
+              <View className="flex-1 items-center justify-center py-4">
+                <ActivityIndicator color="#A187B5" />
+              </View>
+            ) : !communityData?.data.posts || communityData.data.posts.length === 0 ? (
+              <View className="flex-1 items-center justify-center py-4">
+                <Text className="text-gray-400 text-[16px]">No posts yet</Text>
+              </View>
+            ) : (
+              <View className="gap-y-4">
+                {communityData.data.posts.map((post) => (
+                  <PostCard
+                    key={post._id}
+                    item={post}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
+        );
       case 'announcements':
-        return <View className="h-[1000px]"><Text className="text-white">Announcements Content</Text></View>;
+        return (
+          <View className="min-h-[200px]">
+            {isLoading ? (
+              <View className="flex-1 items-center justify-center py-4">
+                <ActivityIndicator color="#A187B5" />
+              </View>
+            ) : !communityData?.data.announcements || communityData.data.announcements.length === 0 ? (
+              <View className="flex-1 items-center justify-center py-4">
+                <Text className="text-gray-400 text-[16px]">No announcements yet</Text>
+              </View>
+            ) : (
+              <View className="gap-y-4">
+                {communityData.data.announcements.map((announcement) => (
+                  <PostCard
+                    key={announcement._id}
+                    item={announcement}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
+        );
       case 'events':
-        return <View className="h-[1000px]"><Text className="text-white">Events Content</Text></View>;
+        return (
+          <View className="min-h-[200px]">
+            {isLoading ? (
+              <View className="flex-1 items-center justify-center py-4">
+                <ActivityIndicator color="#A187B5" />
+              </View>
+            ) : !communityData?.data.events || communityData.data.events.length === 0 ? (
+              <View className="flex-1 items-center justify-center py-4">
+                <Text className="text-gray-400 text-[16px]">No events yet</Text>
+              </View>
+            ) : (
+              <View className="gap-y-4">
+                {communityData.data.events.map((event) => (
+                  <PostCard
+                    key={event._id}
+                    item={transformToFeedItem(event)}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
+        );
       default:
         return null;
     }
   };
 
   return (
-    <View className="flex-1 min-h-screen">
-      {/* Animated header with back button */}
-      <Animated.View
-        style={{
-          position: 'absolute',
-          top: 30,
-          left: 0,
-          right: 0,
-          height: 60,
-          backgroundColor: 'black',
-          opacity: headerOpacity,
-          zIndex: 10,
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 16,
-        }}
-      >
-        <TouchableOpacity>
-          <ArrowLeft02Icon size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text className="text-white text-[18px] font-bold ml-4">{community?.name}</Text>
-      </Animated.View>
-
-      {/* Parallax Image Background */}
-      <Animated.View style={{ height: headerHeight, opacity: imageOpacity }}>
-        <ImageBackground
-          source={{
-            uri: community?.coverImage
-          }}
-          style={{
-            height: hp("27.9%"),
-            width: wp("100%")
-          }}
-        >
-          <View className="mt-[40px] px-[24px]">
-            <TouchableOpacity>
-              <ArrowLeft02Icon size={32} color="#fff" />
-            </TouchableOpacity>
-
-            <View className="items-end justify-end mt-[30%]">
-              <TouchableOpacity className="border border-[#D2D3D5] py-[16px] px-[12px] rounded-[24px]">
-                <Text className="text-[14px] font-PlusJakartaSansMedium text-[#D2D3D5]">Change Cover</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </ImageBackground>
-      </Animated.View>
-
-      {/* Sticky Tabs */}
-      {showStickyTabs && (
-        <View
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={{ flex: 1, backgroundColor: '#040405' }}>
+        {/* Animated Header Background */}
+        <Animated.View
           style={{
             position: 'absolute',
-            top: 80,
+            top: 0,
             left: 0,
             right: 0,
-            zIndex: 20,
-            backgroundColor: 'black',
+            height: headerHeight,
+            zIndex: 0,
+            opacity: imageOpacity,
           }}
-          className="flex-row justify-around border-b-[1px] border-gray-600"
+        >
+          <ImageBackground
+            source={{ uri: community.coverImage }}
+            style={{ flex: 1, backgroundColor: '#040405' }}
+            resizeMode="cover"
+          >
+            <View style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '100%',
+              backgroundColor: 'rgba(0,0,0,0.4)',
+            }} />
+          </ImageBackground>
+        </Animated.View>
+
+        {/* Sticky Header */}
+        <Animated.View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: HEADER_MIN_HEIGHT,
+            backgroundColor: '#040405',
+            opacity: stickyHeaderOpacity,
+            zIndex: 10,
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 16,
+            paddingTop: 40,
+          }}
         >
           <TouchableOpacity
-            onPress={() => setActiveTab('posts')}
-            className={`py-[16px] ${activeTab === 'posts' ? 'border-b-2 border-Orange/08' : ''}`}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: 'rgba(0,0,0,0.3)',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
           >
-            <Text
-              className={`text-[16px] font-PlusJakartaSansMedium ${
-                activeTab === 'posts' ? 'text-white' : 'text-gray-400'
-              }`}
-            >
-              Posts
-            </Text>
+            <ArrowLeft02Icon size={24} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveTab('announcements')}
-            className={`py-[16px] ${activeTab === 'announcements' ? 'border-b-2 border-Orange/08' : ''}`}
-          >
-            <Text
-              className={`text-[16px] font-PlusJakartaSansMedium ${
-                activeTab === 'announcements' ? 'text-white' : 'text-gray-400'
-              }`}
-            >
-              Announcements
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveTab('events')}
-            className={`py-[16px] ${activeTab === 'events' ? 'border-b-2 border-Orange/08' : ''}`}
-          >
-            <Text
-              className={`text-[16px] font-PlusJakartaSansMedium ${
-                activeTab === 'events' ? 'text-white' : 'text-gray-400'
-              }`}
-            >
-              Events
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
+          <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', marginLeft: 16 }}>
+            {community.communityName}
+          </Text>
+        </Animated.View>
 
-      <Animated.ScrollView
-        className="flex-1"
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          {
-            useNativeDriver: false,
-            listener: (event) => {
-              const offsetY = event?.nativeEvent?.contentOffset.y;
-              if (offsetY > 200) {
-                setShowStickyTabs(true);
-              } else {
-                setShowStickyTabs(false);
-              }
-            },
-          }
-        )}
-        scrollEventThrottle={16}
-      >
-        <View className="px-[24px] gap-y-[12px]">
-          <View className="flex-row items-center justify-between">
-            <Text className="text-[24px] font-PlusJakartaSansBold text-[#f4f4f4]">{community.communityName}</Text>
-            <TouchableOpacity className="border border-[#787A80] py-[12px] px-[16px] gap-x-[8px] rounded-[24px] flex-row items-center">
-              <PencilEdit02Icon size={16} color="#787A80" />
-              <Text className="text-[14px] font-PlusJakartaSansMedium text-[#D2D3D5]">Edit</Text>
-            </TouchableOpacity>
+        {/* Main Scrollable Content */}
+        <Animated.ScrollView
+          style={{ flex: 1 }}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: true }
+          )}
+          scrollEventThrottle={16}
+          bounces={false}
+          contentContainerStyle={{
+            paddingTop: HEADER_MAX_HEIGHT,
+            paddingBottom: 50, // Add padding at the bottom to account for FAB
+          }}
+        >
+          {/* Community Info */}
+          <View className="p-4">
+            <View className="flex-row justify-between items-center">
+              <View>
+                <Text className="text-white text-xl font-bold">{community.communityName}</Text>
+                <View className="bg-[#12141B] py-1 px-2 rounded mt-2">
+                  <Text className="text-white text-xs">{community.memberCount} Members</Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                className="border border-[#787A80] py-2.5 px-6 rounded-full"
+                onPress={() => setShowCreatePost(true)}
+              >
+                <Text className="text-white text-sm">Manage</Text>
+              </TouchableOpacity>
+            </View>
+            <Text className="text-white text-sm opacity-80 mt-4" numberOfLines={3}>
+              {community.description}
+            </Text>
           </View>
 
-          <Text className="text-[14px] font-PlusJakartaSansRegular text-[#D2D3D5]">{community.description}</Text>
-        </View>
+          {/* Tab Bar */}
+          <View className="h-[50px] bg-[#040405] border-b border-[#333] flex-row">
+            {['Posts', 'Announcements', 'Events'].map((tab) => (
+              <TouchableOpacity
+                key={tab.toLowerCase()}
+                onPress={() => setActiveTab(tab.toLowerCase())}
+                className={`flex-1 items-center justify-center ${
+                  activeTab === tab.toLowerCase() ? 'border-b-2 border-[#ff6b00]' : ''
+                }`}
+              >
+                <Text className={`text-[16px] ${
+                  activeTab === tab.toLowerCase() ? 'text-white' : 'text-[#666]'
+                }`}>
+                  {tab}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-        {/* Original Tab Navigation */}
-        <View className="flex-row justify-around bg-black border-b-[1px] border-gray-600 mt-4">
-          <TouchableOpacity
-            onPress={() => setActiveTab('posts')}
-            className={`py-[16px] ${activeTab === 'posts' ? 'border-b-2 border-Orange/08' : ''}`}
-          >
-            <Text
-              className={`text-[16px] font-PlusJakartaSansMedium ${
-                activeTab === 'posts' ? 'text-white' : 'text-gray-400'
-              }`}
-            >
-              Posts
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveTab('announcements')}
-            className={`py-[16px] ${activeTab === 'announcements' ? 'border-b-2 border-Orange/08' : ''}`}
-          >
-            <Text
-              className={`text-[16px] font-PlusJakartaSansMedium ${
-                activeTab === 'announcements' ? 'text-white' : 'text-gray-400'
-              }`}
-            >
-              Announcements
-            </Text>
-          </TouchableOpacity>
-        </View>
+          {/* Tab Content */}
+          {renderTabContent()}
+        </Animated.ScrollView>
 
-        {/* Tab Content */}
-        <View className="px-4 py-2">{renderTabContent()}</View>
-      </Animated.ScrollView>
+        {/* Floating Action Button */}
+        <TouchableOpacity
+          onPress={() => setShowCreatePost(true)}
+          className="absolute bottom-6 right-6 z-30 bg-[#A187B5] w-[72px] h-[72px] rounded-[24px] items-center justify-center shadow-lg"
+          style={{
+            elevation: 5,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+          }}
+        >
+          <Add01Icon size={32} color="#040405" variant="solid" />
+        </TouchableOpacity>
 
-      {/* Floating Action Button */}
-      <TouchableOpacity
-       onPress={() => setShowCreatePost(true)}
-        className="absolute bottom-[105px] right-6 z-30 bg-[#A187B5] w-[72px] h-[72px] rounded-[24px] items-center justify-center shadow-lg"
-        style={{
-          elevation: 5, // for Android shadow
-          shadowColor: '#000', // for iOS shadow
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.84,
-        }}
-      >
-        <Add01Icon size={32} color="#040405" variant="solid" />
-      </TouchableOpacity>
-      <CreatePostModal
-        isVisible={showCreatePost}
-        onClose={() => setShowCreatePost(false)}
-        community={community}
-      />
-    </View>
+        {/* Create Post Modal */}
+        <CreatePostModal
+          isVisible={showCreatePost}
+          onClose={() => setShowCreatePost(false)}
+          community={community}
+        />
+      </View>
+    </GestureHandlerRootView>
   );
 };
 

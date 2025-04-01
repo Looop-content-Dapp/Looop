@@ -49,6 +49,7 @@ export const useHeader = ({title}: {title: string}) => {
           onPress={() => router.push("/(profile)") }
           avatarStyle={{
             borderWidth: 2,
+            borderColor: "#f4f4f4",
           }}
         />
       </View>

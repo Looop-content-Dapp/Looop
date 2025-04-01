@@ -4,6 +4,7 @@ import { MotiView } from "moti";
 import { Skeleton } from "moti/skeleton";
 import { useRouter } from "expo-router";
 import { useAppSelector } from "@/redux/hooks";
+import ProfileCardSkeleton from '../SkeletonLoading/ProfileCardSkeleton';
 
 const ExploreDiscographies = ({
   title,
@@ -14,7 +15,10 @@ const ExploreDiscographies = ({
   data: any[];
   isLoading: boolean;
 }) => {
-  const placeholderData = Array(5).fill({});
+  if (!data) {
+    return <ProfileCardSkeleton count={5} />;
+  }
+
   return (
     <View className="mb-6">
       <Text className="text-[#F4F4F4] text-[20px] leading-[22px] tracking-[-0.69px] font-PlusJakartaSansBold px-4 mb-4">
@@ -25,11 +29,9 @@ const ExploreDiscographies = ({
         showsHorizontalScrollIndicator={false}
         contentContainerClassName="gap-x-6 px-4"
       >
-        {(isLoading ? placeholderData : data).map(
-          (item: any, index: React.Key) => (
-            <ProfileCard key={index} loading={isLoading} item={item} />
-          )
-        )}
+        {data.map((item: any, index: React.Key) => (
+          <ProfileCard key={index} loading={false} item={item} />
+        ))}
       </ScrollView>
     </View>
   );
@@ -80,26 +82,26 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
       }}
       className="items-center gap-y-[8px] mb-2"
     >
-        <Skeleton
-          colorMode="dark"
-          radius="round"
-          height={140}
-          width={140}
-          show={loading || isImageLoading}
-          transition={{
-            type: "timing",
-            duration: 1000,
-          }}
-        >
-          {item?.profileImage && (
-            <Image
-              source={{ uri: item?.profileImage }}
-              className="w-[140px] h-[140px] rounded-full"
-              onLoadStart={() => setIsImageLoading(true)}
-              onLoadEnd={() => setIsImageLoading(false)}
-            />
-          )}
-        </Skeleton>
+      <Skeleton
+        colorMode="dark"
+        radius="round"
+        height={140}
+        width={140}
+        show={loading || isImageLoading}
+        transition={{
+          type: "timing",
+          duration: 1000,
+        }}
+      >
+        {item?.profileImage && (
+          <Image
+            source={{ uri: item?.profileImage }}
+            className="w-[140px] h-[140px] rounded-full"
+            onLoadStart={() => setIsImageLoading(true)}
+            onLoadEnd={() => setIsImageLoading(false)}
+          />
+        )}
+      </Skeleton>
       <MotiView
         transition={{
           type: "timing",
@@ -113,15 +115,35 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
         <Skeleton
           colorMode="dark"
           width={120}
+          height={20}
           show={loading}
           transition={{
             type: "timing",
             duration: 1000,
           }}
         >
-          <Text className="text-[#fff] text-center font-bold font-PlusJakartaSansBold text-[14px]">
-            {item?.name}
-          </Text>
+          {!loading && (
+            <Text className="text-[#F4F4F4] text-center font-PlusJakartaSansSemiBold">
+              {item?.name}
+            </Text>
+          )}
+        </Skeleton>
+        <Skeleton
+          colorMode="dark"
+          width={80}
+          height={16}
+          show={loading}
+          transition={{
+            type: "timing",
+            duration: 1000,
+          }}
+          className="mt-1"
+        >
+          {!loading && (
+            <Text className="text-[#8E8E8E] text-[12px] text-center">
+              {followers.length} followers
+            </Text>
+          )}
         </Skeleton>
       </MotiView>
     </Pressable>

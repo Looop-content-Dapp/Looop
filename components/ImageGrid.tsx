@@ -1,95 +1,117 @@
 import React from 'react';
-import { View, Image, StyleSheet } from 'react-native';
+import { View, Image, StyleSheet, Dimensions } from 'react-native';
 
 interface ImageGridProps {
   thumbnails: string[];
 }
 
 export const ImageGrid: React.FC<ImageGridProps> = ({ thumbnails }) => {
+  const { width } = Dimensions.get('window');
+  const imageWidth = width - 28; // Accounts for 14px horizontal margins on each side
 
   const renderImageGrid = () => {
     if (thumbnails.length === 4) {
       return (
         <>
           <View style={styles.row}>
-            <Image source={{ uri: thumbnails[0] }} style={styles.halfImage} />
-            <Image source={{ uri: thumbnails[1] }} style={styles.halfImage} />
+            <Image
+              source={{ uri: thumbnails[0] }}
+              style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+            />
+            <Image
+              source={{ uri: thumbnails[1] }}
+              style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+            />
           </View>
           <View style={styles.row}>
-            <Image source={{ uri: thumbnails[2] }} style={styles.halfImage} />
-            <Image source={{ uri: thumbnails[3] }} style={styles.halfImage} />
+            <Image
+              source={{ uri: thumbnails[2] }}
+              style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+            />
+            <Image
+              source={{ uri: thumbnails[3] }}
+              style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+            />
           </View>
         </>
       );
     } else if (thumbnails.length === 3) {
       return (
-        <>
-          <View style={styles.row}>
-            <Image source={{ uri: thumbnails[0] }} style={styles.largeImage} />
-            <View style={styles.column}>
-              <Image source={{ uri: thumbnails[1] }} style={styles.smallImage} />
-              <Image source={{ uri: thumbnails[2] }} style={styles.smallImage} />
-            </View>
+        <View style={styles.row}>
+          <Image
+            source={{ uri: thumbnails[0] }}
+            style={[styles.largeImage, { width: (imageWidth * 2) / 3 - 2 }]}
+          />
+          <View style={styles.column}>
+            <Image
+              source={{ uri: thumbnails[1] }}
+              style={[styles.smallImage, { width: imageWidth / 3 - 2 }]}
+            />
+            <Image
+              source={{ uri: thumbnails[2] }}
+              style={[styles.smallImage, { width: imageWidth / 3 - 2 }]}
+            />
           </View>
-        </>
+        </View>
       );
     } else if (thumbnails.length === 2) {
       return (
-        <>
-          <View style={styles.row}>
-            <Image source={{ uri: thumbnails[0] }} style={styles.halfImage} />
-            <Image source={{ uri: thumbnails[1] }} style={styles.halfImage} />
-          </View>
-        </>
+        <View style={styles.row}>
+          <Image
+            source={{ uri: thumbnails[0] }}
+            style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+          />
+          <Image
+            source={{ uri: thumbnails[1] }}
+            style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+          />
+        </View>
       );
     } else if (thumbnails.length === 1) {
       return (
-        <>
-          <Image source={{ uri: thumbnails[0] }} style={styles.fullImage} />
-        </>
+        <Image
+          source={{ uri: thumbnails[0] }}
+          style={[styles.fullImage, { width: imageWidth }]}
+        />
       );
     }
+    return null;
   };
 
-  return (
-    <>
-      {renderImageGrid()}
-    </>
-  );
+  return <View style={styles.container}>{renderImageGrid()}</View>;
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
+    alignItems: 'center', // Center the grid horizontally
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 4, // Consistent gap between rows
   },
   column: {
     flex: 1,
     justifyContent: 'space-between',
+    marginLeft: 4, // Gap between large image and small images
   },
   fullImage: {
-    width: '100%',
-    height: 400,
+    height: 300,
     borderRadius: 8,
   },
   halfImage: {
-    width: '49.5%',
     height: 210,
-    borderRadius: 8,
+    borderRadius: 15,
+    overflow: 'hidden',
   },
   largeImage: {
-    width: '65%',
     height: 400,
     borderRadius: 8,
   },
   smallImage: {
-    width: '100%',
     height: 195,
-    marginBottom: 10,
     borderRadius: 8,
+    marginBottom: 4, // Gap between small images
   },
 });
 

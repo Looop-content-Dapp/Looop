@@ -14,21 +14,28 @@ const CommunityCard = ({ data, isLoading, title }: CommunityCardProps) => {
     const { userdata } = useAppSelector((state) => state.auth)
 
   const handleRoute = (community: Community) => {
-    if(!userdata?._id) return console.log("pls login first")
+    if (!userdata || !userdata._id) {
+      console.log("Please login first");
+      return;
+    }
 
-        // Fixed member check logic
-        const isMember = Array.isArray(community.members) && community.members.length > 0
-            ? community.members.some(member => member.userId._id === userdata?._id)
-            : false;
+    // Fixed member check logic with additional null checks
+    const isMember = Array.isArray(community?.members) && community?.members.length > 0
+      ? community.members.some(member => member?.userId && member.userId._id === userdata._id)
+      : false;
+
+    console.log("Is member:", isMember);
+    console.log("User ID:", userdata._id);
+    console.log("Community ID:", community._id);
 
     if (!isMember) {
       router.push({
         pathname: "/payment",
         params: {
-          name: community.communityName,
-          image: community.tribePass?.collectibleImage,
+          name: community?.communityName,
+          image: community?.tribePass?.collectibleImage,
           communityId: community._id,
-          collectionAddress: community.tribePass?.contractAddress,
+          collectionAddress: community?.tribePass?.contractAddress,
           type: "xion",
           userAddress: userdata?.wallets?.xion?.address,
           currentRoute: "/(communityTabs)/(explore)/search",

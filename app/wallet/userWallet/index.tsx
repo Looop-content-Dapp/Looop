@@ -14,20 +14,24 @@ import { widthPercentageToDP as wp} from 'react-native-responsive-screen'
 import { useTransaction } from "@/hooks/useTransaction";
 import { useRouter } from "expo-router";
 
+// Update APITransaction type to match the actual API response
 type APITransaction = {
-  title?: string;
-  type: 'funding' | 'withdrawal';
+  _id: string;
+  title: string;
+  type: 'funding' | 'withdrawal' | 'mint_pass' | 'transfer';
   amount: number;
   currency: string;
   createdAt: string;
-  source: 'card' | 'wallet';
+  source: 'card' | 'wallet' | 'applepay';
+  status: 'success' | 'failed';
+  message?: string;
 };
 
 type Transaction = {
   title: string;
   amount: string;
   date: string;
-  source: 'card' | 'wallet';
+  source: 'card' | 'wallet' | 'applepay';  // Updated to match APITransaction source types
 };
 
 type WalletData = {
@@ -53,6 +57,7 @@ const WalletScreen = () => {
   const { data: transactions, isLoading: transactionsLoading } = useTransaction(userdata?._id || '');
   const filterOptions = ['Last 7 days', 'Last 30 days', 'Last 90 days', 'All time'];
   const router = useRouter();
+  console.log(transactions, "user transactions");
 
   const [walletData, setWalletData] = useState<WalletData>({
     balances: {
@@ -77,18 +82,34 @@ const WalletScreen = () => {
 
     // Update walletData when transactions are loaded
     useEffect(() => {
-        if (transactions) {
+        if (transactions && Array.isArray(transactions)) {
           setWalletData(prev => ({
             ...prev,
-            transactions: (transactions as APITransaction[]).map(tx => ({
-              title: tx?.title || tx.type,
-              amount: `${tx.type === 'funding' ? '+' : '-'}${tx.amount} ${tx.currency}`,
-              date: new Date(tx.createdAt).toLocaleDateString(),
-              source: tx.source
+            transactions: transactions.map((tx: APITransaction) => ({
+              title: tx?.title || tx?.type || '',
+              amount: `${['funding', 'transfer'].includes(tx.type) ? '+' : '-'}${tx?.amount || 0} ${tx?.currency || ''}`,
+              date: tx?.createdAt ? new Date(tx.createdAt).toLocaleDateString() : '',
+              source: tx?.source || 'wallet'
             }))
           }));
         }
       }, [transactions]);
+
+  // Update the useEffect for transaction mapping
+  useEffect(() => {
+    if (transactions?.success && transactions?.data?.transactions) {
+      setWalletData(prev => ({
+        ...prev,
+        transactions: transactions.data.transactions.map((tx: APITransaction) => ({
+          title: tx.title || tx.type,
+          amount: `${tx.status === 'failed' ? '' : (tx.type === 'funding' ? '+' : '-')}${tx.amount / 1000000} ${tx.currency}`,
+          date: new Date(tx.createdAt).toLocaleDateString(),
+          source: tx.source,
+          status: tx.status // Add status to be used in TransactionHistory
+        }))
+      }));
+    }
+  }, [transactions]);
 
   // Fetch wallet balances
   useEffect(() => {

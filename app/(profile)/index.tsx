@@ -14,7 +14,7 @@ import {
   ProfileTribes,
   StarSpotLight,
 } from "../../components/profile";
-import { router, useFocusEffect, useNavigation, useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { useQuery } from "../../hooks/useQuery";
 import { formatNumber } from "../../utils/ArstsisArr";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
@@ -31,7 +31,7 @@ const profile = () => {
 
   // Use the hook and handle loading state
   const { data: result, isLoading } = useGetUser(userdata?._id);
-  console.log(result?.followingArtists?.length, "result")
+  console.log(userdata?._id, "result")
 
   // Use result instead of userdata from Redux
   const currentUser = result || userdata;

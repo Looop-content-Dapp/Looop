@@ -372,7 +372,7 @@ const CreatePostModal = ({ isVisible, onClose, community, defaultCategory = 'oth
         <View key={file.uri} className="relative w-24 h-24 mr-2">
           <Image
             source={{ uri: file.uri }}
-            className="w-full h-full rounded-lg"
+            className="w-[146px] h-[130px] rounded-lg"
           />
           <RemoveButton />
         </View>
@@ -462,10 +462,9 @@ const CreatePostModal = ({ isVisible, onClose, community, defaultCategory = 'oth
             <TouchableOpacity
               onPress={handleSubmit(onSubmit)}
               disabled={isSubmitting || isCreatingPost}
+              className='bg-[#A187B5] px-[16px] py-[8px] rounded-[24px]'
             >
-              <Text className={`text-[16px] ${
-                isSubmitting || isCreatingPost ? 'text-gray-500' : 'text-blue-500'
-              }`}>
+              <Text className={`text-[16px] font-PlusJakartaSansMedium text-[#040405]`}>
                 {isSubmitting || isCreatingPost ? 'Posting...' : 'Post'}
               </Text>
             </TouchableOpacity>

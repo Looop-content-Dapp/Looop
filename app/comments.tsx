@@ -6,17 +6,22 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  Image
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, router, useNavigation } from 'expo-router';
 import { Image02Icon, Gif02Icon, HappyIcon } from '@hugeicons/react-native';
 import * as ImagePicker from 'expo-image-picker';
+import PostCard from '@/components/cards/PostCard';
+import { useGetPost } from '@/hooks/useCreateCommunity';
 
 export default function CommentScreen() {
   const { postId } = useLocalSearchParams();
   const [comment, setComment] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
-  const navigation = useNavigation()
+  const navigation = useNavigation();
+
+  const { data: postData, isLoading } = useGetPost(postId as string);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -33,14 +38,6 @@ export default function CommentScreen() {
         backgroundColor: '#000000',
       },
     });
-  }, []);
-
-  useEffect(() => {
-    // Auto focus the keyboard when screen loads
-    // You might want to add a slight delay
-    setTimeout(() => {
-      // Your logic to focus the input
-    }, 300);
   }, []);
 
   const pickImage = async () => {
@@ -63,9 +60,14 @@ export default function CommentScreen() {
     >
       <View className="flex-1">
         {/* Original Post Preview */}
-        <View className="p-4 border-b border-[#202227]">
-          {/* Add your post preview component here */}
-          <Text className="text-white">Original Post Content</Text>
+        <View className="border-b border-[#202227]">
+          {isLoading ? (
+            <View className="p-4 flex items-center justify-center">
+              <ActivityIndicator color="#787A80" />
+            </View>
+          ) : (
+            postData?.data && <PostCard item={postData.data} />
+          )}
         </View>
 
         {/* Comment Input Section */}

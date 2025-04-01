@@ -1,34 +1,38 @@
-import { View, FlatList, ActivityIndicator } from 'react-native';
+import { View, FlatList, ActivityIndicator, Text } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { feed } from '../../utils';
 import PostCard from '../cards/PostCard';
+import { useGetCommunityPosts } from '@/hooks/useCreateCommunity';
 
-const Annnoucement = () => {
-  const [isLoading, setIsLoading] = useState(true);
+type AnnoucementProps = {
+    communityId: string;
+  };
 
-  // Simulate the loading of data
-  useEffect(() => {
-    const fetchData = async () => {
-      // Simulate a delay for fetching the data
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setIsLoading(false); 
-    };
+const Annnoucement = ({ communityId }:  AnnoucementProps) => {
+    const { data, isLoading } = useGetCommunityPosts(communityId);
 
-    fetchData();
-  }, []);
+    if (isLoading) {
+      return (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#ff6b00" />
+        </View>
+      );
+    }
 
-  if (isLoading) {
-    return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#FF6D1B" />
-      </View>
-    );
-  }
+    if (!data?.data.posts || data.data.posts.length === 0) {
+      return (
+        <View className="flex-1 justify-cente items-center mt-[50%]">
+          <Text className="text-[#787A80] text-[16px] font-PlusJakartaSansMedium">
+            No Annoucements from creator yet
+          </Text>
+        </View>
+      );
+    }
 
   return (
     <View className="flex-1">
       <FlatList
-        data={feed}
+         data={data.data.posts}
         renderItem={({ item }) => <PostCard item={item} />}
         keyExtractor={(item, index) => index.toString()}
         ItemSeparatorComponent={() => (

@@ -56,6 +56,7 @@ const MusicDetails = () => {
     text: "Vultures 2 is the second studio album by the sensational hiphop duo ¥$...",
     isTruncated: true,
   });
+  const [isShareModalVisible, setIsShareModalVisible] = useState(false);
 
   const { width } = useWindowDimensions();
   const shareBottomSheetRef = useRef(null);
@@ -157,7 +158,7 @@ const handleTrackPress = useCallback(async (track: ExtendedTrack, index: number)
 
   const handleTrackMenuPress = useCallback((track: Track) => {
     setSelectedTrack(track);
-    shareBottomSheetRef.current?.expand();
+    setIsShareModalVisible(true);
   }, []);
 
   const convertSecondsToMinutes = useCallback((seconds: number) => {
@@ -341,17 +342,18 @@ const handleTrackPress = useCallback(async (track: ExtendedTrack, index: number)
         </ScrollView>
 
 
-      <Share
-        ref={shareBottomSheetRef}
-        album={{
-          title: selectedTrack ? selectedTrack.title : (title as string),
-          artist: selectedTrack ? selectedTrack.artist.name : (artist as string),
-          image: selectedTrack ? selectedTrack.release.artwork.high : (image as string),
-          type: type as string,
-          duration: convertSecondsToMinutes(selectedTrack ? selectedTrack.duration : Number(duration)),
-          id: selectedTrack ? selectedTrack._id : (id as string),
-        }}
-      />
+        <Share
+  isVisible={isShareModalVisible}
+  onClose={() => setIsShareModalVisible(false)}
+  album={{
+    title: selectedTrack ? selectedTrack.title : (title as string),
+    artist: selectedTrack ? selectedTrack.artist.name : (artist as string),
+    image: selectedTrack ? selectedTrack.release.artwork.high : (image as string),
+    type: type as string,
+    duration: convertSecondsToMinutes(selectedTrack ? selectedTrack.duration : Number(duration)),
+    id: selectedTrack ? selectedTrack._id : (id as string),
+  }}
+/>
     </SafeAreaView>
   );
 };

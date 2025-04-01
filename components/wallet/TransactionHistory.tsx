@@ -1,11 +1,13 @@
 import { View, Text, FlatList, ActivityIndicator } from "react-native";
 
+// Update Transaction type to include status
 type Transaction = {
-    title: string;
-    amount: string;
-    date: string;
-    source: string;
-  };
+  title: string;
+  amount: string;
+  date: string;
+  source: string;
+  status: 'success' | 'failed';
+};
 
   type TransactionHistoryProps = {
     transactions: Transaction[];
@@ -39,6 +41,7 @@ export default function TransactionHistory({ transactions, isLoading }: Transact
       data={transactions}
       scrollEnabled={false}
       keyExtractor={(item, index) => index.toString()}
+      // Update the renderItem section in FlatList
       renderItem={({ item }) => (
         <View className="flex-row justify-between px-4 py-4 bg-[#111318] mb-[16px] border-b border-[#12141B]">
           <View className="">
@@ -51,9 +54,10 @@ export default function TransactionHistory({ transactions, isLoading }: Transact
           </View>
           <View className="items-end">
             <Text className={`text-[16px] font-PlusJakartaSansBold ${
+              item.status === 'failed' ? 'text-[#FF5454]' :
               item.amount.startsWith("+") ? "text-[#45F42E]" : "text-[#FF5454]"
             }`}>
-              {item.amount}
+              {item.status === 'failed' ? 'Failed' : item.amount}
             </Text>
             <Text className="text-[#63656B] text-[12px] font-PlusJakartaSansMedium">
               {item.date}

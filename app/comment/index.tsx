@@ -1,97 +1,85 @@
+import React from 'react';
 import {
-    View,
-    Text,
-    SafeAreaView,
-    FlatList,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-  } from "react-native";
-  import React, { useEffect, useState } from "react";
-  import {
-    ArrowDown01Icon,
-    ArrowLeft02Icon,
-    UserGroupIcon,
-  } from "@hugeicons/react-native";
-  import { widthPercentageToDP as wp } from "react-native-responsive-screen";
-  import { router, useLocalSearchParams } from "expo-router";
-import Comments from "@/components/post/Comments";
-import PostCard from "@/components/cards/PostCard";
-import CommentBox from "@/components/post/CommentBox";
-import { FeedItem } from "@/utils/types";
-import { feed } from "@/utils";
+  View,
+  Text,
+  SafeAreaView,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ActivityIndicator,
+} from 'react-native';
+import { ArrowDown01Icon, ArrowLeft02Icon } from '@hugeicons/react-native';
+import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
+import { router, useLocalSearchParams } from 'expo-router';
+import PostCard from '@/components/cards/PostCard';
+import CommentBox from '@/components/post/CommentBox';
+import { useGetPost } from '@/hooks/useCreateCommunity';
+import CommentsScreen from '@/components/post/CommentScreen';
 
-  const index = () => {
-    const { id } = useLocalSearchParams();
-    const [postdetails, setPostDetails] = useState<FeedItem | undefined>();
+const CommentScreen = () => {
+  const { id } = useLocalSearchParams();
+  const { data: postData, isLoading } = useGetPost(id as string);
 
-    useEffect(() => {
-      const fetchData = async () => {
-        try {
-          const data = feed.find((item) => item.id === id);
-          setPostDetails(data);
-        } catch (error) {
-          console.error("Error fetching post details:", error);
-        }
-      };
-
-      if (id) {
-        fetchData();
-      }
-    }, [id]);
-
-    // Content data to render
-    const renderItem = () => {
+  const renderPostAndComments = () => {
+    if (isLoading) {
       return (
-        <>
-          <PostCard item={postdetails} />
-          <View
-            style={{ width: wp("100%") }}
-            className="bg-[#12141B] py-[11px] gap-3 my-4 px-3 flex-row items-center h-[40px]"
-          >
-            <Text className="text-[12px] text-[#fff]">Sort comments by</Text>
-            <ArrowDown01Icon variant="solid" size={20} color="#787A80" />
-          </View>
-          <Comments />
-        </>
+        <View className="flex-1 items-center justify-center py-4">
+          <ActivityIndicator color="#787A80" />
+        </View>
       );
-    };
+    }
 
     return (
-      <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+      <>
+        <PostCard item={postData?.data} />
+        <View
+          style={{ width: wp('100%') }}
+          className="bg-[#12141B] py-[11px] px-3 my-4 flex-row items-center gap-3 h-[40px]"
         >
-          <View className="flex-1">
-            <View className="flex-row items-center gap-x-[8px] py-[17px] h-[74px] px-4">
-              <Pressable
-                onPress={() => router.back()}
-                className="h-[48px] w-[48px] items-center justify-center"
-              >
-                <ArrowLeft02Icon size={24} color="#fff" variant="solid" />
-              </Pressable>
-              <Text className="text-[20px] text-[#f4f4f4] font-PlusJakartaSansBold">
-                Comments
-              </Text>
-            </View>
-
-            <FlatList
-              data={[postdetails]}
-              renderItem={renderItem}
-              keyExtractor={(item) => item?.id || "post"}
-              contentContainerStyle={{
-                paddingBottom: 100,
-                paddingHorizontal: 16
-              }}
-            />
-
-            <CommentBox />
-          </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+          <Text className="text-[12px] text-[#fff]">Sort comments by</Text>
+          <ArrowDown01Icon variant="solid" size={20} color="#787A80" />
+        </View>
+        <CommentsScreen />
+      </>
     );
   };
 
-  export default index;
+  return (
+    <SafeAreaView className="flex-1">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="flex-1"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+        <View className="flex-1">
+          {/* Header */}
+          <View className="flex-row items-center gap-x-2 py-[17px] px-4 h-[74px]">
+            <Pressable
+              onPress={() => router.back()}
+              className="h-12 w-12 items-center justify-center"
+            >
+              <ArrowLeft02Icon size={24} color="#fff" variant="solid" />
+            </Pressable>
+            <Text className="text-[20px] text-[#f4f4f4] font-PlusJakartaSansBold">
+              Comments
+            </Text>
+          </View>
+
+          {/* Post and Comments List */}
+          <FlatList
+            data={[1]} // Single item for post and comments
+            renderItem={renderPostAndComments}
+            keyExtractor={() => 'post'}
+            contentContainerStyle={{
+              paddingHorizontal: 16, // Consistent horizontal padding
+              paddingBottom: 100,   // Space for CommentBox
+            }}
+          />
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+};
+
+export default CommentScreen;

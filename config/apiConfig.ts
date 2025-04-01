@@ -12,8 +12,10 @@ interface ApiResponse {
 }
 
 // Configure environment variables
-const API_URL = "http://localhost:9001";
+const API_URL = "http://localhost:3000";
 const API_TIMEOUT = process.env.API_TIMEOUT || 30000;
+//https://api.looopmusic.com
+//http://localhost:3000
 
 const api = axios.create({
   baseURL: API_URL,

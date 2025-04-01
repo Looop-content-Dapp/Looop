@@ -46,9 +46,9 @@ const CommunityDetails = () => {
     const renderTabContent = () => {
         switch (activeTab) {
             case 'posts':
-                return <Posts />;
+                return <Posts communityId={id as string} />;
             case 'announcements':
-                return <Annoucement />;
+                return <Annoucement communityId={id as string} />;
             case 'events':
                 return <Events />;
             default:
