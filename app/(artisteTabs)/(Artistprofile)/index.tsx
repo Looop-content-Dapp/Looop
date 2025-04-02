@@ -1,3 +1,4 @@
+import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import {
   Platform,
   View,
@@ -5,19 +6,15 @@ import {
   ImageBackground,
   TouchableOpacity,
   Animated,
+  StyleSheet,
 } from "react-native";
 import {
   ArrowLeft02Icon,
   Wallet01Icon,
   CheckmarkBadge01Icon,
   HeadphonesIcon,
-} from "@hugeicons/react-native"
-import React, { useEffect, useRef, useState, useMemo } from "react";
-import Ellipse from "../../../components/Ellipse";
+} from "@hugeicons/react-native";
 import { useRouter } from "expo-router";
-import ArtistReleases from "../../../components/ArtistProfile/ArtistReleases";
-import ArtistCollectible from "../../../components/ArtistProfile/ArtistCollectible";
-import ArtistAbout from "../../../components/ArtistProfile/ArtistAbout";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
@@ -25,190 +22,168 @@ import {
 import api from "@/config/apiConfig";
 import { useAppSelector } from "@/redux/hooks";
 import { Artist } from "@/types/index";
+import Ellipse from "../../../components/Ellipse";
+import ArtistReleases from "../../../components/ArtistProfile/ArtistReleases";
+import ArtistCollectible from "../../../components/ArtistProfile/ArtistCollectible";
+import ArtistAbout from "../../../components/ArtistProfile/ArtistAbout";
 
-// Remove unused interfaces
-export type SheetType = 'main' | 'linkBank' | 'transfer' | 'password';
+const TABS = ["releases", "collectible", "about"] as const;
+type TabType = typeof TABS[number];
 
-// Simple placeholder component instead of animated skeleton
+// Placeholder Component
 const ProfilePlaceholder = () => (
-  <View className="h-full w-full bg-[#1a1a1a]">
-    <View className="h-[260px]" />
-    <View className="px-[12px] mt-[40%]">
-      <View className="h-6 w-48 bg-gray-700 rounded mb-2" />
-      <View className="h-4 w-32 bg-gray-700 rounded" />
+  <View style={styles.placeholderContainer}>
+    <View style={styles.placeholderImage} />
+    <View style={styles.placeholderTextContainer}>
+      <View style={styles.placeholderName} />
+      <View style={styles.placeholderStats} />
     </View>
   </View>
 );
 
-const index = () => {
-  const [activeTab, setActiveTab] = useState("releases");
-  const scrollY = useRef(new Animated.Value(0)).current;
-  const [showStickyTabs, setShowStickyTabs] = useState(false);
-  const [artistProfile, setArtistProfile] = useState<Artist>();
+const ArtistProfileScreen = () => {
+  const [activeTab, setActiveTab] = useState<TabType>("releases");
+  const [artistProfile, setArtistProfile] = useState<Artist | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const scrollY = useRef(new Animated.Value(0)).current;
   const { userdata } = useAppSelector((state) => state.auth);
   const { navigate } = useRouter();
 
-  // Optimized API call
-  const retrieveArtistInfo = async () => {
+  // Memoized animations
+  const animations = useMemo(
+    () => ({
+      headerHeight: scrollY.interpolate({
+        inputRange: [0, 200],
+        outputRange: [hp("40.9%"), hp("10%")],
+        extrapolate: "clamp",
+      }),
+      headerOpacity: scrollY.interpolate({
+        inputRange: [100, 200],
+        outputRange: [0, 1],
+        extrapolate: "clamp",
+      }),
+      imageOpacity: scrollY.interpolate({
+        inputRange: [0, 100],
+        outputRange: [1, 0],
+        extrapolate: "clamp",
+      }),
+    }),
+    [scrollY]
+  );
+
+  // Fetch artist info
+  const retrieveArtistInfo = useCallback(async () => {
     if (!userdata?.artist) return;
 
+    setIsLoading(true);
     try {
       const response = await api.get(`/api/artist/${userdata.artist}`);
-      if (response?.data?.data) {
-        setArtistProfile(response.data.data.artist);
-      }
+      setArtistProfile(response?.data?.data?.artist || null);
     } catch (error) {
-      console.error('Failed to fetch artist info:', error);
+      console.error("Failed to fetch artist info:", error);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    if(userdata?.artist){
-      retrieveArtistInfo();
-    }
   }, [userdata?.artist]);
 
-  // Memoize animations for better performance
-  const animations = useMemo(() => ({
-    headerHeight: scrollY.interpolate({
-      inputRange: [0, 200],
-      outputRange: [260, 60],
-      extrapolate: "clamp",
-    }),
-    headerOpacity: scrollY.interpolate({
-      inputRange: [100, 200],
-      outputRange: [0, 1],
-      extrapolate: "clamp",
-    }),
-    imageOpacity: scrollY.interpolate({
-      inputRange: [0, 100],
-      outputRange: [1, 0],
-      extrapolate: "clamp",
-    })
-  }), [scrollY]);
+  useEffect(() => {
+    retrieveArtistInfo();
+  }, [retrieveArtistInfo]);
 
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "releases":
-        return <ArtistReleases artistId={userdata?.artist} />;
-      case "collectible":
-        return <ArtistCollectible />;
-      case "about":
-        return <ArtistAbout />;
-      default:
-        return null;
-    }
-  };
+  // Memoized tab content renderer
+  const renderTabContent = useMemo(() => {
+    const components = {
+      releases: <ArtistReleases artistId={userdata?.artist} />,
+      collectible: <ArtistCollectible />,
+      about: <ArtistAbout />,
+    };
+    return components[activeTab];
+  }, [activeTab, userdata?.artist]);
+
+  // Handle scroll for sticky tabs
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    { useNativeDriver: true }
+  );
+
+  const formatNumber = (num: number = 0) => num.toLocaleString();
 
   return (
-    <View className="flex-1 bg-[#0A0A0A]">
-      <Animated.View style={{ height: animations.headerHeight, opacity: animations.imageOpacity }}>
+    <View style={styles.container}>
+      {/* Animated Header */}
+      <Animated.View style={[styles.header, { height: animations.headerHeight }]}>
         {isLoading ? (
           <ProfilePlaceholder />
         ) : (
           <ImageBackground
-            source={{
-              uri: artistProfile?.profileImage,
-            }}
-            style={{
-              height: hp("40.9%"),
-              width: wp("100%"),
-            }}
+            source={{ uri: artistProfile?.profileImage }}
+            style={styles.headerBackground}
             resizeMode="cover"
           >
-            <View className="flex-row items-center justify-between w-full mt-[45%] px-[20px]">
-              <View className="flex-1 mr-4">
-                <View className="flex-row gap-x-[8px] items-center">
-                  <Text className="text-[24px] font-PlusJakartaSansBold text-white" numberOfLines={1} ellipsizeMode="tail">
+            <View style={styles.headerContent}>
+              <View style={styles.artistInfo}>
+                <View style={styles.artistNameContainer}>
+                  <Text style={styles.artistName} numberOfLines={1}>
                     {artistProfile?.name}
                   </Text>
-                  {artistProfile?.verified === true && (
-                    <CheckmarkBadge01Icon
-                      size={20}
-                      variant="solid"
-                      color="#2DD881"
-                    />
+                  {artistProfile?.verified && (
+                    <CheckmarkBadge01Icon size={20} color="#2DD881" variant="solid" />
                   )}
                 </View>
-                <View className="flex-row items-center gap-x-[6px] mt-1">
-                  <Text className="text-[14px] font-PlusJakartaSansMedium text-[#A5A6AA]">
-                    {artistProfile?.followers?.toLocaleString() || 0} Followers
+                <View style={styles.statsContainer}>
+                  <Text style={styles.statsText}>
+                    {formatNumber(artistProfile?.followers)} Followers
                   </Text>
                   <Ellipse />
-                  <Text className="text-[14px] font-PlusJakartaSansMedium text-[#A5A6AA]" numberOfLines={1} ellipsizeMode="tail">
-                    {artistProfile?.monthlyListeners?.toLocaleString() || 0} Monthly Listeners
+                  <Text style={styles.statsText} numberOfLines={1}>
+                    {formatNumber(artistProfile?.monthlyListeners)} Monthly Listeners
                   </Text>
                 </View>
               </View>
-              <TouchableOpacity className="border border-[#D2D3D5] py-[10px] px-[14px] rounded-[24px] bg-black/40">
-                <Text className="text-[14px] font-PlusJakartaSansMedium text-white">
-                  Change Cover
-                </Text>
+              <TouchableOpacity style={styles.changeCoverButton}>
+                <Text style={styles.changeCoverText}>Change Cover</Text>
               </TouchableOpacity>
             </View>
           </ImageBackground>
         )}
       </Animated.View>
 
+      {/* Scrollable Content */}
       <Animated.ScrollView
-        className="flex-1"
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          {
-            useNativeDriver: false,
-            listener: (event) => {
-              const offsetY = event?.nativeEvent?.contentOffset.y;
-              setShowStickyTabs(offsetY > 200);
-            },
-          }
-        )}
+        style={styles.scrollView}
+        onScroll={handleScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 30 }}
+        contentContainerStyle={styles.scrollContent}
       >
-        <View className="px-[16px] mx-auto mt-[16px] gap-y-[14px]">
-          <View className="flex-row justify-center items-center gap-x-[16px] w-full">
-            <TouchableOpacity
-              onPress={() => navigate("/(musicTabs)")}
-              className="items-center justify-center rounded-[16px] overflow-hidden h-[89px] flex-1 bg-[#12141B] shadow-md"
-            >
-              <View className="gap-2 items-center">
-                <HeadphonesIcon size={24} color="#FF8A49" variant="solid" />
-                <Text className="text-[#f4f4f4] text-[14px] font-PlusJakartaSansMedium text-center px-2">
-                  Back to Listen Mode
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => navigate("/wallet")}
-              className="items-center justify-center rounded-[16px] overflow-hidden flex-1 h-[89px] bg-[#12141B] shadow-md"
-            >
-              <View className="gap-2 items-center">
-                <Wallet01Icon size={20} color="#A187B5" variant="stroke" />
-                <Text className="text-[#f4f4f4] text-[14px] font-PlusJakartaSansMedium text-center px-2">
-                  Wallet & Earnings
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
+        {/* Quick Actions */}
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => navigate("/(musicTabs)")}
+          >
+            <HeadphonesIcon size={24} color="#FF8A49" variant="solid" />
+            <Text style={styles.actionText}>Back to Listen Mode</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => navigate("/wallet")}
+          >
+            <Wallet01Icon size={20} color="#A187B5" variant="stroke" />
+            <Text style={styles.actionText}>Wallet & Earnings</Text>
+          </TouchableOpacity>
         </View>
 
-        <View className="flex-row items-start px-[4px] py-[2px] mt-4 border-b border-gray-800">
-          {["releases", "collectible", "about"].map((tab) => (
+        {/* Tabs */}
+        <View style={styles.tabsContainer}>
+          {TABS.map((tab) => (
             <TouchableOpacity
               key={tab}
               onPress={() => setActiveTab(tab)}
-              className={`py-[20px] px-[24px] ${
-                activeTab === tab ? "border-b-2 border-[#FF8A49]" : ""
-              }`}
+              style={[styles.tab, activeTab === tab && styles.activeTab]}
             >
               <Text
-                className={`text-[16px] font-PlusJakartaSansMedium ${
-                  activeTab === tab ? "text-white" : "text-gray-400"
-                }`}
+                style={[styles.tabText, activeTab === tab && styles.activeTabText]}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </Text>
@@ -216,10 +191,154 @@ const index = () => {
           ))}
         </View>
 
-        <View className="py-4 pb-20">{renderTabContent()}</View>
+        {/* Tab Content */}
+        <View style={styles.tabContent}>{renderTabContent}</View>
       </Animated.ScrollView>
     </View>
   );
 };
 
-export default index;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#0A0A0A",
+  },
+  header: {
+    overflow: "hidden",
+  },
+  headerBackground: {
+    height: "100%",
+    width: "100%",
+  },
+  headerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: hp("25%"),
+    paddingHorizontal: wp("5%"),
+  },
+  artistInfo: {
+    flex: 1,
+    marginRight: wp("2%"),
+  },
+  artistNameContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: wp("2%"),
+  },
+  artistName: {
+    fontSize: 24,
+    fontFamily: "PlusJakartaSansBold",
+    color: "white",
+  },
+  statsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: wp("1.5%"),
+    marginTop: hp("0.5%"),
+  },
+  statsText: {
+    fontSize: 14,
+    fontFamily: "PlusJakartaSansMedium",
+    color: "#A5A6AA",
+  },
+  changeCoverButton: {
+    borderWidth: 1,
+    borderColor: "#D2D3D5",
+    paddingVertical: hp("1.2%"),
+    paddingHorizontal: wp("3.5%"),
+    borderRadius: 24,
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+  },
+  changeCoverText: {
+    fontSize: 14,
+    fontFamily: "PlusJakartaSansMedium",
+    color: "white",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: hp("5%"),
+  },
+  actionsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: wp("4%"),
+    paddingHorizontal: wp("4%"),
+    marginTop: hp("2%"),
+  },
+  actionButton: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#12141B",
+    borderRadius: 16,
+    height: hp("11%"),
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  actionText: {
+    color: "#f4f4f4",
+    fontSize: 14,
+    fontFamily: "PlusJakartaSansMedium",
+    textAlign: "center",
+    marginTop: hp("0.5%"),
+  },
+  tabsContainer: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: "#2D2D2D",
+    marginTop: hp("2%"),
+    paddingHorizontal: wp("1%"),
+  },
+  tab: {
+    paddingVertical: hp("2.5%"),
+    paddingHorizontal: wp("6%"),
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: "#FF8A49",
+  },
+  tabText: {
+    fontSize: 16,
+    fontFamily: "PlusJakartaSansMedium",
+    color: "#A5A6AA",
+  },
+  activeTabText: {
+    color: "white",
+  },
+  tabContent: {
+    paddingVertical: hp("2%"),
+  },
+  placeholderContainer: {
+    flex: 1,
+    backgroundColor: "#1a1a1a",
+  },
+  placeholderImage: {
+    height: hp("40.9%"),
+    backgroundColor: "#2D2D2D",
+  },
+  placeholderTextContainer: {
+    paddingHorizontal: wp("3%"),
+    marginTop: hp("5%"),
+  },
+  placeholderName: {
+    height: hp("3%"),
+    width: wp("60%"),
+    backgroundColor: "#404040",
+    borderRadius: 4,
+    marginBottom: hp("1%"),
+  },
+  placeholderStats: {
+    height: hp("2%"),
+    width: wp("40%"),
+    backgroundColor: "#404040",
+    borderRadius: 4,
+  },
+});
+
+export default ArtistProfileScreen;

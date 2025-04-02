@@ -1,10 +1,11 @@
-import { View, ScrollView, Text, Pressable, Image } from "react-native";
+import { View, ScrollView, Text, Pressable } from "react-native";
 import React, { useState } from "react";
 import { MotiView } from "moti";
 import { Skeleton } from "moti/skeleton";
 import { useRouter } from "expo-router";
 import { useAppSelector } from "@/redux/hooks";
 import ProfileCardSkeleton from '../SkeletonLoading/ProfileCardSkeleton';
+import { Avatar } from "react-native-elements";
 
 const ExploreDiscographies = ({
   title,
@@ -87,18 +88,17 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
         radius="round"
         height={140}
         width={140}
-        show={loading || isImageLoading}
+        show={!item}
         transition={{
           type: "timing",
           duration: 1000,
         }}
       >
         {item?.profileImage && (
-          <Image
-            source={{ uri: item?.profileImage }}
-            className="w-[140px] h-[140px] rounded-full"
-            onLoadStart={() => setIsImageLoading(true)}
-            onLoadEnd={() => setIsImageLoading(false)}
+          <Avatar
+            source={{ uri: item?.profileImage || "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg" }}
+             size={140}
+            rounded
           />
         )}
       </Skeleton>

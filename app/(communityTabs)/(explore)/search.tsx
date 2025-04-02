@@ -7,6 +7,7 @@ import { addRecentSearch } from '../../../redux/slices/searchSlice';
 import { useSearch } from '../../../hooks/useSearch';
 import { BlurView } from 'expo-blur';
 import { formatNumber } from '@/utils/ArstsisArr';
+import PostCard from '../../../components/cards/PostCard';
 
 // Import types from useSearch
 type Genre = {
@@ -157,7 +158,7 @@ const SearchScreen = () => {
             case 'post':
                 const post = item as Post;
                 router.navigate({
-                    pathname: '/post',
+                    pathname: '/postDetails',
                     params: { postId: post._id }
                 });
                 break;
@@ -214,50 +215,10 @@ const SearchScreen = () => {
 
         return (
             <View className="mb-6">
-                <Text className="text-[#f4f4f4] text-xl font-semibold mb-4 px-4">Posts from your tribes</Text>
-                <View className="px-4">
-                    {data.map((post, index) => (
-                        <Pressable
-                            key={post._id}
-                            className="mb-4"
-                            onPress={() => handleResultPress(post, 'post')}
-                        >
-                            <View className="bg-[#202227] rounded-[16px] p-4">
-                                <View className="flex-row items-center mb-3">
-                                    <Image
-                                        source={{ uri: post.artist.profileImage }}
-                                        className="w-8 h-8 rounded-full"
-                                    />
-                                    <View className="flex-row items-center flex-1 ml-2">
-                                        <Text className="text-[#f4f4f4] font-medium">{post.artist.name}</Text>
-                                        {post.artist.verified && (
-                                            <CheckmarkBadge01Icon size={16} color="#fff" className="ml-1" />
-                                        )}
-                                    </View>
-                                    <Text className="text-[#63656B] text-[12px]">{post.createdAt}</Text>
-                                </View>
-                                <Text className="text-[#f4f4f4] text-[14px]">{post.content}</Text>
-                                {post.media && post.media.length > 0 && (
-                                    <View className="flex-row flex-wrap mt-3">
-                                        {post.media.map((media, mediaIndex) => (
-                                            <Image
-                                                key={mediaIndex}
-                                                source={{ uri: media }}
-                                                className={`rounded-lg ${
-                                                    post.media.length === 1 ? 'w-full h-[200px]' :
-                                                    post.media.length === 2 ? 'w-[49%] h-[150px]' :
-                                                    'w-[32%] h-[100px]'
-                                                } ${mediaIndex > 0 ? 'ml-[1%]' : ''}`}
-                                            />
-                                        ))}
-                                    </View>
-                                )}
-                                <View className="flex-row items-center mt-3">
-                                    <Text className="text-[#63656B] text-[14px]">{post.likeCount}</Text>
-                                    <Text className="text-[#63656B] text-[14px] ml-4">{post.commentCount}</Text>
-                                </View>
-                            </View>
-                        </Pressable>
+                <Text className="text-[#9A9B9F] text-[20px] font-PlusJakartaSansMedium mb-4 px-4">Posts from your tribes</Text>
+                <View>
+                    {data.map((post) => (
+                        <PostCard key={post._id} item={post} />
                     ))}
                 </View>
             </View>

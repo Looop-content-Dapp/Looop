@@ -9,7 +9,7 @@ import { router } from "expo-router";
 
 export default function HomeLayout() {
   const headerConfig = useHeader({ title: "" });
-  const { userdata } = useAppSelector((state) => state.auth);
+
   return (
     <Stack
       screenOptions={{

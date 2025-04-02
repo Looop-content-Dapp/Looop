@@ -44,19 +44,7 @@ const Feed = () => {
        title: ""
     })
   }, [])
-
-  /**
-   *   <Image source={require("../../../assets/images/logo-gray.png")} className='w-[45px] h-[20px]' />
-            <Avatar
-                rounded
-                source={{
-                  uri: userdata?.profileImage
-                }}
-                size={40}
-             />
-             <Text className='text-[24px] font-PlusJakartaSansMedium  text-[#f4f4f4]'>My Feed</Text>
-   */
-
+  
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center">

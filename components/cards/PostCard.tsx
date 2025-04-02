@@ -8,7 +8,6 @@ import EngagementSection from '../post/EngagementSection';
 import { router } from 'expo-router';
 import { Post } from '@/hooks/useUserFeed'; // Updated import
 import { useAppSelector } from '@/redux/hooks';
-
 interface PostCardProps {
   item: Post;
 }
@@ -27,6 +26,25 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
     setLikeCount(newCount);
   };
 
+  const renderContent = (content: string) => {
+    if (!content) return null;
+
+    const words = content.split(/(\s+)/);
+    return words.map((word, index) => {
+      if (word.startsWith('#')) {
+        return (
+          <Text
+            key={index}
+            className="text-[#1DA1F2] text-[16px] font-PlusJakartaSansMedium"
+          >
+            {word}
+          </Text>
+        );
+      }
+      return <Text key={index}>{word}</Text>;
+    });
+  };
+
   return (
     <View className="h-auto gap-y-[16px] mx-[14px] border-b border-Grey/07 py-[10px]">
       <StatusBar style="light" />
@@ -39,14 +57,14 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
         <Pressable
           onPress={() =>
             router.navigate({
-              pathname: '/comment',
-              params: { id: item.id },
+              pathname: '/postDetails',
+              params: { id: item?.id },
             })
           }
           className="gap-y-[16px]"
         >
           <Text className="text-white text-[16px] font-PlusJakartaSansRegular">
-            {item?.content}
+            {renderContent(item?.content)}
           </Text>
           <PostMedia media={item?.media} />
         </Pressable>
@@ -54,7 +72,7 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
 
       <Skeleton show={isLoading}>
         <EngagementSection
-          index={item.id}
+          index={item?.id}
           engagement={{
             likes: likeCount,
             comments: item?.commentCount,

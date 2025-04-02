@@ -68,8 +68,11 @@ const EngagementSection: React.FC<EngagementSectionProps> = ({
 
   const handleCommentPress = () => {
     router.push({
-      pathname: '/comment',
-      params: { id: index },
+      pathname: '/comments',
+      params: {
+        postId: index,
+        type: 'post'
+      }
     });
   };
 

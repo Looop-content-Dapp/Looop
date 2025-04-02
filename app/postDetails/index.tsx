@@ -13,7 +13,6 @@ import { ArrowDown01Icon, ArrowLeft02Icon } from '@hugeicons/react-native';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import { router, useLocalSearchParams } from 'expo-router';
 import PostCard from '@/components/cards/PostCard';
-import CommentBox from '@/components/post/CommentBox';
 import { useGetPost } from '@/hooks/useCreateCommunity';
 import CommentsScreen from '@/components/post/CommentScreen';
 
@@ -40,7 +39,7 @@ const CommentScreen = () => {
           <Text className="text-[12px] text-[#fff]">Sort comments by</Text>
           <ArrowDown01Icon variant="solid" size={20} color="#787A80" />
         </View>
-        <CommentsScreen />
+        <CommentsScreen postId={id as string} />
       </>
     );
   };

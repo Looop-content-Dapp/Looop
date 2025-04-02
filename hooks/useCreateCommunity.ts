@@ -1,4 +1,5 @@
 import api from "@/config/apiConfig";
+import { useAppSelector } from "@/redux/hooks";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 type Community = {
@@ -110,12 +111,17 @@ type SinglePostResponse = {
 };
 
 export const useGetPost = (postId: string) => {
+    const { userdata } = useAppSelector((state) => state.auth);
   return useQuery({
-    queryKey: ['post', postId],
+    queryKey: ['post', postId, userdata?._id],
     queryFn: async () => {
-      const { data } = await api.get<SinglePostResponse>(`/api/post/${postId}`);
+      const { data } = await api.get<SinglePostResponse>(`/api/post/${postId}`, {
+        params: {
+          userId: userdata?._id
+        }
+      });
       return data;
     },
-    enabled: !!postId,
+    enabled: !!postId && !!userdata,
   });
 };

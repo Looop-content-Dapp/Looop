@@ -103,7 +103,7 @@ function AppContent() {
           }}
         />
         <Stack.Screen name="wallet" />
-        <Stack.Screen name="comment" />
+        <Stack.Screen name="postDetails" />
       </Stack>
     </>
   );

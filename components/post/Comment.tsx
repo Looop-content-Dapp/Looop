@@ -1,26 +1,36 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Image, Pressable, LayoutChangeEvent } from 'react-native';
 import { Svg, Path } from 'react-native-svg';
-import { EllipseSelectionIcon, ThumbsUpIcon, ThumbsDownIcon, ReplayIcon } from '@hugeicons/react-native';
+import { EllipseSelectionIcon, ThumbsUpIcon, ThumbsDownIcon, ReplayIcon, FavouriteIcon, BubbleChatIcon } from '@hugeicons/react-native';
+import { formatDistanceToNow } from 'date-fns';
+import { Avatar } from 'react-native-elements';
+import { router } from 'expo-router';
 
 interface CommentProps {
   comment: {
     id: string;
-    user: { username: string; profileImage: string; isVerified: boolean };
+    user: {
+      username: string;
+      profileImage: string;
+      isVerified: boolean;
+      fullname: string;
+    };
     timestamp: string;
     text: string;
     likes: number;
     replies: any[];
     isEdited: boolean;
   };
-  level?: number; // Tracks nesting level for indentation
+  level?: number;
+  postId: string; // Add postId prop
 }
 
-const Comment: React.FC<CommentProps> = ({ comment, level = 0 }) => {
+const Comment: React.FC<CommentProps> = ({ comment, level = 0, postId }) => {
   const [showReplies, setShowReplies] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
 
-  // Measure the height of the comment content to determine the straight line length
+  const formattedDate = formatDistanceToNow(new Date(comment?.timestamp), { addSuffix: true });
+
   const onContentLayout = (event: LayoutChangeEvent) => {
     setContentHeight(event.nativeEvent.layout.height);
   };
@@ -48,37 +58,52 @@ const Comment: React.FC<CommentProps> = ({ comment, level = 0 }) => {
     );
   };
 
+  const handleReplyPress = () => {
+    router.push({
+      pathname: '/comments',
+      params: {
+        postId,
+        parentId: comment.id,
+        type: 'reply',
+        replyingTo: comment.user.username
+      }
+    });
+  };
+
   return (
     <View className={`flex-row mb-4 ml-${level * 6}`}>
       {/* Profile Image with Curved Line */}
       <View className="relative">
-        <Image
-          source={{ uri: comment.user.profileImage }}
-          className="w-10 h-10 rounded-full"
+        <Avatar
+          source={{
+            uri: comment?.user?.profileImage || "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
+          }}
+        size={40}
+        rounded
+        avatarStyle={{
+            borderWidth: 2,
+            borderColor: "#f4f4f4",
+          }}
         />
-        {comment.replies.length > 0 && showReplies && renderCurvedLine()}
+        {comment?.replies?.length > 0 && showReplies && renderCurvedLine()}
       </View>
 
       {/* Comment Content */}
       <View className="ml-4 flex-1" onLayout={onContentLayout}>
         {/* User Info */}
         <View className="flex-row items-center">
-          <Text className="text-white font-bold">{comment.user.username}</Text>
-          {comment.user.isVerified && (
-            <Image
-              source={{ uri: 'https://example.com/verified.png' }}
-              className="w-4 h-4 ml-1"
-            />
+          <Text className="text-[16px] text-[#f4f4f4] font-PlusJakartaSansMedium">{comment.user.username}</Text>
+          {comment?.user?.isVerified && (
+            <View className="w-4 h-4 ml-1 bg-blue-500 rounded-full items-center justify-center">
+              <Text className="text-white text-[10px]">✓</Text>
+            </View>
           )}
-          <Text className="text-gray-400 ml-2">· {comment.timestamp}</Text>
-          {comment.isEdited && <Text className="text-gray-400 ml-1">(edited)</Text>}
-          <Pressable className="ml-auto">
-            <EllipseSelectionIcon className="w-5 h-5 text-gray-400" />
-          </Pressable>
+          <Text className="text-gray-400 ml-2">· {formattedDate}</Text>
+          {comment?.isEdited && <Text className="text-gray-400 ml-1">(edited)</Text>}
         </View>
 
         {/* Comment Text */}
-        <Text className="text-white mt-1">
+        <Text className="text-[#f4f4f4] text-[16px] font-PlusJakartaSansRegular mt-1">
           {comment.text.length > 100 ? (
             <>
               {comment.text.slice(0, 100)}...
@@ -92,25 +117,25 @@ const Comment: React.FC<CommentProps> = ({ comment, level = 0 }) => {
         {/* Interaction Icons */}
         <View className="flex-row mt-2">
           <Pressable className="flex-row items-center mr-4">
-            <ThumbsUpIcon className="w-5 h-5 text-gray-400" />
-            <Text className="text-gray-400 ml-1">{comment.likes}</Text>
+            <FavouriteIcon size={20} color='#63656B' variant='stroke' />
+            <Text className="text-gray-400 ml-1">{comment?.likes}</Text>
           </Pressable>
-          <Pressable className="flex-row items-center mr-4">
-            <ThumbsDownIcon className="w-5 h-5 text-gray-400" />
-          </Pressable>
-          <Pressable className="flex-row items-center">
-            <ReplayIcon className="w-5 h-5 text-gray-400" />
+          <Pressable
+            className="flex-row items-center"
+            onPress={handleReplyPress}
+          >
+            <BubbleChatIcon size={20} color='#63656B' variant='stroke' />
           </Pressable>
         </View>
 
         {/* Replies Toggle */}
-        {comment.replies.length > 0 && (
+        {comment?.replies?.length > 0 && (
           <Pressable
             onPress={() => setShowReplies(!showReplies)}
             className="mt-2"
           >
             <Text className="text-white">
-              {comment.replies.length} replies{' '}
+              {comment?.replies?.length} replies{' '}
               <Text className="text-gray-400">{showReplies ? '▲' : '▼'}</Text>
             </Text>
           </Pressable>
@@ -120,7 +145,12 @@ const Comment: React.FC<CommentProps> = ({ comment, level = 0 }) => {
         {showReplies && (
           <View className="mt-2">
             {comment.replies.map((reply) => (
-              <Comment key={reply.id} comment={reply} level={level + 1} />
+              <Comment
+                key={reply.id}
+                comment={reply}
+                level={level + 1}
+                postId={postId}
+              />
             ))}
           </View>
         )}
