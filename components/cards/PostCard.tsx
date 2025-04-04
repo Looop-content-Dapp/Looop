@@ -8,6 +8,9 @@ import EngagementSection from '../post/EngagementSection';
 import { router } from 'expo-router';
 import { Post } from '@/hooks/useUserFeed'; // Updated import
 import { useAppSelector } from '@/redux/hooks';
+import SharePost from '../bottomSheet/SharePost';
+import { formatTimeAgo } from '@/utils/dateUtils';
+
 interface PostCardProps {
   item: Post;
 }
@@ -16,6 +19,7 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { userdata } = useAppSelector((state) => state.auth);
   const [likeCount, setLikeCount] = useState(item?.likeCount || 0);
+  const [isShareSheetVisible, setIsShareSheetVisible] = useState(false);
 
   useEffect(() => {
     if (!item) setIsLoading(true);
@@ -48,7 +52,11 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
   return (
     <View className="h-auto gap-y-[16px] mx-[14px] border-b border-Grey/07 py-[10px]">
       <StatusBar style="light" />
-      <UserSection item={item} loading={isLoading} />
+      <UserSection
+        item={item}
+        loading={isLoading}
+        onMorePress={() => setIsShareSheetVisible(true)}
+      />
 
       <Skeleton
         transition={{ type: 'timing', duration: 1000 }}
@@ -72,7 +80,7 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
 
       <Skeleton show={isLoading}>
         <EngagementSection
-          index={item?.id}
+          index={item?._id}  // Change from item?.id to item?._id
           engagement={{
             likes: likeCount,
             comments: item?.commentCount,
@@ -82,6 +90,17 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
           onLikeUpdate={handleLikeUpdate}
         />
       </Skeleton>
+      <SharePost
+  isVisible={isShareSheetVisible}
+  onClose={() => setIsShareSheetVisible(false)}
+  album={{
+    id: item.id,
+    title: item.content,
+    artist: item.artistId?.name,
+    image: item.media?.[0]?.url,
+    duration: formatTimeAgo(item.createdAt)
+  }}
+/>
     </View>
   );
 };

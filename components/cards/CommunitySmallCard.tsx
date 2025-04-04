@@ -29,9 +29,10 @@ const CommunitySmallCard = ({ item }: Props) => {
   const handleRoute = () => {
     if(!userdata?._id) return console.log("pls login first")
 
-        const isMember = Array.isArray(item.members) && item.members.length > 0
-            ? item.members.some(member => member.userId._id === userdata?._id)
-            : false;
+       // Fixed member check logic with null check for userId
+       const isMember = Array.isArray(item.members) && item.members.length > 0
+       ? item.members.some(member => member.userId && member.userId._id === userdata._id)
+       : false;
 
     if (!isMember) {
       router.push({

@@ -19,13 +19,21 @@ import { useGetComment } from '@/hooks/useGetComment';
 import { formatDistanceToNow } from 'date-fns';
 import { Avatar } from 'react-native-elements';
 import { usePostInteractions } from '@/hooks/usePostInteractions';
-import { useAuth } from '@/context/AuthContext';
-import { useAppSelector } from '@/redux/hooks';
 
+import { useAppSelector } from '@/redux/hooks';
+import { useQuery } from '@tanstack/react-query';
+import api from '@/config/apiConfig';
+
+// Update the Comment interface to match the API response
 interface Comment {
-  id: string;
+  _id: string;  // Changed from id to _id to match API
   content: string;
-  userId: any;
+  userId: {
+    _id: string;
+    username: string;
+    profileImage: string;
+    // ... other user fields
+  };
   createdAt: string;
   replies?: Comment[];
   parentId?: string;
@@ -41,7 +49,6 @@ const CommentItem = ({
   onReply: (comment: Comment) => void,
   onPress: (comment: Comment) => void
 }) => {
-    console.log('CommentItem rendered with comment:', comment);
   return (
     <TouchableOpacity
       onPress={() => onPress(comment)}
@@ -51,34 +58,31 @@ const CommentItem = ({
         <View>
           <Avatar
             source={{
-              uri: comment?.userId?.profileImage ||
+              uri: comment.userId?.profileImage ||
                 "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg"
             }}
-           size={40}
-           rounded
-           containerStyle={{ borderWidth: 1, borderColor: '#202227' }}
+            size={40}
+            rounded
+            containerStyle={{ borderWidth: 1, borderColor: '#202227' }}
           />
         </View>
         <View className="flex-1 ml-3">
           <View className="flex-row items-center">
             <Text className="text-[16px] text-[#f4f4f4] font-PlusJakartaSansMedium">
-              {comment?.userId?.username}
+              {comment.userId?.username}
             </Text>
-            {comment?.user?.isVerified && (
-              <View className="w-4 h-4 ml-1 bg-blue-500 rounded-full items-center justify-center">
-                <Text className="text-white text-[10px]">✓</Text>
-              </View>
-            )}
-            <Text className="text-gray-400 ml-2">· {formatDistanceToNow(new Date(comment?.createdAt), { addSuffix: true })}</Text>
+            <Text className="text-gray-400 ml-2">
+              · {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+            </Text>
           </View>
 
           <Text className="text-[#f4f4f4] mt-1 text-[16px] font-PlusJakartaSansRegular">
-            {comment?.content}
+            {comment.content}
           </Text>
 
           {comment.media && (
             <Image
-              source={{ uri: comment?.media }}
+              source={{ uri: comment.media }}
               className="w-full h-48 mt-2 rounded-lg"
             />
           )}
@@ -114,6 +118,27 @@ export default function CommentScreen() {
 
   const { data: postData, isLoading } = useGetPost(postId as string);
 
+  const { data: commentsData, refetch: refetchComments } = useQuery({
+    queryKey: ['comments', postId],
+    queryFn: async () => {
+      const response = await api.get(`/api/post/comments/${postId}`);
+      return response.data;
+    },
+    enabled: !!postId,
+    staleTime: 1000, // Reduce stale time for more frequent updates
+    refetchInterval: 5000, // Poll every 5 seconds for new comments
+    onError: (error) => {
+      console.error('Error fetching comments:', error);
+    }
+  });
+
+  // Update the useEffect for comments data
+  useEffect(() => {
+    if (commentsData?.data?.comments) {  // Access the comments array from the response
+      setComments(commentsData.data.comments);
+    }
+  }, [commentsData]);
+
   useLayoutEffect(() => {
     const title = type === 'reply' ? 'Reply' : type === 'thread' ? 'Thread' : 'Comments';
 
@@ -144,7 +169,7 @@ export default function CommentScreen() {
       pathname: '/comments',
       params: {
         postId,
-        commentId: comment.id,
+        commentId: comment._id,
         type: 'thread'
       }
     });
@@ -155,7 +180,7 @@ export default function CommentScreen() {
       pathname: '/comments',
       params: {
         postId,
-        parentId: comment.id,
+        parentId: comment._id,
         type: 'reply'
       }
     });
@@ -165,41 +190,40 @@ export default function CommentScreen() {
     if (!comment.trim() && files.length === 0) return;
 
     try {
-      const mediaUrls = files.map(file => file.uri);
-      const parentCommentId = Array.isArray(parentId) ? parentId[0] : parentId;
-
-      const payload = {
-        userId: userdata?._id || "",
-        postId: postId as string,
-        content: comment,
-        media: mediaUrls.length > 0 ? mediaUrls[0] : undefined,
-        parentCommentId: type === 'reply' ? parentCommentId : ""
-      };
-
       if (type === 'reply') {
-        await replyToComment(payload);
+        const replyPayload = {
+          userId: userdata?._id || "",
+          postId: postId as string,
+          parentCommentId: Array.isArray(parentId) ? parentId[0] : parentId,
+          content: comment,
+        };
+        console.log('Reply payload:', replyPayload); // Debug log
+        await replyToComment(replyPayload);
       } else {
-        await commentOnPost(payload);
+        const commentPayload = {
+          userId: userdata?._id || "",
+          postId: postId as string,
+          parentCommentId: "",
+          content: comment,
+        };
+        console.log('Comment payload:', commentPayload); // Debug log
+        const response = await commentOnPost(commentPayload);
+        console.log('Comment response:', response); // Debug log
       }
 
+      // Only clear the form if the submission was successful
       setComment('');
-      removeFile(files[0]);
+      if (files.length > 0) {
+        removeFile(files[0]);
+      }
 
-      const newComment = {
-        id: Date.now().toString(),
-        content: comment,
-        userId: userdata,
-        createdAt: new Date().toISOString(),
-        media: mediaUrls[0],
-        parentId: type === 'reply' ? parentCommentId : undefined
-      };
-
-      setComments(prev => [newComment, ...prev]);
-
+      // Wait for the refetch to complete
+      await refetchComments();
     } catch (error) {
       console.error('Error submitting comment:', error);
+      // You might want to show an error toast here
     }
-};
+  };
 
   const handleImagePick = async () => {
     const result = await pickFile(FileType.IMAGE);
@@ -234,11 +258,8 @@ export default function CommentScreen() {
   }, []);
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.select({ ios: 90, android: 0 })}
-      className="flex-1 bg-black"
-    >
+    <View className="flex-1 bg-black">
+      {/* Content Section */}
       <View className="flex-1">
         {/* Show original post or parent comment based on type */}
         {type === 'post' ? (
@@ -273,14 +294,21 @@ export default function CommentScreen() {
         <FlatList
           data={comments}
           renderItem={renderComment}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item._id}
           className="flex-1"
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
+          contentContainerStyle={{ paddingBottom: 100 }} // Add padding to prevent content from being hidden behind input
         />
+      </View>
 
-        {/* Comment Input Section */}
-        <View className="p-4 border-t border-[#202227]">
+      {/* Input Section - Now positioned absolutely */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.select({ ios: 90, android: 0 })}
+        className="absolute bottom-0 left-0 right-0 bg-black border-t border-[#202227]"
+      >
+        <View className="p-4">
           <View className="flex-row items-center">
             <TextInput
               ref={textInputRef}
@@ -348,7 +376,7 @@ export default function CommentScreen() {
             </TouchableOpacity>
           </View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }

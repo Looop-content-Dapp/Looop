@@ -15,12 +15,26 @@ const CommunityBigCard = ({ item}: Props) => {
     const { userdata } = useAppSelector((state) => state.auth);
 
     const handleRoute = () => {
-        if(!userdata?._id) return console.log("pls login first")
+        if (!item) {
+            Alert.alert("Error", "Community information not available");
+            return;
+        }
 
-            // Fixed member check logic
-            const isMember = Array.isArray(item.members) && item.members.length > 0
-                ? item.members.some(member => member.userId._id === userdata?._id)
-                : false;
+        if(!userdata?._id) {
+            Alert.alert(
+                "Login Required",
+                "Please login to access this community",
+                [
+                    { text: "OK", onPress: () => router.push("/auth") }
+                ]
+            );
+            return;
+        }
+
+        // Fixed member check logic with null check for userId
+        const isMember = Array.isArray(item.members) && item.members.length > 0
+            ? item.members.some(member => member.userId && member.userId._id === userdata._id)
+            : false;
 
         if (!isMember) {
             router.push({

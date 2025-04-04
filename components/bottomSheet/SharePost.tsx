@@ -15,11 +15,12 @@ import {
 import Icon from 'react-native-vector-icons/Feather';
 import * as Contacts from 'expo-contacts';
 import { Avatar } from 'react-native-elements';
-import { AlertDiamondIcon, CdIcon, FavouriteIcon, Playlist01Icon, Queue01Icon } from '@hugeicons/react-native';
+import { AlertDiamondIcon, AllBookmarkIcon, CdIcon, FavouriteIcon, Playlist01Icon, Queue01Icon } from '@hugeicons/react-native';
 import { Feather } from '@expo/vector-icons';
 import AddToPlaylistBottomSheet from './AddToPlaylistBottomSheet';
 import { useAddTrackToFavorites, useGetUserFavorites } from '@/hooks/useFavourites';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ScrollView } from 'react-native';
 
 interface ShareProps {
   isVisible: boolean;
@@ -34,7 +35,7 @@ interface ShareProps {
   };
 }
 
-const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
+const SharePost: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
   const [hasPermission, setHasPermission] = useState(false);
   const [contacts, setContacts] = useState([]);
   const [isPlaylistSheetVisible, setIsPlaylistSheetVisible] = useState(false);
@@ -262,7 +263,8 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
 
               <View className='border-b-2 border-[#202227]  pb-[16px] pt-[16px]'>
                 <Text style={styles.sectionLabel}>Send to</Text>
-                <View style={styles.sharingButtons}>
+
+                <ScrollView showsHorizontalScrollIndicator={false} horizontal style={styles.sharingButtons} className='gap-x-[10px]'>
                   <TouchableOpacity style={styles.shareButton}>
                     <View style={[styles.iconContainer, { backgroundColor: '#800080' }]}>
                       <Feather name="link" size={32} color="#FFFFFF" />
@@ -293,49 +295,31 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
                     </View>
                     <Text style={styles.shareLabel}>Share to X</Text>
                   </TouchableOpacity>
-                </View>
+                </ScrollView>
               </View>
 
-              <View style={styles.actionButtons}>
+              <View style={styles.actionButtons} className='gap-x-[20px]'>
                 <TouchableOpacity style={styles.actionButton} onPress={handleAddToFavorites}>
                   <View className='bg-[#202227] p-[20px] rounded-[56px]'>
-                    <FavouriteIcon
+                    <AllBookmarkIcon
                       size={32}
                       color={isFavorite ? '#FF6D1B' : '#9A9B9F'}
                       variant={isFavorite ? 'solid' : 'stroke'}
                     />
                   </View>
-                  <Text style={styles.actionLabel}>Add to favorites</Text>
+                  <Text style={styles.actionLabel}>Save this Post</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={() => {
-                    onClose();
-                    setTimeout(() => setIsPlaylistSheetVisible(true), 300);
-                  }}
+                //   onPress={() => {
+                //     onClose();
+                //     setTimeout(() => setIsPlaylistSheetVisible(true), 300);
+                //   }}
                 >
-                  <View className='bg-[#202227] p-[20px] rounded-[56px]'>
-                    <Playlist01Icon size={32} color='#9A9B9F' variant='stroke' />
-                  </View>
-                  <Text style={styles.actionLabel}>Add to Playlist</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton} onPress={handleAddToQueue}>
-                  <View className='bg-[#202227] p-[20px] rounded-[56px]'>
-                    <Queue01Icon size={32} color='#9A9B9F' variant='stroke' />
-                  </View>
-                  <Text style={styles.actionLabel}>Add to Queue</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton} onPress={handleSeeCredits}>
-                  <View className='bg-[#202227] p-[20px] rounded-[56px]'>
-                    <CdIcon size={32} color='#9A9B9F' variant='stroke' />
-                  </View>
-                  <Text style={styles.actionLabel}>See credit</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton} onPress={handleReportAlbum}>
                   <View className='bg-[#202227] p-[20px] rounded-[56px]'>
                     <AlertDiamondIcon size={32} color='#9A9B9F' variant='stroke' />
                   </View>
-                  <Text style={styles.actionLabel}>Report Album</Text>
+                  <Text style={styles.actionLabel}>Report Post</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -353,22 +337,22 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
 };
 
 const styles = StyleSheet.create({
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        paddingBottom: 20, // Add bottom padding to create space
-      },
-      modalContent: {
-        backgroundColor: '#111318',
-        borderRadius: 20, // Add border radius to all corners
-        paddingLeft: 8,
-        paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-        maxHeight: Dimensions.get('window').height * 0.9,
-        width: "100%",
-        overflow: "hidden"
-      },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingBottom: 20, // Add bottom padding to create space
+  },
+  modalContent: {
+    backgroundColor: '#111318',
+    borderRadius: 20, // Add border radius to all corners
+    paddingLeft: 8,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    maxHeight: Dimensions.get('window').height * 0.9,
+    width: "100%",
+    overflow: "hidden"
+  },
   container: {
     backgroundColor: '#111318',
     padding: 24,
@@ -407,8 +391,6 @@ const styles = StyleSheet.create({
   },
   sharingButtons: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
     marginTop: 8,
   },
   shareButton: {
@@ -433,9 +415,9 @@ const styles = StyleSheet.create({
   actionButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
     marginTop: 24,
     paddingHorizontal: 5,
+
   },
   actionButton: {
     alignItems: 'center',
@@ -449,4 +431,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Share;
+export default SharePost;

@@ -2,7 +2,7 @@ import { useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/config/apiConfig';
 import { useAppDispatch } from '@/redux/hooks';
-import { addNotification, markAsRead, setNotifications } from '@/redux/slices/notifications';
+import { markAsRead, setNotifications } from '@/redux/slices/notifications';
 
 interface Notification {
   _id: string;
@@ -27,31 +27,6 @@ interface NotificationResponse {
 export const useNotifications = (userId: string) => {
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
-
-  // WebSocket connection
-  useEffect(() => {
-    const ws = new WebSocket(`ws://looop-backend-gxjh.onrender.com/ws?userId=${userId}`);
-
-    ws.onopen = () => {
-      console.log('WebSocket connected');
-    };
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.event === 'newNotification') {
-        dispatch(addNotification(data.data));
-        queryClient.invalidateQueries(['notifications', userId]);
-      }
-    };
-
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    return () => {
-      ws.close();
-    };
-  }, [userId, dispatch, queryClient]);
 
   // Fetch notifications
   const { data: notificationsData, isLoading } = useQuery<NotificationResponse>({

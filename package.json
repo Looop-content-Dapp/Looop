@@ -72,7 +72,7 @@
     "expo-status-bar": "~2.0.1",
     "expo-symbols": "~0.2.1",
     "expo-system-ui": "~4.0.7",
-    "expo-video": "~2.0.5",
+    "expo-video": "~2.0.6",
     "expo-web-browser": "~14.0.2",
     "flutterwave-react-native": "^1.0.4",
     "graphql": "^16.10.0",

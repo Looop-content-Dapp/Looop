@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, GestureResponderEvent } from 'react-native';
-import Svg, { Rect } from 'react-native-svg';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  TouchableOpacity,
+  GestureResponderEvent,
+} from "react-native";
+import Svg, { Rect } from "react-native-svg";
 import { PlayIcon, PauseIcon } from "@hugeicons/react-native";
 
 interface WaveformProps {
@@ -28,43 +32,43 @@ const AudioWaveform: React.FC<WaveformProps> = ({
   height = 35,
   barWidth = 2,
   barSpacing = 0.9,
-  playedColor = '#FFFFFF',
-  unplayedColor = 'rgba(255, 255, 255, 0.24)',
+  playedColor = "#FFFFFF",
+  unplayedColor = "rgba(255, 255, 255, 0.24)",
   showPlayButton = true,
   playButtonSize = 40,
-  playButtonColor = '#8D4FB4'
+  playButtonColor = "#8D4FB4",
 }) => {
   const [waveformBars, setWaveformBars] = useState<number[]>([]);
 
+  // Generate random waveform bars
   useEffect(() => {
     const generateBars = () => {
       const bars: number[] = [];
-      let prevHeight = Math.random() * 15 + 10;
-
+      let prevHeight = Math.random() * 15 + 10; // Starting height between 10 and 25
       for (let i = 0; i < barCount; i++) {
-        let newHeight = prevHeight + (Math.random() * 6 - 3);
-        newHeight = Math.max(8, Math.min(25, newHeight));
+        let newHeight = prevHeight + (Math.random() * 6 - 3); // Vary by ±3
+        newHeight = Math.max(8, Math.min(25, newHeight)); // Clamp between 8 and 25
         bars.push(newHeight);
         prevHeight = newHeight;
       }
       return bars;
     };
-
     setWaveformBars(generateBars());
   }, [barCount]);
 
+  // Handle seeking when user taps on the waveform
   const handleSeek = (event: GestureResponderEvent) => {
     const { locationX } = event.nativeEvent;
     const containerWidth = barCount * (barWidth + barSpacing);
-    const seekPosition = locationX / containerWidth;
-    onSeek(Math.max(0, Math.min(1, seekPosition)));
+    const seekPosition = Math.max(0, Math.min(1, locationX / containerWidth));
+    onSeek(seekPosition);
   };
 
+  // Render waveform bars
   const renderWaveformBars = () => {
     return waveformBars.map((barHeight, index) => {
       const progressPoint = progress * waveformBars.length;
       const isPlayed = index <= progressPoint;
-
       return (
         <Rect
           key={index}
@@ -73,18 +77,20 @@ const AudioWaveform: React.FC<WaveformProps> = ({
           width={barWidth}
           height={barHeight}
           fill={isPlayed ? playedColor : unplayedColor}
-          rx="1"
+          rx={1} // Rounded corners
         />
       );
     });
   };
 
   return (
-    <View style={{
-      flexDirection: 'row',
-      alignItems: 'center',
-      width: '100%',
-    }}>
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        width: "100%",
+      }}
+    >
       {showPlayButton && (
         <TouchableOpacity
           onPress={onPlayPause}
@@ -92,19 +98,26 @@ const AudioWaveform: React.FC<WaveformProps> = ({
             backgroundColor: playButtonColor,
             width: playButtonSize,
             height: playButtonSize,
-            justifyContent: 'center',
-            alignItems: 'center',
+            justifyContent: "center",
+            alignItems: "center",
             borderRadius: playButtonSize / 2,
           }}
         >
           {isPlaying ? (
-            <PauseIcon size={Math.floor(playButtonSize * 0.6)} color="#fff" variant="solid" />
+            <PauseIcon
+              size={Math.floor(playButtonSize * 0.6)}
+              color="#fff"
+              variant="solid"
+            />
           ) : (
-            <PlayIcon size={Math.floor(playButtonSize * 0.6)} color="#fff" variant="solid" />
+            <PlayIcon
+              size={Math.floor(playButtonSize * 0.6)}
+              color="#fff"
+              variant="solid"
+            />
           )}
         </TouchableOpacity>
       )}
-
       <View style={{ flex: 1, marginLeft: showPlayButton ? 10 : 0 }}>
         <Svg
           height={height}

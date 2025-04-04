@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { FavouriteIcon, Comment02Icon, Share05Icon } from '@hugeicons/react-native';
+import { FavouriteIcon, Comment02Icon, Share05Icon, EyeIcon } from '@hugeicons/react-native';
 import { router } from 'expo-router';
 import Reanimated, { withSpring, useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import { usePostInteractions } from '@/hooks/usePostInteractions';
@@ -107,7 +107,7 @@ const EngagementSection: React.FC<EngagementSectionProps> = ({
           </TouchableOpacity>
         </View>
         <TouchableOpacity activeOpacity={0.7}>
-          <Share05Icon variant="stroke" size={20} color="#787A80" />
+          <EyeIcon variant="stroke" size={20} color="#787A80" />
         </TouchableOpacity>
       </View>
     </View>

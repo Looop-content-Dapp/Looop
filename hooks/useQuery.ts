@@ -919,7 +919,6 @@ export const useQuery = () => {
   const commentOnPost = useCallback(async (commentData: CommentData) => {
     try {
       const response = await axios.post(`/api/post/commentonpost`, commentData);
-      console.log("Comment added successfully:", response.data);
       return response.data;
     } catch (error) {
       console.error("Error adding comment:", error);

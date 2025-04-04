@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { CheckmarkBadge01Icon, MoreHorizontalIcon } from '@hugeicons/react-native';
 import { Skeleton } from 'moti/skeleton';
 import { formatTimeAgo } from '../../utils/dateUtils';
@@ -8,9 +8,10 @@ import { Post } from '../../utils/types';
 interface UserSectionProps {
   item: Post;
   loading: boolean;
+  onMorePress?: () => void;
 }
 
-const UserSection: React.FC<UserSectionProps> = ({ item, loading }) => {
+const UserSection: React.FC<UserSectionProps> = ({ item, loading, onMorePress }) => {
   return (
     <View className="flex-row items-center justify-between">
       <View className="flex-row items-center gap-x-2">
@@ -41,7 +42,9 @@ const UserSection: React.FC<UserSectionProps> = ({ item, loading }) => {
           <Text className="text-[#787A80] text-[12px] font-PlusJakartaSansBold">
             {formatTimeAgo(item?.createdAt)}
           </Text>
-          <MoreHorizontalIcon size={24} color="#787A80" variant="solid" />
+          <TouchableOpacity onPress={onMorePress}>
+            <MoreHorizontalIcon size={24} color="#787A80" variant="solid" />
+          </TouchableOpacity>
         </View>
       </Skeleton>
     </View>

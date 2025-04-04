@@ -4,13 +4,34 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 interface CommentInput {
   userId: string;
   postId: string;
-  content: string;
   parentCommentId?: string;
+  content: string;
 }
 
 interface LikeInput {
   userId: string;
   postId: string;
+}
+
+interface Comment {
+  _id: string;
+  content: string;
+  userId: {
+    email: string;
+    profileImage: string;
+    bio: string;
+  };
+  createdAt: string;
+  replies?: Comment[];
+}
+
+interface Post {
+  _id: string;
+  content: string;
+  likes: any[];
+  likeCount: number;
+  comments: Comment[];
+  commentCount: number;
 }
 
 export const usePostInteractions = () => {
@@ -21,68 +42,162 @@ export const usePostInteractions = () => {
       const { data } = await api.post("/api/post/like", input);
       return data;
     },
-    onMutate: async ({ postId }) => {
+    onMutate: async ({ postId, userId }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['posts'] });
       await queryClient.cancelQueries({ queryKey: ['post', postId] });
+
+      // Snapshot the previous value
+      const previousPosts = queryClient.getQueryData(['posts']);
       const previousPost = queryClient.getQueryData(['post', postId]);
 
-      queryClient.setQueryData(['post', postId], (old: any) => ({
-        ...old,
-        data: {
-          ...old.data,
-          likeCount: old.data.likeCount + 1,
-        }
-      }));
+      // Optimistically update posts list if it exists
+      queryClient.setQueryData(['posts'], (old: any) => {
+        if (!old?.pages) return old;
 
-      return { previousPost };
+        return {
+          ...old,
+          pages: old.pages.map((page: any) => ({
+            ...page,
+            posts: page.posts.map((post: any) => {
+              if (post._id === postId) {
+                const hasLiked = post.likes?.some((like: any) => like.userId === userId);
+                return {
+                  ...post,
+                  likeCount: hasLiked ? post.likeCount - 1 : post.likeCount + 1,
+                  hasLiked: !hasLiked,
+                };
+              }
+              return post;
+            }),
+          })),
+        };
+      });
+
+      // Optimistically update single post if it exists
+      if (previousPost) {
+        queryClient.setQueryData(['post', postId], (old: any) => {
+          if (!old) return old;
+          const hasLiked = old.likes?.some((like: any) => like.userId === userId);
+
+          return {
+            ...old,
+            likeCount: hasLiked ? old.likeCount - 1 : old.likeCount + 1,
+            hasLiked: !hasLiked,
+          };
+        });
+      }
+
+      return { previousPosts, previousPost };
     },
     onError: (err, variables, context) => {
+      // If the mutation fails, roll back optimistic updates
+      if (context?.previousPosts) {
+        queryClient.setQueryData(['posts'], context.previousPosts);
+      }
       if (context?.previousPost) {
         queryClient.setQueryData(['post', variables.postId], context.previousPost);
       }
     },
     onSettled: (data, error, variables) => {
+      // Always refetch to ensure server-client consistency
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['post', variables.postId] });
     },
   });
 
   const commentMutation = useMutation({
     mutationFn: async (input: CommentInput) => {
-      const { data } = await api.post("/api/post/comment", input);
-      return data;
+      const response = await api.post("/api/post/comment", input);
+      return response.data;
     },
-    onMutate: async ({ postId }) => {
-      await queryClient.cancelQueries({ queryKey: ['post', postId] });
-      const previousPost = queryClient.getQueryData(['post', postId]);
+    onMutate: async (newComment) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['comments', newComment.postId] });
 
-      queryClient.setQueryData(['post', postId], (old: any) => ({
-        ...old,
-        data: {
-          ...old.data,
-          commentCount: old.data.commentCount + 1,
-        }
-      }));
+      // Snapshot the previous value
+      const previousComments = queryClient.getQueryData(['comments', newComment.postId]);
 
-      return { previousPost };
+      // Optimistically update the comments
+      queryClient.setQueryData(['comments', newComment.postId], (old: any) => {
+        const optimisticComment = {
+          _id: 'temp-' + Date.now(),
+          content: newComment.content,
+          userId: {
+            _id: newComment.userId,
+            username: queryClient.getQueryData(['user', newComment.userId])?.data?.username || 'User',
+            profileImage: queryClient.getQueryData(['user', newComment.userId])?.data?.profileImage
+          },
+          createdAt: new Date().toISOString(),
+          parentId: newComment.parentCommentId || null,
+          isOptimistic: true
+        };
+
+        return {
+          ...old,
+          data: {
+            ...old?.data,
+            comments: [optimisticComment, ...(old?.data?.comments || [])]
+          }
+        };
+      });
+
+      return { previousComments };
     },
-    onError: (err, variables, context) => {
-      if (context?.previousPost) {
-        queryClient.setQueryData(['post', variables.postId], context.previousPost);
-      }
+    onError: (err, newComment, context) => {
+      // If the mutation fails, roll back to the previous state
+      queryClient.setQueryData(
+        ['comments', newComment.postId],
+        context?.previousComments
+      );
     },
     onSettled: (data, error, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['post', variables.postId] });
+      // Invalidate and refetch to ensure sync
       queryClient.invalidateQueries({ queryKey: ['comments', variables.postId] });
+      queryClient.invalidateQueries({ queryKey: ['post', variables.postId] });
     },
   });
 
   const replyMutation = useMutation({
     mutationFn: async (input: CommentInput) => {
-      const { data } = await api.post("/api/post/comment", input);
+      const { data } = await api.post("/api/post/comments/reply", input);
       return data;
     },
-    onMutate: async ({ postId, parentCommentId }) => {
+    onMutate: async ({ postId, parentCommentId, content, userId }) => {
       await queryClient.cancelQueries({ queryKey: ['comments', postId] });
       const previousComments = queryClient.getQueryData(['comments', postId]);
+
+      // Optimistically add the reply
+      queryClient.setQueryData(['comments', postId], (old: any) => {
+        const currentComments = old?.data?.comments || [];
+        const optimisticReply = {
+          _id: 'temp-' + Date.now(),
+          content,
+          userId: {
+            _id: userId,
+            // Add other user details if available
+          },
+          parentCommentId,
+          createdAt: new Date().toISOString(),
+          isOptimistic: true
+        };
+
+        return {
+          ...old,
+          data: {
+            ...old?.data,
+            comments: currentComments.map((comment: Comment) => {
+              if (comment._id === parentCommentId) {
+                return {
+                  ...comment,
+                  replies: [...(comment.replies || []), optimisticReply]
+                };
+              }
+              return comment;
+            })
+          }
+        };
+      });
 
       return { previousComments };
     },
@@ -93,6 +208,7 @@ export const usePostInteractions = () => {
     },
     onSettled: (data, error, variables) => {
       queryClient.invalidateQueries({ queryKey: ['comments', variables.postId] });
+      queryClient.invalidateQueries({ queryKey: ['post', variables.postId] });
     },
   });
 

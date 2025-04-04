@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Image, Pressable, LayoutChangeEvent } from 'react-native';
 import { Svg, Path } from 'react-native-svg';
 import { EllipseSelectionIcon, ThumbsUpIcon, ThumbsDownIcon, ReplayIcon, FavouriteIcon, BubbleChatIcon } from '@hugeicons/react-native';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, isPast } from 'date-fns';
 import { Avatar } from 'react-native-elements';
 import { router } from 'expo-router';
 
@@ -15,7 +15,7 @@ interface CommentProps {
       isVerified: boolean;
       fullname: string;
     };
-    timestamp: string;
+    createdAt: string;
     text: string;
     likes: number;
     replies: any[];
@@ -25,11 +25,24 @@ interface CommentProps {
   postId: string; // Add postId prop
 }
 
+const formatTimeDistance = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+    return isPast(date)
+      ? formatDistanceToNow(date) + ' ago'
+      : formatDistanceToNow(date) + ' from now';
+  } catch (error) {
+    console.error('Date formatting error:', error);
+    return 'Invalid date';
+  }
+};
+
 const Comment: React.FC<CommentProps> = ({ comment, level = 0, postId }) => {
   const [showReplies, setShowReplies] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
-
-  const formattedDate = formatDistanceToNow(new Date(comment?.timestamp), { addSuffix: true });
 
   const onContentLayout = (event: LayoutChangeEvent) => {
     setContentHeight(event.nativeEvent.layout.height);
@@ -85,20 +98,20 @@ const Comment: React.FC<CommentProps> = ({ comment, level = 0, postId }) => {
             borderColor: "#f4f4f4",
           }}
         />
-        {comment?.replies?.length > 0 && showReplies && renderCurvedLine()}
+
       </View>
 
       {/* Comment Content */}
       <View className="ml-4 flex-1" onLayout={onContentLayout}>
         {/* User Info */}
         <View className="flex-row items-center">
-          <Text className="text-[16px] text-[#f4f4f4] font-PlusJakartaSansMedium">{comment.user.username}</Text>
+          <Text className="text-[16px] text-[#f4f4f4] font-PlusJakartaSansMedium">{comment?.user?.username}</Text>
           {comment?.user?.isVerified && (
             <View className="w-4 h-4 ml-1 bg-blue-500 rounded-full items-center justify-center">
               <Text className="text-white text-[10px]">✓</Text>
             </View>
           )}
-          <Text className="text-gray-400 ml-2">· {formattedDate}</Text>
+          <Text className="text-gray-400 ml-2">· {formatTimeDistance(comment?.timestamp || comment?.createdAt)}</Text>
           {comment?.isEdited && <Text className="text-gray-400 ml-1">(edited)</Text>}
         </View>
 

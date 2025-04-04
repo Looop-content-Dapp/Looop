@@ -109,12 +109,6 @@ const ArtistCommunityDetails = ({ community }: ArtistCommunityDetailProps) => {
 
 
   // Interpolate values for animations
-  const headerHeight = scrollY.interpolate({
-    inputRange: [0, HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT],
-    outputRange: [HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
-    extrapolate: 'clamp',
-  });
-
   const stickyHeaderOpacity = scrollY.interpolate({
     inputRange: [0, HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT],
     outputRange: [0, 1],
@@ -206,16 +200,25 @@ const ArtistCommunityDetails = ({ community }: ArtistCommunityDetailProps) => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={{ flex: 1, backgroundColor: '#040405' }}>
-        {/* Animated Header Background */}
+        {/* Update Animated Header Background */}
         <Animated.View
           style={{
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
-            height: headerHeight,
+            height: HEADER_MAX_HEIGHT,
             zIndex: 0,
             opacity: imageOpacity,
+            transform: [
+              {
+                translateY: scrollY.interpolate({
+                  inputRange: [0, HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT],
+                  outputRange: [0, -HEADER_MIN_HEIGHT],
+                  extrapolate: 'clamp',
+                }),
+              },
+            ],
           }}
         >
           <ImageBackground

@@ -9,6 +9,7 @@ type Props = {
 
 const CommentsScreen: React.FC<Props> = ({ postId }) => {
   const { data, isLoading, error } = usePostComments(postId);
+  
 
   if (isLoading) {
     return (

@@ -1,105 +1,130 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { FormField } from "../app-components/formField";
-import useFileUpload from "@/hooks/useFileUpload";
+import React from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { trackInfoSchema } from '@/schemas/uploadMusicSchema';
+import { Input } from '@/components/ui/input';
+import { RadioGroup } from '@/components/ui/radio-group';
+import { CreatorInput } from '@/components/ui/creator-input';
+import { Select } from '../ui/select';
+import { ImageUpload } from '../ui/image-upload';
 
-const TrackUploadForm = () => {
-  const { files, isLoading, error, progress, pickFile, removeFile } =
-    useFileUpload();
-
-  const [trackName, setTrackName] = useState("");
-  const [songType, setSongType] = useState("original");
-  const [creatorUrl, setCreatorUrl] = useState("");
-  const [selectedCreators, setSelectedCreators] = useState([]);
-  const [primaryGenre, setPrimaryGenre] = useState("");
-  const [secondaryGenre, setSecondaryGenre] = useState("");
-  const [coverImage, setCoverImage] = useState(null);
+const TrackUploadForm = ({ onSubmit }) => {
+  const { control, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(trackInfoSchema),
+    defaultValues: {
+      trackName: '',
+      songType: 'original',
+      featuredArtists: [],
+      primaryGenre: '',
+      secondaryGenre: '',
+      coverImage: ""
+    }
+  });
 
   const songTypeOptions = [
-    { label: "Original song", value: "original" },
-    { label: "Cover", value: "cover" }
+    { label: 'Original song', value: 'original' },
+    { label: 'Cover', value: 'cover' }
   ];
 
   const genreOptions = [
-    { label: "Afrobeats", value: "afrobeats" },
-    { label: "Hip Hop", value: "hiphop" },
-    { label: "R&B", value: "rnb" }
-    // Add more genres as needed
+    { label: 'Afrobeats', value: 'afrobeats' },
+    { label: 'Hip Hop', value: 'hiphop' },
+    { label: 'R&B', value: 'rnb' }
   ];
 
-  const handleAddCreator = (url: string) => {
-    if (url && !selectedCreators.includes(url)) {
-      setSelectedCreators([...selectedCreators, url]);
-      setCreatorUrl("");
-    }
-  };
-
-  const handleRemoveCreator = (creator: string) => {
-    setSelectedCreators(selectedCreators.filter((c) => c !== creator));
-  };
-
   return (
-    <>
-      <FormField.TextField
-        label="Song name"
-        description="Don't include features in the title, you can add it later below"
-        value={trackName}
-        onChangeText={setTrackName}
-        required
+    <View className="gap-y-[32px]">
+      <Controller
+        control={control}
+        name="trackName"
+        render={({ field: { onChange, value } }) => (
+          <Input
+            label="Song name"
+            description="Don't include features in the title"
+            placeholder='Happy days'
+            value={value}
+            onChangeText={onChange}
+            error={errors.trackName?.message}
+          />
+        )}
       />
 
-      <FormField.RadioField
-        label="Is this an original song or a cover?"
-        options={songTypeOptions}
-        value={songType}
-        onChange={setSongType}
-        required
+      <Controller
+        control={control}
+        name="songType"
+        render={({ field: { onChange, value } }) => (
+          <RadioGroup
+            label="Is this an original song or a cover?"
+            options={songTypeOptions}
+            value={value}
+            onChange={onChange}
+            error={errors.songType?.message}
+          />
+        )}
       />
 
-      <FormField.CreatorField
-        label="Add featured artiste?"
-        description="If there are features on the song, add them using their Looop creator profile links"
-        placeholder="looop.creator/bigphee.com"
-        value={creatorUrl}
-        onChangeText={setCreatorUrl}
-        selectedCreators={selectedCreators}
-        onAddCreator={handleAddCreator}
-        onRemoveCreator={handleRemoveCreator}
+      <Controller
+        control={control}
+        name="featuredArtists"
+        render={({ field: { onChange, value } }) => (
+          <CreatorInput
+            label="Add featured artiste?"
+            description="Add using Looop creator profile links"
+            placeholder="looop.creator/bigphee.com"
+            value={value}
+            onChange={onChange}
+            error={errors.featuredArtists?.message}
+          />
+        )}
       />
 
-      <FormField.PickerField
-        label="Primary Genre"
-        description="Add main genres"
-        value={primaryGenre}
-        onSelect={setPrimaryGenre}
-        options={genreOptions}
-        required
+      <Controller
+        control={control}
+        name="primaryGenre"
+        render={({ field: { onChange, value } }) => (
+          <Select
+            label="Primary Genre"
+            description="Add main genre"
+            options={genreOptions}
+            value={value}
+            onValueChange={onChange}
+            error={errors.primaryGenre?.message}
+          />
+        )}
       />
 
-      <FormField.PickerField
-        label="Secondary Genre (Optional)"
-        description="Add a secondary genre"
-        value={secondaryGenre}
-        onSelect={setSecondaryGenre}
-        options={genreOptions}
+      <Controller
+        control={control}
+        name="secondaryGenre"
+        render={({ field: { onChange, value } }) => (
+          <Select
+            label="Secondary Genre (Optional)"
+            description="Add a secondary genre"
+            options={genreOptions}
+            value={value}
+            onValueChange={onChange}
+            error={errors.secondaryGenre?.message}
+          />
+        )}
       />
 
-      {/* Add Quick Note Component */}
-      {/* <QuickNote /> */}
-
-      <FormField.ImageUploadField
-        label="Song/Album Cover"
-        description="Upload your song/album art."
-        value={coverImage || undefined}
-        onUpload={() => {
-          // Implement image upload logic
-          setCoverImage("placeholder-url" as any);
-        }}
-        maxSize="20MB"
-        acceptedFormats="JPEG"
-        required
+      <Controller
+        control={control}
+        name="coverImage"
+        render={({ field: { onChange, value } }) => (
+          <ImageUpload
+            label="Song/Album Cover"
+            description="Upload your song/album art"
+            value={value}
+            onChange={onChange}
+            maxSize="20MB"
+            acceptedFormats="JPEG"
+            error={errors.coverImage?.message}
+          />
+        )}
       />
-    </>
+    </View>
   );
 };
 
