@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Animated,
   StyleSheet,
+  StatusBar,
 } from "react-native";
 import {
   ArrowLeft02Icon,
@@ -30,7 +31,6 @@ import ArtistAbout from "../../../components/ArtistProfile/ArtistAbout";
 const TABS = ["releases", "collectible", "about"] as const;
 type TabType = typeof TABS[number];
 
-// Placeholder Component
 const ProfilePlaceholder = () => (
   <View style={styles.placeholderContainer}>
     <View style={styles.placeholderImage} />
@@ -48,30 +48,40 @@ const ArtistProfileScreen = () => {
   const scrollY = useRef(new Animated.Value(0)).current;
   const { userdata } = useAppSelector((state) => state.auth);
   const { navigate } = useRouter();
+  console.log("artist Profile", artistProfile)
 
-  // Memoized animations
   const animations = useMemo(
     () => ({
-      headerHeight: scrollY.interpolate({
-        inputRange: [0, 200],
-        outputRange: [hp("40.9%"), hp("10%")],
-        extrapolate: "clamp",
-      }),
-      headerOpacity: scrollY.interpolate({
-        inputRange: [100, 200],
-        outputRange: [0, 1],
-        extrapolate: "clamp",
-      }),
-      imageOpacity: scrollY.interpolate({
-        inputRange: [0, 100],
+      headerContentOpacity: scrollY.interpolate({
+        inputRange: [0, 80],
         outputRange: [1, 0],
+        extrapolate: "clamp",
+      }),
+      headerScale: scrollY.interpolate({
+        inputRange: [0, 100],
+        outputRange: [1, 0.95],
+        extrapolate: "clamp",
+      }),
+      overlayOpacity: scrollY.interpolate({
+        inputRange: [0, 200],
+        outputRange: [0.3, 0.6],
         extrapolate: "clamp",
       }),
     }),
     [scrollY]
   );
 
-  // Fetch artist info
+  const layoutAnimations = useMemo(
+    () => ({
+      headerHeight: scrollY.interpolate({
+        inputRange: [0, 200],
+        outputRange: [hp("30%"), hp("8%")],
+        extrapolate: "clamp",
+      }),
+    }),
+    [scrollY]
+  );
+
   const retrieveArtistInfo = useCallback(async () => {
     if (!userdata?.artist) return;
 
@@ -90,7 +100,6 @@ const ArtistProfileScreen = () => {
     retrieveArtistInfo();
   }, [retrieveArtistInfo]);
 
-  // Memoized tab content renderer
   const renderTabContent = useMemo(() => {
     const components = {
       releases: <ArtistReleases artistId={userdata?.artist} />,
@@ -100,39 +109,57 @@ const ArtistProfileScreen = () => {
     return components[activeTab];
   }, [activeTab, userdata?.artist]);
 
-  // Handle scroll for sticky tabs
-  const handleScroll = Animated.event(
-    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-    { useNativeDriver: true }
-  );
-
   const formatNumber = (num: number = 0) => num.toLocaleString();
 
   return (
     <View style={styles.container}>
-      {/* Animated Header */}
-      <Animated.View style={[styles.header, { height: animations.headerHeight }]}>
+      <StatusBar barStyle="light-content" />
+      <Animated.View
+        style={[
+          styles.header,
+          {
+            height: layoutAnimations.headerHeight,
+            transform: [{ scale: animations.headerScale }],
+          },
+        ]}
+      >
         {isLoading ? (
           <ProfilePlaceholder />
         ) : (
           <ImageBackground
             source={{ uri: artistProfile?.profileImage }}
             style={styles.headerBackground}
+            imageStyle={styles.headerBackgroundImage}
             resizeMode="cover"
           >
-            <View style={styles.headerContent}>
+            <Animated.View
+              style={[
+                styles.headerOverlay,
+                { opacity: animations.overlayOpacity },
+              ]}
+            />
+            <Animated.View
+              style={[
+                styles.headerContent,
+                { opacity: animations.headerContentOpacity },
+              ]}
+            >
               <View style={styles.artistInfo}>
                 <View style={styles.artistNameContainer}>
                   <Text style={styles.artistName} numberOfLines={1}>
                     {artistProfile?.name}
                   </Text>
                   {artistProfile?.verified && (
-                    <CheckmarkBadge01Icon size={20} color="#2DD881" variant="solid" />
+                    <CheckmarkBadge01Icon
+                      size={wp("5%")}
+                      color="#2DD881"
+                      variant="solid"
+                    />
                   )}
                 </View>
                 <View style={styles.statsContainer}>
                   <Text style={styles.statsText}>
-                    {formatNumber(artistProfile?.followers)} Followers
+                    {formatNumber(artistProfile?.followers.length)} Followers
                   </Text>
                   <Ellipse />
                   <Text style={styles.statsText} numberOfLines={1}>
@@ -143,38 +170,38 @@ const ArtistProfileScreen = () => {
               <TouchableOpacity style={styles.changeCoverButton}>
                 <Text style={styles.changeCoverText}>Change Cover</Text>
               </TouchableOpacity>
-            </View>
+            </Animated.View>
           </ImageBackground>
         )}
       </Animated.View>
 
-      {/* Scrollable Content */}
       <Animated.ScrollView
         style={styles.scrollView}
-        onScroll={handleScroll}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        bounces={false}
       >
-        {/* Quick Actions */}
         <View style={styles.actionsContainer}>
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => navigate("/(musicTabs)")}
           >
-            <HeadphonesIcon size={24} color="#FF8A49" variant="solid" />
+            <HeadphonesIcon size={wp("6%")} color="#FF8A49" variant="solid" />
             <Text style={styles.actionText}>Back to Listen Mode</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => navigate("/wallet")}
           >
-            <Wallet01Icon size={20} color="#A187B5" variant="stroke" />
+            <Wallet01Icon size={wp("5%")} color="#A187B5" variant="stroke" />
             <Text style={styles.actionText}>Wallet & Earnings</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Tabs */}
         <View style={styles.tabsContainer}>
           {TABS.map((tab) => (
             <TouchableOpacity
@@ -191,7 +218,6 @@ const ArtistProfileScreen = () => {
           ))}
         </View>
 
-        {/* Tab Content */}
         <View style={styles.tabContent}>{renderTabContent}</View>
       </Animated.ScrollView>
     </View>
@@ -205,17 +231,33 @@ const styles = StyleSheet.create({
   },
   header: {
     overflow: "hidden",
+    backgroundColor: "#0A0A0A",
+    borderBottomWidth: 1,
+    borderBottomColor: "#2D2D2D",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   headerBackground: {
     height: "100%",
     width: "100%",
   },
+  headerBackgroundImage: {
+    opacity: 0.9,
+  },
+  headerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "#000",
+  },
   headerContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: hp("25%"),
+    marginTop: hp("15%"),
     paddingHorizontal: wp("5%"),
+    paddingBottom: hp("2%"),
   },
   artistInfo: {
     flex: 1,
@@ -225,41 +267,45 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: wp("2%"),
+    marginBottom: hp("1%"),
   },
   artistName: {
-    fontSize: 24,
+    fontSize: wp("6%"),
     fontFamily: "PlusJakartaSansBold",
     color: "white",
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   statsContainer: {
     flexDirection: "row",
     alignItems: "center",
     gap: wp("1.5%"),
-    marginTop: hp("0.5%"),
   },
   statsText: {
-    fontSize: 14,
+    fontSize: wp("3.5%"),
     fontFamily: "PlusJakartaSansMedium",
-    color: "#A5A6AA",
+    color: "#FFFFFF",
+    opacity: 0.8,
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   changeCoverButton: {
     borderWidth: 1,
-    borderColor: "#D2D3D5",
-    paddingVertical: hp("1.2%"),
+    borderColor: "rgba(255, 255, 255, 0.3)",
+    paddingVertical: hp("1%"),
     paddingHorizontal: wp("3.5%"),
     borderRadius: 24,
-    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   changeCoverText: {
-    fontSize: 14,
+    fontSize: wp("3.5%"),
     fontFamily: "PlusJakartaSansMedium",
     color: "white",
   },
   scrollView: {
     flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: hp("5%"),
   },
   actionsContainer: {
     flexDirection: "row",
@@ -274,7 +320,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#12141B",
     borderRadius: 16,
-    height: hp("11%"),
+    paddingVertical: hp("2%"),
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -283,10 +329,9 @@ const styles = StyleSheet.create({
   },
   actionText: {
     color: "#f4f4f4",
-    fontSize: 14,
+    fontSize: wp("3.5%"),
     fontFamily: "PlusJakartaSansMedium",
-    textAlign: "center",
-    marginTop: hp("0.5%"),
+    marginTop: hp("1%"),
   },
   tabsContainer: {
     flexDirection: "row",
@@ -296,7 +341,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp("1%"),
   },
   tab: {
-    paddingVertical: hp("2.5%"),
+    paddingVertical: hp("2%"),
     paddingHorizontal: wp("6%"),
   },
   activeTab: {
@@ -304,7 +349,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#FF8A49",
   },
   tabText: {
-    fontSize: 16,
+    fontSize: wp("4%"),
     fontFamily: "PlusJakartaSansMedium",
     color: "#A5A6AA",
   },
@@ -312,19 +357,20 @@ const styles = StyleSheet.create({
     color: "white",
   },
   tabContent: {
-    paddingVertical: hp("2%"),
+    flex: 1,
+    paddingTop: hp("2%"),
   },
   placeholderContainer: {
     flex: 1,
     backgroundColor: "#1a1a1a",
   },
   placeholderImage: {
-    height: hp("40.9%"),
+    height: hp("30%"),
     backgroundColor: "#2D2D2D",
   },
   placeholderTextContainer: {
-    paddingHorizontal: wp("3%"),
-    marginTop: hp("5%"),
+    paddingHorizontal: wp("5%"),
+    marginTop: hp("2%"),
   },
   placeholderName: {
     height: hp("3%"),

@@ -62,20 +62,21 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
         transition={{ type: 'timing', duration: 1000 }}
         show={isLoading}
       >
-        <Pressable
-          onPress={() =>
-            router.navigate({
-              pathname: '/postDetails',
-              params: { id: item?.id },
-            })
-          }
-          className="gap-y-[16px]"
-        >
-          <Text className="text-white text-[16px] font-PlusJakartaSansRegular">
-            {renderContent(item?.content)}
-          </Text>
+        <View className="gap-y-[16px]">
+          <Pressable
+            onPress={() =>
+              router.navigate({
+                pathname: '/postDetails',
+                params: { id: item?.id },
+              })
+            }
+          >
+            <Text className="text-white text-[16px] font-PlusJakartaSansRegular">
+              {renderContent(item?.content)}
+            </Text>
+          </Pressable>
           <PostMedia media={item?.media} />
-        </Pressable>
+        </View>
       </Skeleton>
 
       <Skeleton show={isLoading}>

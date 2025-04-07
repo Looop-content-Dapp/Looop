@@ -76,6 +76,52 @@ type UserLike = {
     };
   };
 
+const generateSkeletonPost = (): Post => ({
+  _id: `skeleton-${Math.random()}`,
+  content: '',
+  title: '',
+  postType: '',
+  type: '',
+  media: [],
+  artistId: {
+    _id: `skeleton-${Math.random()}`,
+    name: '',
+    email: '',
+    profileImage: '',
+    verified: false
+  },
+  communityId: {
+    _id: `skeleton-${Math.random()}`,
+    description: '',
+    coverImage: ''
+  },
+  tags: [],
+  category: '',
+  visibility: '',
+  likeCount: 0,
+  commentCount: 0,
+  shareCount: 0,
+  status: '',
+  genre: '',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  __v: 0,
+  id: `skeleton-${Math.random()}`,
+  comments: [],
+  likes: [],
+  hasLiked: false
+});
+
+const skeletonFeedData: UserFeedResponse = {
+  message: 'Loading...',
+  data: {
+    posts: Array(3).fill(null).map(generateSkeletonPost),
+    currentPage: 1,
+    totalPages: 1,
+    totalPosts: 3
+  }
+};
+
 export const useUserFeed = () => {
   const { userdata } = useAppSelector((auth) => auth.auth);
 
@@ -93,6 +139,7 @@ export const useUserFeed = () => {
     staleTime: 10000,
     refetchInterval: 30000,
     refetchIntervalInBackground: false,
+    placeholderData: skeletonFeedData,
   });
 };
 
@@ -137,22 +184,61 @@ type Track = {
   };
 
 
-export const useUserDashboard = () => {
-    const { userdata } = useAppSelector((auth) => auth.auth);
+const generateSkeletonArtist = (): Artist => ({
+  _id: `skeleton-${Math.random()}`,
+  name: '',
+  profileImage: '',
+  verified: false,
+  followers: []
+});
 
-    return useQuery({
-      queryKey: ["userDashboard", userdata?._id],
-      queryFn: async () => {
-        if (!userdata?._id) {
-          throw new Error("User ID not found");
-        }
-        const { data } = await api.get<UserDashbaordResponse>(`/api/user/feed/${userdata._id}`);
-        return data;
-      },
-      enabled: !!userdata?._id,
-      refetchOnWindowFocus: true,
-      staleTime: 10000,
-      refetchInterval: 30000,
-      refetchIntervalInBackground: false,
-    });
-  };
+const generateSkeletonTrack = (): Track => ({
+  _id: `skeleton-${Math.random()}`,
+  title: '',
+  duration: 0,
+  artist: {
+    _id: `skeleton-${Math.random()}`,
+    name: '',
+    profileImage: '',
+    verified: false
+  },
+  release: {
+    _id: `skeleton-${Math.random()}`,
+    title: '',
+    image: '',
+    type: ''
+  },
+  isFromFollowedArtist: false
+});
+
+const skeletonData: UserDashbaordResponse = {
+  status: 'loading',
+  message: 'Loading...',
+  data: {
+    followedArtists: Array(5).fill(null).map(generateSkeletonArtist),
+    recentReleases: [],
+    recommendedArtists: Array(5).fill(null).map(generateSkeletonArtist),
+    suggestedTracks: Array(5).fill(null).map(generateSkeletonTrack)
+  }
+};
+
+export const useUserDashboard = () => {
+  const { userdata } = useAppSelector((auth) => auth.auth);
+
+  return useQuery({
+    queryKey: ["userDashboard", userdata?._id],
+    queryFn: async () => {
+      if (!userdata?._id) {
+        throw new Error("User ID not found");
+      }
+      const { data } = await api.get<UserDashbaordResponse>(`/api/user/feed/${userdata._id}`);
+      return data;
+    },
+    enabled: !!userdata?._id,
+    refetchOnWindowFocus: true,
+    staleTime: 10000,
+    refetchInterval: 30000,
+    refetchIntervalInBackground: false,
+    placeholderData: skeletonData, // Add placeholder data for smooth loading
+  });
+};

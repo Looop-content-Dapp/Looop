@@ -18,7 +18,7 @@ const PostMedia: React.FC<PostMediaProps> = ({ media }) => {
 
   if (imageMedia.length > 0) {
     return (
-      <View>
+      <View onStartShouldSetResponder={() => true}>
         <ImageGrid thumbnails={imageMedia.map((img) => img.url)} />
       </View>
     );

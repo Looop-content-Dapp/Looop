@@ -6,9 +6,11 @@ import { useForm, Controller, UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import AuthHeader from "@/components/AuthHeader";
-import { InformationCircleIcon } from "@hugeicons/react-native";
+import { InformationCircleIcon, ViewIcon, ViewOffIcon } from "@hugeicons/react-native";
 import * as WebBrowser from "expo-web-browser";
 import { useLogin } from "@/hooks/useLogin";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 import { useAppleAuth, useGoogleAuth } from "@/hooks/useSocialAuth";
 
@@ -60,6 +62,7 @@ const Signin: React.FC = () => {
   const { mutate: login, isPending, isError, error } = useLogin();
   const { handleGoogleSignIn, loading: googleLoading } = useGoogleAuth();
   const { handleAppleSignIn, loading: appleLoading } = useAppleAuth();
+  const [passwordView, setPasswordView] = useState(false);
 
   const {
     control,
@@ -97,77 +100,59 @@ const Signin: React.FC = () => {
 
           <View className="gap-y-6">
             {/* Email Input */}
-            <View className="gap-y-3">
-              <Text className="text-[16px] text-gray-200 font-PlusJakartaSansBold">
-                Email Address
-              </Text>
-              <Controller
-                control={control}
-                name="email"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
-                    style={{
-                      backgroundColor: "#1E1E1E",
-                      color: "#D2D3D5",
-                      borderRadius: 10,
-                      padding: 10,
-                    }}
-                    className="h-16 text-sm font-PlusJakartaSansRegular rounded-full px-8"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    placeholder="Email Address"
-                    placeholderTextColor="#787A80"
-                    keyboardType="email-address"
-                    inputMode="email"
-                    keyboardAppearance="dark"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    autoComplete="email"
-                    returnKeyType="next"
-                  />
-                )}
-              />
-              {errors?.email && (
-                <Text className="text-red-500 text-sm font-PlusJakartaSansRegular">
-                  {errors.email.message}
-                </Text>
+            <Controller
+              control={control}
+              name="email"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label="Email Address"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  placeholder="Email Address"
+                  placeholderTextColor="#787A80"
+                  keyboardType="email-address"
+                  inputMode="email"
+                  keyboardAppearance="dark"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  autoComplete="email"
+                  returnKeyType="next"
+                  error={errors?.email?.message}
+                />
               )}
-            </View>
+            />
 
             {/* Password Input */}
-            <View className="gap-y-3">
-              <Text className="text-[16px] text-gray-200 font-PlusJakartaSansBold">
-                Password
-              </Text>
-              <Controller
-                control={control}
-                name="password"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
-                    style={{
-                      backgroundColor: "#1E1E1E",
-                      color: "#D2D3D5",
-                      borderRadius: 10,
-                      padding: 10,
-                    }}
-                    className="h-16 text-sm font-PlusJakartaSansRegular rounded-full px-8"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    placeholder="Enter your password"
-                    placeholderTextColor="#787A80"
-                    secureTextEntry
-                    keyboardAppearance="dark"
-                  />
-                )}
-              />
-              {errors?.password && (
-                <Text className="text-red-500 text-sm font-PlusJakartaSansRegular">
-                  {errors.password.message}
-                </Text>
-              )}
-            </View>
+            <Controller
+    control={control}
+    name="password"
+    render={({ field: { onChange, onBlur, value } }) => (
+      <View className="relative">
+        <Input
+          label="Password"
+          onBlur={onBlur}
+          onChangeText={onChange}
+          value={value}
+          placeholder="Enter your password"
+          placeholderTextColor="#787A80"
+          secureTextEntry={!passwordView}
+          keyboardAppearance="dark"
+          error={errors?.password?.message}
+        />
+        <TouchableOpacity
+          onPress={() => setPasswordView(!passwordView)}
+          className="absolute right-4 top-[51px]"
+        >
+          {passwordView ? (
+            <ViewOffIcon size={24} color="#787A80" />
+          ) : (
+            <ViewIcon size={24} color="#787A80" />
+          )}
+        </TouchableOpacity>
+      </View>
+    )}
+  />
           </View>
 
           <AppButton.Secondary

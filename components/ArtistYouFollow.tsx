@@ -3,14 +3,30 @@ import React from 'react'
 import CommunitySmallCard from './cards/CommunitySmallCard'
 import { useFollowedCommunities } from '../hooks/useFollowedCommunities'
 import { useAppSelector } from '@/redux/hooks'
+import { SmallCardSkeleton } from './skeletons/CommunityCardSkeleton'
 
 const ArtistYouFollow = () => {
     const { userdata } = useAppSelector((state) => state.auth)
     const { data: communities, isLoading } = useFollowedCommunities(userdata?._id || '');
 
-  if (isLoading || !communities?.length) {
-    return null;
-  }
+    if (isLoading) {
+      return (
+        <View className='gap-y-[16px] pt-[32px] h-[284px]'>
+          <Text className='text-[20px] text-[#fff] font-PlusJakartaSansMedium'>Artist You Follow</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{
+            gap: 16
+          }}>
+            {[1,2,3,4].map((_, index) => (
+              <SmallCardSkeleton key={index} />
+            ))}
+          </ScrollView>
+        </View>
+      );
+    }
+
+    if (!communities?.length) {
+      return null;
+    }
 
   return (
     <View className='gap-y-[16px] pt-[32px] h-[284px]'>

@@ -1,84 +1,122 @@
-import React from 'react';
-import { View, Image, StyleSheet, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import ImageViewer from './ImageViewer';
 
 interface ImageGridProps {
   thumbnails: string[];
 }
 
 export const ImageGrid: React.FC<ImageGridProps> = ({ thumbnails }) => {
+  const [isViewerVisible, setIsViewerVisible] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { width } = Dimensions.get('window');
-  const imageWidth = width - 28; // Accounts for 14px horizontal margins on each side
+  const imageWidth = width - 28;
+
+  const handleImagePress = (index: number) => {
+    setSelectedImageIndex(index);
+    setIsViewerVisible(true);
+  };
 
   const renderImageGrid = () => {
     if (thumbnails.length === 4) {
       return (
         <>
           <View style={styles.row}>
-            <Image
-              source={{ uri: thumbnails[0] }}
-              style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
-            />
-            <Image
-              source={{ uri: thumbnails[1] }}
-              style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
-            />
+            <TouchableOpacity onPress={() => handleImagePress(0)}>
+              <Image
+                source={{ uri: thumbnails[0] }}
+                style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleImagePress(1)}>
+              <Image
+                source={{ uri: thumbnails[1] }}
+                style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+              />
+            </TouchableOpacity>
           </View>
           <View style={styles.row}>
-            <Image
-              source={{ uri: thumbnails[2] }}
-              style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
-            />
-            <Image
-              source={{ uri: thumbnails[3] }}
-              style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
-            />
+            <TouchableOpacity onPress={() => handleImagePress(2)}>
+              <Image
+                source={{ uri: thumbnails[2] }}
+                style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleImagePress(3)}>
+              <Image
+                source={{ uri: thumbnails[3] }}
+                style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+              />
+            </TouchableOpacity>
           </View>
         </>
       );
     } else if (thumbnails.length === 3) {
       return (
         <View style={styles.row}>
-          <Image
-            source={{ uri: thumbnails[0] }}
-            style={[styles.largeImage, { width: (imageWidth * 2) / 3 - 2 }]}
-          />
+          <TouchableOpacity onPress={() => handleImagePress(0)}>
+            <Image
+              source={{ uri: thumbnails[0] }}
+              style={[styles.largeImage, { width: (imageWidth * 2) / 3 - 2 }]}
+            />
+          </TouchableOpacity>
           <View style={styles.column}>
-            <Image
-              source={{ uri: thumbnails[1] }}
-              style={[styles.smallImage, { width: imageWidth / 3 - 2 }]}
-            />
-            <Image
-              source={{ uri: thumbnails[2] }}
-              style={[styles.smallImage, { width: imageWidth / 3 - 2 }]}
-            />
+            <TouchableOpacity onPress={() => handleImagePress(1)}>
+              <Image
+                source={{ uri: thumbnails[1] }}
+                style={[styles.smallImage, { width: imageWidth / 3 - 2 }]}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleImagePress(2)}>
+              <Image
+                source={{ uri: thumbnails[2] }}
+                style={[styles.smallImage, { width: imageWidth / 3 - 2 }]}
+              />
+            </TouchableOpacity>
           </View>
         </View>
       );
     } else if (thumbnails.length === 2) {
       return (
         <View style={styles.row}>
-          <Image
-            source={{ uri: thumbnails[0] }}
-            style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
-          />
-          <Image
-            source={{ uri: thumbnails[1] }}
-            style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
-          />
+          <TouchableOpacity onPress={() => handleImagePress(0)}>
+            <Image
+              source={{ uri: thumbnails[0] }}
+              style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleImagePress(1)}>
+            <Image
+              source={{ uri: thumbnails[1] }}
+              style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+            />
+          </TouchableOpacity>
         </View>
       );
     } else if (thumbnails.length === 1) {
       return (
-        <Image
-          source={{ uri: thumbnails[0] }}
-          style={[styles.fullImage, { width: imageWidth }]}
-        />
+        <TouchableOpacity onPress={() => handleImagePress(0)}>
+          <Image
+            source={{ uri: thumbnails[0] }}
+            style={[styles.fullImage, { width: imageWidth }]}
+          />
+        </TouchableOpacity>
       );
     }
     return null;
   };
 
-  return <View style={styles.container}>{renderImageGrid()}</View>;
+  return (
+    <View style={styles.container}>
+      {renderImageGrid()}
+      <ImageViewer
+        images={thumbnails}
+        visible={isViewerVisible}
+        initialIndex={selectedImageIndex}
+        onClose={() => setIsViewerVisible(false)}
+      />
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({

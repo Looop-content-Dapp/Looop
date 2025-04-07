@@ -45,7 +45,7 @@ useEffect(() => {
   const suggestedTracks = userFeedData?.data?.suggestedTracks || [];
   const recentReleases = userFeedData?.data?.recentReleases || [];
 
-
+const dataLoading = loading || userFeedLoading
   return (
     <>
       <StatusBar translucent={true} backgroundColor="#040405" style="light" />
@@ -63,7 +63,7 @@ useEffect(() => {
         {/* Hottest On The Block */}
       <ImageBackground
           source={require("../../../assets/images/hottestBG.png")}
-          className="bg-[#2DD881] w-[95%] mx-auto h-[157px] overflow-hidden flex-row items-center mb-[32px] justify-between relative rounded-[10px]"
+          className="bg-[#2DD881] w-[100%] mx-auto h-[157px] overflow-hidden flex-row items-center mb-[32px] justify-between relative rounded-[10px]"
           resizeMode="cover"
         >
           <View className="h-full px-4 justify-center z-10">
@@ -76,7 +76,7 @@ useEffect(() => {
           </View>
           <Image
               source={require("../../../assets/images/HottestTeen.png")}
-              className="h-full w-[60%] absolute right-5"
+              className="h-full w-[65%] absolute right-5"
               resizeMode="cover"
             />
         </ImageBackground>

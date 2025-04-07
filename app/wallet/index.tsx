@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useLayoutEffect, useState, useEffect } from 'react';
 import { View, ScrollView, Image, Alert } from 'react-native';
 import { router, useNavigation } from 'expo-router';
 import { useAppSelector } from '@/redux/hooks';
@@ -7,11 +7,12 @@ import { AppBackButton } from '@/components/app-components/back-btn';
 import { countries } from '@/data/data';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import * as Clipboard from 'expo-clipboard';
+import { useWalletBalance } from '@/hooks/useWalletBalance';
 
 import WithdrawFunds from '@/components/wallet/WithdrawFunds';
 import ConnectedAccounts from '@/components/wallet/ConnectedAccounts';
 import Earnings from '@/components/wallet/Earnings';
-import EarningsBalance from '@/components/wallet/EarningsBalance';
+import WalletBalance from '@/components/wallet/WalletBalance';
 
 const WalletScreen = () => {
   const [timeFrame, setTimeFrame] = useState('Last 30 days');
@@ -19,18 +20,41 @@ const WalletScreen = () => {
   const networkOptions: string[] = ['Xion', 'Starknet'];
   const { userdata } = useAppSelector((state) => state.auth);
   const navigation = useNavigation();
+  const { data: walletBalanceData, isLoading: walletLoading } = useWalletBalance();
 
-  const networkData = {
-    Xion: {
-      balance: '$32,578.48',
-      walletAddress: userdata?.wallets?.xion?.address || '0xA1B2C3D4E5F6789ABCDEF1234567890ABCDEF123',
-      icon: require('../../assets/images/xion.png')
+  // Initialize wallet data state
+  const [walletData, setWalletData] = useState({
+    balances: {
+      xion: 0,
+      starknet: 0,
+      total: 0,
     },
-    Starknet: {
-      balance: '$15,234.92',
-      walletAddress: userdata?.wallets?.starknet?.address || '0xA1B2C3D4E5F6789ABCDEF1234567890ABCDEF123',
-      icon: require('../../assets/images/starknet.png')
+    addresses: [
+      { chain: "XION", address: userdata?.wallets?.xion?.address || '' },
+      { chain: "Starknet", address: userdata?.wallets?.starknet?.address || '' },
+    ],
+  });
+
+  // Update wallet balances when data is available
+  useEffect(() => {
+    if (walletBalanceData) {
+      const xionBalance = walletBalanceData?.data?.xion?.balances?.[0]?.usdValue ?? 0;
+      const starknetBalance = walletBalanceData?.data?.starknet?.balance?.usdValue ?? 0;
+
+      setWalletData(prev => ({
+        ...prev,
+        balances: {
+          xion: xionBalance,
+          starknet: starknetBalance,
+          total: xionBalance + starknetBalance,
+        },
+      }));
     }
+  }, [walletBalanceData]);
+
+  const networkIcons = {
+    Xion: require('@/assets/images/xion.png'),
+    Starknet: require('@/assets/images/starknet.png'),
   };
 
   useLayoutEffect(() => {
@@ -42,7 +66,7 @@ const WalletScreen = () => {
         onOptionSelect={setSelectedNetwork}
         icon={
           <Image
-            source={networkData[selectedNetwork as keyof typeof networkData].icon}
+            source={networkIcons[selectedNetwork as keyof typeof networkIcons]}
             className="w-5 h-5 mr-2"
           />
         }
@@ -50,10 +74,9 @@ const WalletScreen = () => {
     });
   }, [navigation, selectedNetwork]);
 
-  const handleCopyAddress = async () => {
-    const walletAddress = networkData[selectedNetwork as keyof typeof networkData].walletAddress;
+  const handleCopyAddress = async (address: string) => {
     try {
-      await Clipboard.setStringAsync(walletAddress);
+      await Clipboard.setStringAsync(address);
       Alert.alert('Success', 'Wallet address copied to clipboard');
     } catch (error) {
       Alert.alert('Error', 'Failed to copy wallet address');
@@ -67,7 +90,7 @@ const WalletScreen = () => {
     countries.filter(country => ['US', 'NG', 'UK'].includes(country.value))
   , []);
 
-  const { rates, loading, error } = useExchangeRates();
+  const { rates, loading: ratesLoading, error } = useExchangeRates();
 
   const formatBalance = (balance: string, currency: string) => {
     try {
@@ -94,7 +117,6 @@ const WalletScreen = () => {
   };
 
   const handleWithdrawFunds = () => {
-    // Navigate to withdraw funds screen
     router.push('/wallet/withdraw');
   };
 
@@ -106,22 +128,12 @@ const WalletScreen = () => {
   return (
     <View className="flex-1 bg-[#040405]">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-
-        {/* Wallet Balance Component */}
-        <EarningsBalance
-         balance={networkData[selectedNetwork as keyof typeof networkData].balance}
-         addresses={[
-           {
-             chain: selectedNetwork,
-             address: networkData[selectedNetwork as keyof typeof networkData].walletAddress || ''
-           }
-         ]}
-         onCopyAddress={handleCopyAddress}
-         formatBalance={formatBalance}
-         selectedCurrency={selectedCurrency}
-         onCurrencySelect={setSelectedCurrency}
-         availableCurrencies={availableCurrencies}
-         rates={rates || {}}
+        <WalletBalance
+          balances={walletData.balances}
+          addresses={walletData.addresses}
+          isLoading={walletLoading}
+          usdcPrice={walletBalanceData?.data?.usdcPrice}
+          onCopyAddress={handleCopyAddress}
         />
 
         {/* Withdraw Funds Component */}

@@ -35,22 +35,22 @@ export const AudioUpload = ({
   };
 
   return (
-    <View className="space-y-4">
-      <View>
-        <Text className="text-[#F4F4F4] text-base font-medium">{label}</Text>
+    <View className="gap-y-4">
+      <View className=''>
+        <Text className="text-[#F4F4F4] text-[16px] font-PlusJakartaSansMedium">{label}</Text>
         {description && (
-          <Text className="text-[#787A80] text-sm mt-1">{description}</Text>
+          <Text className="text-[#787A80] text-[14px] font-PlusJakartaSansMedium mt-1">{description}</Text>
         )}
-        <Text className="text-[#787A80] text-sm">
+        {/* <Text className="text-[#787A80] text-sm">
           {acceptedFormats}
-        </Text>
+        </Text> */}
       </View>
 
       {!value ? (
         <TouchableOpacity
           onPress={handlePickAudio}
           disabled={isLoading}
-          className="border border-dashed border-[#787A80] rounded-lg p-4 items-center justify-center"
+          className="border-[1px] border-dashed border-[#63656B] bg-[#202227] rounded-[24px] p-4 items-center "
         >
           {isLoading ? (
             <View className="items-center space-y-2">
@@ -58,10 +58,12 @@ export const AudioUpload = ({
               <Text className="text-[#787A80]">Uploading...</Text>
             </View>
           ) : (
-            <>
-              <Ionicons name="musical-note" size={24} color="#787A80" />
+            <View className='flex-row items-center gap-x-[4px]'>
+            <View className='bg-[#63656B] py-[8px] px-[16px] rounded-[10px]'>
+                <Text className='text-[14px] font-PlusJakartaSansMedium text-[#202227]'>Choose File</Text>
+            </View>
               <Text className="text-[#787A80]">Choose audio file</Text>
-            </>
+            </View>
           )}
         </TouchableOpacity>
       ) : (

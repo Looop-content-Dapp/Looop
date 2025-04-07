@@ -1,49 +1,61 @@
 import { View, Text, Alert } from "react-native";
 import React, { useLayoutEffect, useState } from "react";
 import { useNavigation } from "expo-router";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { AppButton } from "@/components/app-components/button";
 import EPBasicInfo from "@/components/uploadMusicFlow/ep/uploadEP-BasicInfo";
 import TrackInfo from "@/components/uploadMusicFlow/ep/uploadEP-TrackInfo";
 import EPPreview from "@/components/uploadMusicFlow/ep/uploadEP-PreviewUpload";
-import { EPUploadProvider, useEPUpload } from "@/context/EPUploadContext";
-import { validateEPBasicInfo, validateEPTrackInfo } from "@/utils/epValidation";
+import { EPUploadProvider } from "@/context/EPUploadContext";
+import { epSchema } from "@/schemas/uploadMusicSchema";
 
 const UploadEPContent = () => {
-  const { epData } = useEPUpload();
   const [flow, setFlow] = useState<"BasicInfo" | "EPDetails" | "PreviewUpload">("BasicInfo");
-  const [trackCount, setTrackCount] = useState<number>(2);
   const navigation = useNavigation();
 
+  const form = useForm({
+    resolver: yupResolver(epSchema),
+    defaultValues: {
+      epName: "",
+      numberOfSongs: 2,
+      primaryGenre: "",
+      secondaryGenre: "",
+      coverImage: "",
+      tracks: Array(2).fill({
+        trackName: "",
+        songType: "",
+        audioFile: null,
+        explicitLyrics: "",
+        writers: [],
+        producers: [],
+        isrc: "",
+        releaseDate: null,
+        creatorUrl: ""
+      })
+    }
+  });
+
   useLayoutEffect(() => {
-    navigation.setOptions?.({
+    navigation.setOptions({
       headerShown: true,
-      headerStyle: {
-        backgroundColor: "#000"
-      },
+      headerStyle: { backgroundColor: "#000" },
       headerLeft: () => (
-        <AppBackButton name="Upload music" onBackPress={() => handleBack()} />
+        <AppBackButton name="Upload music" onBackPress={handleBack} />
       ),
       headerTitle: ""
     });
   }, [navigation, flow]);
 
-  const handleNextPage = () => {
+  const handleNextPage = async () => {
     if (flow === "BasicInfo") {
-      const validation = validateEPBasicInfo(epData);
-      if (!validation.isValid) {
-        Alert.alert("Missing Information", validation.message);
-        return;
-      }
-      setFlow("EPDetails");
+      const isValid = await form.trigger(["epName", "numberOfSongs", "primaryGenre", "coverImage"]);
+      if (isValid) setFlow("EPDetails");
     } else if (flow === "EPDetails") {
-      const validation = validateEPTrackInfo(epData.tracks);
-      if (!validation.isValid) {
-        Alert.alert("Missing Information", validation.message);
-        return;
-      }
-      setFlow("PreviewUpload");
+      const isValid = await form.trigger("tracks");
+      if (isValid) setFlow("PreviewUpload");
     }
   };
 
@@ -60,11 +72,11 @@ const UploadEPContent = () => {
   const handleFlow = () => {
     switch (flow) {
       case "BasicInfo":
-        return <EPBasicInfo onTrackCountChange={setTrackCount} />;
+        return <EPBasicInfo control={form.control} />;
       case "EPDetails":
-        return <TrackInfo trackCount={trackCount} />;
+        return <TrackInfo control={form.control} />;
       case "PreviewUpload":
-        return <EPPreview />;
+        return <EPPreview data={form.getValues()} />;
       default:
         return null;
     }
@@ -72,16 +84,15 @@ const UploadEPContent = () => {
 
   return (
     <KeyboardAwareScrollView
-      contentContainerStyle={{
-        paddingBottom: 120
-      }}
-      className="flex-1 min-h-screen px-[24px]">
+      contentContainerStyle={{ paddingBottom: 120 }}
+      className="flex-1 min-h-screen"
+    >
       <View>{handleFlow()}</View>
 
       <AppButton.Primary
         text="Continue"
         color="#57E09A"
-        loading={false}
+        loading={form.formState.isSubmitting}
         onPress={handleNextPage}
       />
     </KeyboardAwareScrollView>

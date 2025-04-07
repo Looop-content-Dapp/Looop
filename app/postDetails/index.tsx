@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import {
   View,
   Text,
@@ -11,14 +11,22 @@ import {
 } from 'react-native';
 import { ArrowDown01Icon, ArrowLeft02Icon } from '@hugeicons/react-native';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import PostCard from '@/components/cards/PostCard';
 import { useGetPost } from '@/hooks/useCreateCommunity';
 import CommentsScreen from '@/components/post/CommentScreen';
+import { AppBackButton } from '@/components/app-components/back-btn';
 
 const CommentScreen = () => {
   const { id } = useLocalSearchParams();
+  const navigation = useNavigation()
   const { data: postData, isLoading } = useGetPost(id as string);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => <AppBackButton name='Post' onBackPress={() =>  router.back()} />
+    })
+  })
 
   const renderPostAndComments = () => {
     if (isLoading) {
@@ -52,19 +60,6 @@ const CommentScreen = () => {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <View className="flex-1">
-          {/* Header */}
-          <View className="flex-row items-center gap-x-2 py-[17px] px-4 h-[74px]">
-            <Pressable
-              onPress={() => router.back()}
-              className="h-12 w-12 items-center justify-center"
-            >
-              <ArrowLeft02Icon size={24} color="#fff" variant="solid" />
-            </Pressable>
-            <Text className="text-[20px] text-[#f4f4f4] font-PlusJakartaSansBold">
-              Comments
-            </Text>
-          </View>
-
           {/* Post and Comments List */}
           <FlatList
             data={[1]} // Single item for post and comments

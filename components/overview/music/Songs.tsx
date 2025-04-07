@@ -6,102 +6,39 @@ import {
   StyleSheet,
   TextInput,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ArrowDown01Icon, Search01Icon } from "@hugeicons/react-native";
+import { useArtistMusic } from '@/hooks/useArtistMusic';
+
+const EmptyState = () => (
+  <View style={styles.emptyContainer}>
+    <Image
+      source={require('@/assets/images/ghost.png')}
+      style={styles.emptyImage}
+    />
+    <Text style={styles.emptyTitle}>No tracks yet</Text>
+    <Text style={styles.emptyText}>Upload your music to start exploring your tracks</Text>
+  </View>
+);
 
 const Songs = () => {
-  const tracks = [
-    {
-      id: "1",
-      name: "MARCH AM",
-      streams: "13,893,382",
-      date: "Oct 4",
-      cover:
-        "https://i.pinimg.com/564x/e7/40/3f/e7403f32bb2b50339f575298d3a10011.jpg",
-    },
-    {
-      id: "2",
-      name: "AZAMAN",
-      streams: "13,893,382",
-      date: "Oct 4",
-      cover:
-        "https://i.pinimg.com/564x/e7/40/3f/e7403f32bb2b50339f575298d3a10011.jpg",
-    },
-    {
-      id: "3",
-      name: "MARCH AM",
-      streams: "13,893,382",
-      date: "Oct 4",
-      cover:
-        "https://i.pinimg.com/564x/e7/40/3f/e7403f32bb2b50339f575298d3a10011.jpg",
-    },
-    {
-      id: "4",
-      name: "AZAMAN",
-      streams: "13,893,382",
-      date: "Oct 4",
-      cover:
-        "https://i.pinimg.com/564x/e7/40/3f/e7403f32bb2b50339f575298d3a10011.jpg",
-    },
-    {
-      id: "5",
-      name: "MARCH AM",
-      streams: "13,893,382",
-      date: "Oct 4",
-      cover:
-        "https://i.pinimg.com/564x/e7/40/3f/e7403f32bb2b50339f575298d3a10011.jpg",
-    },
-    {
-      id: "6",
-      name: "AZAMAN",
-      streams: "13,893,382",
-      date: "Oct 4",
-      cover:
-        "https://i.pinimg.com/564x/e7/40/3f/e7403f32bb2b50339f575298d3a10011.jpg",
-    },
-    {
-      id: "7",
-      name: "MARCH AM",
-      streams: "13,893,382",
-      date: "Oct 4",
-      cover:
-        "https://i.pinimg.com/564x/e7/40/3f/e7403f32bb2b50339f575298d3a10011.jpg",
-    },
-    {
-      id: "8",
-      name: "AZAMAN",
-      streams: "13,893,382",
-      date: "Oct 4",
-      cover:
-        "https://i.pinimg.com/564x/e7/40/3f/e7403f32bb2b50339f575298d3a10011.jpg",
-    },
-    {
-      id: "9",
-      name: "MARCH AM",
-      streams: "13,893,382",
-      date: "Oct 4",
-      cover:
-        "https://i.pinimg.com/564x/e7/40/3f/e7403f32bb2b50339f575298d3a10011.jpg",
-    },
-    {
-      id: "10",
-      name: "AZAMAN",
-      streams: "13,893,382",
-      date: "Oct 4",
-      cover:
-        "https://i.pinimg.com/564x/e7/40/3f/e7403f32bb2b50339f575298d3a10011.jpg",
-    },
-  ];
-
+  const { data, isLoading } = useArtistMusic();
   const [searchText, setSearchText] = useState("");
-  const [filteredTracks, setFilteredTracks] = useState(tracks);
+  const [filteredTracks, setFilteredTracks] = useState([]);
+
+  useEffect(() => {
+    if (data?.data.songs.items) {
+      setFilteredTracks(data.data.songs.items);
+    }
+  }, [data]);
 
   const handleSearch = (text: string) => {
     setSearchText(text);
-    const filtered = tracks.filter((track) =>
-      track.name.toLowerCase().includes(text.toLowerCase())
-    );
+    const filtered = data?.data.songs.items.filter((track) =>
+      track.title.toLowerCase().includes(text.toLowerCase())
+    ) || [];
     setFilteredTracks(filtered);
   };
 
@@ -124,29 +61,43 @@ const Songs = () => {
   const renderTrack = ({ item }: { item: any }) => (
     <View className="flex-row items-center justify-between p-[16px] border-b border-[#12141B]">
       <View className="items-start flex-1 justify-center gap-3">
-        <Image source={{ uri: item.cover }} style={styles.trackImage} />
+        <Image source={{ uri: item.artwork }} style={styles.trackImage} />
         <Text className="text-[14px] font-PlusJakartaSansRegular text-[#f4f4f4]">
-          {item.name}
+          {item.title}
         </Text>
       </View>
 
       <View className="flex-1">
         <Text className="text-[14px] font-PlusJakartaSansBold text-[#f4f4f4]">
-          {item.streams}
+          {parseInt(item.totalStreams).toLocaleString()}
         </Text>
       </View>
 
       <View>
-        <Text style={styles.trackDate}>{item.date}</Text>
+        <Text style={styles.trackDate}>
+          {new Date(item.releaseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+        </Text>
       </View>
     </View>
   );
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#A187B5" />
+      </View>
+    );
+  }
+
+  if (!data?.data.songs.items?.length) {
+    return <EmptyState />;
+  }
 
   return (
     <View>
       <View className="flex-row items-center justify-between">
         <Text className="text-[18px] font-PlusJakartaSansMedium text-[#787A80]">
-          {tracks.length} Tracks
+          {data?.data.songs.total || 0} Tracks
         </Text>
         <TouchableOpacity className="py-[8px] border-2 border-Grey/07 flex-row items-center px-[12px] gap-x-[4px] rounded-[10px]">
           <Text className="text-[14px] font-PlusJakartaSansMedium text-[#D2D3D5]">
@@ -207,6 +158,34 @@ const styles = StyleSheet.create({
   },
   trackDate: {
     color: "#888",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  emptyImage: {
+    width: 120,
+    height: 120,
+    marginBottom: 24,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    color: '#f4f4f4',
+    fontFamily: 'PlusJakartaSansMedium',
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#787A80',
+    fontFamily: 'PlusJakartaSansRegular',
+    textAlign: 'center',
   },
 });
 

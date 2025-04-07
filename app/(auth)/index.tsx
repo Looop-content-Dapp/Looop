@@ -25,6 +25,7 @@ import {
     useAbstraxionSigningClient,
   } from "@burnt-labs/abstraxion-react-native";
 import { useEffect } from 'react';
+import { Input } from "@/components/ui/input";
 
 // Validation schema
 const schema = z.object({
@@ -168,21 +169,12 @@ const EmailSignUp: React.FC = () => {
           )}
 
           <View className="gap-y-3">
-            <Text className="text-[16px] text-gray-200 font-PlusJakartaSansBold">
-              What’s your Email?
-            </Text>
             <Controller
               control={control}
               name="email"
               render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  style={{
-                    backgroundColor: "#1E1E1E",
-                    color: "#D2D3D5",
-                    borderRadius: 10,
-                    padding: 10,
-                  }}
-                  className="h-16 text-sm font-PlusJakartaSansRegular rounded-full px-8"
+                <Input
+                  label="What's your Email?"
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
@@ -195,6 +187,7 @@ const EmailSignUp: React.FC = () => {
                   autoCorrect={false}
                   autoComplete="email"
                   returnKeyType="next"
+                  error={errors?.email?.message}
                 />
               )}
             />

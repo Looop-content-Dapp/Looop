@@ -12,6 +12,7 @@ import {
 } from "@hugeicons/react-native";
 import { AppButton } from "@/components/app-components/button";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { Input } from "@/components/ui/input";
 
 const schema = z.object({
   password: z
@@ -66,34 +67,35 @@ const ChoosePassword = () => {
       />
 
       <View className="gap-y-4">
-        <Text className="text-lg text-gray-200 font-PlusJakartaSansBold">
-          Choose a password
-        </Text>
-
-        <View className="flex-row items-center bg-Grey/07 rounded-full pr-5">
+        <View className="flex-row items-center rounded-full pr-5">
           <Controller
             control={control}
-            render={({ field: { onChange, value } }) => (
-              <TextInput
-                className="h-16 text-sm font-PlusJakartaSansRegular bg-Grey/07 text-Grey/04 rounded-full px-8"
-                style={{ flex: 1, color: "#D2D3D5" }}
-                placeholder="Enter password"
-                placeholderTextColor="#D2D3D5"
-                secureTextEntry={!passwordView}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
             name="password"
-            defaultValue=""
-          />
-          <TouchableOpacity onPress={() => setPasswordView(!passwordView)}>
-            {passwordView ? (
-              <ViewOffIcon size={24} color="#D2D3D5" />
-            ) : (
-              <ViewIcon size={24} color="#D2D3D5" />
+            render={({ field: { onChange, onBlur, value } }) => (
+              <View className="relative">
+                <Input
+                  label="Choose a Password"
+                  description="Your password must be at least 12 characters long"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  placeholder="Enter your password"
+                  placeholderTextColor="#787A80"
+                  secureTextEntry={!passwordView}
+                />
+                <TouchableOpacity
+                  onPress={() => setPasswordView(!passwordView)}
+                  className="absolute right-4 top-[64px]"
+                >
+                  {passwordView ? (
+                    <ViewOffIcon size={24} color="#787A80" />
+                  ) : (
+                    <ViewIcon size={24} color="#787A80" />
+                  )}
+                </TouchableOpacity>
+              </View>
             )}
-          </TouchableOpacity>
+          />
         </View>
 
         <View className="gap-6">

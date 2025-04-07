@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Alert, StyleSheet } from "react-native";
+import { View, Text, TextInput, Alert, StyleSheet, ActivityIndicator } from "react-native";
 import React, { useState } from "react";
 import AuthHeader from "@/components/AuthHeader";
 import { AppButton } from "@/components/app-components/button";
@@ -17,6 +17,7 @@ import { useCheckUsername } from "@/hooks/useCheckUsername";
 import { debounce } from "lodash";
 import AccountLoadingScreen from "@/components/screens/AccountLoadingScreen";
 import { CheckmarkCircle02Icon, XVariableCircleIcon } from '@hugeicons/react-native';
+import { Input } from "@/components/ui/input";
 
 
 type FormData = {
@@ -158,103 +159,77 @@ if(isPending){
         )}
 
       <View className="gap-y-3">
-        <View className="gap-y-1">
-          <Text className="text-[14px] text-gray-200 font-PlusJakartaSansBold">
-            What&rsquo;s your name?
-          </Text>
-          <Text className="text-[12px] text-gray-400 font-PlusJakartaSansRegular">
-            This is the name that will be displayed on your profile
-          </Text>
-        </View>
-
         <Controller
           control={control}
           name="name"
           render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
+            <Input
+              label="What's your name?"
+              description="This is the name that will be displayed on your profile"
               onBlur={onBlur}
               onChangeText={onChange}
               value={value}
-              placeholderTextColor="#787A80"
               placeholder="Name"
-              className="h-16 text-sm font-PlusJakartaSansRegular bg-Grey/07 text-Grey/04 rounded-full px-8"
+              placeholderTextColor="#787A80"
+              error={errors.name?.message}
             />
           )}
         />
-        {errors.name && (
-          <Text className="text-red-500 text-[12px]">
-            {errors.name.message}
-          </Text>
-        )}
       </View>
+
       <View className="gap-y-3">
-        <View className="gap-y-1">
-          <Text className="text-[14px] text-gray-200 font-PlusJakartaSansBold">
-            Pick your username
-          </Text>
-          <Text className="text-[12px] text-gray-400 font-PlusJakartaSansRegular">
-            We&rsquo;ll use this to create your meta account
-          </Text>
-        </View>
-        <View className="relative">
-          <Controller
-            control={control}
-            name="username"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
+        <Controller
+          control={control}
+          name="username"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <View className="relative">
+              <Input
+                label="Pick your username"
+                description="We'll use this to create your meta account"
                 onBlur={onBlur}
                 onChangeText={(text) => {
-                    onChange(text);
-                    if (text) {
-                      setIsChecking(true);
-                      debouncedCheckUsername(text);
-                    } else {
-                      setUsernameError("");
-                      setIsChecking(false);
-                    }
-                  }}
+                  onChange(text);
+                  if (text) {
+                    setIsChecking(true);
+                    debouncedCheckUsername(text);
+                  } else {
+                    setUsernameError("");
+                    setIsChecking(false);
+                  }
+                }}
                 value={value}
                 placeholder="Username"
                 placeholderTextColor="#787A80"
-                className="h-16 text-sm font-PlusJakartaSansRegular bg-Grey/07 text-Grey/04 rounded-full px-8 pr-12"
+                error={errors.username?.message || usernameError}
               />
-            )}
-          />
-          {watch('username') && (
-    <View className="absolute right-4 top-5">
-      {isChecking ? (
-        <View className="animate-spin">
-          <CheckmarkCircle02Icon size={24} color="#787A80" />
-        </View>
-      ) : usernameError ? (
-        <XVariableCircleIcon size={24} color="#FF1B1B" />
-      ) : (
-        <CheckmarkCircle02Icon size={24} color="#4CAF50" />
-      )}
-    </View>
-  )}
-        </View>
-        {(errors.username || usernameError) && (
-          <Text className="text-red-500 text-[12px]">
-            {errors.username?.message || usernameError}
-          </Text>
-        )}
+              {watch('username') && (
+                <View className="absolute right-4 top-[65px]">
+                  {isChecking ? (
+                  <ActivityIndicator size={24} color="#787A80" />
+                  ) : usernameError ? (
+                    <XVariableCircleIcon size={24} color="#FF1B1B" />
+                  ) : (
+                    <CheckmarkCircle02Icon size={24} color="#4CAF50" />
+                  )}
+                </View>
+              )}
+            </View>
+          )}
+        />
       </View>
+
       <View className="gap-y-3">
-        <Text className="text-[14px] text-gray-200 font-PlusJakartaSansBold">
-          Referral Code (optional)
-        </Text>
         <Controller
           control={control}
           name="referralCode"
           render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
+            <Input
+              label="Referral Code (optional)"
               onBlur={onBlur}
               onChangeText={onChange}
               value={value}
               placeholder="Enter referral code"
-               placeholderTextColor="#787A80"
-              className="h-16 text-sm font-PlusJakartaSansRegular bg-Grey/07 text-Grey/04 rounded-full px-8"
+              placeholderTextColor="#787A80"
             />
           )}
         />

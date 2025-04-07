@@ -9,6 +9,7 @@ import {
   Image,
   ActivityIndicator,
   FlatList,
+  Keyboard,
 } from 'react-native';
 import { useLocalSearchParams, router, useNavigation } from 'expo-router';
 import { Image02Icon, Gif02Icon, HappyIcon } from '@hugeicons/react-native';
@@ -134,8 +135,8 @@ export default function CommentScreen() {
 
   // Update the useEffect for comments data
   useEffect(() => {
-    if (commentsData?.data?.comments) {  // Access the comments array from the response
-      setComments(commentsData.data.comments);
+    if (commentsData?.data?.comments) { 
+      setComments(commentsData?.data?.comments);
     }
   }, [commentsData]);
 
@@ -197,7 +198,6 @@ export default function CommentScreen() {
           parentCommentId: Array.isArray(parentId) ? parentId[0] : parentId,
           content: comment,
         };
-        console.log('Reply payload:', replyPayload); // Debug log
         await replyToComment(replyPayload);
       } else {
         const commentPayload = {
@@ -206,22 +206,25 @@ export default function CommentScreen() {
           parentCommentId: "",
           content: comment,
         };
-        console.log('Comment payload:', commentPayload); // Debug log
-        const response = await commentOnPost(commentPayload);
-        console.log('Comment response:', response); // Debug log
+        await commentOnPost(commentPayload);
       }
 
-      // Only clear the form if the submission was successful
+      // Clear the form and dismiss keyboard
       setComment('');
       if (files.length > 0) {
         removeFile(files[0]);
       }
+      Keyboard.dismiss();
 
       // Wait for the refetch to complete
       await refetchComments();
+
+      // Navigate back if it's a reply
+      if (type === 'reply') {
+        router.back();
+      }
     } catch (error) {
       console.error('Error submitting comment:', error);
-      // You might want to show an error toast here
     }
   };
 
@@ -269,7 +272,18 @@ export default function CommentScreen() {
                 <ActivityIndicator color="#787A80" />
               </View>
             ) : (
-              postData?.data && <PostCard item={postData.data} />
+              postData?.data && (
+                <View className="p-4">
+                  <PostCard
+                    item={postData.data}
+                    containerStyle={{
+                      borderBottomWidth: 0,
+                      marginBottom: 0,
+                      paddingBottom: 0
+                    }}
+                  />
+                </View>
+              )
             )}
           </View>
         ) : (
@@ -298,7 +312,8 @@ export default function CommentScreen() {
           className="flex-1"
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          contentContainerStyle={{ paddingBottom: 100 }} // Add padding to prevent content from being hidden behind input
+          contentContainerStyle={{ paddingBottom: 100 }}
+          onScroll={() => Keyboard.dismiss()} // Dismiss keyboard on scroll
         />
       </View>
 

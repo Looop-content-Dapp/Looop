@@ -24,29 +24,30 @@ export const DatePicker = ({
   const [isVisible, setIsVisible] = React.useState(false);
 
   return (
-    <View className="space-y-4">
+    <View className="gap-y-4">
       <View>
-        <Text className="text-[#F4F4F4] text-base font-medium">{label}</Text>
+        <Text className="text-[#F4F4F4] text-[16px] font-PlusJakartaSansMedium">{label}</Text>
         {description && (
-          <Text className="text-[#787A80] text-sm mt-1">{description}</Text>
+          <Text className="text-[#787A80] text-[14px] font-PlusJakartaSansMedium mt-1">{description}</Text>
         )}
       </View>
 
       <TouchableOpacity
         onPress={() => setIsVisible(true)}
-        className="bg-[#12141B] p-4 rounded-lg flex-row justify-between items-center"
+        className="bg-[#202227] py-[20px] px-[24px]  rounded-[56px] flex-row gap-x-[8px] items-center"
       >
-        <Text className="text-[#F4F4F4]">
+          <Ionicons name="calendar-outline" size={20} color="#787A80" />
+        <Text className="text-[#F4F4F4] text-[16px] font-PlusJakartaSansMedium">
           {value ? format(value, 'dd-MM-yyyy') : 'Select date'}
         </Text>
-        <Ionicons name="calendar-outline" size={20} color="#787A80" />
+
       </TouchableOpacity>
 
       {quickNote && (
-        <View className="bg-[#12141B] p-4 rounded-lg">
-          <View className="flex-row items-center space-x-2">
+        <View className="bg-[#202227] pt-[16px] px-[16px] pb-[24px] rounded-[24px]">
+          <View className="items-start space-x-2">
             <Ionicons name="information-circle-outline" size={20} color="#787A80" />
-            <Text className="text-[#787A80] text-sm flex-1">{quickNote}</Text>
+            <Text className="text-[#D2D3D5] text-[16px] font-PlusJakartaSansRegular flex-1">{quickNote}</Text>
           </View>
         </View>
       )}
@@ -64,6 +65,8 @@ export const DatePicker = ({
         }}
         onCancel={() => setIsVisible(false)}
         minimumDate={new Date()}
+          isDarkModeEnabled={true}
+        themeVariant="dark"
       />
     </View>
   );
