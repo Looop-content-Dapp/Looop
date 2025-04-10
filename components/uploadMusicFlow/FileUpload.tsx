@@ -1,19 +1,20 @@
 import React from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { fileMetadataSchema } from '@/schemas/uploadMusicSchema';
+import { fileMetadataSchema } from '@/schemas/uploadMusicSchema'; // Add this import
 import { AudioUpload } from '@/components/ui/audio-upload';
 import { RadioGroup } from '@/components/ui/radio-group';
 import { CreatorInput } from '@/components/ui/creator-input';
 import { Input } from '@/components/ui/input';
 import { DatePicker } from '@/components/ui/date-picker';
+import { TouchableOpacity } from 'react-native';
 
 const FileUpload = ({ onSubmit }) => {
   const { control, handleSubmit, formState: { errors } } = useForm({
     resolver: yupResolver(fileMetadataSchema),
     defaultValues: {
-      audioFile: null,
+      audioFile: "",
       explicitLyrics: '',
       writers: [],
       producers: [],
@@ -27,8 +28,13 @@ const FileUpload = ({ onSubmit }) => {
     { label: 'No explicit lyrics', value: 'no' }
   ];
 
+  // Add form submission handler
+  const onFormSubmit = handleSubmit((data) => {
+    onSubmit(data);
+  });
+
   return (
-    <View className="space-y-6">
+    <View className="gap-y-[32px]">
       <Controller
         control={control}
         name="audioFile"
@@ -66,9 +72,21 @@ const FileUpload = ({ onSubmit }) => {
             label="Add Songwriter credits"
             description="You can give credit to songwriters here"
             placeholder="Ex: Peter Clement Jackson"
-            value={value}
-            onChange={onChange}
-            error={errors.writers?.message}
+            value={value}  // Empty string for the input field
+      onChange={(inputValue: string) => {
+        // This handles the input field changes
+        onChange(inputValue);
+      }}
+      selectedCreators={Array.isArray(value) ? value.filter((v): v is string => v !== undefined) : []}
+      onAddCreator={(creator) => {
+        const currentValue = Array.isArray(value) ? value : [];
+        onChange([...currentValue, creator].filter((v): v is string => v !== undefined));
+      }}
+      onRemoveCreator={(creator) => {
+        const currentValue = Array.isArray(value) ? value : [];
+        onChange(currentValue.filter(c => c !== creator));
+      }}
+      error={errors.writers?.message}
           />
         )}
       />
@@ -81,9 +99,20 @@ const FileUpload = ({ onSubmit }) => {
             label="Add Producers"
             description="Include producers and composers"
             placeholder="looop.creator/creator.com"
-            value={value}
-            onChange={onChange}
-            error={errors.producers?.message}
+            value=""
+            onChange={(inputValue: string) => {
+              onChange(inputValue);
+            }}
+            selectedCreators={Array.isArray(value) ? value.filter((v): v is string => v !== undefined) : []}
+            onAddCreator={(creator) => {
+              const currentValue = Array.isArray(value) ? value : [];
+              onChange([...currentValue, creator].filter((v): v is string => v !== undefined));
+            }}
+            onRemoveCreator={(creator) => {
+              const currentValue = Array.isArray(value) ? value : [];
+              onChange(currentValue.filter(c => c !== creator));
+            }}
+            error={errors.writers?.message}
           />
         )}
       />

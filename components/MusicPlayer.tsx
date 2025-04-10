@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, Pressable, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  Pressable,
+  ActivityIndicator,
+} from 'react-native';
 import { NextIcon, PauseIcon, PlayIcon } from '@hugeicons/react-native';
 import { useRouter } from 'expo-router';
 import { getColors } from 'react-native-image-colors';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
+import TrackPlayer from 'react-native-track-player';
 
 const getContrastColor = (hexColor: string) => {
   const r = parseInt(hexColor.slice(1, 3), 16);
@@ -18,6 +26,7 @@ const MusicPlayer = () => {
   const [backgroundColor, setBackgroundColor] = useState('#0a0b0f');
   const [textColor, setTextColor] = useState('#FFFFFF');
   const [subtextColor, setSubtextColor] = useState('#A5A6AA');
+
   const {
     currentTrack,
     albumInfo,
@@ -25,6 +34,7 @@ const MusicPlayer = () => {
     pause,
     play,
     next,
+    buffering,
   } = useMusicPlayerContext();
   const { navigate } = useRouter();
 
@@ -59,26 +69,27 @@ const MusicPlayer = () => {
     fetchColors();
   }, [albumInfo?.coverImage]);
 
-  if (!currentTrack || !albumInfo) return null;
-
   const handlePlayPause = async () => {
-    if (!currentTrack || !albumInfo) return;
-
     try {
       if (isPlaying) {
         await pause();
       } else {
-        await play(currentTrack, albumInfo);
+        await TrackPlayer.play();
       }
     } catch (error) {
       console.error("Error handling play/pause:", error);
     }
   };
 
-  const handleNext = () => {
-    if (!currentTrack || !albumInfo) return;
-    next();
+  const handleNext = async () => {
+    try {
+      await next();
+    } catch (error) {
+      console.error("Error skipping to next:", error);
+    }
   };
+
+  if (!currentTrack) return null;
 
   return (
     <View
@@ -112,7 +123,7 @@ const MusicPlayer = () => {
             numberOfLines={1}
             style={{ color: textColor }}
           >
-            {currentTrack.title}
+            {currentTrack?.title}
           </Text>
           <View className="flex-row items-center flex-wrap">
             <Text
@@ -122,33 +133,22 @@ const MusicPlayer = () => {
             >
               {currentTrack?.artist?.name}
             </Text>
-            {currentTrack?.featuredArtists && currentTrack?.featuredArtists.length > 0 && (
-              <>
-                <Text style={{ color: subtextColor }}> • </Text>
-                {currentTrack?.featuredArtists?.map((artist, index) => (
-                  <Text
-                    key={artist._id}
-                    className="text-[12px] font-PlusJakartaSansBold"
-                    numberOfLines={1}
-                    style={{ color: subtextColor }}
-                  >
-                    {index > 0 ? `, ${artist.name}` : artist.name}
-                  </Text>
-                ))}
-              </>
-            )}
           </View>
         </View>
       </Pressable>
 
       <View className="flex-row items-center gap-x-[20px]">
-        <TouchableOpacity onPress={handlePlayPause}>
-          {isPlaying ? (
-            <PauseIcon size={28} color={textColor} variant="solid" />
-          ) : (
-            <PlayIcon size={28} color={textColor} variant="solid" />
-          )}
-        </TouchableOpacity>
+        {buffering ? (
+          <ActivityIndicator size="small" color={textColor} />
+        ) : (
+          <TouchableOpacity onPress={handlePlayPause}>
+            {isPlaying ? (
+              <PauseIcon size={28} color={textColor} variant="solid" />
+            ) : (
+              <PlayIcon size={28} color={textColor} variant="solid" />
+            )}
+          </TouchableOpacity>
+        )}
         <TouchableOpacity onPress={handleNext}>
           <NextIcon size={28} color={textColor} variant="solid" />
         </TouchableOpacity>

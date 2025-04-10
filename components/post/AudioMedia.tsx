@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text } from "react-native";
-import { useAudioPlayer } from "expo-audio";
+import TrackPlayer, { useProgress, State, usePlaybackState } from 'react-native-track-player';
 import AudioWaveform from "../animated/AudioWaveForm";
 
 interface AudioMediaProps {
@@ -8,50 +8,51 @@ interface AudioMediaProps {
 }
 
 const AudioMedia: React.FC<AudioMediaProps> = ({ uri }) => {
-  const player = useAudioPlayer({ uri });
   const [isAudioFinished, setIsAudioFinished] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const playbackState = usePlaybackState();
+  const progress = useProgress();
 
-  // Add progress tracking effect
   useEffect(() => {
-    let progressInterval: NodeJS.Timeout;
-
-    if (isPlaying) {
-      progressInterval = setInterval(() => {
-        if (player.duration > 0) {
-          setProgress(player.currentTime / player.duration);
-        }
-      }, 100); // Update every 100ms
-    }
-
+    setupAudio();
     return () => {
-      if (progressInterval) {
-        clearInterval(progressInterval);
-      }
+      // Cleanup
+      TrackPlayer.reset();
     };
-  }, [isPlaying, player.currentTime, player.duration]);
+  }, [uri]);
+
+  const setupAudio = async () => {
+    try {
+      await TrackPlayer.add({
+        url: uri,
+        title: 'Audio Post',
+        artist: 'User',
+      });
+    } catch (error) {
+      console.error("Error setting up audio:", error);
+    }
+  };
 
   // Toggle play/pause
-  const handleAudioToggle = React.useCallback(() => {
+  const handleAudioToggle = React.useCallback(async () => {
     try {
-      if (player.playing) {
-        player.pause();
+      const state = await TrackPlayer.getState();
+      if (state === State.Playing) {
+        await TrackPlayer.pause();
         setIsPlaying(false);
       } else {
-        player.play();
+        await TrackPlayer.play();
         setIsPlaying(true);
       }
     } catch (error) {
       console.error("Audio toggle error:", error);
-      // Optionally, set an error state to display to the user
     }
-  }, [player]);
+  }, []);
 
-  // Sync local playing state with player state
+  // Sync playing state with TrackPlayer state
   useEffect(() => {
-    setIsPlaying(player.playing);
-  }, [player.playing]);
+    setIsPlaying(playbackState === State.Playing);
+  }, [playbackState]);
 
   // Format time for display (e.g., "01:23")
   const formatTime = React.useCallback((seconds: number) => {
@@ -63,28 +64,15 @@ const AudioMedia: React.FC<AudioMediaProps> = ({ uri }) => {
 
   // Handle audio completion
   useEffect(() => {
-    if (
-      player.duration > 0 &&
-      player.currentTime >= player.duration &&
-      !isAudioFinished
-    ) {
+    if (progress.position >= progress.duration && progress.duration > 0 && !isAudioFinished) {
       setIsAudioFinished(true);
       setIsPlaying(false);
-      player.pause();
-      player.seekTo(0);
-      console.log("Audio playback completed");
+      TrackPlayer.seekTo(0);
     }
-    if (player.playing && isAudioFinished) {
+    if (playbackState === State.Playing && isAudioFinished) {
       setIsAudioFinished(false);
     }
-  }, [player.currentTime, player.duration, player.playing, isAudioFinished]);
-
-  // Cleanup audio player on unmount
-//   useEffect(() => {
-//     return () => {
-//       player.remove();
-//     };
-//   }, [player]);
+  }, [progress.position, progress.duration, playbackState, isAudioFinished]);
 
   return (
     <View
@@ -96,20 +84,18 @@ const AudioMedia: React.FC<AudioMediaProps> = ({ uri }) => {
     >
       <AudioWaveform
         isPlaying={isPlaying}
-        progress={progress}
+        progress={progress.duration > 0 ? progress.position / progress.duration : 0}
         onPlayPause={handleAudioToggle}
-        onSeek={(position) => {
-          if (player.duration > 0) {
-            player.seekTo(position * player.duration);
-            setProgress(position);
+        onSeek={async (position) => {
+          if (progress.duration > 0) {
+            await TrackPlayer.seekTo(position * progress.duration);
           }
         }}
         height={40}
         playButtonSize={35}
       />
-      {/* Optional: Display current time and duration */}
       <Text style={{ color: "#fff", textAlign: "right", marginTop: 5 }}>
-        {formatTime(player.currentTime)} / {formatTime(player.duration)}
+        {formatTime(progress.position)} / {formatTime(progress.duration)}
       </Text>
     </View>
   );

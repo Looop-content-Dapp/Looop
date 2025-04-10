@@ -130,6 +130,13 @@ export default function MusicTab() {
           ),
         }}
       />
+
+      <Tabs.Screen
+        name="_screens"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

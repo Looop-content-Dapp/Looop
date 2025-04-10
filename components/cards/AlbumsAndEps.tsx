@@ -57,7 +57,7 @@ const AlbumsAndEps: React.FC<Props> = ({ songs, isLoading }) => {
       <Pressable
         onPress={() =>
           router.push({
-            pathname: '/musicDetails',
+            pathname: '/(musicTabs)/_screens/musicDetails',
             params: {
               id: item._id,
               title: item.title,

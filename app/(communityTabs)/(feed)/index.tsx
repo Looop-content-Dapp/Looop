@@ -5,6 +5,7 @@ import { useUserFeed } from '../../../hooks/useUserFeed';
 import { useAppSelector } from '@/redux/hooks';
 import { router, useNavigation } from 'expo-router';
 import { Avatar } from 'react-native-elements/dist/avatar/Avatar';
+import { MotiView } from 'moti';
 
 // Post rendering component
 const renderPost = ({ item }) => (
@@ -15,57 +16,91 @@ const renderPost = ({ item }) => (
 const keyExtractor = (item) => item._id;
 
 const SkeletonPost = () => {
-  const shimmerAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmerAnim, {
-          toValue: 1,
-          duration: 1200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(shimmerAnim, {
-          toValue: 0,
-          duration: 1200,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, []);
-
-  const translateX = shimmerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-200, 200],
-  });
-
   return (
-    <View className="bg-[#2a2a2a] rounded-lg p-4 mb-4 overflow-hidden">
-      <Animated.View
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-          transform: [{ translateX }],
-        }}
-      />
+    <View className="bg-[#2a2a2a] rounded-lg p-4 mb-4">
       <View className="flex-row items-center mb-4">
-        <View className="w-10 h-10 rounded-full bg-[#3a3a3a]" />
+        <MotiView
+          className="w-10 h-10 rounded-full bg-[#3a3a3a]"
+          from={{ opacity: 0.5 }}
+          animate={{ opacity: 1 }}
+          transition={{
+            type: 'timing',
+            duration: 1000,
+            loop: true,
+          }}
+        />
         <View className="ml-3">
-          <View className="w-24 h-4 bg-[#3a3a3a] rounded" />
-          <View className="w-16 h-3 bg-[#3a3a3a] rounded mt-2" />
+          <MotiView
+            className="w-24 h-4 bg-[#3a3a3a] rounded"
+            from={{ opacity: 0.5 }}
+            animate={{ opacity: 1 }}
+            transition={{
+              type: 'timing',
+              duration: 1000,
+              loop: true,
+            }}
+          />
+          <MotiView
+            className="w-16 h-3 bg-[#3a3a3a] rounded mt-2"
+            from={{ opacity: 0.5 }}
+            animate={{ opacity: 1 }}
+            transition={{
+              type: 'timing',
+              duration: 1000,
+              loop: true,
+              delay: 100,
+            }}
+          />
         </View>
       </View>
-      <View className="w-full h-40 bg-[#3a3a3a] rounded-lg mb-4" />
-      <View className="w-3/4 h-4 bg-[#3a3a3a] rounded" />
-      <View className="w-1/2 h-4 bg-[#3a3a3a] rounded mt-2" />
+      <MotiView
+        className="w-full h-40 bg-[#3a3a3a] rounded-lg mb-4"
+        from={{ opacity: 0.5 }}
+        animate={{ opacity: 1 }}
+        transition={{
+          type: 'timing',
+          duration: 1000,
+          loop: true,
+          delay: 200,
+        }}
+      />
+      <MotiView
+        className="w-3/4 h-4 bg-[#3a3a3a] rounded"
+        from={{ opacity: 0.5 }}
+        animate={{ opacity: 1 }}
+        transition={{
+          type: 'timing',
+          duration: 1000,
+          loop: true,
+          delay: 300,
+        }}
+      />
+      <MotiView
+        className="w-1/2 h-4 bg-[#3a3a3a] rounded mt-2"
+        from={{ opacity: 0.5 }}
+        animate={{ opacity: 1 }}
+        transition={{
+          type: 'timing',
+          duration: 1000,
+          loop: true,
+          delay: 400,
+        }}
+      />
       <View className="flex-row justify-between mt-4">
-        <View className="w-16 h-8 bg-[#3a3a3a] rounded" />
-        <View className="w-16 h-8 bg-[#3a3a3a] rounded" />
-        <View className="w-16 h-8 bg-[#3a3a3a] rounded" />
+        {[1, 2, 3].map((_, index) => (
+          <MotiView
+            key={index}
+            className="w-16 h-8 bg-[#3a3a3a] rounded"
+            from={{ opacity: 0.5 }}
+            animate={{ opacity: 1 }}
+            transition={{
+              type: 'timing',
+              duration: 1000,
+              loop: true,
+              delay: 500 + (index * 100),
+            }}
+          />
+        ))}
       </View>
     </View>
   );

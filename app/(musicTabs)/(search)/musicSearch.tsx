@@ -273,7 +273,7 @@ const MusicSearch = () => {
         case 'track':
         case 'release':
           router.push({
-            pathname: '/musicDetails',
+            pathname: '/(musicTabs)/_screens/musicDetails',
             params: {
               id: item._id,
               title: item.title || item.name,

@@ -16,9 +16,7 @@ import ArtistInfo from '../../components/ArtistInfo';
 import JoinCommunity from '../../components/cards/JoinCommunity';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import PaymentBottomSheet from '../../components/Subscribe/PaymentBottomsheet';
 import ArtistReleases from '../../components/ArtistProfile/ArtistReleases';
-import api from '@/config/apiConfig';
 import { useAppSelector } from '@/redux/hooks';
 import { useArtistCommunity } from '@/hooks/useArtistCommunity';
 
@@ -51,7 +49,7 @@ const ArtistDetails = () => {
   const { data: communityData, isLoading } = useArtistCommunity(id as string);
   const router = useRouter();
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
-  console.log("id", isFollowing)
+  console.log("id", image)
 
   const handleJoinPress = () => {
     router.push({
@@ -75,10 +73,10 @@ const ArtistDetails = () => {
     }
   }, [useLocalSearchParams()]);
 
-  // Updated animation calculations
-  const headerHeight = scrollY.interpolate({
+  // Replace height animation with transform translateY
+  const headerTranslateY = scrollY.interpolate({
     inputRange: [0, SCREEN_HEIGHT * 0.3],
-    outputRange: [SCREEN_HEIGHT * 0.4, 0],
+    outputRange: [0, -SCREEN_HEIGHT * 0.4],
     extrapolate: 'clamp',
   });
 
@@ -109,7 +107,7 @@ const ArtistDetails = () => {
             styles.header,
             {
               backgroundColor: headerBackgroundOpacity,
-              height: SCREEN_HEIGHT * 0.1,
+              transform: [{ translateY: headerTranslateY }],
             },
           ]}
         >
@@ -128,25 +126,18 @@ const ArtistDetails = () => {
           style={[
             styles.imageContainer,
             {
-              height: headerHeight,
               opacity: imageOpacity,
+              transform: [{ translateY: headerTranslateY }],
+              height: SCREEN_HEIGHT * 0.4,
             }
           ]}
         >
           <ImageBackground
             source={{ uri: image as string }}
-            style={styles.imageBackground}
+            style={styles.image}
             resizeMode="cover"
-          >
-            <View className='absolute bottom-[10%] right-[6%] flex-row items-center'>
-              {/* <TouchableOpacity style={styles.iconButton}>
-                <ShuffleIcon size={24} color="#fff" />
-              </TouchableOpacity> */}
-              {/* <TouchableOpacity>
-                <PlayIcon size={56} color="#FF7A1B" variant='solid' />
-              </TouchableOpacity> */}
-            </View>
-          </ImageBackground>
+            onError={(e) => console.log('Image loading error:', e.nativeEvent.error)}
+          />
         </Animated.View>
 
         {/* Scrollable content */}
@@ -217,19 +208,28 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    zIndex: 1,
-  },
-  imageBackground: {
-    flex: 1,
-    width: '100%',
-  },
-  scrollViewContent: {
-    paddingBottom: '14%',
+    zIndex: 1, // Lower z-index than header
+    height: '50%',
   },
   contentContainer: {
     paddingTop: '38%',
     marginTop: '50%',
+    zIndex: 2, // Higher z-index than image
+    position: 'relative',
   },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  imageBackground: {
+    flex: 1,
+    width: '100%',
+    height: '100%', // Add explicit height
+  },
+  scrollViewContent: {
+    paddingBottom: '14%',
+  },
+
   paymentContainer: {
     padding: 16,
     alignItems: 'center',

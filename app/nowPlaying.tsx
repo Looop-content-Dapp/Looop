@@ -5,8 +5,8 @@ import {
     Image,
     TouchableOpacity,
     ScrollView,
+    ActivityIndicator,
   } from 'react-native';
-  import { useNavigation } from '@react-navigation/native';
   import React, { useEffect, useState } from 'react';
   import { SafeAreaView } from 'react-native-safe-area-context';
   import {
@@ -23,14 +23,14 @@ import {
     Share05Icon,
     ShuffleIcon,
   } from '@hugeicons/react-native';
-  import { useLocalSearchParams } from 'expo-router';
+  import { useLocalSearchParams, useNavigation } from 'expo-router';
   import { LinearGradient } from 'expo-linear-gradient';
   import Slider from '@react-native-community/slider';
   import * as Haptics from 'expo-haptics';
-  import { useQuery } from '../hooks/useQuery';
   import { getColors } from 'react-native-image-colors';
   import { BlurView } from 'expo-blur';
-import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
+  import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
+  import TrackPlayer, { useProgress } from 'react-native-track-player';
 
   const getContrastColor = (bgColor: string) => {
     const r = parseInt(bgColor.slice(1, 3), 16);
@@ -47,23 +47,23 @@ import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
     const { cover, albumTitle } = useLocalSearchParams();
     const navigation = useNavigation();
     const {
-        isPlaying,
-        currentTrack,
-        albumInfo,
-        shuffle,
-        repeat,
-        play,
-        pause,
-        toggleShuffleMode,
-        toggleRepeatMode,
-        next,
-        previous,
-        currentTime,
-        duration,
-        buffering,
-        seekTo,
-      } = useMusicPlayerContext();
-    const { retrieveUserId, saveAlbum, likeSong } = useQuery();
+      isPlaying,
+      currentTrack,
+      albumInfo,
+      shuffle,
+      repeat,
+      play,
+      pause,
+      toggleShuffle,
+      toggleRepeat,
+      next,
+      previous,
+      currentTime,
+      duration,
+      buffering,
+      seekTo,
+    } = useMusicPlayerContext();
+    const progress = useProgress();
 
     const formatTime = (seconds: number) => {
       const minutes = Math.floor(seconds / 60);
@@ -71,41 +71,12 @@ import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
       return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     };
 
-    const handlePrevious = async () => {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      if (currentTime > 3) {
-        seekTo(0);
-      } else {
-        previous();
-      }
-    };
-
-    const togglePlayPause = async () => {
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        try {
-          if (!currentTrack || !albumInfo) return;
-
-          if (isPlaying) {
-            await pause();
-          } else {
-            await play(currentTrack, albumInfo);
-          }
-        } catch (error) {
-          console.error("Error toggling play/pause:", error);
-        }
-      };
-
-    const handleNext = async () => {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      next();
-    };
-
     useEffect(() => {
       const fetchColors = async () => {
         const imageUrl = cover || albumInfo?.coverImage;
-        if (imageUrl) {
+        if (currentTrack?.release?.artwork?.high) {
           try {
-            const result = await getColors(imageUrl, {
+            const result = await getColors(currentTrack?.release?.artwork?.high, {
               fallback: '#000000',
               cache: true,
             });
@@ -127,7 +98,42 @@ import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
         }
       };
       fetchColors();
-    }, [cover, albumInfo?.coverImage]);
+    }, [cover, albumInfo?.coverImage, currentTrack]);
+
+    const togglePlayPause = async () => {
+      try {
+        if (isPlaying) {
+          await pause();
+        } else {
+          await TrackPlayer.play();
+        }
+      } catch (error) {
+        console.error("Error toggling play/pause:", error);
+      }
+    };
+
+    const handleNext = async () => {
+      try {
+        await next();
+      } catch (error) {
+        console.error("Error skipping to next:", error);
+      }
+    };
+
+    const handlePrevious = async () => {
+      try {
+        const position = progress.position;
+        if (position > 3) {
+          await TrackPlayer.seekTo(0);
+        } else {
+          await previous();
+        }
+      } catch (error) {
+        console.error("Error skipping to previous:", error);
+      }
+    };
+
+    if (!currentTrack) return null;
 
     return (
       <SafeAreaView style={{ flex: 1, minHeight: '100%', backgroundColor }}>
@@ -143,7 +149,10 @@ import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
                 <ArrowLeft02Icon size={32} color={textColor} />
               </Pressable>
               <View className="flex-1">
-                <Text style={{ color: subTextColor }} className="text-[14px] font-PlusJakartaSansMedium">
+                <Text
+                  style={{ color: subTextColor }}
+                  className="text-[14px] font-PlusJakartaSansMedium"
+                >
                   Playing from
                 </Text>
                 <Text
@@ -160,7 +169,7 @@ import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
 
           <View className="relative">
             <Image
-              source={{ uri: cover || albumInfo?.coverImage }}
+              source={{ uri: currentTrack?.release?.artwork?.high }}
               className="w-full h-[400px] mt-[19px]"
               resizeMode="cover"
             />
@@ -187,45 +196,52 @@ import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
                   className="text-[14px] font-PlusJakartaSansRegular"
                   numberOfLines={1}
                 >
-                  {/* {currentTrack?.artist?.join(', ')} */}
+                  {currentTrack?.artist?.name}
                 </Text>
               </View>
               <TouchableOpacity
-                onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+                onPress={() =>
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                }
               >
                 <FavouriteIcon size={32} color={subTextColor} />
               </TouchableOpacity>
             </View>
 
-            {/* Progress Bar */}
             <View className="mt-4">
               <Slider
                 style={{ width: '100%', height: 40 }}
                 minimumValue={0}
-                maximumValue={1}
-                value={duration > 0 ? currentTime / duration : 0}
+                maximumValue={progress.duration || 1}
+                value={progress.position}
                 minimumTrackTintColor="#FF6D1B"
                 maximumTrackTintColor="#4D4D4D"
                 thumbTintColor="#FF6D1B"
-                onValueChange={(value) => seekTo(value * duration)}
+                onSlidingComplete={(value) => seekTo(value)}
                 disabled={buffering}
               />
               <View className="flex-row justify-between">
-                <Text style={{ color: subTextColor }}>{formatTime(currentTime)}</Text>
-                <Text style={{ color: subTextColor }}>{formatTime(duration)}</Text>
+                <Text style={{ color: subTextColor }}>
+                  {formatTime(progress.position)}
+                </Text>
+                <Text style={{ color: subTextColor }}>
+                  {formatTime(progress.duration)}
+                </Text>
               </View>
             </View>
 
-            {/* Player Controls */}
             <View className="flex-row items-center justify-between mt-8">
               <TouchableOpacity
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  toggleShuffleMode();
+                  toggleShuffle();
                 }}
                 className="w-[48px] h-[48px] items-center justify-center"
               >
-                <ShuffleIcon size={24} color={shuffle ? "#FF6D1B" : subTextColor} />
+                <ShuffleIcon
+                  size={24}
+                  color={shuffle ? '#FF6D1B' : subTextColor}
+                />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -249,11 +265,24 @@ import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
                   shadowRadius: 8,
                   elevation: 8,
                 }}
+                disabled={buffering}
               >
-                {isPlaying ? (
-                  <PauseIcon size={40} color={backgroundColor} variant="solid" style={{ opacity: 0.9 }} />
+                {buffering ? (
+                  <ActivityIndicator size="large" color={backgroundColor} />
+                ) : isPlaying ? (
+                  <PauseIcon
+                    size={40}
+                    color={backgroundColor}
+                    variant="solid"
+                    style={{ opacity: 0.9 }}
+                  />
                 ) : (
-                  <PlayIcon size={40} color={backgroundColor} variant="solid" style={{ opacity: 0.9 }} />
+                  <PlayIcon
+                    size={40}
+                    color={backgroundColor}
+                    variant="solid"
+                    style={{ opacity: 0.9 }}
+                  />
                 )}
               </TouchableOpacity>
 
@@ -267,15 +296,17 @@ import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
               <TouchableOpacity
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  toggleRepeatMode();
+                  toggleRepeat();
                 }}
                 className="w-[48px] h-[48px] items-center justify-center"
               >
-                <RepeatIcon size={24} color={repeat ? "#FF6D1B" : subTextColor} />
+                <RepeatIcon
+                  size={24}
+                  color={repeat ? '#FF6D1B' : subTextColor}
+                />
               </TouchableOpacity>
             </View>
 
-            {/* Bottom controls with blur effect */}
             <BlurView intensity={20} className="mt-8 rounded-[24px] overflow-hidden">
               <View
                 className="flex-row items-center justify-between px-[24px] p-[12px]"

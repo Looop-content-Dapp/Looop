@@ -67,7 +67,7 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
             onPress={() =>
               router.navigate({
                 pathname: '/postDetails',
-                params: { id: item?.id },
+                params: { id: item?._id },
               })
             }
           >
@@ -95,11 +95,11 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
   isVisible={isShareSheetVisible}
   onClose={() => setIsShareSheetVisible(false)}
   album={{
-    id: item.id,
-    title: item.content,
-    artist: item.artistId?.name,
-    image: item.media?.[0]?.url,
-    duration: formatTimeAgo(item.createdAt)
+    id: item?._id,
+    title: item?.content,
+    artist: item?.artistId?.name,
+    image: item?.media?.[0]?.url,
+    duration: formatTimeAgo(item?.createdAt)
   }}
 />
     </View>

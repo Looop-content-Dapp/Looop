@@ -14,7 +14,7 @@ const Singles: React.FC<Props> = ({ songs, isLoading }) => {
   const renderItem = ({ item }: { item: any }) => {
     return (
         <Pressable
-        onPress={() => router.push({ pathname: "/musicDetails",  params: {
+        onPress={() => router.push({ pathname: "/(musicTabs)/_screens/musicDetails",  params: {
             id: item?.id,
             title: item?.title,
             artist: item?.artist?.name,

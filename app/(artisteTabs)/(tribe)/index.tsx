@@ -5,6 +5,7 @@ import CommunityLoading from "../../../components/CommunityLoading";
 import { useAppSelector } from "@/redux/hooks";
 import api from "@/config/apiConfig";
 import WelcomeScreen from "@/components/buildTribe/WelcomeScreen";
+import { Text, View } from "react-native";
 
 // Removed unused import: useQuery
 
@@ -48,7 +49,7 @@ const OnboardingFlow = () => {
     };
 
     fetchArtistCommunity();
-  }, [userdata?.artist]); // Added proper dependency
+  }, [userdata?.artist]);
 
   // Handle loading state
   if (loading) {
@@ -58,16 +59,10 @@ const OnboardingFlow = () => {
   // Handle error state
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-xl font-semibold text-red-600 mb-2">Error</h2>
-        <p>{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          Try Again
-        </button>
-      </div>
+      <View className="flex flex-col items-center justify-center p-6 text-center">
+        <Text className="text-xl font-semibold text-red-600 mb-2">Error</Text>
+        <Text>{error}</Text>
+      </View>
     );
   }
 
@@ -76,7 +71,7 @@ const OnboardingFlow = () => {
     return <ArtistCommunityDetails community={artistCommunity} />;
   }
 
-  // If no community exists, show the onboarding flow
+
   const handleNext = () => setCurrentStep('buildTribe');
   const handleBack = () => setCurrentStep('welcome');
 

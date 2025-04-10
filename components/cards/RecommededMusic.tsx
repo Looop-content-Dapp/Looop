@@ -77,7 +77,7 @@ const RecommededMusic = ({ data, isLoading, title = "Recommended For You" }) => 
                 ]}
                 onPress={() => {
                   router.push({
-                    pathname: "/musicDetails",
+                    pathname: "/(musicTabs)/_screens/musicDetails",
                     params: {
                       id: item.release._id,
                       title: item.title,

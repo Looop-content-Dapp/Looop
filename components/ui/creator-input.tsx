@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { Input } from './input';
 import { Ionicons } from '@expo/vector-icons';
+import { CheckmarkCircle02Icon } from '@hugeicons/react-native';
 
 interface CreatorInputProps {
   label: string;
@@ -22,40 +23,56 @@ export const CreatorInput = ({
   value,
   onChange,
   selectedCreators = [],
-  onAddCreator = () => {}, // Add default empty function
-  onRemoveCreator = () => {}, // Also add for onRemoveCreator
+  onAddCreator = () => {},
+  onRemoveCreator = () => {},
   error
 }: CreatorInputProps) => {
+  const [inputValue, setInputValue] = useState('');
   const buttonLabel = label.toLowerCase().startsWith('add') ? label.toLowerCase() : `add ${label.toLowerCase()}`;
+
+  const handleAddCreator = () => {
+    if (inputValue.trim()) {
+      onAddCreator(inputValue.trim());
+      setInputValue('');
+    }
+  };
 
   return (
     <View className="gap-y-[12px]">
-      <Input
-        label={label}
-        description={description}
-        placeholder={placeholder}
-        value={value}
-        onChangeText={onChange}
-        error={error}
-      />
+      <View className='flex-row items-center gap-x-[8px] w-full'>
+        <Input
+          label={label}
+          description={description}
+          placeholder={placeholder}
+          value={inputValue}
+          onChangeText={setInputValue}
+        />
+        <TouchableOpacity onPress={() => setInputValue('')}>
+          <Ionicons name="close" size={24} color="#787A80" />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName='w-full gap-x-[8px]'>
+        {selectedCreators.map((creator) => (
+          <View
+            key={creator}
+            className="flex-row items-center gap-x-[8px] bg-[#A187B5] w-[40%] py-[8px] px-[8px] rounded-[10px]"
+          >
+            <CheckmarkCircle02Icon size={24} color='#FFFFFF' variant='solid' />
+            <Text className="text-[#202227] text-[16px] font-PlusJakartaSansMedium">{creator}</Text>
+            <TouchableOpacity onPress={() => onRemoveCreator(creator)}>
+              <Ionicons name="close" size={20} color="#202227" />
+            </TouchableOpacity>
+          </View>
+        ))}
+      </ScrollView>
+
       <TouchableOpacity
-        onPress={() => onAddCreator(value)}
+        onPress={handleAddCreator}
         className="mx-auto py-[10px] px-[16px] rounded-[10px] bg-[#202227]"
       >
         <Text className="text-[#9A9B9F] text-[14px] font-PlusJakartaSansMedium">+ {buttonLabel}</Text>
       </TouchableOpacity>
-
-      {selectedCreators.map((creator) => (
-        <View
-          key={creator}
-          className="flex-row items-center justify-between bg-[#12141B] p-3 rounded-lg"
-        >
-          <Text className="text-[#F4F4F4]">{creator}</Text>
-          <TouchableOpacity onPress={() => onRemoveCreator(creator)}>
-            <Ionicons name="close" size={20} color="#787A80" />
-          </TouchableOpacity>
-        </View>
-      ))}
     </View>
   );
 };

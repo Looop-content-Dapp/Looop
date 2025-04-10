@@ -59,8 +59,14 @@ const TribeCard = React.memo<{ item: TribeItem; loading: boolean }>(({ item, loa
 
   const handlePress = useCallback(() => {
     router.push({
-      pathname: "/(communityTabs)/tribeDetails",
-      params: { id: item.id }
+      pathname: "/communityDetails",
+      params: {
+        id: item?.id,
+        name: item?.name,
+        description: item?.description,
+        image: item?.coverImage,
+        noOfMembers: item?.memberCount
+       }
     });
   }, [item.id]);
 

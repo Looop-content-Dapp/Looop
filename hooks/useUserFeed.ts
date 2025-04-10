@@ -135,11 +135,11 @@ export const useUserFeed = () => {
       return data;
     },
     enabled: !!userdata?._id, // Only run the query if userdata._id exists
-    refetchOnWindowFocus: true,
+    // refetchOnWindowFocus: true,
     staleTime: 10000,
-    refetchInterval: 30000,
+    // refetchInterval: 30000,
     refetchIntervalInBackground: false,
-    placeholderData: skeletonFeedData,
+    // placeholderData: skeletonFeedData,
   });
 };
 

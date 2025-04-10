@@ -33,6 +33,11 @@ const TrackUploadForm = ({ onSubmit }) => {
     { label: 'R&B', value: 'rnb' }
   ];
 
+  // Add form submission handler
+  const onFormSubmit = handleSubmit((data) => {
+    onSubmit(data);
+  });
+
   return (
     <View className="gap-y-[32px]">
       <Controller
@@ -73,7 +78,19 @@ const TrackUploadForm = ({ onSubmit }) => {
             description="Add using Looop creator profile links"
             placeholder="looop.creator/bigphee.com"
             value={value}
-            onChange={onChange}
+            onChange={(inputValue: string) => {
+              // This handles the input field changes
+              onChange(inputValue);
+            }}
+            selectedCreators={Array.isArray(value) ? value.filter((v): v is string => v !== undefined) : []}
+            onAddCreator={(creator) => {
+              const currentValue = Array.isArray(value) ? value : [];
+              onChange([...currentValue, creator].filter((v): v is string => v !== undefined));
+            }}
+            onRemoveCreator={(creator) => {
+              const currentValue = Array.isArray(value) ? value : [];
+              onChange(currentValue.filter(c => c !== creator));
+            }}
             error={errors.featuredArtists?.message}
           />
         )}

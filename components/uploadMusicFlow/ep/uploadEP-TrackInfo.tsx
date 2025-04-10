@@ -79,9 +79,21 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
                   label="Add featured artiste?"
                   description="If there are features on the song, add them using their Looop creator profile links"
                   placeholder="looop.creator/bigphee.com"
-                  value={value || []}
-                  onChange={onChange}
-                  error={error?.message}
+                  value=""  // Empty string for the input field
+      onChange={(inputValue: string) => {
+        // This handles the input field changes
+        onChange(inputValue);
+      }}
+      selectedCreators={Array.isArray(value) ? value.filter((v): v is string => v !== undefined) : []}
+      onAddCreator={(creator) => {
+        const currentValue = Array.isArray(value) ? value : [];
+        onChange([...currentValue, creator].filter((v): v is string => v !== undefined));
+      }}
+      onRemoveCreator={(creator) => {
+        const currentValue = Array.isArray(value) ? value : [];
+        onChange(currentValue.filter(c => c !== creator));
+      }}
+      error={error?.message}
                 />
               )}
             />
@@ -129,9 +141,21 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
                   label="Add Songwriter credits"
                   description="You can give credit to songwriters here"
                   placeholder="Ex: Peter Clement Jackson"
-                  value={value || []}
-                  onChange={onChange}
-                  error={error?.message}
+                  value={value} // Empty string for the input field
+      onChange={(inputValue: string) => {
+        // This handles the input field changes
+        onChange(inputValue);
+      }}
+      selectedCreators={Array.isArray(value) ? value.filter((v): v is string => v !== undefined) : []}
+      onAddCreator={(creator) => {
+        const currentValue = Array.isArray(value) ? value : [];
+        onChange([...currentValue, creator].filter((v): v is string => v !== undefined));
+      }}
+      onRemoveCreator={(creator) => {
+        const currentValue = Array.isArray(value) ? value : [];
+        onChange(currentValue.filter(c => c !== creator));
+      }}
+      error={error?.message}
                 />
               )}
             />
@@ -144,8 +168,20 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
                   label="Add Producers"
                   description="Include producers and composers"
                   placeholder="Ex: producer name"
-                  value={value || []}
-                  onChange={onChange}
+                  value={value} // Empty string for the input field
+                  onChange={(inputValue: string) => {
+                    // This handles the input field changes
+                    onChange(inputValue);
+                  }}
+                  selectedCreators={Array.isArray(value) ? value.filter((v): v is string => v !== undefined) : []}
+                  onAddCreator={(creator) => {
+                    const currentValue = Array.isArray(value) ? value : [];
+                    onChange([...currentValue, creator].filter((v): v is string => v !== undefined));
+                  }}
+                  onRemoveCreator={(creator) => {
+                    const currentValue = Array.isArray(value) ? value : [];
+                    onChange(currentValue.filter(c => c !== creator));
+                  }}
                   error={error?.message}
                 />
               )}

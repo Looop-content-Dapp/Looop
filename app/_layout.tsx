@@ -8,15 +8,18 @@ import { GiphySDK } from "@giphy/react-native-sdk";
 import { PersistGate } from "redux-persist/integration/react";
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { playbackService } from '@/services/PlaybackService';
+import { setupPlayer } from '../services/PlaybackService';
+
+// In your app initialization
+setupPlayer();
 
 import { useFonts } from "expo-font";
 import "../global.css";
 
 import store, { persistor } from "../redux/store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Pressable, Text } from "react-native";
 import { MusicPlayerProvider } from "@/context/MusicPlayerContext";
-import TrackPlayer from "react-native-track-player";
+import TrackPlayer from 'react-native-track-player';
 
 // Register the playback service
 TrackPlayer.registerPlaybackService(() => playbackService);
@@ -66,7 +69,6 @@ function AppContent() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(musicTabs)" />
         <Stack.Screen name="(communityTabs)" />
-        <Stack.Screen name="musicDetails" />
         <Stack.Screen name="(settingUp)" />
         <Stack.Screen name="loadingScreen" />
         <Stack.Screen

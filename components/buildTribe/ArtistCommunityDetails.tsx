@@ -97,9 +97,6 @@ const HEADER_MAX_HEIGHT = 200;
 const HEADER_MIN_HEIGHT = 80;
 const TAB_HEIGHT = 50;
 
-// Remove the duplicate transformToFeedItem function from the component scope
-// Keep only the one defined at file scope and update it to include community
-
 const ArtistCommunityDetails = ({ community }: ArtistCommunityDetailProps) => {
   const [activeTab, setActiveTab] = useState('posts');
   const [showCreatePost, setShowCreatePost] = useState(false);
@@ -332,7 +329,7 @@ const ArtistCommunityDetails = ({ community }: ArtistCommunityDetailProps) => {
         {/* Floating Action Button */}
         <TouchableOpacity
           onPress={() => setShowCreatePost(true)}
-          className="absolute bottom-6 right-6 z-30 bg-[#A187B5] w-[72px] h-[72px] rounded-[24px] items-center justify-center shadow-lg"
+          className="absolute bottom-[35px] right-6 z-30 bg-[#A187B5] w-[50px] h-[50px] rounded-[24px] items-center justify-center shadow-lg"
           style={{
             elevation: 5,
             shadowColor: '#000',

@@ -1,5 +1,14 @@
 import * as yup from 'yup';
 
+export const trackInfoSchema = yup.object().shape({
+  trackName: yup.string().required('Track name is required'),
+  songType: yup.string().oneOf(['original', 'cover']).required('Please select song type'),
+  featuredArtists: yup.array().of(yup.string()),
+  primaryGenre: yup.string().required('Primary genre is required'),
+  secondaryGenre: yup.string(),
+  coverImage: yup.mixed().required('Cover image is required')
+});
+
 export const baseTrackSchema = yup.object({
   trackName: yup.string().required('Track name is required'),
   songType: yup.string().required('Song type is required'),
@@ -28,4 +37,13 @@ export const epSchema = yup.object({
   secondaryGenre: yup.string(),
   coverImage: yup.mixed().required('Cover image is required'),
   tracks: yup.array().of(baseTrackSchema).min(2).max(6)
+});
+
+export const fileMetadataSchema = yup.object().shape({
+  audioFile: yup.mixed().required('Audio file is required'),
+  explicitLyrics: yup.string().required('Please specify if the song contains explicit lyrics'),
+  writers: yup.array().of(yup.string()),
+  producers: yup.array().of(yup.string()),
+  isrc: yup.string().nullable(),
+  releaseDate: yup.date().nullable()
 });
