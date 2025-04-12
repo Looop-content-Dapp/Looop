@@ -12,5 +12,8 @@ export const useTransaction = (userId: string, autoRefreshInterval = 50000) => {
     enabled: !!userId,
     refetchInterval: autoRefreshInterval,
     refetchOnWindowFocus: true,
+    staleTime: 30 * 1000, // Data stays fresh for 30 seconds
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
+    retry: 3,
   });
 };

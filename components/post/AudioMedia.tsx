@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { View, Text } from "react-native";
-import TrackPlayer, { useProgress, State, usePlaybackState } from 'react-native-track-player';
+import TrackPlayer, {
+  useProgress,
+  State,
+  usePlaybackState,
+  Event,
+  Track
+} from 'react-native-track-player';
 import AudioWaveform from "../animated/AudioWaveForm";
 
 interface AudioMediaProps {
@@ -10,34 +16,42 @@ interface AudioMediaProps {
 const AudioMedia: React.FC<AudioMediaProps> = ({ uri }) => {
   const [isAudioFinished, setIsAudioFinished] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [trackIndex, setTrackIndex] = useState<number | null>(null);
   const playbackState = usePlaybackState();
   const progress = useProgress();
 
   useEffect(() => {
-    setupAudio();
+    const setup = async () => {
+      try {
+        // Check if the current track is already playing this URI
+        const queue = await TrackPlayer.getQueue();
+        const currentTrack = queue.find(track => track.url === uri);
+
+        if (!currentTrack) {
+          const index = await TrackPlayer.add({
+            url: uri,
+            title: 'Audio Post',
+            artist: 'User',
+          });
+          setTrackIndex(index);
+        }
+      } catch (error) {
+        console.error("Error setting up audio:", error);
+      }
+    };
+
+    setup();
+
+    // Only cleanup when component is unmounted completely, not on tab changes
     return () => {
-      // Cleanup
-      TrackPlayer.reset();
+      // Do nothing on cleanup to maintain playback between tab navigation
     };
   }, [uri]);
 
-  const setupAudio = async () => {
-    try {
-      await TrackPlayer.add({
-        url: uri,
-        title: 'Audio Post',
-        artist: 'User',
-      });
-    } catch (error) {
-      console.error("Error setting up audio:", error);
-    }
-  };
-
-  // Toggle play/pause
   const handleAudioToggle = React.useCallback(async () => {
     try {
-      const state = await TrackPlayer.getState();
-      if (state === State.Playing) {
+      const playerState = await TrackPlayer.getState();
+      if (playerState === State.Playing) {
         await TrackPlayer.pause();
         setIsPlaying(false);
       } else {
@@ -51,7 +65,8 @@ const AudioMedia: React.FC<AudioMediaProps> = ({ uri }) => {
 
   // Sync playing state with TrackPlayer state
   useEffect(() => {
-    setIsPlaying(playbackState === State.Playing);
+    const state = playbackState.state;
+    setIsPlaying(state === State.Playing);
   }, [playbackState]);
 
   // Format time for display (e.g., "01:23")

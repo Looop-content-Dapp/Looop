@@ -61,8 +61,10 @@ export const useGetCommunities = () => {
       return data.data;
     },
     refetchOnWindowFocus: true,
-    staleTime: 10000,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
     refetchInterval: 30000,
     refetchIntervalInBackground: true,
+    retry: 2,
   });
 };

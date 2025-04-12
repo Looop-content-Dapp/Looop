@@ -133,8 +133,11 @@ export const useTribes = (page: number = 1, limit: number = 10, refetchInterval:
       return data;
     },
     enabled: !!userdata?._id,
-    refetchInterval: refetchInterval, // Auto refresh every 30 seconds by default
-    refetchIntervalInBackground: false, // Only refetch when the window is focused
+    refetchInterval: refetchInterval,
+    refetchIntervalInBackground: false,
+    staleTime: 2 * 60 * 1000, // Data stays fresh for 2 minutes
+    gcTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
+    retry: 2,
   });
 };
 
@@ -150,5 +153,8 @@ export const useUserSubscriptions = (refetchInterval: number = 30000) => {
     enabled: !!userdata?._id,
     refetchInterval: refetchInterval,
     refetchIntervalInBackground: false,
+    staleTime: 5 * 60 * 1000, // Data stays fresh for 5 minutes
+    gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
+    retry: 2,
   });
 };

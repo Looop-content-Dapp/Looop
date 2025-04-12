@@ -18,7 +18,6 @@ import { Avatar } from 'react-native-elements';
 import { AlertDiamondIcon, CdIcon, FavouriteIcon, Playlist01Icon, Queue01Icon } from '@hugeicons/react-native';
 import { Feather } from '@expo/vector-icons';
 import AddToPlaylistBottomSheet from './AddToPlaylistBottomSheet';
-import { useAddTrackToFavorites, useGetUserFavorites } from '@/hooks/useFavourites';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ShareProps {
@@ -28,7 +27,7 @@ interface ShareProps {
     title?: string;
     artist?: string;
     image?: string;
-    duration?: string;
+    duration?: number;  // Change to number type
     type?: string;
     id?: string;
   };
@@ -40,9 +39,6 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
   const [isPlaylistSheetVisible, setIsPlaylistSheetVisible] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
-
-  const addToFavoritesMutation = useAddTrackToFavorites();
-  const { data: favorites } = useGetUserFavorites(userId || '');
   const slideAnim = React.useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -77,14 +73,6 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
     getUserId();
   }, []);
 
-  useEffect(() => {
-    if (favorites && album?.id) {
-      const isInFavorites = favorites.tracks?.some((track: any) => track._id === album.id) ||
-                           favorites.releases?.some((release: any) => release._id === album.id);
-      setIsFavorite(isInFavorites);
-    }
-  }, [favorites, album]);
-
   const requestPermission = async () => {
     const { status } = await Contacts.requestPermissionsAsync();
     if (status === 'granted') {
@@ -118,14 +106,7 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
     }
 
     try {
-      await addToFavoritesMutation.mutateAsync({
-        userId,
-        trackId: album.id,
-      });
-
-      setIsFavorite(!isFavorite);
-      Alert.alert('Success', isFavorite ? 'Removed from favorites' : 'Added to favorites');
-      onClose();
+    
     } catch (error) {
       console.error('Error adding to favorites:', error);
       Alert.alert('Error', 'Failed to update favorites. Please try again.');
@@ -229,7 +210,7 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
                       {album?.title}
                     </Text>
                     <Text className='text-[#63656B] text-[12px] font-PlusJakartaSansBold' numberOfLines={1}>
-                      {album?.artist} · {album?.duration}
+                      {album?.artist} · {formatDuration(album?.duration)}
                     </Text>
                   </View>
                 </View>
@@ -367,11 +348,14 @@ const styles = StyleSheet.create({
         paddingBottom: Platform.OS === 'ios' ? 34 : 20,
         maxHeight: Dimensions.get('window').height * 0.9,
         width: "100%",
-        overflow: "hidden"
+        overflow: "hidden",
       },
   container: {
     backgroundColor: '#111318',
     padding: 24,
+    borderRadius: 20,
+    maxHeight: Dimensions.get('window').height * 0.9,
+    overflow: "hidden",
   },
   contactsList: {
     paddingHorizontal: 8,
@@ -450,3 +434,16 @@ const styles = StyleSheet.create({
 });
 
 export default Share;
+
+
+const formatDuration = (duration: number | undefined) => {
+  if (!duration) return '';
+
+  const minutes = Math.floor(duration / 60000);
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return remainingMinutes > 0 ? `${hours}hr ${remainingMinutes}min` : `${hours}hr`;
+  }
+  return `${minutes}min`;
+};

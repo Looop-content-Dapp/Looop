@@ -112,7 +112,6 @@ const useMusicPlayer = () => {
 
   useEffect(() => {
     const setupPlayer = async () => {
-      await TrackPlayer.setupPlayer();
       await TrackPlayer.updateOptions({
         capabilities: [
           Capability.Play,
@@ -158,13 +157,20 @@ const useMusicPlayer = () => {
     };
   }, [dispatch, playlist, albumInfo]);
 
+  // Add a new state for tracking loading states of individual tracks
+  const [loadingTrackId, setLoadingTrackId] = useState<string | null>(null);
+
   const play = useCallback(
     async (track: ExtendedTrack, albumInfo: AlbumInfo, playlist?: ExtendedTrack[]) => {
       try {
         if (!userdata?._id) return;
 
-        // Set loading state immediately for instant UI update
-        setState((prev) => ({ ...prev, loading: true }));
+        // Set loading state for this specific track
+        setLoadingTrackId(track._id);
+
+        // Immediately dispatch the track to update UI
+        dispatch(playTrack({ track, albumInfo, playlist }));
+
         const trackIndex = playlist?.findIndex((t) => t._id === track._id) ?? 0;
 
         const currentState = await TrackPlayer.getPlaybackState();
@@ -180,9 +186,8 @@ const useMusicPlayer = () => {
           if (index !== -1) {
             await TrackPlayer.skip(index);
             await TrackPlayer.play();
-            dispatch(playTrack({ track, albumInfo, playlist }));
             setIsPlaying(true);
-            setState((prev) => ({ ...prev, loading: false }));
+            setLoadingTrackId(null);
             return;
           }
         }
@@ -221,7 +226,6 @@ const useMusicPlayer = () => {
 
         await TrackPlayer.play();
         setIsPlaying(true);
-        dispatch(playTrack({ track, albumInfo, playlist }));
         await storeCurrentTrack(track, albumInfo);
 
         setState((prev) => ({
@@ -240,6 +244,8 @@ const useMusicPlayer = () => {
           isAlbumPlaying: false,
         }));
         setIsPlaying(false);
+      } finally {
+        setLoadingTrackId(null);
       }
     },
     [dispatch, userdata?._id, albumInfo, playlist]
@@ -369,7 +375,9 @@ const useMusicPlayer = () => {
     currentIndex,
     currentTime: progress.position,
     duration: progress.duration,
-    buffering: playbackState === State.Buffering || playbackState === State.Loading,
+    buffering:
+    playbackState.state !== undefined &&
+    (playbackState.state === State.Buffering || playbackState.state === State.Loading),
     seekTo,
     play,
     pause,
@@ -406,6 +414,7 @@ const useMusicPlayer = () => {
       [dispatch]
     ),
     getStoredTrack: useCallback(async () => await getStoredTrack(), []),
+    loadingTrackId, // Add this to the return object
   };
 };
 

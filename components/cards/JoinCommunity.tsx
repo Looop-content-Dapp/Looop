@@ -93,7 +93,7 @@ const JoinCommunity = ({ isLoading, communityData, onJoinPress, userId }: JoinCo
           />
         ) : (
           <TouchableOpacity
-            className="h-[171px] bg-[#1A1A1A] rounded-3xl overflow-hidden flex-row"
+            className="h-[171px] bg-[#202227] rounded-[24px] overflow-hidden flex-row"
             onPress={handleCommunityPress}
             activeOpacity={0.7}
           >

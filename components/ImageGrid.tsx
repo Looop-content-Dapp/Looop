@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import ImageViewer from './ImageViewer';
 
 interface ImageGridProps {
@@ -17,35 +18,55 @@ export const ImageGrid: React.FC<ImageGridProps> = ({ thumbnails }) => {
     setIsViewerVisible(true);
   };
 
+  // Add this at the top of the component
+  React.useEffect(() => {
+    // Preload images
+    FastImage.preload(
+      thumbnails.map(uri => ({
+        uri,
+        priority: FastImage.priority.normal,
+      }))
+    );
+  }, [thumbnails]);
+
   const renderImageGrid = () => {
     if (thumbnails.length === 4) {
       return (
         <>
           <View style={styles.row}>
             <TouchableOpacity onPress={() => handleImagePress(0)}>
-              <Image
-                source={{ uri: thumbnails[0] }}
+              <FastImage
+                source={{
+                  uri: thumbnails[0],
+                  priority: FastImage.priority.normal,
+                  cache: FastImage.cacheControl.immutable
+                }}
                 style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleImagePress(1)}>
-              <Image
-                source={{ uri: thumbnails[1] }}
-                style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+                resizeMode={FastImage.resizeMode.cover}
               />
             </TouchableOpacity>
           </View>
           <View style={styles.row}>
             <TouchableOpacity onPress={() => handleImagePress(2)}>
-              <Image
-                source={{ uri: thumbnails[2] }}
+              <FastImage
+                source={{
+                    uri: thumbnails[2],
+                    priority: FastImage.priority.normal,
+                    cache: FastImage.cacheControl.immutable
+                 }}
                 style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+                resizeMode={FastImage.resizeMode.cover}
               />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => handleImagePress(3)}>
-              <Image
-                source={{ uri: thumbnails[3] }}
+              <FastImage
+                source={{
+                    uri: thumbnails[3],
+                    priority: FastImage.priority.normal,
+                    cache: FastImage.cacheControl.immutable
+                 }}
                 style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+                resizeMode={FastImage.resizeMode.cover}
               />
             </TouchableOpacity>
           </View>
@@ -55,22 +76,37 @@ export const ImageGrid: React.FC<ImageGridProps> = ({ thumbnails }) => {
       return (
         <View style={styles.row}>
           <TouchableOpacity onPress={() => handleImagePress(0)}>
-            <Image
-              source={{ uri: thumbnails[0] }}
+            <FastImage
+              source={{
+                uri: thumbnails[0],
+                priority: FastImage.priority.normal,
+                cache: FastImage.cacheControl.immutable
+               }}
               style={[styles.largeImage, { width: (imageWidth * 2) / 3 - 2 }]}
+              resizeMode={FastImage.resizeMode.cover}
             />
           </TouchableOpacity>
           <View style={styles.column}>
             <TouchableOpacity onPress={() => handleImagePress(1)}>
-              <Image
-                source={{ uri: thumbnails[1] }}
+              <FastImage
+                source={{
+                    uri: thumbnails[1],
+                    priority: FastImage.priority.normal,
+                    cache: FastImage.cacheControl.immutable
+                 }}
                 style={[styles.smallImage, { width: imageWidth / 3 - 2 }]}
+                resizeMode={FastImage.resizeMode.cover}
               />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => handleImagePress(2)}>
-              <Image
-                source={{ uri: thumbnails[2] }}
+              <FastImage
+                source={{
+                    uri: thumbnails[2],
+                    priority: FastImage.priority.normal,
+                    cache: FastImage.cacheControl.immutable
+                 }}
                 style={[styles.smallImage, { width: imageWidth / 3 - 2 }]}
+                resizeMode={FastImage.resizeMode.cover}
               />
             </TouchableOpacity>
           </View>
@@ -80,15 +116,25 @@ export const ImageGrid: React.FC<ImageGridProps> = ({ thumbnails }) => {
       return (
         <View style={styles.row}>
           <TouchableOpacity onPress={() => handleImagePress(0)}>
-            <Image
-              source={{ uri: thumbnails[0] }}
+            <FastImage
+              source={{
+                uri: thumbnails[0],
+                priority: FastImage.priority.normal,
+                cache: FastImage.cacheControl.immutable
+               }}
               style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+              resizeMode={FastImage.resizeMode.cover}
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => handleImagePress(1)}>
-            <Image
-              source={{ uri: thumbnails[1] }}
+            <FastImage
+              source={{
+                uri: thumbnails[1],
+                priority: FastImage.priority.normal,
+                cache: FastImage.cacheControl.immutable
+               }}
               style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+              resizeMode={FastImage.resizeMode.cover}
             />
           </TouchableOpacity>
         </View>
@@ -96,9 +142,14 @@ export const ImageGrid: React.FC<ImageGridProps> = ({ thumbnails }) => {
     } else if (thumbnails.length === 1) {
       return (
         <TouchableOpacity onPress={() => handleImagePress(0)}>
-          <Image
-            source={{ uri: thumbnails[0] }}
+          <FastImage
+            source={{
+                uri: thumbnails[0],
+                priority: FastImage.priority.normal,
+                cache: FastImage.cacheControl.immutable
+             }}
             style={[styles.fullImage, { width: imageWidth }]}
+            resizeMode={FastImage.resizeMode.cover}
           />
         </TouchableOpacity>
       );

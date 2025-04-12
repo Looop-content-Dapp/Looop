@@ -29,7 +29,7 @@ const index = () => {
     },
     {
       image: require("../../../assets/images/savedAlbums.png"),
-      title: "Saved Albums",
+      title: "Offline Download",
       route: "/savedAlbums",
     },
     {
@@ -76,12 +76,12 @@ const index = () => {
         />
       }
     >
-      <ScrollView
+     <ScrollView
         contentContainerStyle={{
           marginTop: 24,
           gap: 12,
           paddingLeft: 8,
-          height: 140,
+          height: 160,
         }}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -90,11 +90,16 @@ const index = () => {
           <TouchableOpacity key={index} onPress={() => router.push(item.route)}>
             <ImageBackground
               source={item.image}
-              className="w-[160px] h-[140px]"
+              className="w-[190px] h-[160px] rounded-[24px]"
             >
-              <Text className="absolute bottom-4 left-3 text-[20px] font-PlusJakartaSansBold w-[83px]">
-                {item.title}
-              </Text>
+              <View className="absolute bottom-4 left-3">
+                <Text className="text-[20px] font-PlusJakartaSansBold">
+                  {item.title.split(' ')[0]}
+                </Text>
+                <Text className="text-[20px] font-PlusJakartaSansBold">
+                  {item.title.split(' ').slice(1).join(' ')}
+                </Text>
+              </View>
             </ImageBackground>
           </TouchableOpacity>
         ))}

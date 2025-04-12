@@ -11,10 +11,9 @@ import {
   import { AppBackButton } from "@/components/app-components/back-btn";
   import { AppButton } from "@/components/app-components/button";
 import ChainPicker from "@/components/app-components/ChainPicker";
-import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { useJoinCommunity } from "@/hooks/useJoinCommunity";
 import { useAppSelector } from "@/redux/hooks";
-import { nativeEnum } from "zod";
+
 
   const payInCrypto = () => {
     const {

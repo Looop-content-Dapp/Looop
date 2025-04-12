@@ -1,6 +1,7 @@
 import api from "@/config/apiConfig";
 import { useAppSelector } from "@/redux/hooks";
 import { useQuery } from "@tanstack/react-query";
+import { useQueryClient } from '@tanstack/react-query';
 
 type Release = {
   _id: string;
@@ -54,13 +55,31 @@ type ArtistMusicResponse = {
 };
 
 export const useArtistMusic = () => {
-    const { userdata } = useAppSelector((auth) =>  auth.auth)
-  return useQuery<ArtistMusicResponse>({
-    queryKey: ['artistMusic', userdata?.artist],
-    queryFn: async () => {
-      const { data } = await api.get(`/api/artists/music/${userdata?.artist}`);
-      return data;
-    },
-    enabled: !!userdata?.artist,
-  });
+  const { userdata } = useAppSelector((auth) => auth.auth);
+  const queryClient = useQueryClient();
+
+  // Prefetch next page of data
+  const prefetchNextArtistData = async (artistId: string) => {
+    await queryClient.prefetchQuery({
+      queryKey: ['artistMusic', artistId],
+      queryFn: async () => {
+        const { data } = await api.get(`/api/artists/music/${artistId}`);
+        return data;
+      },
+    });
+  };
+
+  return {
+    ...useQuery<ArtistMusicResponse>({
+      queryKey: ['artistMusic', userdata?.artist],
+      queryFn: async () => {
+        const { data } = await api.get(`/api/artists/music/${userdata?.artist}`);
+        return data;
+      },
+      enabled: !!userdata?.artist,
+      staleTime: 5 * 60 * 1000,
+      gcTime: 30 * 60 * 1000,
+    }),
+    prefetchNextArtistData,
+  };
 };

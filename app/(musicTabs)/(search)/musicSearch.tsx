@@ -261,11 +261,11 @@ const MusicSearch = () => {
       switch (displayType) {
         case 'artist':
           router.push({
-            pathname: `/artist/${item._id}`,
+            pathname: `/(musicTabs)/_screens/artist/${item._id}`,
             params: {
               id: item._id,
               name: item.name,
-              image: item.profileImage || item?.artwork?.high || item?.artist?.image
+              image: item.profileImage || item?.artwork?.high || item?.artist?.image,
             }
           });
           break;

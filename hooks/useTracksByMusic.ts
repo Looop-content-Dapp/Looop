@@ -1,109 +1,77 @@
 import api from "@/config/apiConfig";
 import { useQuery } from "@tanstack/react-query";
 
-interface Track {
+type Artist = {
+  _id: string;
+  name: string;
+  image: string;
+};
+
+type Artwork = {
+  high: string;
+  medium: string;
+  low: string;
+  thumbnail: string;
+};
+
+type Release = {
+  _id: string;
+  title: string;
+  type: string;
+  artwork: Artwork;
+  releaseDate: string;
+};
+
+type SongData = {
+  _id: string;
+  fileUrl: string;
+  format: string;
+  bitrate: number;
+};
+
+type Track = {
   _id: string;
   title: string;
   duration: number;
-  artist: {
-    name: string;
-    image: string;
+  track_number: number;
+  isExplicit: boolean;
+  artist: Artist;
+  featuredArtists: Omit<Artist, 'image'>[];
+  release: Release;
+  songData: SongData;
+  analytics: {
+    streams: number;
+    likes: number;
   };
-  release: {
-    artwork: {
-      high: string;
-      medium: string;
-      low: string;
-      thumbnail: string;
-    };
-  };
-}
+};
 
-interface SingleTrackResponse {
-  data: {
-    _id: string;
-    title: string;
-    duration: number;
-    artist: {
-      name: string;
-      image: string;
-    };
-    release: {
-      _id: string;
-      artwork: {
-        high: string;
-        medium: string;
-        low: string;
-        thumbnail: string;
-      };
-    };
-  };
-  message: string;
-  meta: {
-    idType: string;
+type ReleaseResponse = {
+  _id: string;
+  title: string;
+  type: string;
+  releaseDate: string;
+  artwork: Artwork;
+  artist: Artist;
+  metadata: {
     totalTracks: number;
+    duration: number;
+    genre: string[];
+    label: string;
   };
-}
+  tracks: Track[];
+};
 
-interface TracksResponse {
-  data: {
-    tracks: Track[];
-  };
-}
-
-export const useTracksByMusic = (id: string, type: 'track' | 'release' = 'release') => {
+export const useTracksByMusic = (releaseId: string, sort?: 'track_number' | 'popularity' | 'title' | 'duration') => {
   return useQuery({
-    queryKey: ["tracks", id, type],
+    queryKey: ['tracks', releaseId, sort],
     queryFn: async () => {
-      try {
-        console.log(`Fetching tracks for ${type} with ID: ${id}`);
-        const response = await api.get<SingleTrackResponse | TracksResponse>(
-          type === 'track'
-            ? `/api/song/releases/${id}/tracks?idType=track`
-            : `/api/song/releases/${id}/tracks`
-        );
-        console.log("Response data:", response.data);
-
-        // Transform single track response to match expected format
-        if (type === 'track' && 'meta' in response.data) {
-          const singleTrackResponse = response.data as SingleTrackResponse;
-          return {
-            data: {
-              tracks: [{
-                _id: singleTrackResponse.data._id,
-                title: singleTrackResponse.data.title,
-                duration: singleTrackResponse.data.duration,
-                artist: singleTrackResponse.data.artist,
-                release: {
-                  artwork: singleTrackResponse.data.release.artwork
-                }
-              }]
-            }
-          };
-        }
-
-        // Handle release response
-        const tracksResponse = response.data as TracksResponse;
-        if (!tracksResponse.data?.tracks) {
-          throw new Error('Invalid response format: tracks data is missing');
-        }
-
-        return tracksResponse;
-      } catch (error) {
-        console.error('Error fetching tracks:', {
-          error,
-          id,
-          type,
-          timestamp: new Date().toISOString()
-        });
-        throw error;
-      }
+      const { data } = await api.get(`/api/song/releases/${releaseId}/tracks${sort ? `?sort=${sort}` : ''}`);
+      return data.data as ReleaseResponse | Track;
     },
-    refetchOnWindowFocus: true,
     staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
     retry: 2,
-    onError: (error) => {
-      console.error('Query error in useTracksByMusic:', error);
-    }
+    refetchOnWindowFocus: true,
+    select: (data) => data,
   });
 };

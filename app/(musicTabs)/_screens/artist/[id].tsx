@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
-  ImageBackground,
   Animated,
   StyleSheet,
   TouchableOpacity,
@@ -12,13 +11,14 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft02Icon, PlayIcon, ShuffleIcon } from '@hugeicons/react-native';
-import ArtistInfo from '../../components/ArtistInfo';
-import JoinCommunity from '../../components/cards/JoinCommunity';
+import ArtistInfo from '../../../../components/ArtistInfo';
+import JoinCommunity from '../../../../components/cards/JoinCommunity';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import ArtistReleases from '../../components/ArtistProfile/ArtistReleases';
+import ArtistReleases from '../../../../components/ArtistProfile/ArtistReleases';
 import { useAppSelector } from '@/redux/hooks';
 import { useArtistCommunity } from '@/hooks/useArtistCommunity';
+import FastImage from 'react-native-fast-image';
 
 interface CommunityData {
   _id: string;
@@ -29,6 +29,9 @@ interface CommunityData {
   price?: number;
   image?: string;
 }
+
+// Add this component for animated FastImage background
+const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
 
 const ArtistDetails = () => {
   const {
@@ -132,11 +135,14 @@ const ArtistDetails = () => {
             }
           ]}
         >
-          <ImageBackground
-            source={{ uri: image as string }}
+          <AnimatedFastImage
+            source={{
+              uri: image as string,
+              priority: FastImage.priority.high,
+              cache: FastImage.cacheControl.immutable,
+            }}
             style={styles.image}
-            resizeMode="cover"
-            onError={(e) => console.log('Image loading error:', e.nativeEvent.error)}
+            resizeMode={FastImage.resizeMode.cover}
           />
         </Animated.View>
 
@@ -151,6 +157,7 @@ const ArtistDetails = () => {
           bounces={false}
         >
           <View style={styles.contentContainer}>
+            {/* Update ArtistInfo to use FastImage (you'll need to modify the ArtistInfo component separately) */}
             <ArtistInfo
               image={image as string}
               name={name as string}

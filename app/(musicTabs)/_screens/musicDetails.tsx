@@ -22,7 +22,6 @@ import {
 } from "@hugeicons/react-native";
 import { Skeleton } from "moti/skeleton";
 import * as ImageCache from "react-native-expo-image-cache";
-import * as Haptics from "expo-haptics";
 import Share from "../../../components/bottomSheet/Share";
 import { useRef } from "react";
 import { useTracksByMusic } from "@/hooks/useTracksByMusic";
@@ -50,24 +49,29 @@ interface ExtendedTrack extends Track {
 }
 
 // ### Component Definition
+// Add description state
+interface Description {
+  text: string;
+  isTruncated: boolean;
+}
+
 const MusicDetails = () => {
-  // ### State Definitions
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
-  const [tracks, setTracks] = useState<ExtendedTrack[]>([]);
-  const [description, setDescription] = useState({
-    text: "Vultures 2 is the second studio album by the sensational hiphop duo ¥$...",
+  const [isShareModalVisible, setIsShareModalVisible] = useState(false);
+  const [description, setDescription] = useState<Description>({
+    text: "More Love, Less Ego is the fifth studio album by Nigerian singer Wizkid...",
     isTruncated: true,
   });
-  const [isShareModalVisible, setIsShareModalVisible] = useState(false);
 
-  // ### Hooks
+
+  // Get releaseId from params
+  const { id } = useLocalSearchParams();
   const { width } = useWindowDimensions();
   const shareBottomSheetRef = useRef(null);
-  const { id, title, artist, image, type, duration } = useLocalSearchParams();
-  const { data: tracksData, isLoading: tracksLoading } = useTracksByMusic(
-    id as string,
-    type === "track" ? "track" : "release"
-  );
+
+  // Use the hook to fetch release data
+  const { data: releaseData, isLoading: releaseLoading } = useTracksByMusic(id as string);
+
   const {
     isPlaying,
     currentTrack,
@@ -80,42 +84,57 @@ const MusicDetails = () => {
     handleLike,
     toggleShuffle,
     loadAlbumData,
-    stop,
     buffering,
   } = useMusicPlayerContext();
 
   // ### Memoized Values
-  const isLoading = useMemo(() => playerLoading || tracksLoading, [playerLoading, tracksLoading]);
+  const isLoading = useMemo(() => playerLoading || releaseLoading, [playerLoading, releaseLoading]);
 
-  const effectiveAlbumInfo = useMemo(() => {
-    if (type === "track" && tracks.length === 1) {
-      const track = tracks[0];
+  const releaseInfo = useMemo(() => {
+    if (!releaseData) return null;
+
+    if ('tracks' in releaseData) {
+      // It's a release (album/EP)
       return {
-        title: track.title,
-        type: "track" as const,
-        coverImage: track.release.artwork.high,
+        id: releaseData._id,
+        title: releaseData.title,
+        type: releaseData.type,
+        coverImage: releaseData.artwork.high,
+        artist: releaseData.artist,
+        duration: releaseData.metadata.duration,
+        tracks: releaseData.tracks,
+        totalTracks: releaseData.metadata.totalTracks,
+        genre: releaseData.metadata.genre,
+        label: releaseData.metadata.label
       };
     } else {
+      // It's a single track
       return {
-        title: title as string,
-        type: type as "album" | "single" | "ep",
-        coverImage: image as string,
+        id: releaseData._id,
+        title: releaseData.title,
+        type: 'track',
+        coverImage: releaseData.release.artwork.high,
+        artist: releaseData.artist,
+        duration: releaseData.duration,
+        tracks: [releaseData],
+        totalTracks: 1,
+        genre: [],
+        label: ''
       };
     }
-  }, [type, tracks, title, image]);
+  }, [releaseData]);
 
-  const isCurrentAlbumPlaying = isPlaying && currentTrack && tracks.some((t) => t._id === currentTrack._id);
+  const isCurrentAlbumPlaying = isPlaying && currentTrack && releaseInfo?.tracks.some(
+    (t) => t._id === currentTrack._id
+  );
 
   // ### Effects
   useEffect(() => {
-    if (tracksData?.data?.tracks) {
-      const newTracks = tracksData.data.tracks as ExtendedTrack[];
-      setTracks(newTracks);
+    if (releaseInfo) {
+      loadAlbumData(releaseInfo.id, releaseInfo.type);
     }
-    loadAlbumData(id as string, type as string);
-  }, [tracksData, id, type, loadAlbumData]);
+  }, [releaseInfo, loadAlbumData]);
 
-  // ### Callbacks
   const toggleTruncate = useCallback(() => {
     setDescription((prev) => ({ ...prev, isTruncated: !prev.isTruncated }));
   }, []);
@@ -128,33 +147,35 @@ const MusicDetails = () => {
 
   const handleTrackPress = async (track: ExtendedTrack) => {
     try {
-      if (!tracks) return;
+      if (!releaseInfo?.tracks) return;
       if (currentTrack?._id === track._id) {
         if (isPlaying) {
           await pause();
         } else {
-          await play(track, effectiveAlbumInfo, tracks);
+          await play(track, releaseInfo, releaseInfo.tracks);
         }
         return;
       }
-      await play(track, effectiveAlbumInfo, tracks);
+      await play(track, releaseInfo, releaseInfo.tracks);
     } catch (error) {
       console.error("Error handling track press:", error);
     }
   };
 
+  // Fix handlePlayPause function
   const handlePlayPause = async () => {
     try {
-      if (!tracks?.length) return;
+      if (!releaseInfo?.tracks?.length) return;
       if (isCurrentAlbumPlaying) {
         await pause();
       } else {
-        await play(tracks[0], effectiveAlbumInfo, tracks);
+        await play(releaseInfo.tracks[0], releaseInfo, releaseInfo.tracks);
       }
     } catch (error) {
       console.error("Error handling play/pause:", error);
     }
   };
+
 
   const handleTrackMenuPress = useCallback((track: Track) => {
     setSelectedTrack(track);
@@ -171,7 +192,40 @@ const MusicDetails = () => {
 
   const Spacer = useCallback(({ size = 16 }) => <View style={{ height: size }} />, []);
 
-  // ### Render
+   // Add loading states
+   if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <ArrowLeft02Icon size={32} color="#D2D3D5" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6D1B" />
+          <Text style={styles.loadingText}>Loading music...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!releaseInfo) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <ArrowLeft02Icon size={32} color="#D2D3D5" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.errorText}>Failed to load music details</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+
+  // Update render section
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -181,137 +235,122 @@ const MusicDetails = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        {/* Album Image */}
-        <View style={styles.contentWrapper}>
-          <ImageCache.Image
-            uri={effectiveAlbumInfo.coverImage}
-            style={[styles.albumImage, { width: width * 0.4, height: width * 0.4 }]}
-            tint="dark"
-          />
-          {isLoading && (
-            <View style={styles.skeletonWrapper}>
-              <Skeleton colorMode="dark" width={width * 0.4} height={width * 0.4} radius={15} />
-            </View>
-          )}
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6D1B" />
         </View>
+      ) : releaseInfo && (
+        <ScrollView
+        contentContainerStyle={[
+            styles.scrollViewContent,
+            { paddingBottom: currentTrack ? 110 : 20 }
+          ]}
+        >
+          {/* Album Image */}
+          <View style={styles.contentWrapper}>
+            <ImageCache.Image
+              uri={releaseInfo.coverImage}
+              style={[styles.albumImage, { width: width * 0.4, height: width * 0.4 }]}
+              tint="dark"
+            />
+          </View>
 
-        <Spacer />
+          <Spacer />
 
-        {/* Title and Artist */}
-        <View style={styles.contentWrapper}>
-          <Text
-            style={[styles.title, { fontSize: width * 0.06, maxWidth: width * 0.8 }]}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {effectiveAlbumInfo.title}
-          </Text>
-          <Text
-            className="text-[12px] font-PlusJakartaSansBold text-Grey/06"
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={{ maxWidth: width * 0.8 }}
-          >
-            {artist}
-          </Text>
-        </View>
+          {/* Title and Artist */}
+          <View style={styles.contentWrapper}>
+            <Text
+              style={[styles.title, { fontSize: width * 0.06, maxWidth: width * 0.8 }]}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {releaseInfo.title}
+            </Text>
+            <Text
+              className="text-[12px] font-PlusJakartaSansBold text-Grey/06"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={{ maxWidth: width * 0.8 }}
+            >
+              {releaseInfo.artist.name}
+            </Text>
+          </View>
 
-        <Spacer />
+          {/* Playback and Action Controls */}
+          <View style={styles.controlsContainer}>
+            {[
+              { Icon: Playlist01Icon, size: 48 },
+              {
+                Icon: FavouriteIcon,
+                size: 48,
+                active: isLiked,
+                onPress: () => handleLike(releaseInfo?.id || '', releaseInfo?.type || ''),
+              },
+              {
+                Icon: isCurrentAlbumPlaying ? PauseIcon : PlayIcon,
+                size: 64,
+                isPlay: true,
+                onPress: handlePlayPause,
+              },
+              {
+                Icon: ShuffleIcon,
+                size: 48,
+                active: shuffle,
+                onPress: toggleShuffle,
+              },
+              {
+                Icon: MoreHorizontalIcon,
+                size: 48,
+                onPress: () => shareBottomSheetRef.current?.expand(),
+              },
+            ].map((control, index) => (
+              <View key={index} style={styles.contentWrapper}>
+                <TouchableOpacity
+                  style={[
+                    styles.iconButton,
+                    control.isPlay && styles.playButton,
+                    control.active && styles.activeButton,
+                  ]}
+                  onPress={control.onPress}
+                >
+                  <control.Icon
+                    size={control.isPlay ? 32 : 24}
+                    color="#fff"
+                    variant={control.active ? "solid" : "stroke"}
+                  />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
 
-        {/* Playback and Action Controls */}
-        <View style={styles.controlsContainer}>
-          {[
-            { Icon: Playlist01Icon, size: 48 },
-            {
-              Icon: FavouriteIcon,
-              size: 48,
-              active: isLiked,
-              onPress: () => handleLike(id as string, type as string),
-            },
-            {
-              Icon: isCurrentAlbumPlaying ? PauseIcon : PlayIcon,
-              size: 64,
-              isPlay: true,
-              onPress: handlePlayPause,
-            },
-            {
-              Icon: ShuffleIcon,
-              size: 48,
-              active: shuffle,
-              onPress: toggleShuffle,
-            },
-            {
-              Icon: MoreHorizontalIcon,
-              size: 48,
-              onPress: () => shareBottomSheetRef.current?.expand(),
-            },
-          ].map((control, index) => (
-            <View key={index} style={styles.contentWrapper}>
-              <TouchableOpacity
-                style={[
-                  styles.iconButton,
-                  control.isPlay && styles.playButton,
-                  control.active && styles.activeButton,
-                ]}
-                onPress={control.onPress}
-              >
-                <control.Icon
-                  size={control.isPlay ? 32 : 24}
-                  color="#fff"
-                  variant={control.active ? "solid" : "stroke"}
-                />
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-
-        {/* Songs Count, Duration, and Description */}
-        <View style={styles.contentWrapper}>
-          <View className="items-center justify-center gap-y-[16px]">
-            <View className="flex-row items-center">
-              <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansBold font-normal">
-                {tracks?.length} Songs
-              </Text>
-              <Pressable className="bg-Grey/06 h-[4px] w-[4px] m-[4px] font-normal" />
-              <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansBold font-normal">
-                {convertSecondsToMinutes(Number(duration))} mins
-              </Text>
-            </View>
-            <View className="items-center">
-              <Text className="text-[#fff] text-[14px] font-PlusJakartaSansRegular font-normal">
-                {description.isTruncated ? truncatedText : description.text}
-              </Text>
-              <Pressable onPress={toggleTruncate}>
-                <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansRegular font-normal">
-                  {description.isTruncated ? "See More" : "See Less"}
+          {/* Songs Count, Duration, and Description */}
+          <View style={styles.contentWrapper}>
+            <View className="items-center justify-center gap-y-[16px]">
+              <View className="flex-row items-center">
+                <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansBold font-normal">
+                  {releaseInfo.totalTracks} Songs
                 </Text>
-              </Pressable>
+                <Pressable className="bg-Grey/06 h-[4px] w-[4px] m-[4px] font-normal" />
+                <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansBold font-normal">
+                  {convertSecondsToMinutes(releaseInfo.duration)} mins
+                </Text>
+              </View>
+              {releaseInfo.type !== 'track' && (
+                <View className="flex-row items-center">
+                  <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansBold font-normal">
+                    {releaseInfo.genre.join(', ')} • {releaseInfo.label}
+                  </Text>
+                </View>
+              )}
             </View>
           </View>
-          {isLoading && (
-            <View style={styles.skeletonWrapper}>
-              <Skeleton colorMode="dark" width={width * 0.9} height={54} radius={4} />
-              <Skeleton colorMode="dark" width={width * 0.9} height={54} radius={4} />
-            </View>
-          )}
-        </View>
 
-        <Spacer />
-
-        {/* Track List */}
-        <View style={styles.trackListContainer}>
-          {isLoading ? (
-            Array.from({ length: 3 }).map((_, index) => (
-              <View key={index} style={styles.skeletonWrapper}>
-                <Skeleton colorMode="dark" width="100%" height={60} radius={4} />
-              </View>
-            ))
-          ) : (
-            tracks?.map((track, index) => (
+          {/* Track List */}
+          <View style={styles.trackListContainer}>
+            {releaseInfo.tracks.map((track) => (
               <View key={track._id}>
                 <TouchableOpacity
-                  onPress={() => handleTrackPress(track, index)}
+                  onPress={() => handleTrackPress(track)}
                   className="flex-row items-center justify-between py-3"
                 >
                   <View className="flex-row items-center flex-1 mr-4">
@@ -331,6 +370,8 @@ const MusicDetails = () => {
                         ellipsizeMode="tail"
                       >
                         {track.artist.name}
+                        {track.featuredArtists.length > 0 &&
+                          ` ft. ${track.featuredArtists.map(artist => artist.name).join(', ')}`}
                       </Text>
                     </View>
                     {currentTrackId === track._id && buffering && (
@@ -346,31 +387,33 @@ const MusicDetails = () => {
                   </TouchableOpacity>
                 </TouchableOpacity>
               </View>
-            ))
-          )}
-        </View>
-      </ScrollView>
+            ))}
+          </View>
+        </ScrollView>
+      )}
 
       {/* Share Modal */}
-      <Share
-        isVisible={isShareModalVisible}
-        onClose={() => setIsShareModalVisible(false)}
-        album={{
-          title: selectedTrack ? selectedTrack.title : effectiveAlbumInfo.title,
-          artist: selectedTrack ? selectedTrack.artist.name : (artist as string),
-          image: selectedTrack ? selectedTrack.release.artwork.high : effectiveAlbumInfo.coverImage,
-          type: type as string,
-          duration: convertSecondsToMinutes(
-            selectedTrack ? selectedTrack.duration : Number(duration)
-          ),
-          id: selectedTrack ? selectedTrack._id : (id as string),
-        }}
-      />
+      {releaseInfo && (
+        <Share
+          isVisible={isShareModalVisible}
+          onClose={() => setIsShareModalVisible(false)}
+          album={{
+            title: selectedTrack ? selectedTrack.title : releaseInfo.title,
+            artist: selectedTrack ? selectedTrack.artist.name : releaseInfo.artist.name,
+            image: selectedTrack ? selectedTrack.release.artwork.high : releaseInfo.coverImage,
+            type: releaseInfo.type,
+            duration: convertSecondsToMinutes(
+              selectedTrack ? selectedTrack.duration : releaseInfo.duration
+            ),
+            id: selectedTrack ? selectedTrack._id : releaseInfo.id,
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 };
 
-// ### Styles
+// Add new styles
 const styles = StyleSheet.create({
   container: { flex: 1 },
   contentWrapper: { position: "relative", alignItems: "center" },
@@ -406,6 +449,23 @@ const styles = StyleSheet.create({
   playButton: { backgroundColor: "#FF6D1B", width: 64, height: 64, borderRadius: 32 },
   activeButton: { backgroundColor: "#FF6D1B" },
   trackListContainer: { width: "100%", marginTop: 24 },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#fff',
+    marginTop: 16,
+    fontSize: 16,
+    fontFamily: 'PlusJakartaSansBold',
+  },
+  errorText: {
+    color: '#FF6D1B',
+    fontSize: 16,
+    fontFamily: 'PlusJakartaSansBold',
+    textAlign: 'center',
+  },
 });
 
 export default MusicDetails;

@@ -6,6 +6,7 @@ import { useAppSelector } from '@/redux/hooks';
 import { router, useNavigation } from 'expo-router';
 import { Avatar } from 'react-native-elements/dist/avatar/Avatar';
 import { MotiView } from 'moti';
+import NowPlaying from '@/components/player/NowPlaying';
 
 // Post rendering component
 const renderPost = ({ item }) => (
@@ -17,10 +18,10 @@ const keyExtractor = (item) => item._id;
 
 const SkeletonPost = () => {
   return (
-    <View className="bg-[#2a2a2a] rounded-lg p-4 mb-4">
+    <View className="bg-[#111318] rounded-lg p-4 mb-4">
       <View className="flex-row items-center mb-4">
         <MotiView
-          className="w-10 h-10 rounded-full bg-[#3a3a3a]"
+          className="w-10 h-10 rounded-full bg-[#202227]"
           from={{ opacity: 0.5 }}
           animate={{ opacity: 1 }}
           transition={{
@@ -31,7 +32,7 @@ const SkeletonPost = () => {
         />
         <View className="ml-3">
           <MotiView
-            className="w-24 h-4 bg-[#3a3a3a] rounded"
+            className="w-24 h-4 bg-[#202227] rounded"
             from={{ opacity: 0.5 }}
             animate={{ opacity: 1 }}
             transition={{
@@ -41,7 +42,7 @@ const SkeletonPost = () => {
             }}
           />
           <MotiView
-            className="w-16 h-3 bg-[#3a3a3a] rounded mt-2"
+            className="w-16 h-3 bg-[#202227] rounded mt-2"
             from={{ opacity: 0.5 }}
             animate={{ opacity: 1 }}
             transition={{
@@ -54,7 +55,7 @@ const SkeletonPost = () => {
         </View>
       </View>
       <MotiView
-        className="w-full h-40 bg-[#3a3a3a] rounded-lg mb-4"
+        className="w-full h-40 bg-[#202227] rounded-lg mb-4"
         from={{ opacity: 0.5 }}
         animate={{ opacity: 1 }}
         transition={{
@@ -65,7 +66,7 @@ const SkeletonPost = () => {
         }}
       />
       <MotiView
-        className="w-3/4 h-4 bg-[#3a3a3a] rounded"
+        className="w-3/4 h-4 bg-[#202227] rounded"
         from={{ opacity: 0.5 }}
         animate={{ opacity: 1 }}
         transition={{
@@ -76,7 +77,7 @@ const SkeletonPost = () => {
         }}
       />
       <MotiView
-        className="w-1/2 h-4 bg-[#3a3a3a] rounded mt-2"
+        className="w-1/2 h-4 bg-[#202227] rounded mt-2"
         from={{ opacity: 0.5 }}
         animate={{ opacity: 1 }}
         transition={{
@@ -90,7 +91,7 @@ const SkeletonPost = () => {
         {[1, 2, 3].map((_, index) => (
           <MotiView
             key={index}
-            className="w-16 h-8 bg-[#3a3a3a] rounded"
+            className="w-16 h-8 bg-[#202227] rounded"
             from={{ opacity: 0.5 }}
             animate={{ opacity: 1 }}
             transition={{
@@ -102,6 +103,24 @@ const SkeletonPost = () => {
           />
         ))}
       </View>
+    </View>
+  );
+};
+
+const EmptyFeedState = () => {
+  return (
+    <View className="flex-1 justify-center items-center px-8">
+      <Image
+        source={require('../../../assets/images/NoPostState.png')}
+        className="w-[200px] h-[200px] mb-6"
+        resizeMode="contain"
+      />
+      <Text className="text-[#f4f4f4] text-center text-lg font-PlusJakartaSansMedium">
+        Your feed is looking a little empty!
+      </Text>
+      <Text className="text-[#888] text-center mt-2">
+        Start following more artist and explore your first community to see content here.
+      </Text>
     </View>
   );
 };
@@ -146,57 +165,69 @@ const Feed = () => {
 
   if (isLoading) {
     return (
-      <View className="flex-1 min-h-full mt-8">
-        <FlatList
-          data={[1, 2, 3]}
-          renderItem={() => <SkeletonPost />}
-          keyExtractor={(item) => `skeleton-${item}`}
-          contentContainerStyle={{
-            marginHorizontal: 4,
-            paddingBottom: 32
-          }}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#f4f4f4" />
-          }
-        />
+      <View className="flex-1 min-h-full">
+        <NowPlaying />
+        <View className="mt-8">
+          <FlatList
+            data={[1, 2, 3]}
+            renderItem={() => <SkeletonPost />}
+            keyExtractor={(item) => `skeleton-${item}`}
+            contentContainerStyle={{
+              marginHorizontal: 4,
+              paddingBottom: 32
+            }}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#f4f4f4" />
+            }
+          />
+        </View>
       </View>
     );
   }
 
   if (isError) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <Text className="text-white">Error loading feed</Text>
+      <View className="flex-1">
+        <NowPlaying />
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-white">Error loading feed</Text>
+        </View>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 min-h-full mt-8">
-      {isFetching && !refreshing && (
-        <ActivityIndicator
-          size="large"
-          color="#f4f4f4"
-          style={{ position: 'absolute', top: 10, alignSelf: 'center', zIndex: 1 }}
+    <View className="flex-1 min-h-full">
+      <NowPlaying />
+      <View className="mt-8">
+        {isFetching && !refreshing && (
+          <ActivityIndicator
+            size="large"
+            color="#f4f4f4"
+            style={{ position: 'absolute', top: 10, alignSelf: 'center', zIndex: 1 }}
+          />
+        )}
+        <FlatList
+          data={data?.data?.posts || []}
+          renderItem={renderPost}
+          keyExtractor={keyExtractor}
+          ListEmptyComponent={!isLoading && !isError ? <EmptyFeedState /> : null}
+          contentContainerStyle={{
+            rowGap: 20,
+            marginHorizontal: 4,
+            alignContent: "center",
+            justifyContent: "center",
+            paddingBottom: 32,
+            flex: data?.data?.posts?.length ? 0 : 1
+          }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#f4f4f4" />
+          }
+          initialNumToRender={5}
         />
-      )}
-      <FlatList
-        data={data?.data?.posts || []}
-        renderItem={renderPost}
-        keyExtractor={keyExtractor}
-        contentContainerStyle={{
-          rowGap: 20,
-          marginHorizontal: 4,
-          alignContent: "center",
-          justifyContent: "center",
-          paddingBottom: 32
-        }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#f4f4f4" />
-        }
-      />
+      </View>
     </View>
   );
 };

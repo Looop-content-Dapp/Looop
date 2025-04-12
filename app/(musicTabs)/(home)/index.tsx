@@ -1,51 +1,27 @@
 // index.js
 import { View, ScrollView, Text, ImageBackground, Image } from "react-native";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import BasedOnSubscription from "../../../components/home/BasedOnSubscription";
 import useMusicPlayer from "../../../hooks/useMusicPlayer";
 import DailyMixesSection from "../../../components/cards/DailyMix";
 import RecommededMusic from "../../../components/cards/RecommededMusic";
-
-import { useQuery } from "../../../hooks/useQuery";
-import { useAppSelector } from "@/redux/hooks";
 import { StatusBar } from "expo-status-bar";
 import { useUserDashboard } from "../../../hooks/useUserFeed";
+import { useDailyMix } from "@/hooks/useDailyMix";
 
 const Index = () => {
   const { currentTrack } = useMusicPlayer();
-  const { userdata } = useAppSelector((state) => state.auth);
-  const {
-    getDailyMixes,
-  } = useQuery();
-
+  const { data: dailyMix, isLoading: isDailyMixesLoading, error } = useDailyMix();
   const { data: userFeedData, isLoading: userFeedLoading } = useUserDashboard();
 
-  const [dailyMixes, setDailyMixes] = useState<DailyMixesMix[]>([]);
-  const [loading, setLoading] = useState(true);
-
-useEffect(() => {
-  const fetchDailyMixes = async () => {
-    try {
-      setLoading(true);
-      const dailyMixesResponse = await getDailyMixes(userdata?._id as string);
-      setDailyMixes(dailyMixesResponse?.data.mixes ?? []);
-    } catch (error) {
-      console.log("Error fetching daily mixes:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchDailyMixes();
-}, []);
-
   // Extract data from userFeed
+  const dailyMixes =  dailyMix?.data?.mixes ?? []
   const followedArtists = userFeedData?.data?.followedArtists || [];
   const recommendedArtists = userFeedData?.data?.recommendedArtists || [];
   const suggestedTracks = userFeedData?.data?.suggestedTracks || [];
   const recentReleases = userFeedData?.data?.recentReleases || [];
 
-const dataLoading = loading || userFeedLoading
+const dataLoading = isDailyMixesLoading || userFeedLoading
   return (
     <>
       <StatusBar translucent={true} backgroundColor="#040405" style="light" />
@@ -84,7 +60,7 @@ const dataLoading = loading || userFeedLoading
           {/* Daily Mixes */}
           <DailyMixesSection
             mixes={dailyMixes}
-            isLoading={loading}
+            isLoading={isDailyMixesLoading}
             title="Your Daily Mixes"
           />
 

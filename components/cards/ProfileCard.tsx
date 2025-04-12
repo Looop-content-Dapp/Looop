@@ -6,7 +6,7 @@ import { router } from 'expo-router'
 const ProfileCard = ({item}) => {
   return (
     <Pressable
-    onPress={() => router.push(`/artist/${item.name}`)}
+    onPress={() => router.push(`/(musicTabs)/_screens/artist/${item._id}`)}
     className="items-start gap-y-[4px]">
   <Skeleton radius="round">
     <Image

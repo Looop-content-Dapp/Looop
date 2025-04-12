@@ -4,6 +4,7 @@ import {
   DiscoverCircleIcon,
   Home11Icon,
   LibrariesIcon,
+  Search01Icon,
 } from "@hugeicons/react-native";
 import { Image, Platform, Text, View } from "react-native";
 import { user } from "../../utils/ArstsisArr"; // Ensure this is correctly importing the user object
@@ -53,7 +54,7 @@ export default function MusicTab() {
         options={{
           title: "Discover",
           tabBarIcon: ({ color, focused }) => (
-            <DiscoverCircleIcon
+            <Search01Icon
               size={24}
               color={color}
               variant={focused ? "solid" : "stroke"}
@@ -73,7 +74,7 @@ export default function MusicTab() {
                   fontSize: 20,
                   color: "#f4f4f4",
                   fontFamily: "PlusJakartaSansBold",
-                }}
+                }} 
               >
                 Discover
               </Text>

@@ -12,6 +12,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import DailyMixSkeleton from "../SkeletonLoading/DailyMixSkelton";
 import { PlayIcon } from '@hugeicons/react-native'
 import { Image } from "react-native";
+import useMusicPlayer from "../../hooks/useMusicPlayer";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.7;
@@ -70,9 +71,39 @@ const DailyMixesSection = ({
   title: string;
   isLoading: boolean;
 }) => {
+  const { play } = useMusicPlayer();
+
   if (isLoading) {
     return <DailyMixSkeleton count={3} />;
   }
+
+  const handleMixPress = async (mix: DailyMixesMix) => {
+    const albumInfo = {
+      title: mix.name,
+      type: "album",
+      coverImage: mix.artwork
+    };
+
+    if (mix.tracks && mix.tracks.length > 0) {
+      // Format the track data to match ExtendedTrack interface
+      const formattedTracks = mix.tracks.map(track => ({
+        ...track,
+        songData: {
+          _id: track._id,
+          fileUrl: `https://cdn.trendybeatz.com/audio/Black-Sherif-Ft-Fireboy-DML-So-It-Goes-(TrendyBeatz.com).mp3`,
+          duration: track.duration
+        },
+        release: {
+          ...track.release,
+          artwork: {
+            high: track.release.artwork.high
+          }
+        }
+      }));
+
+      await play(formattedTracks[0], albumInfo, formattedTracks);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -86,9 +117,7 @@ const DailyMixesSection = ({
           <DailyMixCard
             key={mix.id}
             mix={mix}
-            onPress={() => {
-              console.log("handle mix press");
-            }}
+            onPress={() => handleMixPress(mix)}
           />
         ))}
       </ScrollView>

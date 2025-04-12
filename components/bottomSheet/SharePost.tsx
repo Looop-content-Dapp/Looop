@@ -18,7 +18,6 @@ import { Avatar } from 'react-native-elements';
 import { AlertDiamondIcon, AllBookmarkIcon, CdIcon, FavouriteIcon, Playlist01Icon, Queue01Icon } from '@hugeicons/react-native';
 import { Feather } from '@expo/vector-icons';
 import AddToPlaylistBottomSheet from './AddToPlaylistBottomSheet';
-import { useAddTrackToFavorites, useGetUserFavorites } from '@/hooks/useFavourites';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ScrollView } from 'react-native';
 
@@ -41,9 +40,6 @@ const SharePost: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
   const [isPlaylistSheetVisible, setIsPlaylistSheetVisible] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
-
-  const addToFavoritesMutation = useAddTrackToFavorites();
-  const { data: favorites } = useGetUserFavorites(userId || '');
   const slideAnim = React.useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -78,14 +74,6 @@ const SharePost: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
     getUserId();
   }, []);
 
-  useEffect(() => {
-    if (favorites && album?.id) {
-      const isInFavorites = favorites.tracks?.some((track: any) => track._id === album.id) ||
-                           favorites.releases?.some((release: any) => release._id === album.id);
-      setIsFavorite(isInFavorites);
-    }
-  }, [favorites, album]);
-
   const requestPermission = async () => {
     const { status } = await Contacts.requestPermissionsAsync();
     if (status === 'granted') {
@@ -119,14 +107,6 @@ const SharePost: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
     }
 
     try {
-      await addToFavoritesMutation.mutateAsync({
-        userId,
-        trackId: album.id,
-      });
-
-      setIsFavorite(!isFavorite);
-      Alert.alert('Success', isFavorite ? 'Removed from favorites' : 'Added to favorites');
-      onClose();
     } catch (error) {
       console.error('Error adding to favorites:', error);
       Alert.alert('Error', 'Failed to update favorites. Please try again.');

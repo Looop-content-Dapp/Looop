@@ -1,4 +1,4 @@
-import { View, Text, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, RefreshControl, ActivityIndicator, Image } from 'react-native';
 import React, { useLayoutEffect, useState } from 'react';
 import { router, useNavigation } from 'expo-router';
 import { useAppSelector } from '@/redux/hooks';
@@ -80,11 +80,16 @@ const NotificationScreen = () => {
                     />
                 }
                 ListEmptyComponent={
-                    <View className="flex-1 justify-center items-center mt-[50%]">
-                        <Text className="text-[#787A80] text-[16px] font-PlusJakartaSansMedium">
-                            No notifications yet
-                        </Text>
-                    </View>
+                    <View className="flex-1 justify-center items-center px-8 mt-[50%]">
+                    <Image
+                      source={require('../../../assets/images/NoPostState.png')}
+                      className="w-[200px] h-[200px] mb-6"
+                      resizeMode="contain"
+                    />
+                    <Text className="text-[#f4f4f4] text-center text-lg font-PlusJakartaSansMedium">
+                      Your Notification box is looking a little empty!
+                    </Text>
+                  </View>
                 }
                 contentContainerStyle={{
                     paddingBottom: 20,

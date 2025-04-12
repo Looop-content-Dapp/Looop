@@ -22,7 +22,6 @@ const Index = () => {
   const router = useRouter();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { userdata } = useAppSelector((state) => state.auth);
-  console.log(userdata)
 
   const payaza = React.useRef<IPayaza>(null);
 

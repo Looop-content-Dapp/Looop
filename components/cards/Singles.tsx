@@ -12,10 +12,11 @@ const Singles: React.FC<Props> = ({ songs, isLoading }) => {
   const router = useRouter()
 
   const renderItem = ({ item }: { item: any }) => {
+    console.log("single item: ", item)
     return (
         <Pressable
         onPress={() => router.push({ pathname: "/(musicTabs)/_screens/musicDetails",  params: {
-            id: item?.id,
+            id: item?._id,
             title: item?.title,
             artist: item?.artist?.name,
             image: item?.artwork.high,

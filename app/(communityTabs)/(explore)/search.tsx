@@ -213,13 +213,14 @@ const SearchScreen = () => {
     const renderPostSection = (data: Post[]) => {
         if (!data || data.length === 0) return null;
 
+        // Take only the first post from the data array
+        const singlePost = data[0];
+
         return (
             <View className="mb-6">
                 <Text className="text-[#9A9B9F] text-[20px] font-PlusJakartaSansMedium mb-4 px-4">Posts from your tribes</Text>
                 <View>
-                    {data.map((post) => (
-                        <PostCard key={post._id} item={post} />
-                    ))}
+                    <PostCard key={singlePost._id} item={singlePost} />
                 </View>
             </View>
         );

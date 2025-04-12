@@ -20,6 +20,14 @@ import store, { persistor } from "../redux/store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MusicPlayerProvider } from "@/context/MusicPlayerContext";
 import TrackPlayer from 'react-native-track-player';
+import * as Sentry from '@sentry/react-native';
+
+Sentry.init({
+  dsn: 'https://0d0b04e2a4f98122a0e2014b2a86b10c@o4509128364195840.ingest.de.sentry.io/4509128384774224',
+
+  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+  // spotlight: __DEV__,
+});
 
 // Register the playback service
 TrackPlayer.registerPlaybackService(() => playbackService);
@@ -111,7 +119,7 @@ function AppContent() {
   );
 }
 
-export default function _RootLayout() {
+export default Sentry.wrap(function _RootLayout() {
   const queryClient = new QueryClient();
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -135,4 +143,4 @@ export default function _RootLayout() {
       </QueryClientProvider>
     </GestureHandlerRootView>
   );
-}
+});
