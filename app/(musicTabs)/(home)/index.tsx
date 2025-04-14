@@ -13,7 +13,7 @@ import MoodSection from "../../../components/home/MoodSection";
 const Index = () => {
   const { currentTrack } = useMusicPlayer();
   const { data: dailyMix, isLoading: isDailyMixesLoading, error } = useDailyMix();
-  const { data: userFeedData, isLoading: userFeedLoading } = useUserDashboard();
+  const { data: userFeedData, isFetching: userFeedLoading,  } = useUserDashboard();
 
   // Extract data from userFeed
   const dailyMixes =  dailyMix?.data?.mixes ?? []

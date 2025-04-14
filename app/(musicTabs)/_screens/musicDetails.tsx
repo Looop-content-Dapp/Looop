@@ -19,15 +19,15 @@ import {
   MoreHorizontalIcon,
   PauseIcon,
   PlayIcon,
+  ArrowDown02Icon,
 } from "@hugeicons/react-native";
-import { Skeleton } from "moti/skeleton";
 import FastImage from "react-native-fast-image";
-// Remove this line:
-// import * as ImageCache from "react-native-expo-image-cache";
 import Share from "../../../components/bottomSheet/Share";
 import { useRef } from "react";
 import { useTracksByMusic } from "@/hooks/useTracksByMusic";
 import { useMusicPlayerContext } from "@/context/MusicPlayerContext";
+import AddToPlaylistBottomSheet from "../../../components/bottomSheet/AddToPlaylistBottomSheet";
+import { Portal } from "@gorhom/portal";
 
 // ### Interfaces
 interface Track {
@@ -60,10 +60,18 @@ interface Description {
 const MusicDetails = () => {
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
   const [isShareModalVisible, setIsShareModalVisible] = useState(false);
+  const [isPlaylistModalVisible, setIsPlaylistModalVisible] = useState(false);
+
+  // Add ref for the playlist bottom sheet
+  const playlistBottomSheetRef = useRef(null);
   const [description, setDescription] = useState<Description>({
     text: "More Love, Less Ego is the fifth studio album by Nigerian singer Wizkid...",
     isTruncated: true,
   });
+
+  const handleClosePlaylistSheet = useCallback(() => {
+    setIsPlaylistModalVisible(false);
+  }, []);
 
 
   // Get releaseId from params
@@ -285,9 +293,13 @@ const MusicDetails = () => {
           {/* Playback and Action Controls */}
           <View style={styles.controlsContainer}>
             {[
-              { Icon: Playlist01Icon, size: 48 },
               {
-                Icon: FavouriteIcon,
+                Icon: Playlist01Icon,
+                size: 48,
+                onPress: () => setIsPlaylistModalVisible(true)
+              },
+              {
+                Icon: ArrowDown02Icon,
                 size: 48,
                 active: isLiked,
                 onPress: () => handleLike(releaseInfo?.id || '', releaseInfo?.type || ''),
@@ -415,6 +427,23 @@ const MusicDetails = () => {
           }}
         />
       )}
+
+  {releaseInfo && (
+  <Portal>
+    <AddToPlaylistBottomSheet
+      isVisible={isPlaylistModalVisible}
+      closeSheet={handleClosePlaylistSheet}
+     album={{
+        id: id,
+        title: releaseInfo.title,
+        artist: releaseInfo.artist.name,
+        image: releaseInfo.coverImage,
+        type: releaseInfo.type,
+        tracks: releaseInfo.tracks
+      }}
+    />
+  </Portal>
+  )}
     </SafeAreaView>
   );
 };

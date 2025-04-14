@@ -1,27 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Alert, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '../hooks/useQuery';
+import { useNavigation } from 'expo-router';
+import { useCreatePlaylist } from '@/hooks/usePlaylist';
+import { useAppSelector } from '@/redux/hooks';
 
 const CreatePlaylist = () => {
   const [playlistName, setPlaylistName] = useState('Daily Mix 1');
-  const [isPublic, setIsPublic] = useState(true);
+  const { userdata } = useAppSelector((auth) => auth.auth);
   const navigation = useNavigation();
-  const { createPlaylist, retrieveUserId } = useQuery();
+  const createPlaylist = useCreatePlaylist();
+  const inputRef = useRef<TextInput>(null);
 
-  // Function to handle the create button press
+  useEffect(() => {
+    // Focus the input when component mounts
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+  }, []);
+
   const handleCreatePlaylist = async () => {
     try {
-      const user = await retrieveUserId();
-      const response = await createPlaylist(
-        playlistName,
-        user as string
-    );
-      if (response) {
-        Alert.alert("Success", "Playlist created successfully!");
-        navigation.goBack();
-      }
+      createPlaylist.mutate(
+        {
+          title: playlistName,
+          userId: userdata?._id as string
+        },
+        {
+          onSuccess: () => {
+            Alert.alert("Success", "Playlist created successfully!");
+            navigation.goBack();
+          },
+          onError: (error) => {
+            Alert.alert("Error", "Failed to create playlist. Please try again.");
+          }
+        }
+      );
     } catch (error) {
       Alert.alert("Error", "Failed to create playlist. Please try again.");
     }
@@ -39,6 +54,7 @@ const CreatePlaylist = () => {
 
       <View style={styles.inputContainer}>
         <TextInput
+          ref={inputRef}
           style={styles.input}
           placeholder="Playlist Name"
           value={playlistName}

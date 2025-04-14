@@ -156,7 +156,7 @@ export const useUserDashboard = () => {
     refetchOnWindowFocus: true,
     gcTime: 60 * 60 * 1000,
     staleTime: 10000,
-    refetchInterval: 30000,
+    // refetchInterval: 30000,
     refetchIntervalInBackground: false,// Add placeholder data for smooth loading
   });
 };

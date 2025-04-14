@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, ImageSourcePropType, Pressable, Alert, ScrollView, ActivityIndicator } from "react-native";
+import { View, Text, Image, TouchableOpacity, ImageSourcePropType, Pressable, Alert, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 import { AppButton } from "@/components/app-components/button";
 import { router } from "expo-router";
@@ -77,130 +77,151 @@ const Signin: React.FC = () => {
     formState: { errors },
   }: UseFormReturn<FormData> = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "" },
+    defaultValues: {
+      email: "",
+      password: "" // Add default value for password
+    },
   });
 
-  // Email/Password Submit Handler
+  // Modify the onSubmit handler to prevent default behavior
   const onSubmit = (data: FormData): void => {
     login(data, {
-      onSuccess: () => router.navigate("/(musicTabs)"),
+      onSuccess: () => {
+        router.navigate("/(musicTabs)");
+      },
+      onError: (error) => {
+        console.error('Login error:', error);
+      }
     });
   };
 
   return (
-    <ScrollView className="flex-1">
-      <View className="flex-1 px-6 gap-12">
-        <View className="gap-y-20">
-          <AuthHeader
-            title="Welcome to Looop"
-            description="Sign in to your account to continue"
-          />
-
-          {isError && (
-            <View className="flex-row items-center gap-x-2">
-              <InformationCircleIcon size={20} color="#FF1B1B" />
-              <Text className="text-[#FF1B1B] font-PlusJakartaSansRegular text-xs">
-                {error?.response?.data.message || "Invalid email or password"}
-              </Text>
-            </View>
-          )}
-
-          <View className="gap-y-3">
-            <Controller
-              control={control}
-              name="email"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <Input
-                  label="Email Address"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                  placeholder="Email Address"
-                  placeholderTextColor="#787A80"
-                  keyboardType="email-address"
-                  inputMode="email"
-                  keyboardAppearance="dark"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  autoComplete="email"
-                  returnKeyType="next"
-                  error={errors?.email?.message}
-                />
-              )}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1"
+      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+    >
+      <ScrollView
+        className="flex-1"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
+        <View className="flex-1 px-6 pb-8" style={{ gap: 48 }}>
+          <View style={{ gap: 20 }}>
+            <AuthHeader
+              title="Welcome to Looop"
+              description="Sign in to your account to continue"
             />
 
-            <View className="relative">
+            {isError && (
+              <View className="flex-row items-center gap-x-2">
+                <InformationCircleIcon size={20} color="#FF1B1B" />
+                <Text className="text-[#FF1B1B] font-PlusJakartaSansRegular text-xs">
+                  {error?.response?.data.message || "Invalid email or password"}
+                </Text>
+              </View>
+            )}
+
+            <View style={{ gap: 12, marginTop: 24 }}>
               <Controller
                 control={control}
-                name="password"
+                name="email"
                 render={({ field: { onChange, onBlur, value } }) => (
                   <Input
-                    label="Password"
+                    label="Email Address"
                     onBlur={onBlur}
                     onChangeText={onChange}
                     value={value}
-                    placeholder="Enter your password"
+                    placeholder="Email Address"
                     placeholderTextColor="#787A80"
-                    secureTextEntry={!passwordView}
+                    keyboardType="email-address"
+                    inputMode="email"
                     keyboardAppearance="dark"
-                    error={errors?.password?.message}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoComplete="email"
+                    returnKeyType="next"
+                    error={errors?.email?.message}
                   />
                 )}
               />
-              <TouchableOpacity
-                onPress={() => setPasswordView(!passwordView)}
-                className="absolute right-4 top-[51px]"
-              >
-                {passwordView ? (
-                  <ViewOffIcon size={24} color="#787A80" />
-                ) : (
-                  <ViewIcon size={24} color="#787A80" />
-                )}
-              </TouchableOpacity>
+
+              <View className="relative">
+                <Controller
+                  control={control}
+                  name="password"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <Input
+                      label="Password"
+                      onBlur={onBlur}
+                      onChangeText={onChange}
+                      value={value}
+                      placeholder="Enter your password"
+                      placeholderTextColor="#787A80"
+                      secureTextEntry={!passwordView}
+                      keyboardAppearance="dark"
+                      error={errors?.password?.message}
+                    />
+                  )}
+                />
+                <TouchableOpacity
+                  onPress={() => setPasswordView(!passwordView)}
+                  className="absolute right-4 top-[51px]"
+                >
+                  {passwordView ? (
+                    <ViewOffIcon size={24} color="#787A80" />
+                  ) : (
+                    <ViewIcon size={24} color="#787A80" />
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
+
+            <AppButton.Secondary
+              color="#FF7A1B"
+              text="Sign In"
+              onPress={handleSubmit((data) => {
+                onSubmit(data);
+              })}
+              loading={isPending}
+            />
+
+            <Text className="mt-[10px] text-center text-gray-400 font-PlusJakartaSansRegular text-sm">
+              Or continue with
+            </Text>
           </View>
 
-          <AppButton.Secondary
-            color="#FF7A1B"
-            text="Sign In"
-            onPress={handleSubmit(onSubmit)}
-            loading={isPending}
-          />
+          <View className="flex-col gap-y-4">
+            <SocialButton
+              onPress={handleGoogleSignIn}
+              imageSource={require("../../assets/images/google.png")}
+              text="Sign in with Google"
+              loading={googleLoading}
+            />
+            <SocialButton
+              onPress={handleAppleSignIn}
+              imageSource={require("../../assets/images/apple.png")}
+              text="Sign in with Apple"
+              loading={appleLoading}
+            />
+          </View>
 
-          <Text className="mt-[10px] text-center text-gray-400 font-PlusJakartaSansRegular text-sm">
-            Or continue with
-          </Text>
-        </View>
-
-        <View className="flex-col gap-y-4">
-          <SocialButton
-            onPress={handleGoogleSignIn}
-            imageSource={require("../../assets/images/google.png")}
-            text="Sign in with Google"
-            loading={googleLoading}
-          />
-          <SocialButton
-            onPress={handleAppleSignIn}
-            imageSource={require("../../assets/images/apple.png")}
-            text="Sign in with Apple"
-            loading={appleLoading}
-          />
-        </View>
-
-        <Pressable
-          onPress={() => router.navigate("/(auth)")}
-          className="items-center mx-auto mt-[10%]"
-        >
-          <Text className="text-[14px] font-PlusJakartaSansRegular text-[#f4f4f4]">
-            Don't have an account?
-            <Text className="text-Orange/08 underline font-PlusJakartaSansBold">
-              {" "}
-              Sign Up
+          <Pressable
+            onPress={() => router.navigate("/(auth)")}
+            className="items-center mx-auto mt-[10%]"
+          >
+            <Text className="text-[14px] font-PlusJakartaSansRegular text-[#f4f4f4]">
+              Don't have an account?
+              <Text className="text-Orange/08 underline font-PlusJakartaSansBold">
+                {" "}
+                Sign Up
+              </Text>
             </Text>
-          </Text>
-        </Pressable>
-      </View>
-    </ScrollView>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

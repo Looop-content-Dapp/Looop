@@ -436,20 +436,9 @@ const useMusicPlayer = () => {
           throw new Error("Failed to fetch tracks");
         }
         const tracks = fetchedTracks.data.tracks as ExtendedTrack[];
-        const [likedSongs, savedAlbums] = await Promise.all([
-          getLikedSongs(userdata?._id).catch(() => []),
-          getSavedAlbums(userdata?._id).catch(() => []),
-        ]);
         setState((prev) => ({
           ...prev,
           tracks,
-          isLiked:
-            Array.isArray(likedSongs) &&
-            likedSongs.some((song) => song._id === albumId),
-          isSaved:
-            type === "album" &&
-            Array.isArray(savedAlbums) &&
-            savedAlbums.some((album) => album._id === albumId),
           loading: false,
         }));
       } catch (error) {
@@ -463,7 +452,7 @@ const useMusicPlayer = () => {
         }));
       }
     },
-    [getTracksFromId, getLikedSongs, getSavedAlbums, userdata?._id]
+    [getTracksFromId,  userdata?._id]
   );
 
   const handleLike = useCallback(

@@ -9,6 +9,7 @@ import MusicTab from "../../components/TabSection/MusicTab"; // Import your musi
 import useMusicPlayer from "../../hooks/useMusicPlayer";
 import MusicPlayer from "../../components/MusicPlayer";
 import StaticButton from "../../components/Draggable/DraggableButton";
+import { PortalProvider } from "@gorhom/portal";
 
 export default function _TabsLayout() {
   const screenHeight = Dimensions.get("window").height;
@@ -16,26 +17,30 @@ export default function _TabsLayout() {
   const tabBarHeight = 0;
   const { currentTrack } = useMusicPlayer();
 
+
   return (
     <View style={styles.container}>
-      <StatusBar style="light" backgroundColor="#040405" />
+        <PortalProvider>
+        <StatusBar style="light" backgroundColor="#040405" />
 
-      {/* Music Tab content */}
-      <MusicTab />
+    {/* Music Tab content */}
+   <MusicTab />
 
-      {/* Draggable button placed just above the tab bar */}
-      <StaticButton
-        color="#8D4FB4"
-        icon={UserGroupIcon}
-        route="/(communityTabs)/(feed)"
-        initialPosition={{
-          x: 16,
-          y: screenHeight - tabBarHeight - insets.bottom - 0, // Ensures the button stays above the tab bar
-        }}
-      />
+   {/* Draggable button placed just above the tab bar */}
+    <StaticButton
+  color="#8D4FB4"
+  icon={UserGroupIcon}
+  route="/(communityTabs)/(feed)"
+  initialPosition={{
+    x: 16,
+    y: screenHeight - tabBarHeight - insets.bottom - 0, // Ensures the button stays above the tab bar
+  }}
+  />
 
-      {/* Music player positioned above the bottom tab bar */}
-      {currentTrack && <MusicPlayer />}
+  {/* Music player positioned above the bottom tab bar */}
+  {currentTrack && <MusicPlayer />}
+ </PortalProvider>
+
       {/*  */}
     </View>
   );
