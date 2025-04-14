@@ -4,8 +4,8 @@ import { MotiView } from "moti";
 import { Skeleton } from "moti/skeleton";
 import { useRouter } from "expo-router";
 import { useAppSelector } from "@/redux/hooks";
-import ProfileCardSkeleton from '../SkeletonLoading/ProfileCardSkeleton';
 import { Avatar } from "react-native-elements";
+import FastImage from 'react-native-fast-image';
 
 const ExploreDiscographies = ({
   title,
@@ -16,8 +16,34 @@ const ExploreDiscographies = ({
   data: any[];
   isLoading: boolean;
 }) => {
-  if (!data) {
-    return <ProfileCardSkeleton count={5} />;
+  if (isLoading) {
+    return (
+      <View className="mb-6">
+        {/* <Skeleton
+          colorMode="dark"
+          width={200}
+          height={24}
+          show={true}
+          transition={{
+            type: "timing",
+            duration: 1000,
+          }}
+        /> */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerClassName="gap-x-6 px-4 mt-4"
+        >
+          {[...Array(5)].map((_, index) => (
+            <ProfileCard key={index} loading={true} item={null} />
+          ))}
+        </ScrollView>
+      </View>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return null;
   }
 
   return (
@@ -93,11 +119,19 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
           duration: 1000,
         }}
       >
-        {item?.profileImage && (
-          <Avatar
-            source={{ uri: item?.profileImage || "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg" }}
-             size={140}
-            rounded
+      {item?.profileImage && (
+          <FastImage
+            source={{
+              uri: item?.profileImage || "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
+              priority: FastImage.priority.normal,
+              cache: FastImage.cacheControl.immutable
+            }}
+            style={{
+              width: 140,
+              height: 140,
+              borderRadius: 70, // For rounded image
+            }}
+            resizeMode={FastImage.resizeMode.cover}
           />
         )}
       </Skeleton>

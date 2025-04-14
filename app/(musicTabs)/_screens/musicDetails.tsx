@@ -21,7 +21,9 @@ import {
   PlayIcon,
 } from "@hugeicons/react-native";
 import { Skeleton } from "moti/skeleton";
-import * as ImageCache from "react-native-expo-image-cache";
+import FastImage from "react-native-fast-image";
+// Remove this line:
+// import * as ImageCache from "react-native-expo-image-cache";
 import Share from "../../../components/bottomSheet/Share";
 import { useRef } from "react";
 import { useTracksByMusic } from "@/hooks/useTracksByMusic";
@@ -248,10 +250,14 @@ const MusicDetails = () => {
         >
           {/* Album Image */}
           <View style={styles.contentWrapper}>
-            <ImageCache.Image
-              uri={releaseInfo.coverImage}
+            <FastImage
+              source={{
+                uri: releaseInfo.coverImage,
+                priority: FastImage.priority.high,
+                cache: FastImage.cacheControl.immutable,
+               }}
               style={[styles.albumImage, { width: width * 0.4, height: width * 0.4 }]}
-              tint="dark"
+              resizeMode={FastImage.resizeMode.cover}
             />
           </View>
 

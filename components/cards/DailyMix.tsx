@@ -13,6 +13,7 @@ import DailyMixSkeleton from "../SkeletonLoading/DailyMixSkelton";
 import { PlayIcon } from '@hugeicons/react-native'
 import { Image } from "react-native";
 import useMusicPlayer from "../../hooks/useMusicPlayer";
+import FastImage from 'react-native-fast-image';
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.7;
@@ -27,38 +28,43 @@ const DailyMixCard = ({
 }) => {
   return (
     <TouchableOpacity
-      style={styles.cardContainer}
-      onPress={onPress}
-      activeOpacity={0.9}
+    style={styles.cardContainer}
+    onPress={onPress}
+    activeOpacity={0.9}
+  >
+    <FastImage
+      source={{
+        uri: mix.artwork,
+        priority: FastImage.priority.normal,
+        cache: FastImage.cacheControl.immutable
+      }}
+      style={styles.gradient}
+      resizeMode={FastImage.resizeMode.cover}
     >
-      <ImageBackground
-        source={{ uri: mix.artwork }}
-        style={styles.gradient}
-        resizeMode="cover"
-      >
-        <View style={styles.overlay} />
-        <Image
-          source={require("../../assets/images/logo-orange.png")}
-          style={styles.logo}
-        />
-        <View style={styles.contentContainer}>
-          <Text style={styles.title} className="capitalize" numberOfLines={2}>
-            {mix.name}
-          </Text>
-          <Text style={styles.description} numberOfLines={2}>
-            {mix.description}
-          </Text>
+      <View style={styles.overlay} />
+      <FastImage
+        source={require("../../assets/images/logo-orange.png")}
+        style={styles.logo}
+        resizeMode={FastImage.resizeMode.contain}
+      />
+      <View style={styles.contentContainer}>
+        <Text style={styles.title} className="capitalize" numberOfLines={2}>
+          {mix.name}
+        </Text>
+        <Text style={styles.description} numberOfLines={2}>
+          {mix.description}
+        </Text>
 
-          <View style={styles.footer}>
-            <PlayIcon
-              size={34}
-              color="rgba(255,255,255,0.9)"
-              variant="solid"
-            />
-          </View>
+        <View style={styles.footer}>
+          <PlayIcon
+            size={34}
+            color="rgba(255,255,255,0.9)"
+            variant="solid"
+          />
         </View>
-      </ImageBackground>
-    </TouchableOpacity>
+      </View>
+    </FastImage>
+  </TouchableOpacity>
   );
 };
 
@@ -107,6 +113,9 @@ const DailyMixesSection = ({
 
   return (
     <View style={styles.container}>
+     <Text className="text-white text-[20px] font-PlusJakartaSansBold mb-4">
+       {title}
+      </Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

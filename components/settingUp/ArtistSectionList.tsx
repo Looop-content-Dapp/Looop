@@ -9,10 +9,8 @@ import {
   Dimensions,
   TextInput,
 } from "react-native";
-import { useQuery } from "@/hooks/useQuery"; // Adjust the import path as necessary
-import { MotiView } from "moti";
-import { Tick01Icon, Search01Icon } from "@hugeicons/react-native"; // Adjust icon names as necessary
-import { useAppSelector } from "@/redux/hooks";
+import { Tick01Icon, Search01Icon } from "@hugeicons/react-native";
+import FastImage from 'react-native-fast-image';
 
 const { width } = Dimensions.get("window");
 
@@ -42,16 +40,20 @@ const ArtistCard = memo(({ artist, onFollow }: { artist: Artist; onFollow: (id: 
 
   const handleFollow = () => {
     setIsFollowing(!isFollowing);
-    onFollow(artist._id, !isFollowing); // Pass the artist ID and new follow state
+    onFollow(artist._id, !isFollowing);
   };
 
   return (
     <View style={styles.card}>
       <TouchableOpacity onPress={handleFollow} style={styles.imageContainer}>
-        <Image
-          source={{ uri: artist.profileImage || "https://via.placeholder.com/100" }} // Fallback image
+        <FastImage
+          source={{
+            uri: artist.profileImage || "https://via.placeholder.com/100",
+            priority: FastImage.priority.normal,
+            cache: FastImage.cacheControl.immutable
+          }}
           style={styles.artistImage}
-          resizeMode="cover"
+          resizeMode={FastImage.resizeMode.cover}
         />
         {isFollowing && (
           <View style={styles.checkmarkOverlay}>

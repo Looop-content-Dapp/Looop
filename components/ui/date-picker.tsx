@@ -64,7 +64,7 @@ export const DatePicker = ({
           setIsVisible(false);
         }}
         onCancel={() => setIsVisible(false)}
-        minimumDate={new Date()}
+        // minimumDate={new Date()}
           isDarkModeEnabled={true}
         themeVariant="dark"
       />

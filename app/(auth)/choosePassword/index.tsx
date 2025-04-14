@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import React, { useState, useEffect } from "react";
 import AuthHeader from "@/components/AuthHeader";
 import { useForm, Controller } from "react-hook-form";
@@ -60,46 +60,48 @@ const ChoosePassword = () => {
   }, [password]);
 
   return (
-    <View className="flex-1 pt-10 px-6 gap-12">
+    <ScrollView className="flex-1">
+    <View className="flex-1 px-6 pb-10 gap-12">
       <AuthHeader
         title="Secure your account"
         description="The safety of your account is important to us. Your Looop account acts as both an account and a wallet for storing your in-app funds. Create a password to secure it."
       />
 
-      <View className="gap-y-4">
-        <View className="flex-row items-center rounded-full pr-5">
-          <Controller
-            control={control}
-            name="password"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <View className="relative">
-                <Input
-                  label="Choose a Password"
-                  description="Your password must be at least 12 characters long"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                  placeholder="Enter your password"
-                  placeholderTextColor="#787A80"
-                  secureTextEntry={!passwordView}
-                />
-                <TouchableOpacity
-                  onPress={() => setPasswordView(!passwordView)}
-                  className="absolute right-4 top-[64px]"
-                >
-                  {passwordView ? (
-                    <ViewOffIcon size={24} color="#787A80" />
-                  ) : (
-                    <ViewIcon size={24} color="#787A80" />
-                  )}
-                </TouchableOpacity>
-              </View>
-            )}
-          />
-        </View>
+      <View className="gap-y-6">
+        <Controller
+          control={control}
+          name="password"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <View className="relative w-full">
+              <Input
+                label="Choose a Password"
+                description="Your password must be at least 12 characters long"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                placeholder="Enter your password"
+                placeholderTextColor="#787A80"
+                secureTextEntry={!passwordView}
+                keyboardAppearance="dark"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <TouchableOpacity
+                onPress={() => setPasswordView(!passwordView)}
+                className="absolute right-6 top-[73px]"
+              >
+                {passwordView ? (
+                  <ViewOffIcon size={24} color="#787A80" />
+                ) : (
+                  <ViewIcon size={24} color="#787A80" />
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
+        />
 
         <View className="gap-6">
-          <View className="mt-4">
+          <View className="mt-2">
             <ValidationItem
               isValid={validationState.hasLetter}
               text="At least one letter"
@@ -118,25 +120,22 @@ const ChoosePassword = () => {
             />
           </View>
 
-          <View className="bg-[#2A1708] p-[12px] flex-row items-start gap-[12px] max-w-full rounded-[12px] overflow-hidden">
-            <View>
-              <InformationCircleIcon
-                size={24}
-                color="#EC6519"
-                variant="stroke"
-              />
-            </View>
-            <View className="flex-1">
-              <Text className="text-[14px] text-[#EC6519] font-PlusJakartaSansRegular flex-shrink">
-                Your password is encrypted and used to create a local backup of
-                your private key to your device so you don’t lose access to your
-                account. Think private keys as a pin to access your
-                account/wallet
-              </Text>
-            </View>
+          <View className="bg-[#2A1708] p-4 flex-row items-start gap-3 rounded-xl">
+            <InformationCircleIcon
+              size={24}
+              color="#EC6519"
+              variant="stroke"
+            />
+            <Text className="flex-1 text-[14px] text-[#EC6519] font-PlusJakartaSansRegular">
+              Your password is encrypted and used to create a local backup of
+              your private key to your device so you don't lose access to your
+              account. Think private keys as a pin to access your
+              account/wallet
+            </Text>
           </View>
         </View>
       </View>
+
       <AppButton.Secondary
         text="Continue"
         color="#FF7A1B"
@@ -154,6 +153,7 @@ const ChoosePassword = () => {
         }
       />
     </View>
+  </ScrollView>
   );
 };
 

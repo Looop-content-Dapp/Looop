@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, ImageSourcePropType, Pressable, Alert } from "react-native";
+import { View, Text, Image, TouchableOpacity, ImageSourcePropType, Pressable, Alert, ScrollView, ActivityIndicator } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 import { AppButton } from "@/components/app-components/button";
 import { router } from "expo-router";
@@ -39,22 +39,29 @@ interface SocialButtonProps {
   onPress: () => void;
   imageSource: ImageSourcePropType;
   text: string;
-  disabled?: boolean;
+  loading?: boolean; // Add loading prop
 }
 
 
-const SocialButton: React.FC<SocialButtonProps> = ({ onPress, imageSource, text, disabled }) => (
+const SocialButton: React.FC<SocialButtonProps> = ({ onPress, imageSource, text, loading }) => (
   <TouchableOpacity
     onPress={onPress}
-    disabled={disabled}
+    disabled={loading}
     className={`flex-row items-center justify-center gap-x-4 ${
-      disabled ? 'bg-gray-300' : 'bg-white'
+      loading ? 'bg-gray-300' : 'bg-white'
     } px-4 py-2 rounded-full w-full`}
+    style={{ minHeight: 56 }}
   >
-    <Image source={imageSource} style={{ width: 40, height: 40 }} />
-    <Text className="text-[#040405] font-PlusJakartaSansMedium text-[14px]">
-      {text}
-    </Text>
+    {loading ? (
+      <ActivityIndicator size="small" color="#040405" />
+    ) : (
+      <>
+        <Image source={imageSource} style={{ width: 40, height: 40 }} />
+        <Text className="text-[#040405] font-PlusJakartaSansMedium text-[14px]">
+          {text}
+        </Text>
+      </>
+    )}
   </TouchableOpacity>
 );
 
@@ -81,9 +88,9 @@ const Signin: React.FC = () => {
   };
 
   return (
-    <View className="flex-1">
+    <ScrollView className="flex-1">
       <View className="flex-1 px-6 gap-12">
-        <View className="gap-y-[50px]">
+        <View className="gap-y-20">
           <AuthHeader
             title="Welcome to Looop"
             description="Sign in to your account to continue"
@@ -98,8 +105,7 @@ const Signin: React.FC = () => {
             </View>
           )}
 
-          <View className="gap-y-6">
-            {/* Email Input */}
+          <View className="gap-y-3">
             <Controller
               control={control}
               name="email"
@@ -123,36 +129,35 @@ const Signin: React.FC = () => {
               )}
             />
 
-            {/* Password Input */}
-            <Controller
-    control={control}
-    name="password"
-    render={({ field: { onChange, onBlur, value } }) => (
-      <View className="relative">
-        <Input
-          label="Password"
-          onBlur={onBlur}
-          onChangeText={onChange}
-          value={value}
-          placeholder="Enter your password"
-          placeholderTextColor="#787A80"
-          secureTextEntry={!passwordView}
-          keyboardAppearance="dark"
-          error={errors?.password?.message}
-        />
-        <TouchableOpacity
-          onPress={() => setPasswordView(!passwordView)}
-          className="absolute right-4 top-[51px]"
-        >
-          {passwordView ? (
-            <ViewOffIcon size={24} color="#787A80" />
-          ) : (
-            <ViewIcon size={24} color="#787A80" />
-          )}
-        </TouchableOpacity>
-      </View>
-    )}
-  />
+            <View className="relative">
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <Input
+                    label="Password"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    placeholder="Enter your password"
+                    placeholderTextColor="#787A80"
+                    secureTextEntry={!passwordView}
+                    keyboardAppearance="dark"
+                    error={errors?.password?.message}
+                  />
+                )}
+              />
+              <TouchableOpacity
+                onPress={() => setPasswordView(!passwordView)}
+                className="absolute right-4 top-[51px]"
+              >
+                {passwordView ? (
+                  <ViewOffIcon size={24} color="#787A80" />
+                ) : (
+                  <ViewIcon size={24} color="#787A80" />
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
 
           <AppButton.Secondary
@@ -167,29 +172,35 @@ const Signin: React.FC = () => {
           </Text>
         </View>
 
-        {/* Social buttons remain the same */}
         <View className="flex-col gap-y-4">
           <SocialButton
             onPress={handleGoogleSignIn}
             imageSource={require("../../assets/images/google.png")}
             text="Sign in with Google"
-            disabled={googleLoading}
+            loading={googleLoading}
           />
           <SocialButton
             onPress={handleAppleSignIn}
             imageSource={require("../../assets/images/apple.png")}
             text="Sign in with Apple"
-            disabled={appleLoading}
+            loading={appleLoading}
           />
         </View>
-        <Pressable onPress={() => router.navigate("/(auth)")} className="items-center mx-auto mt-[10%]">
-            <Text className="text-[14px] font-PlusJakartaSansRegular text-[#f4f4f4]">
-                Don't have an account?
-                 <Text className="text-Orange/08 underline font-PlusJakartaSansBold"> Sign Up</Text>
+
+        <Pressable
+          onPress={() => router.navigate("/(auth)")}
+          className="items-center mx-auto mt-[10%]"
+        >
+          <Text className="text-[14px] font-PlusJakartaSansRegular text-[#f4f4f4]">
+            Don't have an account?
+            <Text className="text-Orange/08 underline font-PlusJakartaSansBold">
+              {" "}
+              Sign Up
             </Text>
+          </Text>
         </Pressable>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 

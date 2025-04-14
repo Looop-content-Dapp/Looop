@@ -18,6 +18,7 @@ import { debounce } from "lodash";
 import AccountLoadingScreen from "@/components/screens/AccountLoadingScreen";
 import { CheckmarkCircle02Icon, XVariableCircleIcon } from '@hugeicons/react-native';
 import { Input } from "@/components/ui/input";
+import { ScrollView } from "react-native";
 
 
 type FormData = {
@@ -116,7 +117,7 @@ const onSubmit = (data: FormData) => {
           });
         },
         onError: (error) => {
-          console.error("User creation failed:", error);
+          console.error("User creation failed:", error.message);
           setErrorMessage(error.message)
           Alert.alert(
             "Error",
@@ -142,23 +143,26 @@ if(isPending){
 
 
   return (
-    <View className="flex-1 px-6 gap-12">
+    <ScrollView className="flex-1">
+    <View className="flex-1 px-6 pb-32 gap-12">
       <AuthHeader
         title="Tell Us About Yourself"
         description="Just a few more details to personalize your experience!"
       />
-       {isError && (
-          <View className="flex-row items-center gap-x-2">
-            <InformationCircleIcon size={20} color="#FF1B1B" />
-            <Text className="text-[#FF1B1B] font-PlusJakartaSansRegular text-xs"
-            >{
-                // @ts-ignore
-                error?.response?.data.message || "Failed to send email. Please try again."
-              }</Text>
-          </View>
-        )}
 
-      <View className="gap-y-3">
+      {isError && (
+        <View className="flex-row items-center gap-x-2 mt-4">
+          <InformationCircleIcon size={20} color="#FF1B1B" />
+          <Text className="text-[#FF1B1B] font-PlusJakartaSansRegular text-xs">
+            {
+              // @ts-ignore
+              error?.response?.data.message || "Failed to send email. Please try again."
+            }
+          </Text>
+        </View>
+      )}
+
+      <View className="gap-y-6">
         <Controller
           control={control}
           name="name"
@@ -171,13 +175,15 @@ if(isPending){
               value={value}
               placeholder="Name"
               placeholderTextColor="#787A80"
+              keyboardAppearance="dark"
+              autoCapitalize="words"
+              autoCorrect={false}
+              returnKeyType="next"
               error={errors.name?.message}
             />
           )}
         />
-      </View>
 
-      <View className="gap-y-3">
         <Controller
           control={control}
           name="username"
@@ -200,12 +206,16 @@ if(isPending){
                 value={value}
                 placeholder="Username"
                 placeholderTextColor="#787A80"
+                keyboardAppearance="dark"
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="next"
                 error={errors.username?.message || usernameError}
               />
               {watch('username') && (
-                <View className="absolute right-4 top-[65px]">
+                <View className="absolute right-4 top-[73px]">
                   {isChecking ? (
-                  <ActivityIndicator size={24} color="#787A80" />
+                    <ActivityIndicator size={24} color="#787A80" />
                   ) : usernameError ? (
                     <XVariableCircleIcon size={24} color="#FF1B1B" />
                   ) : (
@@ -216,9 +226,7 @@ if(isPending){
             </View>
           )}
         />
-      </View>
 
-      <View className="gap-y-3">
         <Controller
           control={control}
           name="referralCode"
@@ -230,29 +238,35 @@ if(isPending){
               value={value}
               placeholder="Enter referral code"
               placeholderTextColor="#787A80"
+              keyboardAppearance="dark"
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="done"
             />
           )}
         />
       </View>
-      <View className="gap-y-4">
-        <Text className="text-[12px] text-gray-400 font-PlusJakartaSansRegular">
+
+      <View className="gap-y-4 mt-4">
+        <Text className="text-[14px] text-gray-400 font-PlusJakartaSansRegular text-center">
           By tapping create account, you agree to our{" "}
           <Link
-            className="text-[#FF7A1B] text-[12px] font-PlusJakartaSansRegular"
+            className="text-[#FF7A1B] text-[14px] font-PlusJakartaSansBold"
             href="/terms"
           >
             Terms of Service
           </Link>{" "}
           and{" "}
           <Link
-            className="text-[#FF7A1B] text-[12px] font-PlusJakartaSansRegular"
+            className="text-[#FF7A1B] text-[14px] font-PlusJakartaSansBold"
             href="/privacy"
           >
             Privacy Policy
           </Link>
         </Text>
       </View>
-      <View style={styles.buttomButtonContainer}>
+
+      <View className="absolute bottom-8 left-6 right-6">
         <AppButton.Secondary
           text="Create Account"
           onPress={handleSubmit(onSubmit)}
@@ -261,6 +275,7 @@ if(isPending){
         />
       </View>
     </View>
+  </ScrollView>
   );
 };
 

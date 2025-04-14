@@ -5,9 +5,12 @@ import {
   addToQueue,
   pauseTrack,
   playTrack,
-  toggleRepeat,
-  toggleShuffle,
   setPlaylist,
+  updateCurrentIndex,
+  shufflePlaylist,
+  toggleShuffleMode,
+  toggleRepeatMode,
+  setIsPlaying,
 } from "../redux/slices/PlayerSlice";
 import { useQuery } from "./useQuery";
 import { useAppSelector } from "@/redux/hooks";
@@ -19,7 +22,7 @@ import TrackPlayer, {
   RepeatMode,
   Capability,
 } from "react-native-track-player";
-import { RootState } from "@/redux/store";
+import { RootState, AppDispatch } from "@/redux/store";
 
 interface AlbumInfo {
   title: string;
@@ -108,7 +111,11 @@ const useMusicPlayer = () => {
     error: null,
   });
 
-  const [isPlaying, setIsPlaying] = useState(false);
+  // Remove this line
+  // const [isPlaying, setIsPlaying] = useState(false);
+
+  // Add this selector
+  const isPlaying = useAppSelector((state: RootState) => state.player.isPlaying);
 
   useEffect(() => {
     const setupPlayer = async () => {
@@ -119,16 +126,20 @@ const useMusicPlayer = () => {
           Capability.SkipToNext,
           Capability.SkipToPrevious,
           Capability.SeekTo,
+          Capability.Stop,
         ],
+        // Add these options for better control
+        jumpInterval: 15,
+        progressUpdateEventInterval: 1,
       });
     };
     setupPlayer();
 
     const playbackStateListener = async (event: { state: State }) => {
       if (event.state === State.Playing) {
-        setIsPlaying(true);
+        dispatch(setIsPlaying(true));  // Update this
       } else if (event.state === State.Paused || event.state === State.Stopped) {
-        setIsPlaying(false);
+        dispatch(setIsPlaying(false));  // Update this
       }
     };
 
@@ -138,24 +149,40 @@ const useMusicPlayer = () => {
         if (track && playlist) {
           const nextTrack = playlist.find((t) => t._id === track.id);
           if (nextTrack && albumInfo) {
-            dispatch(playTrack({ track: nextTrack, albumInfo, playlist }));
+            // Update state before dispatching action
             setState((prev) => ({
               ...prev,
               currentPlayingIndex: event.index ?? -1,
             }));
+            dispatch(playTrack({ track: nextTrack, albumInfo, playlist }));
           }
+        }
+      }
+    };
+
+    // Add queue ended listener
+    const queueEndedListener = async () => {
+      if (repeat) {
+        const firstTrack = await TrackPlayer.getTrack(0);
+        if (firstTrack && playlist) {
+          await TrackPlayer.skip(0);
+          await TrackPlayer.play();
         }
       }
     };
 
     TrackPlayer.addEventListener(Event.PlaybackState, playbackStateListener);
     TrackPlayer.addEventListener(Event.PlaybackActiveTrackChanged, activeTrackChangedListener);
+    TrackPlayer.addEventListener(Event.PlaybackQueueEnded, queueEndedListener);
 
     return () => {
-    //   TrackPlayer.remove(Event.PlaybackState);
-    //   TrackPlayer.remove(Event.PlaybackActiveTrackChanged);
+    //   TrackPlayer.remove([
+    //     Event.PlaybackState,
+    //     Event.PlaybackActiveTrackChanged,
+    //     Event.PlaybackQueueEnded,
+    //   ]);
     };
-  }, [dispatch, playlist, albumInfo]);
+  }, [dispatch, playlist, albumInfo, repeat]);
 
   // Add a new state for tracking loading states of individual tracks
   const [loadingTrackId, setLoadingTrackId] = useState<string | null>(null);
@@ -225,7 +252,7 @@ const useMusicPlayer = () => {
         }
 
         await TrackPlayer.play();
-        setIsPlaying(true);
+        dispatch(setIsPlaying(true));  // Update this
         await storeCurrentTrack(track, albumInfo);
 
         setState((prev) => ({
@@ -254,7 +281,7 @@ const useMusicPlayer = () => {
   const pause = useCallback(async () => {
     try {
       await TrackPlayer.pause();
-      setIsPlaying(false);
+      dispatch(setIsPlaying(false));  // Update this
       dispatch(pauseTrack());
       setState((prev) => ({ ...prev, isAlbumPlaying: false }));
     } catch (error) {
@@ -277,19 +304,116 @@ const useMusicPlayer = () => {
 
   const next = useCallback(async () => {
     try {
-      await TrackPlayer.skipToNext();
+      const queue = await TrackPlayer.getQueue();
+      const currentIndex = await TrackPlayer.getActiveTrackIndex();
+
+      // Changed condition to check if queue is empty or currentIndex is invalid
+      if (queue.length === 0 || currentIndex === null || currentIndex === undefined) return;
+
+      // Calculate next index based on shuffle state
+      let nextIndex = currentIndex;
+      if (shuffle) {
+        const availableIndices = Array.from(
+          { length: queue.length },
+          (_, i) => i
+        ).filter(i => i !== currentIndex);
+        nextIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+      } else {
+        nextIndex = (currentIndex + 1) % queue.length;
+      }
+
+      // Update UI immediately
+      if (playlist && playlist.length > 0) {
+        const nextTrack = playlist[nextIndex];
+        if (nextTrack && albumInfo) {
+          dispatch(playTrack({ track: nextTrack, albumInfo, playlist }));
+          dispatch(updateCurrentIndex(nextIndex));
+        }
+      }
+
+      await TrackPlayer.skip(nextIndex);
+      const playerState = await TrackPlayer.getState();
+      if (playerState !== State.Playing) {
+        await TrackPlayer.play();
+      }
     } catch (error) {
       console.error("Error skipping to next:", error);
     }
-  }, []);
+  }, [dispatch, playlist, albumInfo, shuffle]);
 
   const previous = useCallback(async () => {
     try {
-      await TrackPlayer.skipToPrevious();
+      const queue = await TrackPlayer.getQueue();
+      const currentIndex = await TrackPlayer.getActiveTrackIndex();
+      const position = await TrackPlayer.getProgress().then((progress) => progress.position);
+
+      if (!currentIndex || currentIndex === null || !queue.length) return;
+
+      // If current position > 3 seconds, restart track
+      if (position > 3) {
+        await TrackPlayer.seekTo(0);
+        return;
+      }
+
+      // Calculate previous index
+      const prevIndex = currentIndex === 0 ? queue.length - 1 : currentIndex - 1;
+
+      // Update UI immediately
+      if (playlist) {
+        const prevTrack = playlist[prevIndex];
+        if (prevTrack && albumInfo) {
+          dispatch(playTrack({ track: prevTrack, albumInfo, playlist }));
+          dispatch(updateCurrentIndex(prevIndex));
+        }
+      }
+
+      await TrackPlayer.skip(prevIndex);
+      await TrackPlayer.play();
     } catch (error) {
       console.error("Error skipping to previous:", error);
     }
-  }, []);
+  }, [dispatch, playlist, albumInfo]);
+
+  const toggleShuffle = useCallback(async () => {
+    try {
+      dispatch(toggleShuffleMode());
+      if (!shuffle) {
+        await (dispatch as AppDispatch)(shufflePlaylist()).unwrap();
+
+        // Update TrackPlayer queue
+        const currentTrack = await TrackPlayer.getActiveTrackIndex();
+        if (currentTrack && currentTrack !== null && playlist) {
+          await TrackPlayer.reset();
+          const formattedTracks = playlist.map(track => ({
+            id: track._id,
+            url: track.songData.fileUrl,
+            title: track.title || "Unknown Title",
+            artist: track.artist?.name || "Unknown Artist",
+            artwork: albumInfo?.coverImage,
+            duration: track.songData.duration,
+            album: albumInfo?.title,
+          }));
+          await TrackPlayer.add(formattedTracks);
+          await TrackPlayer.skip(currentTrack);
+          if (isPlaying) {
+            await TrackPlayer.play();
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling shuffle:", error);
+    }
+  }, [dispatch, shuffle, playlist, albumInfo, isPlaying]);
+
+  const toggleRepeat = useCallback(async () => {
+    try {
+      dispatch(toggleRepeatMode());
+      const newRepeatMode = repeat ? RepeatMode.Off : RepeatMode.Track;
+      await TrackPlayer.setRepeatMode(newRepeatMode);
+    } catch (error) {
+      console.error("Error toggling repeat:", error);
+    }
+  }, [dispatch, repeat]);
 
   const seekTo = useCallback(async (seconds: number) => {
     try {
@@ -384,11 +508,8 @@ const useMusicPlayer = () => {
     stop,
     loadAlbumData,
     handleLike,
-    toggleShuffle: useCallback(() => dispatch(toggleShuffle()), [dispatch]),
-    toggleRepeat: useCallback(async () => {
-      dispatch(toggleRepeat());
-      await TrackPlayer.setRepeatMode(repeat ? RepeatMode.Off : RepeatMode.Track);
-    }, [dispatch, repeat]),
+    toggleShuffle,
+    toggleRepeat,
     addToQueue: useCallback(
       async (track: ExtendedTrack) => {
         if (!albumInfo) return;

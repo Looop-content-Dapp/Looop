@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import RecommendedMusicSkeleton from '../SkeletonLoading/RecommendedMusicSkeleton';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.32;
@@ -19,14 +20,7 @@ const RecommededMusic = ({ data, isLoading, title = "Recommended For You" }) => 
   const router = useRouter();
 
   if (isLoading) {
-    return (
-      <View style={styles.container}>
-        <Text className="text-[#F4F4F4] text-[20px] leading-[22px] tracking-[-0.69px] font-PlusJakartaSansBold px-4 mb-4">{title}</Text>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1DB954" />
-        </View>
-      </View>
-    );
+    return <RecommendedMusicSkeleton />;
   }
 
   if (!data || data.length === 0) {

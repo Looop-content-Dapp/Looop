@@ -137,9 +137,11 @@ import {
 
     return (
       <SafeAreaView style={{ flex: 1, minHeight: '100%', backgroundColor }}>
-        <ScrollView showsHorizontalScrollIndicator={false}>
-          <View className="flex-row items-center justify-between px-[24px]">
-            <View className="flex-row items-center gap-x-[8px]">
+        <ScrollView showsHorizontalScrollIndicator={false} contentContainerStyle={{
+            paddingHorizontal: 8
+        }}>
+          <View className="flex-row items-center justify-between w-full ">
+            <View className="flex-row items-center gap-x-[5px]">
               <Pressable
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -164,7 +166,7 @@ import {
                 </Text>
               </View>
             </View>
-            <MoreHorizontalIcon color={textColor} />
+            <MoreHorizontalIcon size={24} color={textColor} />
           </View>
 
           <View className="relative">
@@ -186,8 +188,8 @@ import {
               <View className="flex-1 mr-4">
                 <Text
                   style={{ color: textColor }}
-                  className="text-[24px] font-PlusJakartaSansMedium"
-                  numberOfLines={2}
+                  className="text-[20px] font-PlusJakartaSansMedium"
+                  numberOfLines={1}
                 >
                   {currentTrack?.title}
                 </Text>

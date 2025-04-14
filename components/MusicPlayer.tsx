@@ -93,11 +93,25 @@ const MusicPlayer = () => {
 
   return (
     <View
-      className="h-[80px] flex-row items-center justify-between absolute bottom-[74px] left-0 right-0"
+      className="h-[80px] flex-row items-center justify-between absolute bottom-[85px]"
       style={{
         backgroundColor,
-        width: wp("100%"),
+        width: wp("95%"),
         paddingHorizontal: 16,
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: -5,
+        },
+        shadowOpacity: 0.4,
+        shadowRadius: 6,
+        elevation: 8,
+        // Center horizontally
+        left: '49%',
+        transform: [
+          { translateX: -wp("46%") }, // Half of the width to center
+        ],
       }}
     >
       <Pressable
@@ -119,7 +133,7 @@ const MusicPlayer = () => {
         />
         <View className="flex-1 mr-4">
           <Text
-            className="text-[16px] font-PlusJakartaSansMedium"
+            className="text-[14px] font-PlusJakartaSansMedium"
             numberOfLines={1}
             style={{ color: textColor }}
           >

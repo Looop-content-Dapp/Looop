@@ -8,6 +8,7 @@ import RecommededMusic from "../../../components/cards/RecommededMusic";
 import { StatusBar } from "expo-status-bar";
 import { useUserDashboard } from "../../../hooks/useUserFeed";
 import { useDailyMix } from "@/hooks/useDailyMix";
+import MoodSection from "../../../components/home/MoodSection";
 
 const Index = () => {
   const { currentTrack } = useMusicPlayer();
@@ -57,11 +58,13 @@ const dataLoading = isDailyMixesLoading || userFeedLoading
             />
         </ImageBackground>
 
+        <MoodSection />
+
           {/* Daily Mixes */}
           <DailyMixesSection
             mixes={dailyMixes}
             isLoading={isDailyMixesLoading}
-            title="Your Daily Mixes"
+            title="Daily Mixes"
           />
 
 

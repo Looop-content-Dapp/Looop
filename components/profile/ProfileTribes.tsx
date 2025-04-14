@@ -52,7 +52,16 @@ const TribeItem = ({ item }) => {
     <TouchableOpacity
       className="mb-4 overflow-hidden h-[120px] flex-row rounded-[16px]"
       style={{ backgroundColor }}
-      onPress={() => router.push(`/tribe/${item.id}`)}
+      onPress={() => router.push({
+        pathname: `/communityDetails`,
+        params: {
+            id: item?.id,
+            name: item?.name,
+            image: item?.coverImage,
+            description: item?.description,
+            noOfMembers: item?.memberCount,
+        }
+      })}
     >
       <Image
         source={{ uri: item.coverImage }}
