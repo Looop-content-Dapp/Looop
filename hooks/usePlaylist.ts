@@ -65,3 +65,67 @@ export const useUserPlaylists = () => {
     retry: 2,
   });
 };
+
+type Artist = {
+  _id: string;
+  name: string;
+  imageUrl: string;
+};
+
+type Release = {
+  _id: string;
+  title: string;
+  imageUrl: string;
+  releaseDate: string;
+  type: string;
+};
+
+type Track = {
+  _id: string;
+  title: string;
+  duration: number;
+  bpm: number;
+  key: string;
+  genre: string;
+  isrc: string;
+  explicit: boolean;
+  audioFileUrl: string;
+  waveformUrl: string;
+  artist: Artist;
+  release: Release;
+};
+
+type PlaylistSong = {
+  _id: string;
+  addedAt: string;
+  addedBy: string;
+  track: Track;
+};
+
+type PlaylistDetails = {
+  _id: string;
+  title: string;
+  description: string;
+  coverImage: string;
+  isPublic: boolean;
+  isCollaborative: boolean;
+  userId: string;
+  createdDate: string;
+  lastModified: string;
+  totalTracks: number;
+  totalDuration: number;
+  songs: PlaylistSong[];
+};
+
+export const usePlaylistDetails = (playlistId: string) => {
+  return useQuery({
+    queryKey: ["playlistDetails", playlistId],
+    queryFn: async () => {
+      const { data } = await api.get(`/api/playlist/playlist/${playlistId}`);
+      return data.data as PlaylistDetails;
+    },
+    enabled: !!playlistId,
+    staleTime: 10000,
+    retry: 2,
+  });
+};

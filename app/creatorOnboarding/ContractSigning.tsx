@@ -6,6 +6,7 @@ import ContractIntro from '@/components/CreatorOnboarding/ContractFlow/ContractI
 import ContractAgreement from '@/components/CreatorOnboarding/ContractFlow/ContractAgreement';
 import SignContract from '@/components/CreatorOnboarding/ContractFlow/SignContract';
 import { useSignArtistContract } from '@/hooks/useSignArtistContract';
+import { useNotification } from '@/context/NotificationContext';
 
 type ContractFlowState =
   | "REVIEWED"
@@ -15,6 +16,7 @@ type ContractFlowState =
   | "COMPLETED";
 
 const ContractSigning = () => {
+    const { showNotification } = useNotification();
     const [currentFlow, setCurrentFlow] = useState<ContractFlowState>("REVIEWED");
     const [fullName, setFullName] = useState<string>('') // Add type
     const [isChecked, setIsChecked] = useState<boolean>(false) // Add type
@@ -70,38 +72,43 @@ const ContractSigning = () => {
             case "SIGN":
                 // Validate before proceeding
                 if (!fullName.trim()) {
-                    Alert.alert(
-                        "Missing Information",
-                        "Please enter your full name to continue"
-                    );
+                    showNotification({
+                        type: 'error',
+                        title: 'Missing Information',
+                        message: 'Please enter your full name to continue',
+                        position: 'top'
+                    });
                     return;
                 }
 
                 if (!isChecked) {
-                    Alert.alert(
-                        "Agreement Required",
-                        "Please review and accept the terms to continue"
-                    );
+                    showNotification({
+                        type: 'error',
+                        title: 'Agreement Required',
+                        message: 'Please review and accept the terms to continue',
+                        position: 'top'
+                    });
                     return;
                 }
 
                 // Sign the contract
                 signContract.mutate({ fullName: fullName }, {
                     onSuccess: (data) => {
-                        Alert.alert(
-                            "Success",
-                            "Contract signed successfully!",
-                            [{
-                                text: "OK",
-                                onPress: () => push("/(artisteTabs)/(dashboard)")
-                            }]
-                        );
+                        showNotification({
+                            type: 'success',
+                            title: 'Success',
+                            message: 'Contract signed successfully!',
+                            position: 'top'
+                        });
+                        push("/(artisteTabs)/(dashboard)");
                     },
                     onError: (error: any) => {
-                        Alert.alert(
-                            "Error",
-                            error?.message || "Failed to sign the contract. Please try again."
-                        );
+                        showNotification({
+                            type: 'error',
+                            title: 'Contract Signing Failed',
+                            message: error?.message || 'Failed to sign the contract. Please try again.',
+                            position: 'top'
+                        });
                     }
                 });
                 break;

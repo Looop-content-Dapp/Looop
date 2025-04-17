@@ -34,7 +34,7 @@ const WelcomeToLooop = () => {
           </View>
 
           <View className='items-center gap-y-[12px] mt-[56px] tems-stretch'>
-            <Text className='text-sm text-Grey/06 text-center font-PlusJakartaSansBold'>
+            <Text className='text-[16px] text-Grey/06 text-center font-PlusJakartaSansBold'>
               Welcome to Looop
             </Text>
             <Text className='text-[24px] text-center text-[#f4f4f4] leading-[30px] font-PlusJakartaSansBold'>
@@ -42,7 +42,7 @@ const WelcomeToLooop = () => {
             </Text>
           </View>
 
-          <View style={{ width: wp("95%")}} className='gap-y-[12px] mt-[10%] items-center justify-center mx-auto'>
+          <View style={{ width: wp("95%")}} className='gap-y-[12px] mt-[30%] items-center justify-center mx-auto'>
             <Pressable
               onPress={() => router.push("/(settingUp)/musicSetup")}
               className='py-[15px] px-[16px] flex-row items-center gap-x-[24px] bg-[#202227] justify-between w-full rounded-[10px]'>
@@ -53,21 +53,6 @@ const WelcomeToLooop = () => {
                 </Text>
                 <Text className='text-[16px] font-PlusJakartaSansRegular text-[#f4f4f4]'>
                   Start exploring new sounds right away
-                </Text>
-              </View>
-              <ArrowRight02Icon size={24} color='#787A80' variant='solid' />
-            </Pressable>
-
-            <Pressable
-              onPress={() => router.push("/(settingUp)/communityOnboarding")}
-              className='py-[15px] px-[16px] flex-row items-center gap-x-[16px] bg-[#202227] justify-between w-full rounded-[10px]'>
-              <UserGroupIcon size={24} color='#FF6D1B' variant='stroke' />
-              <View className='flex-1'>
-                <Text className='text-Grey/06 font-PlusJakartaSansBold text-[14px]'>
-                  Explore Tribes
-                </Text>
-                <Text className='text-[16px] font-PlusJakartaSansRegular text-[#f4f4f4]'>
-                  Exciting ways to connect with new talents and your favorite artists
                 </Text>
               </View>
               <ArrowRight02Icon size={24} color='#787A80' variant='solid' />

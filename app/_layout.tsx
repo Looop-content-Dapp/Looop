@@ -9,6 +9,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { playbackService } from '@/services/PlaybackService';
 import { setupPlayer } from '../services/PlaybackService';
+import { PortalProvider } from "@gorhom/portal";
 
 // In your app initialization
 setupPlayer();
@@ -21,6 +22,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MusicPlayerProvider } from "@/context/MusicPlayerContext";
 import TrackPlayer from 'react-native-track-player';
 import * as Sentry from '@sentry/react-native';
+import { NotificationProvider } from "@/context/NotificationContext";
 
 Sentry.init({
   dsn: 'https://0d0b04e2a4f98122a0e2014b2a86b10c@o4509128364195840.ingest.de.sentry.io/4509128384774224',
@@ -114,6 +116,12 @@ function AppContent() {
         />
         <Stack.Screen name="wallet" />
         <Stack.Screen name="postDetails" />
+        <Stack.Screen
+  name="queue"
+  options={{
+    presentation: "fullScreenModal",
+  }}
+/>
       </Stack>
     </>
   );
@@ -124,22 +132,29 @@ export default Sentry.wrap(function _RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
+      <PortalProvider>
         <BottomSheetModalProvider>
+
           <Provider store={store}>
             <PersistGate loading={null} persistor={persistor}>
             <MusicPlayerProvider>
+            <NotificationProvider>
               {/* <Pressable className="bg-Orange/08 absolute bottom-[120px] -[12px] z-[1000px] h-[60px] w-[60px]  items-center justify-center rounded-full" onPress={async () => {
                 router.push("/(auth)/enterUserName")
               }}>
             <Text className="text-[#fff]">Reset</Text>
            </Pressable> */}
               <KeyboardProvider>
+
                 <AppContent />
+
               </KeyboardProvider>
+              </NotificationProvider>
             </MusicPlayerProvider>
             </PersistGate>
           </Provider>
         </BottomSheetModalProvider>
+        </PortalProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );

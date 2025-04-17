@@ -42,7 +42,7 @@ const initialState: PlayerState = {
   currentIndex: -1,
   shuffle: false,
   repeat: false,
-  queue: [],
+  queue: [] as ExtendedTrack[],
   isPlaying: false,  // Add this new property
 };
 
@@ -123,6 +123,9 @@ const playerSlice = createSlice({
     setIsPlaying: (state, action: PayloadAction<boolean>) => {
       state.isPlaying = action.payload;
     },
+    setQueue: (state, action: PayloadAction<ExtendedTrack[]>) => {
+        state.queue = action.payload;
+      },
   },
   extraReducers: (builder) => {
     builder.addCase(shufflePlaylist.fulfilled, (state, action) => {
@@ -144,6 +147,7 @@ export const {
   clearQueue,
   updateQueue,
   setIsPlaying,
+  setQueue
 } = playerSlice.actions;
 
 export default playerSlice.reducer;

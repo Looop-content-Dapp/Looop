@@ -208,6 +208,13 @@ const FavouriteSongs = () => {
             ListComponent={ListComponent}
             title="Favourite"
             loading={loading}
+            renderItem={(item) => ({
+              _id: item._id,
+              track: { title: item.title },
+              artist: { name: item.artist },
+              release: item.release,
+              featuredArtists: item.featuredArtists
+            })}
           />
         </View>
       </Animated.ScrollView>

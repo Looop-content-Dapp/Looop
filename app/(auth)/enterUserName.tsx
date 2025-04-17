@@ -19,6 +19,7 @@ import AccountLoadingScreen from "@/components/screens/AccountLoadingScreen";
 import { CheckmarkCircle02Icon, XVariableCircleIcon } from '@hugeicons/react-native';
 import { Input } from "@/components/ui/input";
 import { ScrollView } from "react-native";
+import { useNotification } from '@/context/NotificationContext';
 
 
 type FormData = {
@@ -40,6 +41,7 @@ const schema = z.object({
   referralCode: z.string().optional(),
 });
 const EnterUserName = () => {
+  const { showNotification } = useNotification();
   const { mutate: createUser, isPending, error, isError } = useCreateUser();
   const { email, password, dob, gender, oauthProvider } = useLocalSearchParams<{
     email: string;
@@ -49,7 +51,6 @@ const EnterUserName = () => {
     oauthProvider?: "google" | "apple";
   }>();
   const router = useRouter();
-  console.log("useremail", oauthProvider);
   // Add watch to useForm destructuring
   const {
     control,
@@ -61,7 +62,6 @@ const EnterUserName = () => {
   });
 
   const { mutate: checkUsername, data } = useCheckUsername();
-  console.log("username", data)
   const [usernameError, setUsernameError] = React.useState<string>("");
   const [isChecking, setIsChecking] = useState(false);
   const [errormessage, setErrorMessage] = useState("")
@@ -111,27 +111,37 @@ const onSubmit = (data: FormData) => {
       },
       {
         onSuccess: () => {
-          router.navigate({
-            pathname: "/(settingUp)",
-            params: { email, password, ...data },
-          });
-        },
-        onError: (error) => {
-          console.error("User creation failed:", error.message);
-          setErrorMessage(error.message)
-          Alert.alert(
-            "Error",
-            "Failed to create account. Please try again later."
-          );
-        },
+            showNotification({
+              type: 'success',
+              title: 'Success',
+              message: 'Account created successfully!',
+              position: 'top'
+            });
+            router.navigate({
+              pathname: "/(settingUp)",
+              params: { email, password, ...data },
+            });
+          },
+          onError: (error) => {
+            console.error("User creation failed:", error.message);
+            setErrorMessage(error.message);
+            showNotification({
+              type: 'error',
+              title: 'Account Creation Failed',
+              message: error?.response?.data.message || "Failed to create account. Please try again later.",
+              position: 'top'
+            });
+          },
       }
     );
-  } catch (error) {
-    console.error("Submission error:", error);
-    Alert.alert(
-      "Error",
-      error instanceof Error ? error.message : "An unexpected error occurred"
-    );
+  } catch (error: any) {
+    console.error("Submission error:", error.message);
+      showNotification({
+        type: 'error',
+        title: 'Error',
+        message: error instanceof Error ? error.message : "An unexpected error occurred",
+        position: 'top'
+      });
   }
 };
 
@@ -250,19 +260,19 @@ if(isPending){
       <View className="gap-y-4 mt-4">
         <Text className="text-[14px] text-gray-400 font-PlusJakartaSansRegular text-center">
           By tapping create account, you agree to our{" "}
-          <Link
+          <Text
             className="text-[#FF7A1B] text-[14px] font-PlusJakartaSansBold"
-            href="/terms"
+            // href="https://looopmusic.com/policy"
           >
             Terms of Service
-          </Link>{" "}
+          </Text>{" "}
           and{" "}
-          <Link
+          <Text
             className="text-[#FF7A1B] text-[14px] font-PlusJakartaSansBold"
-            href="/privacy"
+            // href="https://looopmusic.com/policy"
           >
             Privacy Policy
-          </Link>
+          </Text>
         </Text>
       </View>
 

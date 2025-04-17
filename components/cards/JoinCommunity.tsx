@@ -10,6 +10,7 @@ import { ArrowRight01Icon } from '@hugeicons/react-native';
 import { MotiView } from 'moti';
 import { useRouter } from 'expo-router';
 import MemberCommunityCard from './MemberCommunityCard';
+import { formatNumber } from '@/utils/ArstsisArr';
 
 interface CommunityData {
   _id: string;
@@ -60,18 +61,18 @@ const JoinCommunity = ({ isLoading, communityData, onJoinPress, userId }: JoinCo
   const { height: SCREEN_HEIGHT } = useWindowDimensions();
   const router = useRouter();
 
-  const isMember = communityData?.members?.some(member => member.userId._id === userId) || false;
+  const isMember = communityData?.members?.some(member => member?.userId?._id === userId) || false;
 
   const handleCommunityPress = () => {
     if (isMember && communityData) {
       router.push({
         pathname: '/communityDetails',
         params: {
-          id: communityData._id,
-          name: communityData.communityName,
-          description: communityData.description,
-          image: communityData.coverImage,
-          noOfMembers: communityData.members.length
+          id: communityData?._id,
+          name: communityData?.communityName,
+          description: communityData?.description,
+          image: communityData?.coverImage,
+          noOfMembers: communityData?.members.length
         }
       });
     } else {
@@ -115,7 +116,7 @@ const JoinCommunity = ({ isLoading, communityData, onJoinPress, userId }: JoinCo
                   {communityData.description}
                 </Text>
                 <Text className="text-[12px] text-white font-plusJakartaSansSemiBold bg-black self-start py-[4px] px-[8px] rounded-xl mt-2">
-                  22.7M Members
+                  {formatNumber(communityData?.members.length)} Members
                 </Text>
               </View>
               <View className="flex-row items-center justify-center border border-[#FF6D1B] py-[10px] px-[16px] rounded-3xl mt-4">

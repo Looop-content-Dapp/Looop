@@ -3,7 +3,6 @@ import {
   Text,
   Image,
   SafeAreaView,
-  Alert,
   ScrollView,
   useWindowDimensions,
   Platform,
@@ -19,11 +18,12 @@ import api from "@/config/apiConfig";
 import { CreatorFormData } from "@/types/index";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { setArtistId, setClaimId } from "@/redux/slices/auth";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useNotification } from '@/context/NotificationContext';
 
 type ProfileFlowState = "INTRO" | "CREATE_PROFILE";
 
 const CreateProfile = () => {
+  const { showNotification } = useNotification();
   const [currentFlow, setCurrentFlow] = useState<ProfileFlowState>("INTRO");
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [selectedCountry, setSelectedCountry] = useState("");
@@ -82,7 +82,12 @@ const CreateProfile = () => {
 
     for (const [field, value] of Object.entries(requiredFields)) {
       if (!value) {
-        Alert.alert("Required Field Missing", `${field} is required`);
+        showNotification({
+            type: 'error',
+            title: 'Required Field Missing',
+            message: `${field} is required`,
+            position: 'top'
+          });
         return false;
       }
     }
@@ -102,14 +107,21 @@ const CreateProfile = () => {
           profileImage: result?.file?.uri,
         }));
       } else if (result?.error) {
-        Alert.alert("Upload Failed", result.error);
+        showNotification({
+            type: 'error',
+            title: 'Upload Failed',
+            message: result.error,
+            position: 'top'
+          });
       }
     } catch (error) {
       console.error("Error uploading profile image:", error);
-      Alert.alert(
-        "Upload Error",
-        "Failed to upload profile image. Please try again."
-      );
+      showNotification({
+        type: 'error',
+        title: 'Upload Error',
+        message: 'Failed to upload profile image. Please try again.',
+        position: 'top'
+      });
     }
   };
 
@@ -185,7 +197,12 @@ const CreateProfile = () => {
         dispatch(setClaimId(claimresult?.data?.id));
 
         // Show success message and navigate back
-        Alert.alert("Success", claimresult?.message);
+        showNotification({
+            type: 'success',
+            title: 'Success',
+            message: claimresult?.message || 'Profile created successfully!',
+            position: 'top'
+          });
         back();
       } else {
         throw new Error(data.message || "Failed to create profile");
@@ -197,12 +214,14 @@ const CreateProfile = () => {
       );
 
       // Show user-friendly error message
-      Alert.alert(
-        "Profile Creation Failed",
-        error instanceof Error
+      showNotification({
+        type: 'error',
+        title: 'Profile Creation Failed',
+        message: error instanceof Error
           ? error.message
-          : "Unable to create profile. Please try again later."
-      );
+          : "Unable to create profile. Please try again later.",
+        position: 'top'
+      });
     } finally {
       setIsSubmitting(false);
     }

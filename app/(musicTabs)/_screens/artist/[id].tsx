@@ -52,7 +52,6 @@ const ArtistDetails = () => {
   const { data: communityData, isLoading } = useArtistCommunity(id as string);
   const router = useRouter();
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
-  console.log("id", image)
 
   const handleJoinPress = () => {
     router.push({

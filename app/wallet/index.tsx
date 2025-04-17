@@ -92,37 +92,12 @@ const WalletScreen = () => {
 
   const { rates, loading: ratesLoading, error } = useExchangeRates();
 
-  const formatBalance = (balance: string, currency: string) => {
-    try {
-      // Check if rates and the specific currency rate exist
-      if (!rates || !rates[currency]) {
-        return balance; // Return original balance if rates aren't loaded yet
-      }
-
-      const numericBalance = parseFloat(balance.replace(/[$,]/g, ''));
-      if (isNaN(numericBalance)) {
-        return balance; // Return original balance if parsing fails
-      }
-
-      const convertedBalance = numericBalance * rates[currency].rate;
-      const symbol = rates[currency].symbol;
-
-      return `${symbol}${convertedBalance.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })}`;
-    } catch (err) {
-      return balance; // Fallback to original balance if conversion fails
-    }
-  };
-
   const handleWithdrawFunds = () => {
     router.push('/wallet/withdraw');
   };
 
   const handleConnectedAccounts = () => {
-    // Navigate to connected accounts screen
-    router.push('/wallet/connected-accounts');
+    router.push('/connectedAccounts');
   };
 
   return (

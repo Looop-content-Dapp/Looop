@@ -1,4 +1,4 @@
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Ellipse from '../Ellipse';
 import { Skeleton } from 'moti/skeleton';
@@ -37,6 +37,15 @@ interface ListItemProps {
   featuredArtists: Artist[];
   release: Release;
   track: Track;
+  onPress?: () => void;  // Add onPress prop
+}
+
+interface PlaylistItemProps {
+  _id: string;
+  title: string;
+  coverImage: string;
+  description: string;
+  totalTracks: number;
 }
 
 const ListComponent = ({ item }: { item: ListItemProps }) => {
@@ -51,7 +60,7 @@ const ListComponent = ({ item }: { item: ListItemProps }) => {
   }, [item]);
 
   return (
-    <View className='gap-y-[16px] py-[16px]'>
+    <TouchableOpacity onPress={item.onPress} className='gap-y-[16px] py-[16px]'>
       <View className='flex-row items-center gap-x-[12px]'>
         <Skeleton
           transition={{
@@ -64,12 +73,10 @@ const ListComponent = ({ item }: { item: ListItemProps }) => {
           width={72}
           height={72}
         >
-          {item?.release?.artwork?.medium && (
-            <Image
-              source={{ uri: item.release.artwork.medium }}
-              className='w-[72px] h-[72px] rounded-[5px]'
-            />
-          )}
+          <Image
+            source={{ uri: item.release.artwork.medium }}
+            className='w-[72px] h-[72px] rounded-[5px]'
+          />
         </Skeleton>
 
         <View className='flex-1'>
@@ -83,15 +90,13 @@ const ListComponent = ({ item }: { item: ListItemProps }) => {
             width="100%"
             height={20}
           >
-            {item?.track?.title && (
-              <Text
-                className='text-[16px] text-[#F4F4F4] font-PlusJakartaSansBold'
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                {item.track.title}
-              </Text>
-            )}
+            <Text
+              className='text-[16px] text-[#F4F4F4] font-PlusJakartaSansBold'
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {item.track.title}
+            </Text>
           </Skeleton>
 
           <Skeleton
@@ -104,21 +109,23 @@ const ListComponent = ({ item }: { item: ListItemProps }) => {
             width="80%"
             height={18}
           >
-            {item?.artist?.name && (
-              <View className='flex-row items-center gap-x-[6px]'>
-                <Text className='text-[14px] text-Grey/04 font-PlusJakartaSansRegular'>
-                  {item.artist.name}
-                </Text>
-                <Ellipse />
-                <Text className='text-[14px] text-Grey/04 font-PlusJakartaSansRegular'>
-                  {item.release.title}
-                </Text>
-              </View>
-            )}
+            <View className='flex-row items-center gap-x-[6px]'>
+              <Text numberOfLines={1}
+              ellipsizeMode="tail"
+              className='text-[14px] text-Grey/04 font-PlusJakartaSansRegular'>
+                {item.artist.name}
+              </Text>
+              <Ellipse />
+              <Text numberOfLines={1}
+              ellipsizeMode="tail"
+              className='text-[14px] text-Grey/04 font-PlusJakartaSansRegular'>
+                {item.release.title}
+              </Text>
+            </View>
           </Skeleton>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

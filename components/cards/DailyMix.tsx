@@ -7,13 +7,15 @@ import {
   Dimensions,
   StyleSheet,
   ImageBackground,
+  Pressable,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import DailyMixSkeleton from "../SkeletonLoading/DailyMixSkelton";
-import { PlayIcon } from '@hugeicons/react-native'
+import { PlayIcon, PauseIcon } from '@hugeicons/react-native'
 import { Image } from "react-native";
 import useMusicPlayer from "../../hooks/useMusicPlayer";
 import FastImage from 'react-native-fast-image';
+import { useMusicPlayerContext } from "@/context/MusicPlayerContext";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.7;
@@ -22,14 +24,15 @@ const CARD_HEIGHT = 350;
 const DailyMixCard = ({
   mix,
   onPress,
+  isPlaying = false, // Add new prop
 }: {
   mix: DailyMixesMix;
   onPress: () => void;
+  isPlaying?: boolean;
 }) => {
   return (
     <TouchableOpacity
     style={styles.cardContainer}
-    onPress={onPress}
     activeOpacity={0.9}
   >
     <FastImage
@@ -55,13 +58,23 @@ const DailyMixCard = ({
           {mix.description}
         </Text>
 
-        <View style={styles.footer}>
-          <PlayIcon
-            size={34}
-            color="rgba(255,255,255,0.9)"
-            variant="solid"
-          />
-        </View>
+        <Pressable
+         onPress={onPress}
+         style={styles.footer}>
+          {isPlaying ? (
+            <PauseIcon
+              size={34}
+              color="rgba(255,255,255,0.9)"
+              variant="solid"
+            />
+          ) : (
+            <PlayIcon
+              size={34}
+              color="rgba(255,255,255,0.9)"
+              variant="solid"
+            />
+          )}
+        </Pressable>
       </View>
     </FastImage>
   </TouchableOpacity>
@@ -77,7 +90,8 @@ const DailyMixesSection = ({
   title: string;
   isLoading: boolean;
 }) => {
-  const { play } = useMusicPlayer();
+  const { play, currentTrack } = useMusicPlayerContext();
+//   console.log("songdata", mixes[0]?.tracks[0]?.songData?._id);
 
   if (isLoading) {
     return <DailyMixSkeleton count={3} />;
@@ -94,19 +108,20 @@ const DailyMixesSection = ({
       // Format the track data to match ExtendedTrack interface
       const formattedTracks = mix.tracks.map(track => ({
         ...track,
-        songData: {
-          _id: track._id,
-          fileUrl: `https://cdn.trendybeatz.com/audio/Black-Sherif-Ft-Fireboy-DML-So-It-Goes-(TrendyBeatz.com).mp3`,
-          duration: track.duration
-        },
-        release: {
-          ...track.release,
-          artwork: {
-            high: track.release.artwork.high
-          }
-        }
+        // songData: {
+        //   _id: track.songData._id,
+        //   fileUrl: track.songData?.fileUrl, // Fix: Access fileUrl directly from track's songData
+        //   duration: track.duration,
+        //   title: track.title || '', // Add required title field
+        // },
+        // release: {
+        //   ...track.release,
+        //   artwork: {
+        //     high: track?.release?.artwork?.high// Fallback to mix artwork if not available
+        //   }
+        // }
       }));
-
+      console.log("formatted tracks", formattedTracks)
       await play(formattedTracks[0], albumInfo, formattedTracks);
     }
   };
@@ -127,6 +142,7 @@ const DailyMixesSection = ({
             key={mix.id}
             mix={mix}
             onPress={() => handleMixPress(mix)}
+            isPlaying={currentTrack?.songData?._id === mix.tracks?.[0]?._id}
           />
         ))}
       </ScrollView>

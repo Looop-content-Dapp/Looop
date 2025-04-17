@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, Image, FlatList, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Image, FlatList, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { MotiView } from 'moti'; // Import Moti for skeleton loading
 import { PlayIcon, PauseIcon } from '@hugeicons/react-native'; // Import PlayIcon icon from huge-icons
 import { SkeletonLoader } from '../shared/SkeletonLoader';
+import useMusicPlayer from '../../hooks/useMusicPlayer';
 
 type Props = {
   songs: any;
@@ -10,19 +11,44 @@ type Props = {
 };
 
 const Hottest: React.FC<Props> = ({ songs, isLoading }) => {
-    const [playingIndex, setPlayingIndex] = useState<number | null>(null);
+    const {
+      play,
+      pause,
+      isPlaying,
+      currentTrackId,
+      loadingTrackId
+    } = useMusicPlayer();
 
-    const handlePress = (item: any, index: number) => {
-      if (playingIndex === index) {
-        setPlayingIndex(null); // Pause if already playing
-      } else {
-        setPlayingIndex(index); // Play the selected song
+    const handlePress = async (item: any, index: number) => {
+      try {
+        if (!item.songData?.fileUrl) {
+          console.error('No audio URL available for this track');
+          return;
+        }
+
+        if (currentTrackId === item._id) {
+          await pause();
+        } else {
+          const albumInfo = {
+            title: item.release.title || "Hottest Releases",
+            type: item.release.type || "playlist",
+            coverImage: item?.release?.artwork?.high
+          };
+
+          // Ensure each song in the playlist has the required songData
+          const validSongs = songs.filter(song => song.songData?.fileUrl);
+
+          await play(item, albumInfo, validSongs);
+        }
+      } catch (error) {
+        console.error('Error handling track press:', error);
       }
-      console.log(playingIndex === index ? 'Pausing:' : 'Playing:', item.title);
     };
 
     const renderItem = ({ item, index }: { item: any; index: number }) => {
-        const isPlaying = playingIndex === index;
+        const isCurrentTrack = currentTrackId === item._id;
+        const isCurrentlyPlaying = isCurrentTrack && isPlaying;
+        const isLoading = loadingTrackId === item._id;
 
         return (
           <View style={styles.itemContainer}>
@@ -37,15 +63,17 @@ const Hottest: React.FC<Props> = ({ songs, isLoading }) => {
                 <MotiView
                   style={styles.playIconContainer}
                   animate={{
-                    scale: isPlaying ? [1, 1.2, 1] : 1,
+                    scale: isCurrentlyPlaying ? [1, 1.2, 1] : 1,
                   }}
                   transition={{
-                    loop: isPlaying,
+                    loop: isCurrentlyPlaying,
                     type: 'timing',
                     duration: 1000,
                   }}
                 >
-                  {isPlaying ? (
+                  {isLoading ? (
+                    <ActivityIndicator color="#FFFFFF" size="large" />
+                  ) : isCurrentlyPlaying ? (
                     <PauseIcon size={40} color="#FFFFFF" variant='solid' />
                   ) : (
                     <PlayIcon size={40} color="#FFFFFF" variant='solid' />
@@ -60,7 +88,7 @@ const Hottest: React.FC<Props> = ({ songs, isLoading }) => {
             </View>
           </View>
         );
-      };
+    };
 
   const renderSkeleton = () => (
     <View style={styles.itemContainer}>

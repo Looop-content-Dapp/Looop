@@ -106,6 +106,7 @@ import {
                 value={value ? new Date(value) : null}
                 onChange={(date) => onChange(format(date, 'yyyy-MM-dd'))}
                 error={errors.dob?.message}
+                maximumDate={new Date()}
               />
             )}
           />

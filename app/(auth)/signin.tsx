@@ -10,9 +10,10 @@ import { InformationCircleIcon, ViewIcon, ViewOffIcon } from "@hugeicons/react-n
 import * as WebBrowser from "expo-web-browser";
 import { useLogin } from "@/hooks/useLogin";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useAppleAuth, useGoogleAuth } from "@/hooks/useSocialAuth";
+import { useNotification } from "@/context/NotificationContext";
 
 // Complete WebBrowser auth session
 WebBrowser.maybeCompleteAuthSession();
@@ -66,6 +67,7 @@ const SocialButton: React.FC<SocialButtonProps> = ({ onPress, imageSource, text,
 );
 
 const Signin: React.FC = () => {
+  const { showNotification } = useNotification();
   const { mutate: login, isPending, isError, error } = useLogin();
   const { handleGoogleSignIn, loading: googleLoading } = useGoogleAuth();
   const { handleAppleSignIn, loading: appleLoading } = useAppleAuth();
@@ -83,14 +85,31 @@ const Signin: React.FC = () => {
     },
   });
 
+
+  useEffect(() => {
+    if (error) {
+      showNotification({
+        type: 'error',
+        title: 'Login Failed',
+        message: error?.response?.data.message || "Invalid email or password",
+        position: 'top'
+      });
+    }
+  }, [error]);
+
   // Modify the onSubmit handler to prevent default behavior
   const onSubmit = (data: FormData): void => {
     login(data, {
       onSuccess: () => {
         router.navigate("/(musicTabs)");
       },
-      onError: (error) => {
-        console.error('Login error:', error);
+      onError: (error: any) => {
+        showNotification({
+            type: 'error',
+            title: 'Signup Failed',
+            message: error?.response?.data.message || 'Failed to send verification code',
+            position: 'top'
+          });
       }
     });
   };
@@ -113,15 +132,6 @@ const Signin: React.FC = () => {
               title="Welcome to Looop"
               description="Sign in to your account to continue"
             />
-
-            {isError && (
-              <View className="flex-row items-center gap-x-2">
-                <InformationCircleIcon size={20} color="#FF1B1B" />
-                <Text className="text-[#FF1B1B] font-PlusJakartaSansRegular text-xs">
-                  {error?.response?.data.message || "Invalid email or password"}
-                </Text>
-              </View>
-            )}
 
             <View style={{ gap: 12, marginTop: 24 }}>
               <Controller

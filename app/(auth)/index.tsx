@@ -126,29 +126,6 @@ const EmailSignUp: React.FC = () => {
     });
   };
 
-  const handleLogin = async() => {
-    try {
-        console.log('User is connected and logged in', isConnected, isConnecting)
-        console.log('Attempting to login with Xion...');
-        await login()
-        console.log('Xion login successful');
-
-    } catch (error: any) {
-        console.error('Xion login error details:', {
-            message: error.message,
-            stack: error.stack,
-            name: error.name,
-            cause: error.cause
-        });
-
-        // Optionally alert the user
-        Alert.alert(
-            'Login Error',
-            'Failed to sign in with Xion. Please try again.'
-        );
-    }
-  }
-
   return (
     <ScrollView className="flex-1">
       <View className="flex-1 px-6 gap-12">

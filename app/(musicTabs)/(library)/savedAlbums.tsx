@@ -157,7 +157,6 @@ const SavedAlbums = () => {
           </View>
         </Animated.View>
 
-        {/* Content */}
         <View style={{ paddingTop: 20 }}>
           <ToggleFlatListView
             data={filteredAlbums}
@@ -165,6 +164,15 @@ const SavedAlbums = () => {
             ListComponent={ListComponent}
             title="Saved Albums"
             loading={loading}
+            renderItem={(item) => ({
+              _id: item._id,
+              track: { title: item.title },
+              artist: { name: item.artist },
+              release: {
+                artwork: { medium: item.coverImage },
+                title: item.title
+              }
+            })}
           />
         </View>
       </Animated.ScrollView>

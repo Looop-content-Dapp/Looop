@@ -19,7 +19,7 @@ import {
   MoreHorizontalIcon,
   PauseIcon,
   PlayIcon,
-  ArrowDown02Icon,
+  VideoReplayIcon,
 } from "@hugeicons/react-native";
 import FastImage from "react-native-fast-image";
 import Share from "../../../components/bottomSheet/Share";
@@ -186,11 +186,29 @@ const MusicDetails = () => {
     }
   };
 
+  const formatDuration = (duration: number | undefined) => {
+    if (!duration) return '';
+
+    const minutes = Math.floor(duration / 60000);
+    if (minutes >= 60) {
+      const hours = Math.floor(minutes / 60);
+      const remainingMinutes = minutes % 60;
+      return remainingMinutes > 0 ? `${hours}hr ${remainingMinutes}min` : `${hours}hr`;
+    }
+    return `${minutes}min`;
+  };
+
 
   const handleTrackMenuPress = useCallback((track: Track) => {
     setSelectedTrack(track);
     setIsShareModalVisible(true);
   }, []);
+
+        // Add new handler for release share
+        const handleReleaseShare = useCallback(() => {
+            setSelectedTrack(null); // Reset selected track to ensure we're sharing release details
+            setIsShareModalVisible(true);
+          }, []);
 
   const convertSecondsToMinutes = useCallback((seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -299,10 +317,10 @@ const MusicDetails = () => {
                 onPress: () => setIsPlaylistModalVisible(true)
               },
               {
-                Icon: ArrowDown02Icon,
+                Icon: VideoReplayIcon,
                 size: 48,
-                active: isLiked,
-                onPress: () => handleLike(releaseInfo?.id || '', releaseInfo?.type || ''),
+                // active: isLiked,
+                // onPress: () => handleLike(releaseInfo?.id || '', releaseInfo?.type || ''),
               },
               {
                 Icon: isCurrentAlbumPlaying ? PauseIcon : PlayIcon,
@@ -316,10 +334,11 @@ const MusicDetails = () => {
                 active: shuffle,
                 onPress: toggleShuffle,
               },
+
               {
                 Icon: MoreHorizontalIcon,
                 size: 48,
-                onPress: () => shareBottomSheetRef.current?.expand(),
+                onPress: handleReleaseShare, // Changed from shareBottomSheetRef.current?.expand()
               },
             ].map((control, index) => (
               <View key={index} style={styles.contentWrapper}>
@@ -350,7 +369,7 @@ const MusicDetails = () => {
                 </Text>
                 <Pressable className="bg-Grey/06 h-[4px] w-[4px] m-[4px] font-normal" />
                 <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansBold font-normal">
-                  {convertSecondsToMinutes(releaseInfo.duration)} mins
+                  {formatDuration(releaseInfo?.duration)}
                 </Text>
               </View>
               {releaseInfo.type !== 'track' && (
@@ -420,10 +439,9 @@ const MusicDetails = () => {
             artist: selectedTrack ? selectedTrack.artist.name : releaseInfo.artist.name,
             image: selectedTrack ? selectedTrack.release.artwork.high : releaseInfo.coverImage,
             type: releaseInfo.type,
-            duration: convertSecondsToMinutes(
-              selectedTrack ? selectedTrack.duration : releaseInfo.duration
-            ),
+            duration: selectedTrack ? selectedTrack.duration : releaseInfo.duration, // Pass the raw duration number
             id: selectedTrack ? selectedTrack._id : releaseInfo.id,
+            tracks: selectedTrack ? selectedTrack : releaseInfo.tracks,
           }}
         />
       )}

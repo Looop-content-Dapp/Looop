@@ -4,7 +4,7 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { format } from 'date-fns';
 import { Ionicons } from '@expo/vector-icons';
 
-interface DatePickerProps {
+interface DatePickerProps extends Omit<React.ComponentProps<typeof DateTimePickerModal>, 'isVisible' | 'onConfirm' | 'onCancel'> {
   label: string;
   description?: string;
   value: Date | null;
@@ -19,7 +19,8 @@ export const DatePicker = ({
   value,
   onChange,
   error,
-  quickNote
+  quickNote,
+  ...props
 }: DatePickerProps) => {
   const [isVisible, setIsVisible] = React.useState(false);
 
@@ -57,16 +58,17 @@ export const DatePicker = ({
       )}
 
       <DateTimePickerModal
+       {...props}
         isVisible={isVisible}
         mode="date"
         onConfirm={(date) => {
           onChange(date);
           setIsVisible(false);
         }}
-        onCancel={() => setIsVisible(false)}
-        // minimumDate={new Date()}
+         onCancel={() => setIsVisible(false)}
           isDarkModeEnabled={true}
         themeVariant="dark"
+
       />
     </View>
   );

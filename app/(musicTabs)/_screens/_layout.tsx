@@ -13,6 +13,7 @@ export default function ScreenLayout() {
       }}>
       <Stack.Screen name="musicDetails" />
       <Stack.Screen name='artist' />
+      <Stack.Screen name='PlaylistDetails' />
     </Stack>
   );
 }

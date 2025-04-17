@@ -15,6 +15,7 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
   const { data: playlistResponse, isLoading: isPlaylistsLoading, isFetching } = useUserPlaylists();
   const playlists = playlistResponse?.data || [];
   const addSong = useAddSongToPlaylist();
+  const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null);
 
   const handleSheetChanges = useCallback((index: number) => {
     if (index === -1) {
@@ -27,11 +28,11 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
     closeSheet();
   };
 
-  const handleAddSong = async (playlistId: string) => {
-    if (!userdata?._id) return;
-    console.log("playlistid", album?.tracks)
+  const handleAddSong = async () => {
+    if (!userdata?._id || !selectedPlaylist) return;
     try {
       const trackIds = album?.tracks?.map((item: any) => item._id) || [];
+
 
       if (!trackIds.length) {
         Alert.alert('Error', 'No tracks found to add');
@@ -39,8 +40,8 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
       }
 
       addSong.mutate({
-        tracks: trackIds,
-        playlistId: playlistId,
+        tracks: trackIds || [album?.tracks._id],
+        playlistId: selectedPlaylist,
         userId: userdata?._id
       }, {
         onSuccess: () => {
@@ -95,16 +96,26 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <TouchableOpacity
-            className="flex-row items-center mb-3"
-            onPress={() => handleAddSong(item._id)}
+            className="flex-row items-center justify-between mb-3"
+            onPress={() => setSelectedPlaylist(item._id)}
           >
-            <Image
+
+           <View className='flex-row items-center gap-x-3'>
+           <Image
               source={{ uri: item.coverImage }}
               style={{ width: 60, height: 60, borderRadius: 8 }}
             />
             <View className="ml-3">
               <Text className="text-[#f4f4f4] text-[16px] font-PlusJakartaSansBold">{item.title}</Text>
               <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansMedium">{item.songs.length} Songs</Text>
+            </View>
+           </View>
+
+
+            <View className="w-6 h-6 rounded-full border-2 border-[#FF7A1B] mr-3 items-center justify-center">
+              {selectedPlaylist === item._id && (
+                <View className="w-4 h-4 rounded-full bg-[#FF7A1B]" />
+              )}
             </View>
           </TouchableOpacity>
         )}
@@ -117,7 +128,7 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
       index={isVisible ? 0 : -1}
       ref={bottomSheetRef}
       onChange={handleSheetChanges}
-      snapPoints={[700]}
+      snapPoints={['70%']} 
       enablePanDownToClose={true}
       backgroundStyle={{ backgroundColor: '#111318' }}
       handleIndicatorStyle={{
@@ -127,7 +138,7 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
         borderRadius: 10,
       }}
     >
-      <BottomSheetView style={{ backgroundColor: '#111318', padding: 16 }}>
+      <BottomSheetView style={{ backgroundColor: '#111318', padding: 16, flex: 1 }}>
         <View className="flex-row gap-x-[40px] items-center mb-4 border-b-2 border-[#1D2029] pb-[20px]">
           <TouchableOpacity onPress={handleCancel}>
             <Text className="text-[14px] font-PlusJakartaSansMedium text-Grey/04">Cancel</Text>
@@ -160,6 +171,20 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
         <Text className="text-[#f4f4f4] text-[20px] font-PlusJakartaSansMedium mb-2">My Library</Text>
 
         {renderPlaylists()}
+
+        {/* Add Done Button */}
+        <TouchableOpacity
+          className={`p-4 rounded-[56px] w-[120px] mx-auto ${
+            selectedPlaylist ? 'bg-[#2DD881]' : 'bg-[#242424]'
+          }`}
+          onPress={handleAddSong}
+          disabled={!selectedPlaylist}
+          style={{ marginTop: 'auto' }}
+        >
+          <Text className="text-white text-center font-PlusJakartaSansBold text-[16px]">
+            Done
+          </Text>
+        </TouchableOpacity>
       </BottomSheetView>
     </BottomSheet>
   );

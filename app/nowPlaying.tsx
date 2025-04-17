@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     ScrollView,
     ActivityIndicator,
+    Dimensions
   } from 'react-native';
   import React, { useEffect, useState } from 'react';
   import { SafeAreaView } from 'react-native-safe-area-context';
@@ -23,7 +24,7 @@ import {
     Share05Icon,
     ShuffleIcon,
   } from '@hugeicons/react-native';
-  import { useLocalSearchParams, useNavigation } from 'expo-router';
+  import { router, useLocalSearchParams, useNavigation } from 'expo-router';
   import { LinearGradient } from 'expo-linear-gradient';
   import Slider from '@react-native-community/slider';
   import * as Haptics from 'expo-haptics';
@@ -31,6 +32,10 @@ import {
   import { BlurView } from 'expo-blur';
   import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
   import TrackPlayer, { useProgress } from 'react-native-track-player';
+  import AddToPlaylistBottomSheet from '@/components/bottomSheet/AddToPlaylistBottomSheet';
+  import Share from '@/components/bottomSheet/Share';
+  import FastImage from 'react-native-fast-image';
+  import { widthPercentageToDP as wp} from 'react-native-responsive-screen'
 
   const getContrastColor = (bgColor: string) => {
     const r = parseInt(bgColor.slice(1, 3), 16);
@@ -40,7 +45,13 @@ import {
     return luminance > 0.5 ? '#000000' : '#FFFFFF';
   };
 
+  // Add this import at the top with other imports
+
+
   const NowPlaying = () => {
+    // Add this state near other state declarations
+    const [isPlaylistSheetVisible, setIsPlaylistSheetVisible] = useState(false);
+    const [isShareModalVisible, setIsShareModalVisible] = useState(false);
     const [backgroundColor, setBackgroundColor] = useState('#000000');
     const [textColor, setTextColor] = useState('#FFFFFF');
     const [subTextColor, setSubTextColor] = useState('#D2D3D5');
@@ -112,6 +123,21 @@ import {
       }
     };
 
+    const handlePlaylistPress = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        setIsPlaylistSheetVisible(true);
+      };
+
+      const handleSharePress = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        setIsShareModalVisible(true);
+      };
+
+      const handleQueuePress = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+         router.push("/queue");
+      };
+
     const handleNext = async () => {
       try {
         await next();
@@ -137,51 +163,73 @@ import {
 
     return (
       <SafeAreaView style={{ flex: 1, minHeight: '100%', backgroundColor }}>
-        <ScrollView showsHorizontalScrollIndicator={false} contentContainerStyle={{
-            paddingHorizontal: 8
-        }}>
-          <View className="flex-row items-center justify-between w-full ">
-            <View className="flex-row items-center gap-x-[5px]">
+        <ScrollView
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 16
+          }}
+        >
+          <View className="flex-row items-center justify-between w-full py-4">
+            <View className="flex-row items-center flex-1 gap-x-3">
               <Pressable
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   navigation.goBack();
                 }}
+                className="p-2"
               >
-                <ArrowLeft02Icon size={32} color={textColor} />
+                <ArrowLeft02Icon size={28} color={textColor} />
               </Pressable>
-              <View className="flex-1">
+              <View className="flex-1 mr-4">
                 <Text
                   style={{ color: subTextColor }}
-                  className="text-[14px] font-PlusJakartaSansMedium"
+                  className="text-[12px] font-PlusJakartaSansMedium mb-0.5"
                 >
                   Playing from
                 </Text>
                 <Text
                   style={{ color: textColor }}
-                  className="text-[16px] font-PlusJakartaSansMedium"
+                  className="text-[15px] font-PlusJakartaSansMedium"
                   numberOfLines={1}
                 >
-                  "{albumTitle || albumInfo?.title}"
+                  {albumTitle || albumInfo?.title}
                 </Text>
               </View>
             </View>
-            <MoreHorizontalIcon size={24} color={textColor} />
+            <TouchableOpacity
+              className="p-2"
+              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+            >
+              <MoreHorizontalIcon size={24} color={textColor} />
+            </TouchableOpacity>
           </View>
 
-          <View className="relative">
-            <Image
-              source={{ uri: currentTrack?.release?.artwork?.high }}
-              className="w-full h-[400px] mt-[19px]"
-              resizeMode="cover"
+          <>
+          <FastImage
+              source={{
+                uri: currentTrack?.release?.artwork?.high,
+                priority: FastImage.priority.high,
+              }}
+              style={{
+                width: wp("100%"),
+                height: 400,
+                marginTop: 19
+              }}
+              resizeMode={FastImage.resizeMode.cover}
             />
-            <LinearGradient
+            {/* <LinearGradient
               colors={['transparent', backgroundColor, backgroundColor]}
               locations={[0.2, 0.8, 1]}
-              className="absolute bottom-0 z-40 w-full h-[400px]"
-              style={{ opacity: 0.95 }}
-            />
-          </View>
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                width: Dimensions.get('window').width,
+                height: 400,
+                zIndex: 40,
+                opacity: 0.95
+              }}
+            /> */}
+          </>
 
           <View className="px-[24px] my-[24px]">
             <View className="flex-row items-center justify-between">
@@ -314,19 +362,40 @@ import {
                 className="flex-row items-center justify-between px-[24px] p-[12px]"
                 style={{ borderColor: `${subTextColor}40` }}
               >
-                <TouchableOpacity>
-                  <Queue02Icon size={32} color={subTextColor} />
-                </TouchableOpacity>
-                <TouchableOpacity>
+              <TouchableOpacity onPress={handleQueuePress}>
+                <Queue02Icon size={32} color={subTextColor} />
+              </TouchableOpacity>
+                <TouchableOpacity onPress={handlePlaylistPress}>
                   <Playlist01Icon size={32} color={subTextColor} />
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={handleSharePress}>
                   <Share05Icon size={32} color={subTextColor} />
                 </TouchableOpacity>
               </View>
             </BlurView>
+
+
+
           </View>
         </ScrollView>
+        <AddToPlaylistBottomSheet
+              isVisible={isPlaylistSheetVisible}
+              closeSheet={() => setIsPlaylistSheetVisible(false)}
+              album={currentTrack}
+            />
+<Share
+    isVisible={isShareModalVisible}
+    onClose={() => setIsShareModalVisible(false)}
+    album={{
+      title: currentTrack?.title,
+      artist: currentTrack?.artist?.name,
+      image: currentTrack?.release?.artwork?.high,
+      duration: progress.duration,
+      type: 'track',
+      id: currentTrack?._id,
+      tracks: [currentTrack]
+    }}
+  />
       </SafeAreaView>
     );
   };

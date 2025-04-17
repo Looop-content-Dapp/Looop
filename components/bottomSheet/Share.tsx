@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,8 @@ import {
   Animated,
   Dimensions,
   Platform,
+  Share as RNShare,
+  Linking
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import * as Contacts from 'expo-contacts';
@@ -19,6 +21,7 @@ import { AlertDiamondIcon, CdIcon, FavouriteIcon, Playlist01Icon, Queue01Icon } 
 import { Feather } from '@expo/vector-icons';
 import AddToPlaylistBottomSheet from './AddToPlaylistBottomSheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 interface ShareProps {
   isVisible: boolean;
@@ -30,6 +33,7 @@ interface ShareProps {
     duration?: number;  // Change to number type
     type?: string;
     id?: string;
+    tracks?: any[];
   };
 }
 
@@ -40,23 +44,134 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
   const [userId, setUserId] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const slideAnim = React.useRef(new Animated.Value(0)).current;
+  const [animationReady, setAnimationReady] = useState(false);
+
+  const shareContent = {
+    title: album?.title || 'Check out this track',
+    message: `Check out "${album?.title}" by ${album?.artist} on Looop Music!`,
+    url: `https://looop.com/track/${album?.id}`, // Replace with your actual sharing URL
+  };
+
+  const handleCopyLink = () => {
+    Clipboard.setString(shareContent.url);
+    Alert.alert('Success', 'Link copied to clipboard');
+  };
+
+
+  const handleShareToWhatsApp = async () => {
+    try {
+      const message = encodeURIComponent(`${shareContent.message}\n${shareContent.url}`);
+      const whatsappUrl = `whatsapp://send?text=${message}`;
+      const supported = await Linking.canOpenURL(whatsappUrl);
+
+      if (supported) {
+        await Linking.openURL(whatsappUrl);
+      } else {
+        await RNShare.share({
+          message: `${shareContent.message}\n${shareContent.url}`,
+        });
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Could not open WhatsApp. Make sure it is installed.');
+    }
+  };
+
+  const handleShareToSnapchat = async () => {
+    try {
+      await RNShare.share({
+        message: `${shareContent.message}\n${shareContent.url}`,
+      });
+    } catch (error) {
+      Alert.alert('Error', 'Could not share to Snapchat.');
+    }
+  };
+
+  const handleShareToInstagram = async () => {
+    try {
+      await RNShare.share({
+        message: `${shareContent.message}\n${shareContent.url}`,
+      });
+    } catch (error) {
+      Alert.alert('Error', 'Could not share to Instagram.');
+    }
+  };
+
+  const handleShareToTwitter = async () => {
+    try {
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareContent.message)}&url=${encodeURIComponent(shareContent.url)}`;
+      const supported = await Linking.canOpenURL(twitterUrl);
+
+      if (supported) {
+        await Linking.openURL(twitterUrl);
+      } else {
+        await RNShare.share({
+          message: `${shareContent.message}\n${shareContent.url}`,
+        });
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Could not share to Twitter.');
+    }
+  };
+
+  const handleClose = () => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 0.95,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setAnimationReady(false);
+      onClose();
+    });
+  };
 
   useEffect(() => {
     if (isVisible) {
+      setAnimationReady(true);
       Animated.spring(slideAnim, {
         toValue: 1,
         useNativeDriver: true,
         damping: 15,
         mass: 0.8,
       }).start();
-    } else {
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
     }
   }, [isVisible]);
+
+  // Add staggered animation for content
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+
+  useEffect(() => {
+    if (animationReady) {
+      Animated.sequence([
+        Animated.delay(150), // Wait for bottom sheet to slide up
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.spring(scaleAnim, {
+            toValue: 1,
+            damping: 15,
+            mass: 0.8,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start();
+    }
+  }, [animationReady]);
 
   useEffect(() => {
     const getUserId = async () => {
@@ -106,7 +221,7 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
     }
 
     try {
-    
+
     } catch (error) {
       console.error('Error adding to favorites:', error);
       Alert.alert('Error', 'Failed to update favorites. Please try again.');
@@ -175,13 +290,14 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
       transparent
       animationType="none"
       statusBarTranslucent
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <TouchableOpacity
-        style={styles.overlay}
+        style={[styles.overlay, { backgroundColor: 'rgba(0, 0, 0, 0.7)' }]}
         activeOpacity={1}
-        onPress={onClose}
+        onPress={handleClose}
       >
+        {/* Replace onClose with handleClose in all TouchableOpacity components */}
         <Animated.View
           style={[
             styles.modalContent,
@@ -193,7 +309,9 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
                     outputRange: [600, 0],
                   }),
                 },
+                { scale: scaleAnim },
               ],
+              opacity: fadeAnim,
             },
           ]}
         >
@@ -241,41 +359,41 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
                 )}
               </View>
 
-              <View className='border-b-2 border-[#202227]  pb-[16px] pt-[16px]'>
-                <Text style={styles.sectionLabel}>Send to</Text>
-                <View style={styles.sharingButtons}>
-                  <TouchableOpacity style={styles.shareButton}>
-                    <View style={[styles.iconContainer, { backgroundColor: '#800080' }]}>
-                      <Feather name="link" size={32} color="#FFFFFF" />
-                    </View>
-                    <Text className='font-PlusJakartaSansMedium' style={styles.shareLabel}>Copylink</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.shareButton}>
-                    <View style={[styles.iconContainer, { backgroundColor: '#25D366' }]}>
-                      <Image source={require("../../assets/images/whatsapp_3938041.png")} className='w-[64px] rounded-full h-[64px] ' />
-                    </View>
-                    <Text style={styles.shareLabel}>Share to Whatsapp</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.shareButton}>
-                    <View style={[styles.iconContainer, { backgroundColor: '#FFFC00' }]}>
-                      <Image source={require("../../assets/images/social_13670393.png")} className='w-[40px] h-[40px]' />
-                    </View>
-                    <Text style={styles.shareLabel}>Snapchat story</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.shareButton}>
-                    <View style={[styles.iconContainer, { backgroundColor: '#FFFFFF' }]}>
-                      <Image source={require("../../assets/images/instagram_2111463.png")} className='w-[32px] h-[32px]' />
-                    </View>
-                    <Text style={styles.shareLabel}>Instagram chat</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.shareButton}>
-                    <View style={[styles.iconContainer, { backgroundColor: '#FFFFFF' }]}>
-                      <Image source={require("../../assets/images/icons8-twitter-50.png")} className='w-[32px] h-[32px]' />
-                    </View>
-                    <Text style={styles.shareLabel}>Share to X</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+              <View className='border-b-2 border-[#202227] pb-[16px] pt-[16px]'>
+         <Text style={styles.sectionLabel}>Send to</Text>
+       <View style={styles.sharingButtons}>
+      <TouchableOpacity style={styles.shareButton} onPress={handleCopyLink}>
+        <View style={[styles.iconContainer, { backgroundColor: '#800080' }]}>
+          <Feather name="link" size={32} color="#FFFFFF" />
+        </View>
+        <Text className='font-PlusJakartaSansMedium' style={styles.shareLabel}>Copy link</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.shareButton} onPress={handleShareToWhatsApp}>
+        <View style={[styles.iconContainer, { backgroundColor: '#25D366' }]}>
+          <Image source={require("../../assets/images/whatsapp_3938041.png")} className='w-[64px] rounded-full h-[64px] ' />
+        </View>
+        <Text style={styles.shareLabel}>Share to WhatsApp</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.shareButton} onPress={handleShareToSnapchat}>
+        <View style={[styles.iconContainer, { backgroundColor: '#FFFC00' }]}>
+          <Image source={require("../../assets/images/social_13670393.png")} className='w-[40px] h-[40px]' />
+        </View>
+        <Text style={styles.shareLabel}>Snapchat story</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.shareButton} onPress={handleShareToInstagram}>
+        <View style={[styles.iconContainer, { backgroundColor: '#FFFFFF' }]}>
+          <Image source={require("../../assets/images/instagram_2111463.png")} className='w-[32px] h-[32px]' />
+        </View>
+        <Text style={styles.shareLabel}>Instagram chat</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.shareButton} onPress={handleShareToTwitter}>
+        <View style={[styles.iconContainer, { backgroundColor: '#FFFFFF' }]}>
+          <Image source={require("../../assets/images/icons8-twitter-50.png")} className='w-[32px] h-[32px]' />
+        </View>
+        <Text style={styles.shareLabel}>Share to X</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
 
               <View style={styles.actionButtons}>
                 <TouchableOpacity style={styles.actionButton} onPress={handleAddToFavorites}>
@@ -291,8 +409,8 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
                 <TouchableOpacity
                   style={styles.actionButton}
                   onPress={() => {
+                    setIsPlaylistSheetVisible(true);
                     onClose();
-                    setTimeout(() => setIsPlaylistSheetVisible(true), 300);
                   }}
                 >
                   <View className='bg-[#202227] p-[20px] rounded-[56px]'>

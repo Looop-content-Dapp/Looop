@@ -5,8 +5,10 @@ import { useQuery } from '../hooks/useQuery';
 import { useNavigation } from 'expo-router';
 import { useCreatePlaylist } from '@/hooks/usePlaylist';
 import { useAppSelector } from '@/redux/hooks';
+import { useNotification } from '@/context/NotificationContext';
 
 const CreatePlaylist = () => {
+  const { showNotification } = useNotification();
   const [playlistName, setPlaylistName] = useState('Daily Mix 1');
   const { userdata } = useAppSelector((auth) => auth.auth);
   const navigation = useNavigation();
@@ -29,18 +31,34 @@ const CreatePlaylist = () => {
         },
         {
           onSuccess: () => {
-            Alert.alert("Success", "Playlist created successfully!");
+            showNotification({
+              type: 'success',
+              title: 'Success',
+              message: 'Playlist created successfully!',
+              position: 'bottom'
+            });
             navigation.goBack();
           },
           onError: (error) => {
-            Alert.alert("Error", "Failed to create playlist. Please try again.");
+            showNotification({
+              type: 'error',
+              title: 'Error',
+              message: 'Failed to create playlist. Please try again.',
+              position: 'bottom'
+            });
           }
         }
       );
     } catch (error) {
-      Alert.alert("Error", "Failed to create playlist. Please try again.");
+      showNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to create playlist. Please try again.',
+        position: 'bottom'
+      });
     }
   };
+
 
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container}>

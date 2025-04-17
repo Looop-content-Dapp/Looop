@@ -637,7 +637,7 @@ export const useQuery = () => {
   // Get Last Played Songs
   const getLastPlayedSongs = useCallback(async (userId: string) => {
     try {
-      const response = await axios.get(
+      const response = await api.get(
         `/api/song/history/last-played/${userId}`
       );
       return response.data;

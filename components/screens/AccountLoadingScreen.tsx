@@ -52,7 +52,7 @@ const AccountLoadingScreen: React.FC<AccountLoadingScreenProps> = ({
     return currentText.split(' ').map((word, index) => (
       <Text
         key={index}
-        className={`text-[24px] font-PlusJakartaSansBold ${
+        className={`text-[20px] font-PlusJakartaSansBold ${
           highlightedWords.includes(index) ? 'text-[#f4f4f4]' : 'text-gray-500'
         }`}
         style={{ marginRight: 8 }}

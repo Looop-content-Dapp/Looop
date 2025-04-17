@@ -135,7 +135,7 @@ export default function CommentScreen() {
 
   // Update the useEffect for comments data
   useEffect(() => {
-    if (commentsData?.data?.comments) { 
+    if (commentsData?.data?.comments) {
       setComments(commentsData?.data?.comments);
     }
   }, [commentsData]);
@@ -370,9 +370,6 @@ export default function CommentScreen() {
               </TouchableOpacity>
               <TouchableOpacity onPress={handleGifPick}>
                 <Gif02Icon size={24} color="#787A80" />
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <HappyIcon size={24} color="#787A80" />
               </TouchableOpacity>
             </View>
 

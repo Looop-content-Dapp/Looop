@@ -23,6 +23,8 @@ import TrackPlayer, {
   Capability,
 } from "react-native-track-player";
 import { RootState, AppDispatch } from "@/redux/store";
+  import useUserInfo from './useUserInfo';
+  import { useLibrary } from './useLibrary';
 
 interface AlbumInfo {
   title: string;
@@ -84,6 +86,7 @@ const useMusicPlayer = () => {
   const playbackState = usePlaybackState();
   const progress = useProgress();
 
+  const queue = useAppSelector((state: RootState) => state.player.queue);
   const shuffle = useAppSelector((state: RootState) => state.player.shuffle);
   const repeat = useAppSelector((state: RootState) => state.player.repeat);
   const currentTrack = useAppSelector((state: RootState) => state.player.track);
@@ -187,95 +190,128 @@ const useMusicPlayer = () => {
   // Add a new state for tracking loading states of individual tracks
   const [loadingTrackId, setLoadingTrackId] = useState<string | null>(null);
 
+
+
+  // Inside useMusicPlayer hook, add these lines near the top
+  const userInfo = useUserInfo();
+  const { streamSong } = useLibrary(userdata?._id);
+
+  // Modify the play function
   const play = useCallback(
-    async (track: ExtendedTrack, albumInfo: AlbumInfo, playlist?: ExtendedTrack[]) => {
-      try {
-        if (!userdata?._id) return;
+  async (track: ExtendedTrack, albumInfo: AlbumInfo, playlist?: ExtendedTrack[]) => {
+  try {
+  if (!userdata?._id) return;
 
-        // Set loading state for this specific track
-        setLoadingTrackId(track._id);
+  setLoadingTrackId(track._id);
+  dispatch(playTrack({ track, albumInfo, playlist }));
 
-        // Immediately dispatch the track to update UI
-        dispatch(playTrack({ track, albumInfo, playlist }));
+  const trackIndex = playlist?.findIndex((t) => t._id === track._id) ?? 0;
 
-        const trackIndex = playlist?.findIndex((t) => t._id === track._id) ?? 0;
+  const currentState = await TrackPlayer.getPlaybackState();
+  if (currentState.state === State.Playing) {
+  await TrackPlayer.pause();
+  }
 
-        const currentState = await TrackPlayer.getPlaybackState();
-        if (currentState.state === State.Playing) {
-          await TrackPlayer.pause();
-        }
+  const queue = await TrackPlayer.getQueue();
+  const isInQueue = queue.some((t) => t.id === track._id);
 
-        const queue = await TrackPlayer.getQueue();
-        const isInQueue = queue.some((t) => t.id === track._id);
+  if (isInQueue) {
+  const index = queue.findIndex((t) => t.id === track._id);
+  if (index !== -1) {
+  await TrackPlayer.skip(index);
+  await TrackPlayer.play();
+  setIsPlaying(true);
+  setLoadingTrackId(null);
+  return;
+  }
+  }
 
-        if (isInQueue) {
-          const index = queue.findIndex((t) => t.id === track._id);
-          if (index !== -1) {
-            await TrackPlayer.skip(index);
-            await TrackPlayer.play();
-            setIsPlaying(true);
-            setLoadingTrackId(null);
-            return;
-          }
-        }
+  await TrackPlayer.reset();
 
-        await TrackPlayer.reset();
+  const formattedTrack = {
+  id: track._id,
+  url: track.songData.fileUrl,
+  title: track.title || "Unknown Title",
+  artist: track.artist?.name || "Unknown Artist",
+  artwork: albumInfo.coverImage,
+  duration: track.songData.duration,
+  album: albumInfo.title,
+  genre: "",
+  date: new Date().toISOString(),
+  };
 
-        const formattedTrack = {
-          id: track._id,
-          url: track.songData.fileUrl,
-          title: track.title || "Unknown Title",
-          artist: track.artist?.name || "Unknown Artist",
-          artwork: albumInfo.coverImage,
-          duration: track.songData.duration,
-          album: albumInfo.title,
-          genre: "",
-          date: new Date().toISOString(),
-        };
+  if (playlist) {
+  const formattedPlaylist = playlist.map((t) => ({
+  id: t._id,
+  url: t.songData.fileUrl,
+  title: t.title || "Unknown Title",
+  artist: t.artist?.name || "Unknown Artist",
+  artwork: albumInfo.coverImage,
+  duration: t.songData.duration,
+  album: albumInfo.title,
+  genre: "",
+  date: new Date().toISOString(),
+  }));
+  await TrackPlayer.add(formattedPlaylist);
+  await TrackPlayer.skip(trackIndex);
+  } else {
+  await TrackPlayer.add(formattedTrack);
+  }
 
-        if (playlist) {
-          const formattedPlaylist = playlist.map((t) => ({
-            id: t._id,
-            url: t.songData.fileUrl,
-            title: t.title || "Unknown Title",
-            artist: t.artist?.name || "Unknown Artist",
-            artwork: albumInfo.coverImage,
-            duration: t.songData.duration,
-            album: albumInfo.title,
-            genre: "",
-            date: new Date().toISOString(),
-          }));
-          await TrackPlayer.add(formattedPlaylist);
-          await TrackPlayer.skip(trackIndex);
-        } else {
-          await TrackPlayer.add(formattedTrack);
-        }
+  await TrackPlayer.play();
+  dispatch(setIsPlaying(true));
+  await storeCurrentTrack(track, albumInfo);
 
-        await TrackPlayer.play();
-        dispatch(setIsPlaying(true));  // Update this
-        await storeCurrentTrack(track, albumInfo);
+  // Add streaming tracking after 1 minute
+  const streamingTimeout = setTimeout(async () => {
+  try {
+  const res = await streamSong(
+  track.songData._id,
+  userdata._id,
+  userInfo?.network,
+  userInfo.device,
+  userInfo.location,
+  );
+  console.log("Stream started:", res);
+  } catch (error) {
+  console.error("Error recording stream:", error);
+  }
+  }, 60000); // 1 minute
 
-        setState((prev) => ({
-          ...prev,
-          isAlbumPlaying: true,
-          currentPlayingIndex: trackIndex,
-          error: null,
-          loading: false,
-        }));
-      } catch (error) {
-        console.error("Error playing track:", error);
-        setState((prev) => ({
-          ...prev,
-          error: "Failed to play track",
-          loading: false,
-          isAlbumPlaying: false,
-        }));
-        setIsPlaying(false);
-      } finally {
-        setLoadingTrackId(null);
-      }
-    },
-    [dispatch, userdata?._id, albumInfo, playlist]
+  // Cleanup streaming timeout when track changes or stops
+  const streamingCleanup = TrackPlayer.addEventListener(
+  Event.PlaybackTrackChanged,
+  () => {
+  clearTimeout(streamingTimeout);
+  }
+  );
+
+  setState((prev) => ({
+  ...prev,
+  isAlbumPlaying: true,
+  currentPlayingIndex: trackIndex,
+  error: null,
+  loading: false,
+  }));
+
+  return () => {
+  clearTimeout(streamingTimeout);
+  streamingCleanup.remove();
+  };
+  } catch (error) {
+  console.error("Error playing track:", error);
+  setState((prev) => ({
+  ...prev,
+  error: "Failed to play track",
+  loading: false,
+  isAlbumPlaying: false,
+  }));
+  setIsPlaying(false);
+  } finally {
+  setLoadingTrackId(null);
+  }
+  },
+  [dispatch, userdata?._id, albumInfo, playlist, userInfo, streamSong]
   );
 
   const pause = useCallback(async () => {
@@ -476,6 +512,35 @@ const useMusicPlayer = () => {
     [saveAlbum, likeSong, userdata?._id]
   );
 
+  const updateQueue = useCallback(async (newQueue: ExtendedTrack[]) => {
+    try {
+      dispatch(setQueue(newQueue));
+
+      // Update TrackPlayer queue
+      await TrackPlayer.reset();
+      if (!albumInfo) return;
+
+      const formattedTracks = newQueue.map(track => ({
+        id: track._id,
+        url: track.songData.fileUrl,
+        title: track.title || "Unknown Title",
+        artist: track.artist?.name || "Unknown Artist",
+        artwork: albumInfo.coverImage,
+        duration: track.songData.duration,
+        album: albumInfo.title,
+        genre: "",
+        date: new Date().toISOString(),
+      }));
+
+      await TrackPlayer.add(formattedTracks);
+      if (isPlaying) {
+        await TrackPlayer.play();
+      }
+    } catch (error) {
+      console.error("Error updating queue:", error);
+    }
+  }, [dispatch, albumInfo, isPlaying]);
+
   return {
     ...state,
     isPlaying,
@@ -525,6 +590,8 @@ const useMusicPlayer = () => {
     ),
     getStoredTrack: useCallback(async () => await getStoredTrack(), []),
     loadingTrackId, // Add this to the return object
+    queue,
+    updateQueue,
   };
 };
 

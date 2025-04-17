@@ -18,6 +18,7 @@ import { FormField } from "@/components/app-components/formField";
 import { countries } from "@/data/data";
 import useFileUpload, { FileType } from "@/hooks/useFileUpload";
 import { useUpdateProfile, profileSchema, ProfileFormData } from "@/hooks/useUpdateProfile";
+import { useNotification } from '@/context/NotificationContext';
 import { z } from "zod";
 
 interface SignInUserData {
@@ -40,6 +41,7 @@ interface SignInUserData {
 }
 
 const EditProfile = () => {
+  const { showNotification } = useNotification();
   const router = useRouter();
   const { userdata } = useAppSelector((state) => state.auth);
   const { pickFile, isLoading: isUploading } = useFileUpload();
@@ -123,7 +125,12 @@ const handleImagePick = async () => {
         handleFormChange("profileImage", result.file.uri);
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to pick image");
+        showNotification({
+            type: 'error',
+            title: 'Image Upload Failed',
+            message: 'Failed to pick image',
+            position: 'top'
+          });
     }
   };
 
@@ -138,8 +145,13 @@ const handleImagePick = async () => {
         },
         {
           onSuccess: () => {
-            Alert.alert("Success", "Profile updated successfully");
-            router.back();
+            showNotification({
+                type: 'success',
+                title: 'Success',
+                message: 'Profile updated successfully',
+                position: 'top'
+              });
+              router.back();
           },
           onError: (error: any) => {
             if (error.message) {
@@ -151,10 +163,20 @@ const handleImagePick = async () => {
                 });
                 setErrors(errorObj);
               } catch {
-                Alert.alert("Error", "Failed to update profile");
+                showNotification({
+                    type: 'error',
+                    title: 'Update Failed',
+                    message: 'Failed to update profile',
+                    position: 'top'
+                  });
               }
             } else {
-              Alert.alert("Error", "Failed to update profile");
+                showNotification({
+                    type: 'error',
+                    title: 'Update Failed',
+                    message: 'Failed to update profile',
+                    position: 'top'
+                });
             }
           },
         }

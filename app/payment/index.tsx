@@ -178,7 +178,7 @@ const Index = () => {
                     pay
                   </Text>
                   <Text className="text-[28px] font-PlusJakartaSansBold text-white mb-6">
-                    $2.00
+                    $5.00
                   </Text>
                 </View>
 
