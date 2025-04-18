@@ -252,13 +252,14 @@ const MusicDetails = () => {
     );
   }
 
-
   // Update render section
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.dismissTo({
+            pathname: `/(musicTabs)/(home)/_screens/artist/${releaseInfo.artist._id}`
+        })}>
           <ArrowLeft02Icon size={32} color="#D2D3D5" />
         </TouchableOpacity>
       </View>

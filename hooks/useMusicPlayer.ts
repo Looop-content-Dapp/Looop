@@ -11,6 +11,7 @@ import {
   toggleShuffleMode,
   toggleRepeatMode,
   setIsPlaying,
+  setQueue,
 } from "../redux/slices/PlayerSlice";
 import { useQuery } from "./useQuery";
 import { useAppSelector } from "@/redux/hooks";
@@ -197,6 +198,7 @@ const useMusicPlayer = () => {
   const { streamSong } = useLibrary(userdata?._id);
 
   // Modify the play function
+  // Modify the play function to handle PlaylistSong type
   const play = useCallback(
   async (track: ExtendedTrack, albumInfo: AlbumInfo, playlist?: ExtendedTrack[]) => {
   try {
@@ -236,27 +238,30 @@ const useMusicPlayer = () => {
   artwork: albumInfo.coverImage,
   duration: track.songData.duration,
   album: albumInfo.title,
-  genre: "",
-  date: new Date().toISOString(),
+  genre: "", // Ensure this field is present
+  date: new Date().toISOString(), // Ensure this field is present
   };
 
   if (playlist) {
+    console.log("playlist", playlist)
   const formattedPlaylist = playlist.map((t) => ({
-  id: t._id,
+  id: t.songData._id,
   url: t.songData.fileUrl,
   title: t.title || "Unknown Title",
   artist: t.artist?.name || "Unknown Artist",
-  artwork: albumInfo.coverImage,
+  artwork: t?.releaseImage || "",
   duration: t.songData.duration,
   album: albumInfo.title,
-  genre: "",
-  date: new Date().toISOString(),
+  genre: "", // Ensure this field is present
+  date: new Date().toISOString(), // Ensure this field is present
   }));
+  console.log("formattedPlaylist", formattedPlaylist)
   await TrackPlayer.add(formattedPlaylist);
   await TrackPlayer.skip(trackIndex);
   } else {
   await TrackPlayer.add(formattedTrack);
   }
+
 
   await TrackPlayer.play();
   dispatch(setIsPlaying(true));
@@ -272,7 +277,6 @@ const useMusicPlayer = () => {
   userInfo.device,
   userInfo.location,
   );
-  console.log("Stream started:", res);
   } catch (error) {
   console.error("Error recording stream:", error);
   }

@@ -71,15 +71,9 @@ const RecommededMusic = ({ data, isLoading, title = "Recommended For You" }) => 
                 ]}
                 onPress={() => {
                   router.push({
-                    pathname: "/(musicTabs)/_screens/musicDetails",
+                    pathname: "/(musicTabs)/(home)/_screens/musicDetails",
                     params: {
                       id: item.release._id,
-                      title: item.title,
-                      artist: typeof item.artist === 'string' ? item.artist : item.artist?.name,
-                      image: getImageUrl(item),
-                      type: item.release?.type || 'album',
-                      duration: item.duration || 0,
-                      totalTracks: item.totalTracks || 1
                     }
                   });
                 }}

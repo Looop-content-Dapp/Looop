@@ -41,30 +41,30 @@ const EngagementSection: React.FC<EngagementSectionProps> = ({
   const handleLike = async () => {
     if (isLiking) return;
 
-    const newLikeCount = actions.like ? engagement.likes - 1 : engagement.likes + 1;
+    const newLikeCount = actions.like ? engagement.likes : engagement.likes + 1;
 
     // Animate heart
     scale.value = withSpring(1.5, {
-      damping: 10,
-      stiffness: 100,
+        damping: 10,
+        stiffness: 100,
     }, () => {
-      scale.value = withSpring(1);
+        scale.value = withSpring(1);
     });
 
     // Update UI immediately
     onLikeUpdate?.(newLikeCount);
 
     try {
-      await likePost({
-        userId: userdata?._id || "",
-        postId: index
-      });
+        await likePost({
+            userId: userdata?._id || "",
+            postId: index
+        });
     } catch (error) {
-      // Revert on failure
-      onLikeUpdate?.(engagement.likes);
-      console.error('Like failed:', error);
+        // Revert on failure
+        onLikeUpdate?.(engagement.likes);
+        console.error('Like failed:', error);
     }
-  };
+};
 
   const handleCommentPress = () => {
     router.push({

@@ -76,7 +76,7 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
       onPress={() => {
         if (!loading && item?._id) {
           router.push({
-            pathname: `/(musicTabs)/_screens/artist/${item?._id}`,
+            pathname: `/(musicTabs)/(home)/_screens/artist/${item?._id}`,
             params: {
               id: item?._id,
               artistId: item?.artistId,

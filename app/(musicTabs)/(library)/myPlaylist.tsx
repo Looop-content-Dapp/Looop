@@ -86,7 +86,7 @@ const MyPlaylist = () => {
 
   const handlePlaylistPress = (playlistId: string) => {
     route.push({
-      pathname: "/(musicTabs)/_screens/PlaylistDetails",
+      pathname: "/(musicTabs)/(library)/_Libscreens/PlaylistDetails",
       params: { id: playlistId }
     });
   };

@@ -169,7 +169,7 @@ const Hottest: React.FC<Props> = ({ songs, isLoading }) => {
   return (
     <View style={styles.container}>
         {songs.length > 0 && (
-             <Text style={styles.header}>Hottest Releases</Text>
+             <Text className='text-[#D2D3D5] text-[20px] font-PlusJakartaSansMedium ml-[16px]'>Hottest Releases</Text>
         )}
       {isLoading ? (
         <FlatList

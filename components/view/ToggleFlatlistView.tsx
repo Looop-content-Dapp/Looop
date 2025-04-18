@@ -22,7 +22,7 @@ const ToggleFlatListView = ({
   error,
   renderItem = (item) => item
 }: ToggleFlatListViewProps) => {
-  const [isGridView, setIsGridView] = useState(false);
+  const [isGridView, setIsGridView] = useState(true);
 
   const toggleView = () => {
     setIsGridView(!isGridView);
@@ -88,7 +88,7 @@ const ToggleFlatListView = ({
     return (
       <FlatList
         key={isGridView ? 'grid' : 'list'}
-        data={uniqueData}
+        data={uniqueData} // Ensure unique data is used
         renderItem={({ item }) => {
           const adaptedItem = renderItem(item);
           return isGridView ? (

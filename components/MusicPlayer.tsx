@@ -36,13 +36,14 @@ const MusicPlayer = () => {
     next,
     buffering,
   } = useMusicPlayerContext();
+  console.log("Current Track:", currentTrack);
   const { navigate } = useRouter();
 
   useEffect(() => {
     const fetchColors = async () => {
-      if (albumInfo?.coverImage) {
+      if (currentTrack?.release?.artwork?.high || currentTrack?.releaseImage) {
         try {
-          const result = await getColors(albumInfo.coverImage, {
+          const result = await getColors(currentTrack?.release?.artwork?.high ? currentTrack?.release?.artwork?.high : currentTrack?.releaseImage, {
             fallback: '#0a0b0f',
             cache: true,
           });
@@ -119,7 +120,7 @@ const MusicPlayer = () => {
           navigate({
             pathname: "/nowPlaying",
             params: {
-              cover: albumInfo?.coverImage,
+              cover: currentTrack?.release?.artwork?.high ? currentTrack?.release?.artwork?.high : currentTrack?.releaseImage,
               albumTitle: albumInfo?.title,
               title: currentTrack?.title,
             },
@@ -128,7 +129,7 @@ const MusicPlayer = () => {
         className="flex-1 flex-row items-center gap-x-[12px]"
       >
         <Image
-          source={{ uri: albumInfo?.coverImage }}
+          source={{ uri: currentTrack?.release?.artwork?.high ? currentTrack?.release?.artwork?.high : currentTrack?.releaseImage  }}
           className="w-[60px] h-[60px] rounded-md"
         />
         <View className="flex-1 mr-4">

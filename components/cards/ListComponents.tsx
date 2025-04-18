@@ -50,7 +50,6 @@ interface PlaylistItemProps {
 
 const ListComponent = ({ item }: { item: ListItemProps }) => {
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     if (item) {
       setIsLoading(false);
@@ -95,7 +94,7 @@ const ListComponent = ({ item }: { item: ListItemProps }) => {
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-              {item.track.title}
+              {item?.track?.title}
             </Text>
           </Skeleton>
 
@@ -113,13 +112,13 @@ const ListComponent = ({ item }: { item: ListItemProps }) => {
               <Text numberOfLines={1}
               ellipsizeMode="tail"
               className='text-[14px] text-Grey/04 font-PlusJakartaSansRegular'>
-                {item.artist.name}
+                {item?.artist?.name}
               </Text>
               <Ellipse />
               <Text numberOfLines={1}
               ellipsizeMode="tail"
               className='text-[14px] text-Grey/04 font-PlusJakartaSansRegular'>
-                {item.release.title}
+                {item?.release?.title}
               </Text>
             </View>
           </Skeleton>

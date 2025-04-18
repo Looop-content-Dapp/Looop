@@ -85,9 +85,9 @@ import {
     useEffect(() => {
       const fetchColors = async () => {
         const imageUrl = cover || albumInfo?.coverImage;
-        if (currentTrack?.release?.artwork?.high) {
+        if (cover) {
           try {
-            const result = await getColors(currentTrack?.release?.artwork?.high, {
+            const result = await getColors(cover as string, {
               fallback: '#000000',
               cache: true,
             });
@@ -166,7 +166,7 @@ import {
         <ScrollView
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
-            paddingHorizontal: 16
+            paddingHorizontal: 6
           }}
         >
           <View className="flex-row items-center justify-between w-full py-4">
@@ -204,32 +204,18 @@ import {
             </TouchableOpacity>
           </View>
 
-          <>
           <FastImage
               source={{
-                uri: currentTrack?.release?.artwork?.high,
+                uri: cover,
                 priority: FastImage.priority.high,
               }}
               style={{
-                width: wp("100%"),
+                width: '100%', // Set width to 100% to take full screen width
                 height: 400,
-                marginTop: 19
+                marginTop: 0 // Remove margin if necessary
               }}
               resizeMode={FastImage.resizeMode.cover}
             />
-            {/* <LinearGradient
-              colors={['transparent', backgroundColor, backgroundColor]}
-              locations={[0.2, 0.8, 1]}
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                width: Dimensions.get('window').width,
-                height: 400,
-                zIndex: 40,
-                opacity: 0.95
-              }}
-            /> */}
-          </>
 
           <View className="px-[24px] my-[24px]">
             <View className="flex-row items-center justify-between">

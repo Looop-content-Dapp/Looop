@@ -1,9 +1,9 @@
+import { useNotification } from '@/context/NotificationContext';
 import {
     View,
     Text,
     Image,
     ScrollView,
-    Alert,
     TouchableOpacity
   } from "react-native";
   import React, { useLayoutEffect, useState } from "react";
@@ -16,6 +16,7 @@ import { useAppSelector } from "@/redux/hooks";
 
 
   const payInCrypto = () => {
+    const { showNotification } = useNotification();
     const {
       name,
       image,
@@ -62,11 +63,12 @@ import { useAppSelector } from "@/redux/hooks";
         console.log('Join community result:', result);
 
         if (result.status === "success") {
-          Alert.alert(
-            "Success",
-            "Successfully joined the community!",
-            [{ text: "OK" }]
-          );
+          showNotification({
+            type: 'success',
+            title: 'Success',
+            message: 'Successfully joined the community!',
+            position: 'top'
+          });
         } else {
           throw new Error('Join community response was not successful');
         }
@@ -80,11 +82,14 @@ import { useAppSelector } from "@/redux/hooks";
         const errorMessage = error.response?.data?.error ||
                            error.response?.data?.error ||
                            "Failed to join community. Please try again.";
-        Alert.alert(
-          "Error",
-          errorMessage,
-          [{ text: "OK" }]
-        );
+
+                           showNotification({
+                            type: 'error',
+                            title: 'Error',
+                            message: errorMessage,
+                            position: 'top'
+                          });
+        router.dismissTo(`${currentRoute}`)
       } finally {
         setIsLoading(false);
       }

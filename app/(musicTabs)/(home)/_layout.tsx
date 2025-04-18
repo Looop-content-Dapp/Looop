@@ -28,12 +28,10 @@ export default function HomeLayout() {
           ...headerConfig,
         }}
       />
-      <Stack.Screen
-        name="artist/[id]"
-        options={{
+      <Stack.Screen name="_screens"
+       options={{
           headerShown: false,
-        }}
-      />
+        }} />
     </Stack>
   );
 }

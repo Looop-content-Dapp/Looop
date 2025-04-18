@@ -12,10 +12,9 @@ const Singles: React.FC<Props> = ({ songs, isLoading }) => {
   const router = useRouter()
 
   const renderItem = ({ item }: { item: any }) => {
-    console.log("single item: ", item)
     return (
         <Pressable
-        onPress={() => router.push({ pathname: "/(musicTabs)/_screens/musicDetails",  params: {
+        onPress={() => router.push({ pathname: "/(musicTabs)/(home)/_screens/musicDetails",  params: {
             id: item?._id,
             title: item?.title,
             artist: item?.artist?.name,
@@ -60,8 +59,10 @@ const Singles: React.FC<Props> = ({ songs, isLoading }) => {
   })
 
   return (
-    <View className='gap-y-[16px] pl-[14px]'>
-
+    <View className=' pl-[14px]'>
+    {songs.length > 0 && (
+             <Text className='text-[#D2D3D5] text-[20px] font-PlusJakartaSansMedium ml-[16px]'>Singles</Text>
+        )}
     {isLoading ? (
         <FlatList
           data={[1, 2, 3]} // Placeholder array to render skeletons
@@ -77,15 +78,6 @@ const Singles: React.FC<Props> = ({ songs, isLoading }) => {
           showsHorizontalScrollIndicator={false}
         />
       )}
-     {/* <Text className="text-[20px] font-PlusJakartaSansBold text-Grey/04 my-2 ml-2">Singles</Text>
-      <FlatList
-        data={songs}
-        horizontal
-        keyExtractor={(item) => item?.title}
-        renderItem={renderItem}
-        showsHorizontalScrollIndicator={false}
-        className="px-2"
-      /> */}
     </View>
   );
 };

@@ -23,8 +23,9 @@ const NotificationModal = ({
 }: NotificationModalProps) => {
     const slideAnim = useRef(new Animated.Value(0)).current;
     const { height } = Dimensions.get('window');
-    const iconName = type === 'success' ? 'checkmark-circle' : 'alert-circle';
-    const iconColor = type === 'success' ? '#4CAF50' : '#FF6B00';
+    const iconName = type === 'success' ? 'checkmark-circle' : type === 'error' ? 'alert-circle' : 'information-circle';
+    const iconColor = type === 'success' ? '#FFFFFF' : type === 'error' ? '#FFFFFF' : '#FFFFFF';
+    const backgroundColor = type === 'success' ? '#4CAF50' : type === 'error' ? '#FF6B6B' : '#202227'; 
 
     const panResponder = useRef(
         PanResponder.create({
@@ -94,16 +95,27 @@ const NotificationModal = ({
             {...panResponder.panHandlers}
         >
             <TouchableOpacity
-                className="bg-[#202227] rounded-[12px] p-[16px] flex-row items-center shadow-lg"
+                style={{
+                    backgroundColor, // Apply dynamic background color
+                    borderRadius: 12,
+                    padding: 16,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.8,
+                    shadowRadius: 2,
+                    elevation: 5
+                }}
                 activeOpacity={0.9}
                 onPress={hideNotification}
             >
                 <Ionicons name={iconName} size={24} color={iconColor} style={{ marginRight: 12 }} />
-                <View className="flex-1">
-                    <Text className="text-[16px] font-PlusJakartaSansBold text-[#f4f4f4]">
+                <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: type === 'success' ? '#FFFFFF' : type === 'error' ? '#FFFFFF' : '#f4f4f4' }}>
                         {title}
                     </Text>
-                    <Text className="text-[14px] font-PlusJakartaSansMedium text-[#787A80]">
+                    <Text style={{ fontSize: 14, color: type === 'success' ? '#FFFFFF' : type === 'error' ? '#FFFFFF' : '#787A80' }}>
                         {message}
                     </Text>
                 </View>

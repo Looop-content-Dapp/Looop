@@ -136,7 +136,7 @@ const WalletScreen = () => {
   return (
     <SafeAreaView className="flex-1">
       {/* Tab Navigation */}
-      <View className="flex-row justify-around border-b border-[#1A1B1E]">
+      {/* <View className="flex-row justify-around border-b border-[#1A1B1E]">
         <TouchableOpacity
           onPress={() => handleTabPress('Balances')}
           className={`border-b-2 ${activeTab === 'Balances' ? 'border-orange-500 py-[10px] px-[24px]' : 'border-transparent py-[10px] px-[24px]'}`}
@@ -153,7 +153,7 @@ const WalletScreen = () => {
             Collectibles
           </Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       <ScrollView
         className="flex-1"
@@ -205,8 +205,7 @@ const WalletScreen = () => {
           </>
         ) : (
           <>
-            {/* Collectibles Search */}
-            <View className="mx-4 my-4">
+            {/* <View className="mx-4 my-4">
               <View className="bg-[#111318] py-[15px] rounded-[10px] px-4 flex-row items-center gap-x-[12px] border border-[#202227]">
                 <Search01Icon size={16} color="#63656B" variant="stroke" />
                 <TextInput
@@ -216,7 +215,6 @@ const WalletScreen = () => {
                 />
               </View>
             </View>
-            {/* Collectibles List */}
             <FlatList
               data={[
                 {
@@ -246,7 +244,6 @@ const WalletScreen = () => {
                 <TouchableOpacity
                   style={{ width: wp('45%') }}
                   className="h-[262px] bg-[#111318] rounded-[10px] border-2 border-[#202227] overflow-hidden"
-                  onPress={() => { /* Handle collectible press */ }}
                 >
                   <Image
                     source={item.image}
@@ -278,7 +275,7 @@ const WalletScreen = () => {
                 </TouchableOpacity>
               )}
               keyExtractor={item => item.id}
-            />
+            /> */}
           </>
         )}
       </ScrollView>

@@ -261,7 +261,7 @@ const MusicSearch = () => {
       switch (displayType) {
         case 'artist':
           router.push({
-            pathname: `/(musicTabs)/_screens/artist/${item._id}`,
+            pathname: `/(musicTabs)/(home)/_screens/artist/${item._id}`,
             params: {
               id: item._id,
               name: item.name,
@@ -273,7 +273,7 @@ const MusicSearch = () => {
         case 'track':
         case 'release':
           router.push({
-            pathname: '/(musicTabs)/_screens/musicDetails',
+            pathname: '/(musicTabs)/(home)/_screens/musicDetails',
             params: {
               id: item._id,
               title: item.title || item.name,

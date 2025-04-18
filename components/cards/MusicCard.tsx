@@ -49,7 +49,7 @@ const MusicCard = ({ item, loading }: MusicCardProps) => {
           <Pressable
             onPress={() =>
               router.push({
-                pathname: "/(musicTabs)/_screens/musicDetails",
+                pathname: "/(musicTabs)/(home)/_screens/musicDetails",
                 params: {
                   id: item?.id,
                   title: item?.title,

@@ -9,11 +9,11 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft02Icon } from '@hugeicons/react-native';
-import ArtistInfo from '../../../../components/ArtistInfo';
-import JoinCommunity from '../../../../components/cards/JoinCommunity';
+import ArtistInfo from '@/components/ArtistInfo';
+import JoinCommunity from '@/components/cards/JoinCommunity';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import ArtistReleases from '../../../../components/ArtistProfile/ArtistReleases';
+import ArtistReleases from '@/components/ArtistProfile/ArtistReleases';
 import { useAppSelector } from '@/redux/hooks';
 import { useArtistCommunity } from '@/hooks/useArtistCommunity';
 import FastImage from 'react-native-fast-image';

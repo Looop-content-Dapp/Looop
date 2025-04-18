@@ -14,8 +14,8 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import {
   ArrowLeft02Icon,
-  FavouriteIcon,
-  Playlist01Icon,
+  PinIcon,
+  UserAdd02Icon,
   ShuffleIcon,
   MoreHorizontalIcon,
   PauseIcon,
@@ -23,12 +23,13 @@ import {
   VideoReplayIcon,
 } from "@hugeicons/react-native";
 import FastImage from "react-native-fast-image";
-import Share from "../../../components/bottomSheet/Share";
+import Share from "@/components/bottomSheet/Share";
 import { useRef } from "react";
 import { usePlaylistDetails } from "@/hooks/usePlaylist";
 import { useMusicPlayerContext } from "@/context/MusicPlayerContext";
-import AddToPlaylistBottomSheet from "../../../components/bottomSheet/AddToPlaylistBottomSheet";
+import AddToPlaylistBottomSheet from "@/components/bottomSheet/AddToPlaylistBottomSheet";
 import { Portal } from "@gorhom/portal";
+import { useNotification } from "@/context/NotificationContext";
 
 // ### Interfaces
 interface Track {
@@ -62,6 +63,25 @@ const PlaylistDetails = () => {
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
   const [isShareModalVisible, setIsShareModalVisible] = useState(false);
   const [isPlaylistModalVisible, setIsPlaylistModalVisible] = useState(false);
+  const { showNotification } = useNotification();
+
+  const handlePinPlaylistClick = () => {
+    showNotification({
+      type: 'info',
+      title: 'Feature Coming Soon',
+      message: 'Pinning playlists is a work in progress.',
+      position: 'top'
+    });
+  };
+
+  const handleInviteFriendClick = () => {
+    showNotification({
+      type: 'info',
+      title: 'Feature Coming Soon',
+      message: 'Inviting friends for collaboration is a work in progress.',
+      position: 'top'
+    });
+  };
 
   // Add ref for the playlist bottom sheet
   const playlistBottomSheetRef = useRef(null);
@@ -238,8 +258,8 @@ const PlaylistDetails = () => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.replace({
-            pathname: `/(musicTabs)`
+        <TouchableOpacity onPress={() => router.dismissTo({
+            pathname: `/(musicTabs)/(library)/myPlaylist`
         })}>
           <ArrowLeft02Icon size={32} color="#D2D3D5" />
         </TouchableOpacity>
@@ -294,15 +314,14 @@ const PlaylistDetails = () => {
           <View style={styles.controlsContainer}>
             {[
               {
-                Icon: Playlist01Icon,
+                Icon: UserAdd02Icon,
                 size: 48,
-                onPress: () => setIsPlaylistModalVisible(true)
+                onPress: handleInviteFriendClick
               },
               {
-                Icon: VideoReplayIcon,
+                Icon: PinIcon,
                 size: 48,
-                // active: isLiked,
-                // onPress: () => handleLike(releaseInfo?.id || '', releaseInfo?.type || ''),
+                onPress: handlePinPlaylistClick
               },
               {
                 Icon: isCurrentAlbumPlaying ? PauseIcon : PlayIcon,

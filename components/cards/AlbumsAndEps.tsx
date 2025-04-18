@@ -57,7 +57,7 @@ const AlbumsAndEps: React.FC<Props> = ({ songs, isLoading }) => {
       <Pressable
         onPress={() =>
           router.push({
-            pathname: '/(musicTabs)/_screens/musicDetails',
+            pathname: '/(musicTabs)/(home)/_screens/musicDetails',
             params: {
               id: item._id,
               title: item.title,
@@ -153,7 +153,7 @@ const AlbumsAndEps: React.FC<Props> = ({ songs, isLoading }) => {
   return (
     <View style={styles.container}>
       {uniqueSongs.length > 0 && (
-        <Text style={styles.header}>Albums & EPs</Text>
+        <Text className='text-[#D2D3D5] text-[20px] font-PlusJakartaSansMedium ml-[16px]'>Albums & EPs</Text>
       )}
 
       {isLoading ? (

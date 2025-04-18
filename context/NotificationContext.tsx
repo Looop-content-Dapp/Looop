@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState } from 'react';
 
 type NotificationType = {
     visible: boolean;
-    type: 'success' | 'error';
+    type: 'success' | 'error' | 'info'; // Add 'info' type
     title: string;
     message: string;
     position?: 'top' | 'bottom';

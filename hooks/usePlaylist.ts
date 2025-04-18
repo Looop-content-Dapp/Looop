@@ -95,25 +95,30 @@ type Track = {
   release: Release;
 };
 
+
+type SongData = {
+  _id: string;
+  fileUrl: string;
+  format: string;
+  bitrate: number;
+};
+
 type PlaylistSong = {
   _id: string;
-  addedAt: string;
-  addedBy: string;
-  track: Track;
+  title: string;
+  duration: number;
+  songData: SongData;
+  releaseImage: string;
+  artist: Artist; // Added artist field
 };
 
 type PlaylistDetails = {
   _id: string;
   title: string;
-  description: string;
   coverImage: string;
-  isPublic: boolean;
-  isCollaborative: boolean;
-  userId: string;
-  createdDate: string;
-  lastModified: string;
-  totalTracks: number;
-  totalDuration: number;
+  numberOfSaves: number;
+  numberOfSongs: number;
+  totalDuration: number; // Added totalDuration field
   songs: PlaylistSong[];
 };
 

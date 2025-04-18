@@ -17,7 +17,7 @@ interface MemberCommunityCardProps {
 const MemberCommunityCard = ({ communityName, description, coverImage, onPress }: MemberCommunityCardProps) => {
   return (
     <TouchableOpacity
-      className="h-[100px] bg-[#202227] rounded-[24px] overflow-hidden flex-row items-center"
+      className="h-[100px] bg-[#202227] rounded-[24px] my-[24px] overflow-hidden flex-row items-center"
       onPress={onPress}
       activeOpacity={0.7}
     >

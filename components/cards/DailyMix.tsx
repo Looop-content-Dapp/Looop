@@ -108,20 +108,7 @@ const DailyMixesSection = ({
       // Format the track data to match ExtendedTrack interface
       const formattedTracks = mix.tracks.map(track => ({
         ...track,
-        // songData: {
-        //   _id: track.songData._id,
-        //   fileUrl: track.songData?.fileUrl, // Fix: Access fileUrl directly from track's songData
-        //   duration: track.duration,
-        //   title: track.title || '', // Add required title field
-        // },
-        // release: {
-        //   ...track.release,
-        //   artwork: {
-        //     high: track?.release?.artwork?.high// Fallback to mix artwork if not available
-        //   }
-        // }
       }));
-      console.log("formatted tracks", formattedTracks)
       await play(formattedTracks[0], albumInfo, formattedTracks);
     }
   };

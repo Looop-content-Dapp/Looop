@@ -216,13 +216,9 @@ export default function CommentScreen() {
       }
       Keyboard.dismiss();
 
-      // Wait for the refetch to complete
-      await refetchComments();
+      // Immediately route back regardless of comment type
+      router.back();
 
-      // Navigate back if it's a reply
-      if (type === 'reply') {
-        router.back();
-      }
     } catch (error) {
       console.error('Error submitting comment:', error);
     }
@@ -304,7 +300,7 @@ export default function CommentScreen() {
           </View>
         )}
 
-        {/* Comments/Replies List */}
+        {/* Comments/Replies List
         <FlatList
           data={comments}
           renderItem={renderComment}
@@ -314,7 +310,7 @@ export default function CommentScreen() {
           keyboardDismissMode="on-drag"
           contentContainerStyle={{ paddingBottom: 100 }}
           onScroll={() => Keyboard.dismiss()} // Dismiss keyboard on scroll
-        />
+        /> */}
       </View>
 
       {/* Input Section - Now positioned absolutely */}

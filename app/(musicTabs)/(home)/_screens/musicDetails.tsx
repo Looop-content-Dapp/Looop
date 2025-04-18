@@ -9,7 +9,6 @@ import {
   useWindowDimensions,
   StyleSheet,
   ActivityIndicator,
-  Image,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import {
@@ -23,11 +22,11 @@ import {
   VideoReplayIcon,
 } from "@hugeicons/react-native";
 import FastImage from "react-native-fast-image";
-import Share from "../../../components/bottomSheet/Share";
+import Share from "@/components/bottomSheet/Share";
 import { useRef } from "react";
-import { usePlaylistDetails } from "@/hooks/usePlaylist";
+import { useTracksByMusic } from "@/hooks/useTracksByMusic";
 import { useMusicPlayerContext } from "@/context/MusicPlayerContext";
-import AddToPlaylistBottomSheet from "../../../components/bottomSheet/AddToPlaylistBottomSheet";
+import AddToPlaylistBottomSheet from "@/components/bottomSheet/AddToPlaylistBottomSheet";
 import { Portal } from "@gorhom/portal";
 
 // ### Interfaces
@@ -58,7 +57,7 @@ interface Description {
   isTruncated: boolean;
 }
 
-const PlaylistDetails = () => {
+const MusicDetails = () => {
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
   const [isShareModalVisible, setIsShareModalVisible] = useState(false);
   const [isPlaylistModalVisible, setIsPlaylistModalVisible] = useState(false);
@@ -75,13 +74,13 @@ const PlaylistDetails = () => {
   }, []);
 
 
-  // Get playlistId from params
+  // Get releaseId from params
   const { id } = useLocalSearchParams();
   const { width } = useWindowDimensions();
   const shareBottomSheetRef = useRef(null);
 
-  // Use the hook to fetch playlist data
-  const { data: playlistData, isLoading: playlistLoading } = usePlaylistDetails(id as string);
+  // Use the hook to fetch release data
+  const { data: releaseData, isLoading: releaseLoading } = useTracksByMusic(id as string);
 
   const {
     isPlaying,
@@ -99,31 +98,52 @@ const PlaylistDetails = () => {
   } = useMusicPlayerContext();
 
   // ### Memoized Values
-  const isLoading = useMemo(() => playlistLoading, [playlistLoading]);
+  const isLoading = useMemo(() => playerLoading || releaseLoading, [playerLoading, releaseLoading]);
 
-  const playlistInfo = useMemo(() => {
-    if (!playlistData) return null;
-    return {
-      id: playlistData._id,
-      title: playlistData.title,
-      coverImage: playlistData.coverImage,
-      numberOfSaves: playlistData.numberOfSaves,
-      numberOfSongs: playlistData.numberOfSongs,
-      tracks: playlistData.songs,
-      type: "playlist" // Add a default type for playlists
-    };
-  }, [playlistData]);
+  const releaseInfo = useMemo(() => {
+    if (!releaseData) return null;
 
-  const isCurrentAlbumPlaying = isPlaying && currentTrack && playlistInfo?.tracks.some(
+    if ('tracks' in releaseData) {
+      // It's a release (album/EP)
+      return {
+        id: releaseData._id,
+        title: releaseData.title,
+        type: releaseData.type,
+        coverImage: releaseData.artwork.high,
+        artist: releaseData.artist,
+        duration: releaseData.metadata.duration,
+        tracks: releaseData.tracks,
+        totalTracks: releaseData.metadata.totalTracks,
+        genre: releaseData.metadata.genre,
+        label: releaseData.metadata.label
+      };
+    } else {
+      // It's a single track
+      return {
+        id: releaseData._id,
+        title: releaseData.title,
+        type: 'track',
+        coverImage: releaseData.release.artwork.high,
+        artist: releaseData.artist,
+        duration: releaseData.duration,
+        tracks: [releaseData],
+        totalTracks: 1,
+        genre: [],
+        label: ''
+      };
+    }
+  }, [releaseData]);
+
+  const isCurrentAlbumPlaying = isPlaying && currentTrack && releaseInfo?.tracks.some(
     (t) => t._id === currentTrack._id
   );
 
   // ### Effects
   useEffect(() => {
-    if (playlistInfo) {
-      loadAlbumData(playlistInfo.id, playlistInfo.type); // Ensure type is included
+    if (releaseInfo) {
+      loadAlbumData(releaseInfo.id, releaseInfo.type);
     }
-  }, [playlistInfo, loadAlbumData]);
+  }, [releaseInfo, loadAlbumData]);
 
   const toggleTruncate = useCallback(() => {
     setDescription((prev) => ({ ...prev, isTruncated: !prev.isTruncated }));
@@ -137,16 +157,16 @@ const PlaylistDetails = () => {
 
   const handleTrackPress = async (track: ExtendedTrack) => {
     try {
-      if (!playlistInfo?.tracks) return;
+      if (!releaseInfo?.tracks) return;
       if (currentTrack?._id === track._id) {
         if (isPlaying) {
           await pause();
         } else {
-          await play(track, playlistInfo, playlistInfo.tracks);
+          await play(track, releaseInfo, releaseInfo.tracks);
         }
         return;
       }
-      await play(track, playlistInfo, playlistInfo.tracks);
+      await play(track, releaseInfo, releaseInfo.tracks);
     } catch (error) {
       console.error("Error handling track press:", error);
     }
@@ -155,11 +175,11 @@ const PlaylistDetails = () => {
   // Fix handlePlayPause function
   const handlePlayPause = async () => {
     try {
-      if (!playlistInfo?.tracks?.length) return;
+      if (!releaseInfo?.tracks?.length) return;
       if (isCurrentAlbumPlaying) {
         await pause();
       } else {
-        await play(playlistInfo.tracks[0], playlistInfo, playlistInfo.tracks);
+        await play(releaseInfo.tracks[0], releaseInfo, releaseInfo.tracks);
       }
     } catch (error) {
       console.error("Error handling play/pause:", error);
@@ -217,7 +237,7 @@ const PlaylistDetails = () => {
     );
   }
 
-  if (!playlistInfo) {
+  if (!releaseInfo) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
@@ -232,15 +252,12 @@ const PlaylistDetails = () => {
     );
   }
 
-
   // Update render section
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.replace({
-            pathname: `/(musicTabs)`
-        })}>
+        <TouchableOpacity onPress={() => router.back()}>
           <ArrowLeft02Icon size={32} color="#D2D3D5" />
         </TouchableOpacity>
       </View>
@@ -249,7 +266,7 @@ const PlaylistDetails = () => {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FF6D1B" />
         </View>
-      ) : playlistInfo && (
+      ) : releaseInfo && (
         <ScrollView
         contentContainerStyle={[
             styles.scrollViewContent,
@@ -258,15 +275,15 @@ const PlaylistDetails = () => {
         >
           {/* Album Image */}
           <View style={styles.contentWrapper}>
-          <FastImage
-            source={{
-              uri: playlistInfo.coverImage,
-              priority: FastImage.priority.high,
-              cache: FastImage.cacheControl.immutable,
-            }}
-            style={[styles.albumImage, { width: width * 0.5, height: width * 0.5 }]}
-            resizeMode={FastImage.resizeMode.cover}
-          />
+            <FastImage
+              source={{
+                uri: releaseInfo.coverImage,
+                priority: FastImage.priority.high,
+                cache: FastImage.cacheControl.immutable,
+               }}
+              style={[styles.albumImage, { width: width * 0.4, height: width * 0.4 }]}
+              resizeMode={FastImage.resizeMode.cover}
+            />
           </View>
 
           <Spacer />
@@ -278,7 +295,7 @@ const PlaylistDetails = () => {
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-              {playlistInfo.title}
+              {releaseInfo.title}
             </Text>
             <Text
               className="text-[12px] font-PlusJakartaSansBold text-Grey/06"
@@ -286,7 +303,7 @@ const PlaylistDetails = () => {
               ellipsizeMode="tail"
               style={{ maxWidth: width * 0.8 }}
             >
-              {playlistInfo.numberOfSaves} Saves
+              {releaseInfo.artist.name}
             </Text>
           </View>
 
@@ -347,30 +364,32 @@ const PlaylistDetails = () => {
             <View className="items-center justify-center gap-y-[16px]">
               <View className="flex-row items-center">
                 <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansBold font-normal">
-                  {playlistInfo.numberOfSongs} Songs
+                  {releaseInfo.totalTracks} Songs
                 </Text>
                 <Pressable className="bg-Grey/06 h-[4px] w-[4px] m-[4px] font-normal" />
                 <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansBold font-normal">
-                  {formatDuration(playlistData?.totalDuration)}
+                  {formatDuration(releaseInfo?.duration)}
                 </Text>
               </View>
+              {releaseInfo.type !== 'track' && (
+                <View className="flex-row items-center">
+                  <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansBold font-normal">
+                    {releaseInfo.genre.join(', ')} • {releaseInfo.label}
+                  </Text>
+                </View>
+              )}
             </View>
           </View>
 
           {/* Track List */}
           <View style={styles.trackListContainer}>
-            {playlistInfo.tracks.map((track) => (
+            {releaseInfo.tracks.map((track) => (
               <View key={track._id}>
                 <TouchableOpacity
                   onPress={() => handleTrackPress(track)}
                   className="flex-row items-center justify-between py-3"
                 >
-                  <View className="flex-row items-center gap-x-3 flex-1 mr-4">
-                    <Image source={{
-                        uri: track.releaseImage
-                    }}
-                    className="w-[40px] h-[40px] rounded-lg"
-                     />
+                  <View className="flex-row items-center flex-1 mr-4">
                     <View style={{ flex: 1 }}>
                       <Text
                         className={`text-[16px] font-PlusJakartaSansBold ${
@@ -387,8 +406,8 @@ const PlaylistDetails = () => {
                         ellipsizeMode="tail"
                       >
                         {track.artist.name}
-                        {track?.featuredArtists?.length > 0 &&
-                          ` ft. ${track?.featuredArtists.map(artist => artist.name).join(', ')}`}
+                        {track.featuredArtists.length > 0 &&
+                          ` ft. ${track.featuredArtists.map(artist => artist.name).join(', ')}`}
                       </Text>
                     </View>
                     {currentTrackId === track._id && buffering && (
@@ -410,20 +429,38 @@ const PlaylistDetails = () => {
       )}
 
       {/* Share Modal */}
-      {playlistData && (
+      {releaseInfo && (
         <Share
           isVisible={isShareModalVisible}
           onClose={() => setIsShareModalVisible(false)}
           album={{
-            title: selectedTrack ? selectedTrack.title : playlistData.title,
-            artist: selectedTrack?.artist.name ,
-            image: selectedTrack ? selectedTrack.release.artwork.high : playlistData.coverImage,
-            duration: selectedTrack ? selectedTrack.duration : playlistData.totalDuration, // Pass the raw duration number
-            id: selectedTrack ? selectedTrack._id : playlistData._id,
-            tracks: selectedTrack ? selectedTrack : playlistInfo.tracks,
+            title: selectedTrack ? selectedTrack.title : releaseInfo.title,
+            artist: selectedTrack ? selectedTrack.artist.name : releaseInfo.artist.name,
+            image: selectedTrack ? selectedTrack.release.artwork.high : releaseInfo.coverImage,
+            type: releaseInfo.type,
+            duration: selectedTrack ? selectedTrack.duration : releaseInfo.duration, // Pass the raw duration number
+            id: selectedTrack ? selectedTrack._id : releaseInfo.id,
+            tracks: selectedTrack ? selectedTrack : releaseInfo.tracks,
           }}
         />
       )}
+
+  {releaseInfo && (
+  <Portal>
+    <AddToPlaylistBottomSheet
+      isVisible={isPlaylistModalVisible}
+      closeSheet={handleClosePlaylistSheet}
+     album={{
+        id: id,
+        title: releaseInfo.title,
+        artist: releaseInfo.artist.name,
+        image: releaseInfo.coverImage,
+        type: releaseInfo.type,
+        tracks: releaseInfo.tracks
+      }}
+    />
+  </Portal>
+  )}
     </SafeAreaView>
   );
 };
@@ -483,4 +520,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PlaylistDetails;
+export default MusicDetails;
