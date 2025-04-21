@@ -12,17 +12,17 @@ import MoodSection from "../../../components/home/MoodSection";
 
 const Index = () => {
   const { currentTrack } = useMusicPlayer();
-  const { data: dailyMix, isLoading: isDailyMixesLoading, error } = useDailyMix();
-  const { data: userFeedData, isFetching: userFeedLoading,  } = useUserDashboard();
+  const { data: dailyMix, isLoading: isDailyMixesLoading } = useDailyMix();
+  const { data: userFeedData, isLoading: isUserFeedLoading } = useUserDashboard();
 
   // Extract data from userFeed
-  const dailyMixes =  dailyMix?.data?.mixes ?? []
+  const dailyMixes = dailyMix?.data?.mixes ?? []
   const followedArtists = userFeedData?.data?.followedArtists || [];
   const recommendedArtists = userFeedData?.data?.recommendedArtists || [];
   const suggestedTracks = userFeedData?.data?.suggestedTracks || [];
   const recentReleases = userFeedData?.data?.recentReleases || [];
 
-const dataLoading = isDailyMixesLoading || userFeedLoading
+  const dataLoading = isDailyMixesLoading || isUserFeedLoading;
   return (
     <>
       <StatusBar translucent={true} backgroundColor="#040405" style="light" />
@@ -72,7 +72,7 @@ const dataLoading = isDailyMixesLoading || userFeedLoading
           {followedArtists.length > 0 && (
           <BasedOnSubscription
           data={followedArtists}
-          isLoading={userFeedLoading}
+          isLoading={isUserFeedLoading}
           title="Artists You Follow"
         />
           )}
@@ -81,7 +81,7 @@ const dataLoading = isDailyMixesLoading || userFeedLoading
           {recommendedArtists.length > 0 && (
             <BasedOnSubscription
               data={recommendedArtists}
-              isLoading={userFeedLoading}
+              isLoading={isUserFeedLoading}
               title="Some artist for you to explore..."
             />
           )}
@@ -90,7 +90,7 @@ const dataLoading = isDailyMixesLoading || userFeedLoading
           {suggestedTracks.length > 0 && (
             <RecommededMusic
               data={suggestedTracks}
-              isLoading={userFeedLoading}
+              isLoading={isUserFeedLoading}
               title="Rythms you'll love..."
             />
           )}

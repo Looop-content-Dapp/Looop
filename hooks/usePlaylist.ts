@@ -8,9 +8,9 @@ type Playlist = {
 };
 
 type AddSongInput = {
-  tracks: [];
-  playlistId: string;
-  userId: string
+  tracks: string | string[];
+  playlistIds: string | string[];
+  userId: string;
 };
 
 export const useCreatePlaylist = () => {
@@ -40,12 +40,12 @@ export const usePinPlaylist = () => {
 export const useAddSongToPlaylist = () => {
   return useMutation({
     mutationFn: async (input: AddSongInput) => {
-        console.log("Attempting to add song to playlist", input)
+      console.log("Attempting to add songs to playlists", input);
       const { data } = await api.post("/api/playlist/songs/add", input);
       return data;
     },
     onError: (error) => {
-      console.error('Failed to add song to playlist:', error.message);
+      console.error('Failed to add songs to playlists:', error.message);
     }
   });
 };

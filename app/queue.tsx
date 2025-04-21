@@ -36,23 +36,25 @@ const Queue = () => {
 
   const handleUpdateQueue = async (newQueue) => {
     try {
-      const currentIndex = await TrackPlayer.getCurrentTrack();
+      const currentIndex = await TrackPlayer.getActiveTrackIndex();
       if (currentIndex !== null) {
-        // Get the current track
-        const currentTrack = (await TrackPlayer.getTrack(currentIndex));
+        // Get the current track and its position
+        const currentTrack = await TrackPlayer.getTrack(currentIndex as number);
+        const currentPosition = await TrackPlayer.getProgress().then((progress) => progress.position);
+        const isPlaying = await TrackPlayer.getState() === TrackPlayer.STATE_PLAYING;
 
         // Create new queue with current track and reordered upcoming tracks
         const fullQueue = [currentTrack, ...newQueue];
 
-        // Reset and add the new queue
-        await TrackPlayer.reset();
-        await TrackPlayer.add(fullQueue);
+        // Update the queue without resetting
+        await TrackPlayer.removeUpcomingTracks();
+        await TrackPlayer.add(newQueue);
 
-        // Skip to the first track (current track)
-        await TrackPlayer.skip(0);
-
-        // Update state
+        // Update state immediately for better UX
         setQueueTracks(newQueue);
+
+        // Trigger haptic feedback for better UX
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
     } catch (error) {
       console.error("Error updating queue:", error);
@@ -69,7 +71,7 @@ const Queue = () => {
         >
           <Image
             source={{
-              uri: item?.artwork || item?.release?.artwork?.high,
+              uri: currentTrack?.artwork || currentTrack?.release?.artwork?.high,
             }}
             className="w-12 h-12 rounded"
             defaultSource={require('@/assets/images/default-artwork.png')}

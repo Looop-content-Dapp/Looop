@@ -215,7 +215,7 @@ const Feed = () => {
         ListEmptyComponent={!isLoading && !isError ? <EmptyFeedState /> : null}
         contentContainerStyle={{
           flexGrow: 1,
-          paddingHorizontal: 16,
+        //   paddingHorizontal: 16,
           paddingBottom: 32,
         }}
         style={{

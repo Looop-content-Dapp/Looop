@@ -7,15 +7,18 @@ import { router } from 'expo-router';
 import { useQuery } from '../../hooks/useQuery';
 import { useAppSelector } from '@/redux/hooks';
 import { useAddSongToPlaylist, useUserPlaylists } from '@/hooks/usePlaylist';
+import { useNotification } from '@/context/NotificationContext';
 
 const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible: boolean; closeSheet: () => void; album: any }) => {
+    const { showNotification } = useNotification();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const { userdata } = useAppSelector((state) => state.auth);
   const [error, setError] = useState<string | null>("");
   const { data: playlistResponse, isLoading: isPlaylistsLoading, isFetching } = useUserPlaylists();
   const playlists = playlistResponse?.data || [];
   const addSong = useAddSongToPlaylist();
-  const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null);
+  // Update state to handle multiple playlist selection
+  const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>([]);
 
   const handleSheetChanges = useCallback((index: number) => {
     if (index === -1) {
@@ -28,32 +31,69 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
     closeSheet();
   };
 
+  const handlePlaylistSelection = (playlistId: string) => {
+    setSelectedPlaylists(prev => {
+      if (prev.includes(playlistId)) {
+        return prev.filter(id => id !== playlistId);
+      }
+      return [...prev, playlistId];
+    });
+  };
+
   const handleAddSong = async () => {
-    if (!userdata?._id || !selectedPlaylist) return;
+    if (!userdata?._id || selectedPlaylists.length === 0) return;
     try {
-      const trackIds = album?.tracks?.map((item: any) => item._id) || [];
+      const trackIds = album?.tracks?.map((track: any) => track._id);
 
-
-      if (!trackIds.length) {
-        Alert.alert('Error', 'No tracks found to add');
+      if (!trackIds?.length) {
+        showNotification({
+            type: 'error',
+            title: 'Error',
+            message: 'No tracks found to add',
+            position: 'top'
+          });
         return;
       }
 
       addSong.mutate({
-        tracks: trackIds || [album?.tracks._id],
-        playlistId: selectedPlaylist,
+        tracks: trackIds,
+        playlistIds: selectedPlaylists,
         userId: userdata?._id
       }, {
-        onSuccess: () => {
-          Alert.alert('Success', 'Songs added to playlist successfully');
-          closeSheet();
+        onSuccess: (data) => {
+          const trackCount = trackIds.length;
+          const playlistCount = selectedPlaylists.length;
+          handleCancel()
+          showNotification({
+            type: 'success',
+            title: 'Success',
+            message: `${trackCount} ${trackCount > 1 ? 'tracks' : 'track'} added to ${playlistCount} ${playlistCount > 1 ? 'playlists' : 'playlist'} successfully`,
+            position: 'top'
+          });
+
+        },
+        onError: (error) => {
+            handleCancel()
+            showNotification({
+                type: 'error',
+                title: 'Error',
+                message: 'Failed to add songs to playlists',
+                position: 'top'
+              });
         }
-      })
+      });
     } catch (error) {
-      Alert.alert('Error', 'Failed to add songs to playlist');
+        handleCancel()
+        showNotification({
+            type: 'error',
+            title: 'Error',
+            message: 'Failed to add songs to playlists',
+            position: 'top'
+          });
     }
   };
 
+  // Update the renderPlaylists function to handle multiple selection
   const renderPlaylists = () => {
     if (isFetching) {
       return (
@@ -97,23 +137,21 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
         renderItem={({ item }) => (
           <TouchableOpacity
             className="flex-row items-center justify-between mb-3"
-            onPress={() => setSelectedPlaylist(item._id)}
+            onPress={() => handlePlaylistSelection(item._id)}
           >
-
-           <View className='flex-row items-center gap-x-3'>
-           <Image
-              source={{ uri: item.coverImage }}
-              style={{ width: 60, height: 60, borderRadius: 8 }}
-            />
-            <View className="ml-3">
-              <Text className="text-[#f4f4f4] text-[16px] font-PlusJakartaSansBold">{item.title}</Text>
-              <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansMedium">{item.songs.length} Songs</Text>
+            <View className='flex-row items-center gap-x-3'>
+              <Image
+                source={{ uri: item.coverImage }}
+                style={{ width: 60, height: 60, borderRadius: 8 }}
+              />
+              <View className="ml-3">
+                <Text className="text-[#f4f4f4] text-[16px] font-PlusJakartaSansBold">{item.title}</Text>
+                <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansMedium">{item.songs.length} Songs</Text>
+              </View>
             </View>
-           </View>
-
 
             <View className="w-6 h-6 rounded-full border-2 border-[#FF7A1B] mr-3 items-center justify-center">
-              {selectedPlaylist === item._id && (
+              {selectedPlaylists.includes(item._id) && (
                 <View className="w-4 h-4 rounded-full bg-[#FF7A1B]" />
               )}
             </View>
@@ -123,12 +161,13 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
     );
   };
 
+  // Update the Done button
   return (
     <BottomSheet
       index={isVisible ? 0 : -1}
       ref={bottomSheetRef}
       onChange={handleSheetChanges}
-      snapPoints={['70%']} 
+      snapPoints={['80%']}
       enablePanDownToClose={true}
       backgroundStyle={{ backgroundColor: '#111318' }}
       handleIndicatorStyle={{
@@ -175,14 +214,14 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
         {/* Add Done Button */}
         <TouchableOpacity
           className={`p-4 rounded-[56px] w-[120px] mx-auto ${
-            selectedPlaylist ? 'bg-[#2DD881]' : 'bg-[#242424]'
+            selectedPlaylists.length > 0 ? 'bg-[#2DD881]' : 'bg-[#242424]'
           }`}
           onPress={handleAddSong}
-          disabled={!selectedPlaylist}
+          disabled={selectedPlaylists.length === 0}
           style={{ marginTop: 'auto' }}
         >
           <Text className="text-white text-center font-PlusJakartaSansBold text-[16px]">
-            Done
+            Done ({selectedPlaylists.length})
           </Text>
         </TouchableOpacity>
       </BottomSheetView>

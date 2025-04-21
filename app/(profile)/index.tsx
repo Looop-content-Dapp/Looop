@@ -7,7 +7,7 @@ import {
   Alert,
 } from "react-native";
 import React, { useCallback, useEffect, useLayoutEffect, useState } from "react";
-import { Settings02Icon, Share05Icon, Wallet02Icon } from "@hugeicons/react-native";
+import { MoreHorizontalIcon, Settings02Icon, Share05Icon, Wallet02Icon } from "@hugeicons/react-native";
 import { Avatar } from "react-native-elements";
 import {
   ProfilePlaylist,
@@ -22,9 +22,18 @@ import { AppBackButton } from "@/components/app-components/back-btn";
 import { setUserData } from "@/redux/slices/auth";
 import { useGetUser } from "@/hooks/useGetUser"; // Add this import
 import { FlatList } from 'react-native' // Add this import if not already present
+import {
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuRoot,
+  DropdownMenuTrigger,
+  DropdownMenuItemTitle
+} from "@/components/DropDown";
+import { useClerkAuthentication } from "@/hooks/useClerkAuthentication";
 
 const profile = () => {
   const [selectedTab, setSelectedTab] = useState("Playlists");
+  const { handleLogout } = useClerkAuthentication()
   const navigation = useNavigation();
 
   const { userdata } = useAppSelector((state) => state.auth);
@@ -32,7 +41,6 @@ const profile = () => {
 
   // Use the hook and handle loading state
   const { data: result, isLoading } = useGetUser(userdata?._id);
-  console.log(userdata?._id, "result")
 
   // Use result instead of userdata from Redux
   const currentUser = result || userdata;
@@ -46,12 +54,59 @@ const profile = () => {
       headerRight: () => {
         return (
           <View className="flex-row items-center gap-x-[16px] mr-4">
-            <TouchableOpacity onPress={() => router.navigate("/wallet/userWallet")}>
-              <Wallet02Icon size={24} color="#787A80" />
+            <TouchableOpacity onPress={() => router.navigate("/wallet/userWallet")} className="bg-[#202227] p-[12px] rounded-full">
+              <Wallet02Icon size={24} color="#63656B" variant="solid" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.navigate("/settings")}>
-              <Settings02Icon size={24} color="#787A80" />
-            </TouchableOpacity>
+            <DropdownMenuRoot>
+              <DropdownMenuTrigger asChild>
+                <TouchableOpacity className="rounded-full">
+                  <MoreHorizontalIcon size={24} color="#63656B" variant="solid" />
+                </TouchableOpacity>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent sideOffset={5} align="end" className="bg-[#202227] rounded-[10px] w-[150px]">
+                <DropdownMenuItem
+                  key="edit-profile"
+                  textValue="Edit Profile"
+                  onSelect={() => router.push("/(profile)/editProfile")}
+                  className="py-2 px-3"
+                >
+                  <Text className="text-[#f4f4f4] text-[14px]">Edit Profile</Text>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  key="logout"
+                  textValue="Log Out"
+                  onSelect={() => {
+                   handleLogout();
+                  }}
+                  className="py-2 px-3"
+                >
+                  <Text className="text-[#f4f4f4] text-[14px]">Log Out</Text>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  key="delete-account"
+                  textValue="Delete Account"
+                  onSelect={() => {
+                    Alert.alert(
+                      "Delete Account",
+                      "Are you sure you want to delete your account? This action cannot be undone.",
+                      [
+                        { text: "Cancel", style: "cancel" },
+                        {
+                          text: "Delete",
+                          style: "destructive",
+                          onPress: () => {
+                            // Add your delete account logic here
+                          }
+                        }
+                      ]
+                    );
+                  }}
+                  className="py-2 px-3"
+                >
+                  <Text className="text-[#7F0107] text-[14px]">Delete Account</Text>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenuRoot>
           </View>
         )
       },
@@ -133,11 +188,11 @@ const profile = () => {
                     <Text className="text-[20px] text-[#f4f4f4] font-PlusJakartaSansBold overflow-hidden">
                       {currentUser?.username}
                     </Text>
-                    <TouchableOpacity onPress={() => router.push("/(profile)/editProfile")} className="border border-Grey/06 py-[8px] px-[12px] rounded-[24px]">
+                    {/* <TouchableOpacity onPress={() => router.push("/(profile)/editProfile")} className="border border-Grey/06 py-[8px] px-[12px] rounded-[24px]">
                       <Text className="text-[12px] text-Grey/04 font-PlusJakartaSansBold">
                         Edit
                       </Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                   </View>
                 </View>
                 <TouchableOpacity onPress={() => onShare(currentUser)}>

@@ -23,7 +23,11 @@ const PostMedia: React.FC<PostMediaProps> = ({ media }) => {
       </View>
     );
   } else if (videoMedia) {
-    return <VideoScreen videoUrl={videoMedia.url} />;
+    return (
+      <View style={{ width: '100%', aspectRatio: 16 / 9, marginVertical: 8 }}>
+        <VideoScreen videoUrl={videoMedia.url} />
+      </View>
+    );
   } else if (audioMedia) {
     return <AudioMedia uri={audioMedia.url} />;
   }

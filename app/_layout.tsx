@@ -115,7 +115,6 @@ function AppContent() {
           }}
         />
         <Stack.Screen name="wallet" />
-        <Stack.Screen name="postDetails" />
         <Stack.Screen
   name="queue"
   options={{

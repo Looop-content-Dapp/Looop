@@ -41,6 +41,17 @@ export default function _WalletLayout() {
           title: ""
         }}
       />
+        <Stack.Screen
+        name="transaction-details"
+        options={{
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#040405"
+          },
+          headerTintColor: "#fff",
+          title: ""
+        }}
+      />
     </Stack>
   )
 }

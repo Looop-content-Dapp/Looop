@@ -440,7 +440,7 @@ const MusicDetails = () => {
             type: releaseInfo.type,
             duration: selectedTrack ? selectedTrack.duration : releaseInfo.duration, // Pass the raw duration number
             id: selectedTrack ? selectedTrack._id : releaseInfo.id,
-            tracks: selectedTrack ? selectedTrack : releaseInfo.tracks,
+            tracks: selectedTrack ? [selectedTrack] : releaseInfo.tracks,
           }}
         />
       )}

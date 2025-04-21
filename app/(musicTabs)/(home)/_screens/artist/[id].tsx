@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Platform,
   useWindowDimensions,
+  ActivityIndicator
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft02Icon } from '@hugeicons/react-native';
@@ -21,6 +22,10 @@ import { useFetchArtist } from '@/hooks/useFetchArtist'; // Import the hook
 
 // Add this component for animated FastImage background
 const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
+
+// Add these imports at the top
+import { getColors } from 'react-native-image-colors';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const ArtistDetails = () => {
   const { id } = useLocalSearchParams(); // Use only id
@@ -71,80 +76,177 @@ const ArtistDetails = () => {
     extrapolate: 'clamp',
   });
 
+  // Add these states
+  const [backgroundColor, setBackgroundColor] = useState('#000000');
+  const [textColor, setTextColor] = useState('#FFFFFF');
+
+  // Add this function after other functions
+  const getContrastColor = (bgColor: string) => {
+    const r = parseInt(bgColor.slice(1, 3), 16);
+    const g = parseInt(bgColor.slice(3, 5), 16);
+    const b = parseInt(bgColor.slice(5, 7), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5 ? '#000000' : '#FFFFFF';
+  };
+
+  // Add this effect to extract colors
+  useEffect(() => {
+    const fetchColors = async () => {
+      if (artistData?.profileImage) {
+        try {
+          const result = await getColors(artistData.profileImage, {
+            fallback: '#000000',
+            cache: true,
+          });
+          let bgColor = '#000000';
+          if (result.platform === 'android') {
+            bgColor = result.dominant;
+          } else if (result.platform === 'ios') {
+            bgColor = result.background;
+          }
+          setBackgroundColor(bgColor);
+          setTextColor(getContrastColor(bgColor));
+        } catch (error) {
+          setBackgroundColor('#000000');
+          setTextColor('#FFFFFF');
+        }
+      }
+    };
+    fetchColors();
+  }, [artistData?.profileImage]);
+
+  // Add this animation value
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, SCREEN_HEIGHT * 0.2, SCREEN_HEIGHT * 0.3],
+    outputRange: [0, 0.5, 1],
+    extrapolate: 'clamp',
+  });
+
+  // Modify the header Animated.View
+  <Animated.View
+    style={[
+      styles.header,
+      {
+        transform: [{ translateY: headerTranslateY }],
+      },
+    ]}
+  >
+    <LinearGradient
+      colors={[backgroundColor, 'transparent']}
+      style={[StyleSheet.absoluteFill, { opacity: headerOpacity }]}
+    />
+    <View style={styles.headerContent}>
+      <TouchableOpacity
+        onPress={() => router.push("/(musicTabs)")}
+        style={[styles.backButtonContainer, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
+      >
+        <ArrowLeft02Icon size={24} color={textColor} />
+      </TouchableOpacity>
+      <Animated.Text
+        numberOfLines={1}
+        style={[
+          styles.headerTitle,
+          {
+            color: textColor,
+            opacity: headerOpacity
+          }
+        ]}
+        className="font-PlusJakartaSansBold ml-3"
+      >
+        {artistData?.name}
+      </Animated.Text>
+    </View>
+  </Animated.View>
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
-        <Animated.View
-          style={[
-            styles.header,
-            {
-              backgroundColor: headerBackgroundOpacity,
-              transform: [{ translateY: headerTranslateY }],
-            },
-          ]}
-        >
-          <View style={styles.headerContent}>
-            <TouchableOpacity
-              onPress={() => router.push("/(musicTabs)")}
-              style={styles.backButtonContainer}
+        {isArtistLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#fff" />
+          </View>
+        ) : (
+          <>
+            <Animated.View
+              style={[
+                styles.header,
+                {
+                  backgroundColor: headerBackgroundOpacity,
+                  transform: [{ translateY: headerTranslateY }],
+                },
+              ]}
             >
-              <ArrowLeft02Icon size={24} color="#fff" />
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
+              <View style={styles.headerContent}>
+                <TouchableOpacity
+                  onPress={() => router.push("/(musicTabs)")}
+                  style={styles.backButtonContainer}
+                >
+                  <ArrowLeft02Icon size={24} color="#fff" />
+                </TouchableOpacity>
 
-        <Animated.View
-          style={[
-            styles.imageContainer,
-            {
-              opacity: imageOpacity,
-              transform: [{ translateY: headerTranslateY }],
-              height: SCREEN_HEIGHT * 0.4,
-            }
-          ]}
-        >
-          <AnimatedFastImage
-            source={{
-              uri: artistData?.profileImage,
-              priority: FastImage.priority.high,
-              cache: FastImage.cacheControl.immutable,
-            }}
-            style={styles.image}
-            resizeMode={FastImage.resizeMode.cover}
-          />
-        </Animated.View>
+              </View>
+              <Animated.View style={styles.artistNameContainer} className="mt-[42%]">
+                <Animated.Text numberOfLines={1} style={styles.artistName} className="font-PlusJakartaSansBold">
+                  {artistData?.name}
+                </Animated.Text>
+              </Animated.View>
+            </Animated.View>
 
-        <Animated.ScrollView
-          contentContainerStyle={styles.scrollViewContent}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: true }
-          )}
-          scrollEventThrottle={16}
-          bounces={false}
-        >
-          <View style={styles.contentContainer}>
-            <ArtistInfo
-              image={artistData?.profileImage}
-              name={artistData?.name}
-              follow={artistData?.noOfFollowers.toString()}
-              desc={artistData?.biography}
-              follower={artistData?.communityMembers.length.toString()}
-              isVerfied={artistData?.verified.toString()}
-              index={id as string}
-              isFollow={artistData?.followers.includes(userdata?._id)}
-            />
+            <Animated.View
+              style={[
+                styles.imageContainer,
+                {
+                  opacity: imageOpacity,
+                  transform: [{ translateY: headerTranslateY }],
+                  height: SCREEN_HEIGHT * 0.4,
+                }
+              ]}
+            >
+              <AnimatedFastImage
+                source={{
+                  uri: artistData?.profileImage,
+                  priority: FastImage.priority.high,
+                  cache: FastImage.cacheControl.immutable,
+                }}
+                style={styles.image}
+                resizeMode={FastImage.resizeMode.cover}
+              />
 
-            <JoinCommunity
-              isLoading={isCommunityLoading}
-              communityData={communityData}
-              onJoinPress={handleJoinPress}
-              userId={userdata?._id}
-            />
+            </Animated.View>
 
-            <ArtistReleases artistId={id as string} />
-          </View>
-        </Animated.ScrollView>
+            <Animated.ScrollView
+              contentContainerStyle={styles.scrollViewContent}
+              onScroll={Animated.event(
+                [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                { useNativeDriver: true }
+              )}
+              scrollEventThrottle={16}
+              bounces={false}
+            >
+              <View style={styles.contentContainer}>
+                <ArtistInfo
+                  image={artistData?.profileImage}
+                  name={artistData?.name}
+                  follow={artistData?.noOfFollowers.toString()}
+                  desc={artistData?.biography}
+                  follower={artistData?.communityMembers.length.toString()}
+                  isVerfied={artistData?.verified.toString()}
+                  index={id as string}
+                  isFollow={artistData?.followers.includes(userdata?._id)}
+                />
+
+                <JoinCommunity
+                  isLoading={isCommunityLoading}
+                  communityData={communityData}
+                  onJoinPress={handleJoinPress}
+                  userId={userdata?._id}
+                />
+
+                <ArtistReleases artistId={id as string} />
+              </View>
+            </Animated.ScrollView>
+          </>
+        )}
       </View>
     </GestureHandlerRootView>
   );
@@ -183,6 +285,20 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 1,
     height: '50%',
+    justifyContent: 'flex-end', // Add this to position the text at bottom
+    paddingBottom: 20, // Add padding for the text
+  },
+  artistNameContainer: {
+    paddingHorizontal: '5%',
+  },
+  artistName: {
+    color: '#FFFFFF',
+    fontSize: 34,
+    fontWeight: 'bold',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 10,
+    fontFamily: 'PlusJakartaSans-Bold',
   },
   contentContainer: {
     paddingTop: '38%',
@@ -196,6 +312,12 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     paddingBottom: '14%',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'black',
   },
 });
 

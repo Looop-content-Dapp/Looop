@@ -1,4 +1,5 @@
-import { View, Text, FlatList, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, ActivityIndicator, Pressable } from "react-native";
+import { router } from 'expo-router';
 
 // Update Transaction type to include status
 type Transaction = {
@@ -36,14 +37,23 @@ export default function TransactionHistory({ transactions, isLoading }: Transact
     );
   }
 
+  const handleTransactionPress = (transactionId: string) => {
+    router.push({
+      pathname: "/wallet/transaction-details",
+      params: { id: transactionId }
+    });
+  };
+
   return (
     <FlatList
       data={transactions}
       scrollEnabled={false}
       keyExtractor={(item, index) => index.toString()}
-      // Update the renderItem section in FlatList
       renderItem={({ item }) => (
-        <View className="flex-row justify-between px-4 py-4 bg-[#111318] mb-[16px] border-b border-[#12141B]">
+        <Pressable
+          onPress={() => handleTransactionPress(item.id)}
+          className="flex-row justify-between px-4 py-4 bg-[#202227] rounded-[10px] mb-[16px] border-b border-[#12141B]"
+        >
           <View className="">
             <Text className="text-[#FFFFFF] text-[16px] font-PlusJakartaSansRegular mb-1">
               {item.title}
@@ -63,7 +73,7 @@ export default function TransactionHistory({ transactions, isLoading }: Transact
               {item.date}
             </Text>
           </View>
-        </View>
+        </Pressable>
       )}
     />
   );

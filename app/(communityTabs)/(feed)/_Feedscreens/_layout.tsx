@@ -11,9 +11,7 @@ export default function ScreenLayout() {
         backgroundColor: "#040405",
       },
       }}>
-      <Stack.Screen name="musicDetails" />
-      <Stack.Screen name='artist' />
-      <Stack.Screen name='PlaylistDetails' />
+      <Stack.Screen name="index" />
     </Stack>
   );
 }

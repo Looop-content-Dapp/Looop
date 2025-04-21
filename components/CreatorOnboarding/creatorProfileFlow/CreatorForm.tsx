@@ -7,55 +7,70 @@ import {
   Image,
   ActivityIndicator,
 } from "react-native";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import {
   CheckmarkCircle02Icon,
   ImageAdd02Icon,
   XVariableCircleIcon,
 } from "@hugeicons/react-native";
 import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
-import { countries} from "@/data/data";
-import { FormField } from "@/components/app-components/formField";
+import { countries } from "@/data/data";
 import { CreatorFormData } from "@/types/index";
 import { useGetGenre } from "@/hooks/useGenre";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import useTwitterAuth from "@/hooks/useTwitterAuth";
+import { useForm, Controller } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Input } from "@/components/ui/input";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { Select } from "@/components/ui/select";
+import { ImageUpload } from "@/components/ui/image-upload";
 
-type MultiSelectOption = {
-  label: string;
-  value: string;
-};
+const validationSchema = yup.object().shape({
+  stageName: yup.string().required("Stage name is required"),
+  bio: yup.string().required("Bio is required"),
+  addressLine1: yup.string().required("Address is required"),
+  addressLine2: yup.string(),
+  postalCode: yup.string().required("Postal code is required"),
+  websiteUrl: yup.string().url("Please enter a valid URL"),
+  selectedGenres: yup.array().min(1, "Please select at least one genre"),
+  selectedCountry: yup.string().required("Please select a country"),
+  selectedCity: yup.string().when('selectedCountry', {
+    is: (value: string) => Boolean(value),
+    then: (schema) => schema.required('Please select a city'),
+    otherwise: (schema) => schema
+  }),
+});
 
 interface CreatorFormProps {
-  formData: {
-    stageName: string;
-    bio: string;
-    addressLine1: string;
-    addressLine2: string;
-    postalCode: string;
-    websiteUrl: string;
-    socialAccounts: {
-      twitter: string;
-      instagram: string;
-      tiktok: string;
-    };
-    profileImage?: string;
-  };
-  selectedGenres: string[];
-  selectedCountry: string;
-  selectedCity: string;
-  cities: string[];
-  isLoading: boolean;
-  onFormChange: (field: keyof CreatorFormData, value: any) => void;
-  onGenresChange: (genres: string[]) => void;
-  onCountrySelect: (country: string) => void;
-  onCitySelect: (city: string) => void;
-  onProfileImageUpload: () => Promise<void>;
-  onSocialAccountChange: (
-    platform: "twitter" | "instagram" | "tiktok",
-    value: string
-  ) => void;
-}
+    formData: CreatorFormData;
+    selectedGenres: string[];
+    selectedCountry: string;
+    selectedCity: string;
+    cities: string[];
+    isLoading: boolean;
+    onFormChange: (field: keyof CreatorFormData, value: any) => void;
+    onGenresChange: (genres: string[]) => void;
+    onCountrySelect: (country: string) => void;
+    onCitySelect: (city: string) => void;
+    onProfileImageUpload: () => Promise<void>;
+    onSocialAccountChange: (
+      platform: "twitter" | "instagram" | "tiktok",
+      value: string
+    ) => void;
+  }
+
+type Genre = string;
+interface SelectOption {
+    label: string;
+    value: string;
+  }
+
+  interface MultiSelectOption {
+    label: string;
+    value: string;
+  }
 
 const CreatorForm = ({
   formData,
@@ -71,7 +86,7 @@ const CreatorForm = ({
   onProfileImageUpload,
   onSocialAccountChange,
 }: CreatorFormProps) => {
-  const { data} = useGetGenre();
+  const { data } = useGetGenre();
   const {
     isVerified,
     userData,
@@ -80,178 +95,283 @@ const CreatorForm = ({
     startVerification
   } = useTwitterAuth();
 
+  const { control, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      stageName: formData.stageName,
+      bio: formData.bio,
+      addressLine1: formData.addressLine1,
+      addressLine2: formData.addressLine2,
+      postalCode: formData.postalCode,
+      websiteUrl: formData.websiteUrl,
+      selectedGenres,
+      selectedCountry,
+      selectedCity,
+    }
+  });
+
   error && console.error("Twitter verification error:", error);
   const genres = data?.data || [];
-  const [isValidating, setIsValidating] = useState(false);
-  const [validationStatus, setValidationStatus] = useState(null);
 
-  const [type, setType] = useState("");
+  const genreOptions = useMemo(() =>
+    (genres || []).map(genre => ({
+      label: String(genre.name),
+      value: String(genre.name)
+    })),
+    [genres]
+  );
+
+  console.log("genres", genreOptions[0])
+//   console.log("genre", genres)
+
+  const countryOptions = useMemo(() =>
+    countries.map(country => ({
+      label: country.label,
+      value: country.value
+    })),
+    [countries]
+  );
+
+  const cityOptions = useMemo(() =>
+    cities.map(city => ({
+      label: city,
+      value: city
+    })),
+    [cities]
+  );
 
   const social = [
-
     {
+      id: 'twitter',
       title: "X (Formerly Twitter)",
-      socialIcon: <FontAwesome6 name="x-twitter" size={18} color="#FFFFFF" />,
-      onPress: () => startVerification(),
+      placeholder: "Enter your X username",
+      icon: <FontAwesome6 name="x-twitter" size={18} color="#63656B" />,
+      baseUrl: "https://twitter.com/"
     },
     {
+      id: 'instagram',
       title: "Instagram",
-      socialIcon: <FontAwesome name="instagram" size={18} color="#ffffff" />,
+      placeholder: "Enter your Instagram username",
+      icon: <FontAwesome name="instagram" size={18} color="#63656B" />,
+      baseUrl: "https://instagram.com/"
     },
     {
+      id: 'tiktok',
       title: "TikTok",
-      socialIcon: <FontAwesome6 name="tiktok" size={18} color="#ffffff" />,
+      placeholder: "Enter your TikTok username",
+      icon: <FontAwesome6 name="tiktok" size={18} color="#63656B" />,
+      baseUrl: "https://tiktok.com/@"
     },
   ];
 
-
-  const getStatusIcon = () => {
-    if (isValidating) {
-      return <ActivityIndicator size="small" color="#787A80" />;
-    }
-    if (validationStatus === false) {
-      return (
-        <CheckmarkCircle02Icon size={18} variant="solid" color="#32BD76" />
-      );
-    }
-    if (validationStatus === true) {
-      return <XVariableCircleIcon size={18} color="red" variant="solid" />;
-    }
-    return null;
-  };
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
-
-      <View style={{}}>
+      <View>
         <Text style={styles.sectionTitle}>Basic Information</Text>
 
-
-        <View style={{ alignItems: "center", marginBottom: 40 }}>
-          <TouchableOpacity
-            style={styles.imageUpload}
-            onPress={onProfileImageUpload}
-          >
-            {formData.profileImage ? (
-              <Image
-                source={{ uri: formData.profileImage}}
-                className="h-[183px] w-[183px] rounded-full"
-              />
-            ) : (
-              <ImageAdd02Icon size={40} color="#787A80" />
-            )}
-          </TouchableOpacity>
-          <View style={{ marginTop: 12, alignItems: "center" }}>
-            <Text style={styles.uploadTitle}>Upload Profile Image</Text>
-            <Text style={styles.uploadSubtitle}>PNG, GIF, WEBP. Max 50MB</Text>
-          </View>
-        </View>
-
-
-        <View style={{ gap: 16 }}>
-          <View className="relative w-full">
-            <FormField.TextField
-              label="Stage Name / Alias"
-              placeholder="Enter fullname"
-              value={formData.stageName}
-              onChangeText={(text) => {
-                onFormChange("stageName", text);
-                setType("name");
-
-                setValidationStatus(null);
-              }}
-            />
-            {type === "name" && (
-              <View className="absolute right-3 top-14 -translate-y-1/2">
-                {getStatusIcon()}
-              </View>
-            )}
-          </View>
-
-
-
-          <FormField.MultiSelectField
-            description="Search and add main genres you create songs in. Don’t worry, you could always change your style later"
-            label="Select Genres"
-            placeholder="Try “HipHop” or “Afrobeats”"
-            values={selectedGenres}
-            onSelect={onGenresChange}
-            options={genres || []}
-          />
-        </View>
+        <View className="my-[16px]">
+        <ImageUpload
+          label="Profile Image"
+          value={formData.profileImage ? {
+            uri: formData.profileImage,
+            type: 'image',
+            name: 'profile-image'
+          } : null}
+          onChange={onProfileImageUpload}
+          description="PNG, GIF, WEBP. Max 50MB"
+        />
       </View>
 
+        <View style={{ gap: 16 }}>
+          <Controller
+            control={control}
+            name="stageName"
+            render={({ field: { onChange, value } }) => (
+              <Input
+                label="Stage Name / Alias"
+                placeholder="Enter fullname"
+                value={value}
+                onChangeText={(text) => {
+                  onChange(text);
+                  onFormChange("stageName", text);
+                }}
+                error={errors.stageName?.message}
+              />
+            )}
+          />
+
+<Controller
+  control={control}
+  name="selectedGenres"
+  render={({ field: { onChange, value } }) => (
+    <MultiSelect
+      label="Select Genres"
+      description="Search and add main genres you create songs in. Don't worry, you could always change your style later"
+      options={genreOptions}
+      value={value || []}
+      onValueChange={(newValue) => {
+        onChange(newValue);
+        onGenresChange(newValue);
+      }}
+      error={errors.selectedGenres?.message}
+    />
+  )}
+/>
+        </View>
+      </View>
 
       <View style={{ marginTop: 20, marginBottom: 20 }}>
         <Text style={styles.sectionTitle}>Location and Biography</Text>
         <View style={{ gap: 16 }}>
-          <FormField.TextField
-            label="Bio"
-            placeholder="Tell us about yourself"
-            value={formData.bio}
-            onChangeText={(text) => onFormChange("bio", text)}
-            multiline={true}
-            numberOfLines={4}
+          <Controller
+            control={control}
+            name="bio"
+            render={({ field: { onChange, value } }) => (
+              <Input
+                label="Bio"
+                placeholder="Tell us about yourself"
+                value={value}
+                onChangeText={(text) => {
+                  onChange(text);
+                  onFormChange("bio", text);
+                }}
+                multiline
+                numberOfLines={4}
+                error={errors.bio?.message}
+              />
+            )}
           />
-          <FormField.TextField
-            label="Address Line 1"
-            placeholder="Your house address"
-            value={formData.addressLine1}
-            onChangeText={(text) => onFormChange("addressLine1", text)}
+
+          <Controller
+            control={control}
+            name="addressLine1"
+            render={({ field: { onChange, value } }) => (
+              <Input
+                label="Address Line 1"
+                placeholder="Your house address"
+                value={value}
+                onChangeText={(text) => {
+                  onChange(text);
+                  onFormChange("addressLine1", text);
+                }}
+                error={errors.addressLine1?.message}
+              />
+            )}
           />
-          <FormField.TextField
-            label="Address Line 2 (Optional)"
-            placeholder="Your house address"
-            value={formData.addressLine2}
-            onChangeText={(text) => onFormChange("addressLine2", text)}
+
+          <Controller
+            control={control}
+            name="addressLine2"
+            render={({ field: { onChange, value } }) => (
+              <Input
+                label="Address Line 2 (Optional)"
+                placeholder="Your house address"
+                value={value}
+                onChangeText={(text) => {
+                  onChange(text);
+                  onFormChange("addressLine2", text);
+                }}
+                error={errors.addressLine2?.message}
+              />
+            )}
           />
-          <FormField.PickerField
-            label="Country"
-            placeholder="Select a country"
-            value={selectedCountry}
-            onSelect={onCountrySelect}
-            options={countries}
-          />
-          {cities.length > 0 && (
-            <FormField.PickerField
-              label="City"
-              placeholder="Select a city"
-              value={selectedCity}
-              onSelect={onCitySelect}
-              options={cities.map((city) => ({ label: city, value: city }))}
-            />
-          )}
-          <FormField.TextField
-            label="Postal Code"
-            placeholder="100100"
-            value={formData.postalCode}
-            onChangeText={(text) => onFormChange("postalCode", text)}
+
+<Controller
+  control={control}
+  name="selectedCountry"
+  render={({ field: { onChange, value } }) => (
+    <Select
+      label="Country"
+      options={countryOptions}
+      value={value || ''}
+      onValueChange={(newValue) => {
+        onChange(newValue);
+        onCountrySelect(newValue);
+      }}
+      error={errors.selectedCountry?.message}
+    />
+  )}
+/>
+
+{cities.length > 0 && (
+  <Controller
+    control={control}
+    name="selectedCity"
+    render={({ field: { onChange, value } }) => (
+      <Select
+        label="City"
+        options={cityOptions}
+        value={value || ''}
+        onValueChange={(newValue) => {
+          onChange(newValue);
+          onCitySelect(newValue);
+        }}
+        error={errors.selectedCity?.message}
+      />
+    )}
+  />
+)}
+
+          <Controller
+            control={control}
+            name="postalCode"
+            render={({ field: { onChange, value } }) => (
+              <Input
+                label="Postal Code"
+                placeholder="100100"
+                value={value}
+                onChangeText={(text) => {
+                  onChange(text);
+                  onFormChange("postalCode", text);
+                }}
+                error={errors.postalCode?.message}
+              />
+            )}
           />
         </View>
       </View>
-
 
       <View style={{ marginTop: 20, marginBottom: 20 }}>
         <Text style={styles.sectionTitle}>Media & Links</Text>
         <View style={{ gap: 16 }}>
-          <FormField.TextField
-            label="Website URL"
-            placeholder="www.artiste.com"
-            value={formData.websiteUrl}
-            onChangeText={(text) => onFormChange("websiteUrl", text)}
+          <Controller
+            control={control}
+            name="websiteUrl"
+            render={({ field: { onChange, value } }) => (
+              <Input
+                label="Website URL"
+                placeholder="www.artiste.com"
+                value={value}
+                onChangeText={(text) => {
+                  onChange(text);
+                  onFormChange("websiteUrl", text);
+                }}
+                error={errors.websiteUrl?.message}
+              />
+            )}
           />
         </View>
       </View>
 
-
       <View style={{ marginTop: 20, marginBottom: 20 }}>
         <Text style={styles.sectionTitle}>Connect Social Accounts</Text>
-        <View style={styles.socialContainer}>
+        <View style={{ gap: 16 }}>
           {social.map((item) => (
-            <TouchableOpacity key={item.title} style={styles.socialButton} onPress={item.onPress}>
-              {item.socialIcon}
-              <Text style={styles.socialText}>{item.title}</Text>
-            </TouchableOpacity>
+            <View key={item.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              {item.icon}
+              <View style={{ flex: 1 }}>
+                <Input
+                  label={item.title}
+                  placeholder={item.placeholder}
+                  value={formData[`${item.id}Link`]?.replace(item.baseUrl, '') || ''}
+                  onChangeText={(text) => {
+                    const fullUrl = item.baseUrl + text;
+                    onFormChange(`${item.id}Link`, fullUrl);
+                    onSocialAccountChange(item.id as "twitter" | "instagram" | "tiktok", fullUrl);
+                  }}
+                />
+              </View>
+            </View>
           ))}
         </View>
       </View>
@@ -263,7 +383,7 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 24,
     paddingTop: 16,
-    paddingBottom: 120,
+    paddingBottom: 10,
     flexGrow: 1,
   },
   sectionTitle: {

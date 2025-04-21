@@ -57,10 +57,22 @@
       "expo-video",
       "expo-apple-authentication",
       [
+        "react-native-video",
+        {
+          "enableNotificationControls": true,
+          "androidExtensions": {
+            "useExoplayerRtsp": false,
+            "useExoplayerSmoothStreaming": false,
+            "useExoplayerHls": false,
+            "useExoplayerDash": false
+          }
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/splash.png",
-          "imageWidth": 1500,
+
           "backgroundColor": "#FF6D1B"
         }
       ],

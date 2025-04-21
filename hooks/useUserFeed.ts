@@ -1,6 +1,7 @@
 import api from "@/config/apiConfig";
 import { useAppSelector } from "@/redux/hooks";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 export type Media = {
   type: string;
@@ -142,6 +143,7 @@ type Track = {
 
 export const useUserDashboard = () => {
   const { userdata } = useAppSelector((auth) => auth.auth);
+  const [loading, setIsLoading] = useState(true)
 
   return useQuery({
     queryKey: ["userDashboard", userdata?._id],
@@ -150,13 +152,13 @@ export const useUserDashboard = () => {
         throw new Error("User ID not found");
       }
       const { data } = await api.get<UserDashbaordResponse>(`/api/user/feed/${userdata._id}`);
-      return data;
+      setIsLoading(false)
+      return data; // Return just the data, not an object with data and loading
     },
     enabled: !!userdata?._id,
     refetchOnWindowFocus: true,
     gcTime: 60 * 60 * 1000,
     staleTime: 10000,
-    // refetchInterval: 30000,
-    refetchIntervalInBackground: false,// Add placeholder data for smooth loading
+    refetchIntervalInBackground: false,
   });
 };

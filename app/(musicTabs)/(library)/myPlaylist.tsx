@@ -22,6 +22,7 @@ const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground
 
 const MyPlaylist = () => {
   const scrollY = useRef(new Animated.Value(0)).current;
+  const musicPlayer = useMusicPlayerContext()
   const [showStickySearch, setShowStickySearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredPlaylists, setFilteredPlaylists] = useState([]);
@@ -158,6 +159,9 @@ const MyPlaylist = () => {
           }
         )}
         scrollEventThrottle={16}
+        contentContainerStyle={{
+            paddingBottom: musicPlayer.currentTrack ? 80 : 40
+        }}
       >
         {/* Search Bar Below Header with Animation */}
         <Animated.View

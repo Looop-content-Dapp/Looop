@@ -36,14 +36,13 @@ const MusicPlayer = () => {
     next,
     buffering,
   } = useMusicPlayerContext();
-  console.log("Current Track:", currentTrack);
   const { navigate } = useRouter();
 
   useEffect(() => {
     const fetchColors = async () => {
       if (currentTrack?.release?.artwork?.high || currentTrack?.releaseImage) {
         try {
-          const result = await getColors(currentTrack?.release?.artwork?.high ? currentTrack?.release?.artwork?.high : currentTrack?.releaseImage, {
+          const result = await getColors(currentTrack?.release?.artwork?.high || currentTrack?.releaseImage , {
             fallback: '#0a0b0f',
             cache: true,
           });

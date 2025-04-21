@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ImageBackground,
   RefreshControl,
+  ActivityIndicator,
 } from "react-native";
 import React from "react";
 import { router } from "expo-router";
@@ -14,11 +15,24 @@ import ListComponent from "../../../components/cards/ListComponents";
 import { useLibrary } from "../../../hooks/useLibrary";
 import { useAppSelector } from "@/redux/hooks";
 import { useMusicPlayerContext } from "../../../context/MusicPlayerContext";
+import { LibrarySkeleton } from "../../../components/skeletons/LibrarySkeleton";
 
 const index = () => {
   const { userdata } = useAppSelector((auth) => auth.auth);
   const { lastPlayed } = useLibrary(userdata?._id);
   const musicPlayer = useMusicPlayerContext();
+
+  // Show skeleton while initial data is being fetched
+  if (!lastPlayed.data && lastPlayed.isLoading) {
+    return (
+      <ScrollView
+        className="flex-1 min-h-screen"
+        contentContainerStyle={{ paddingBottom: musicPlayer?.currentTrack ? 260 : 190 }}
+      >
+        <LibrarySkeleton />
+      </ScrollView>
+    );
+  }
 
   // Extract the actual track data from the response
   const recentlyPlayedTracks = lastPlayed?.data?.data || [];
@@ -67,6 +81,33 @@ const index = () => {
       );
     }
   };
+
+  // Show loading indicator while initial data is being fetched
+  if (!lastPlayed.data && lastPlayed.isLoading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#000" />
+        <Text className="mt-2 font-PlusJakartaSansMedium">Loading your library...</Text>
+      </View>
+    );
+  }
+
+  // Show error state if data fetching failed
+  if (lastPlayed.error) {
+    return (
+      <View className="flex-1 justify-center items-center p-4">
+        <Text className="text-red-500 font-PlusJakartaSansBold text-lg text-center">
+          Oops! Something went wrong.
+        </Text>
+        <TouchableOpacity
+          onPress={() => lastPlayed.refetch?.()}
+          className="mt-4 bg-black px-6 py-3 rounded-full"
+        >
+          <Text className="text-white font-PlusJakartaSansMedium">Try Again</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <ScrollView

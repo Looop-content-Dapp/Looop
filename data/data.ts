@@ -341,6 +341,24 @@ export const countries = [
   },
 ];
 
+export const languages = [
+  { label: 'English', value: 'en' },
+  { label: 'Spanish', value: 'es' },
+  { label: 'French', value: 'fr' },
+  { label: 'German', value: 'de' },
+  { label: 'Italian', value: 'it' },
+  { label: 'Portuguese', value: 'pt' },
+  { label: 'Russian', value: 'ru' },
+  { label: 'Chinese (Simplified)', value: 'zh' },
+  { label: 'Japanese', value: 'ja' },
+  { label: 'Korean', value: 'ko' },
+  { label: 'Arabic', value: 'ar' },
+  { label: 'Hindi', value: 'hi' },
+  { label: 'Turkish', value: 'tr' },
+  { label: 'Vietnamese', value: 'vi' },
+  { label: 'Thai', value: 'th' },
+];
+
 export const banks = [
     {
       label: "Access Bank",

@@ -50,7 +50,7 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
   };
 
   return (
-    <View className="h-auto gap-y-[16px] mx-[14px] border-b border-Grey/07 py-[10px]">
+    <View className="h-auto gap-y-[16px] border-b border-Grey/07 py-[10px]">
       <StatusBar style="light" />
       <UserSection
         item={item}
@@ -62,16 +62,16 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
         transition={{ type: 'timing', duration: 1000 }}
         show={isLoading}
       >
-        <View className="gap-y-[16px]">
+        <View className="gap-y-[16px] pl-[24px]">
           <Pressable
             onPress={() =>
               router.navigate({
-                pathname: '/postDetails',
+                pathname: '/(communityTabs)/(feed)/_Feedscreens',
                 params: { id: item?._id },
               })
             }
           >
-            <Text className="text-white text-[16px] font-PlusJakartaSansRegular">
+            <Text className="text-white text-[16px] font-PlusJakartaSansMedium">
               {renderContent(item?.content)}
             </Text>
           </Pressable>

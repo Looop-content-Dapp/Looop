@@ -158,7 +158,7 @@ const SearchScreen = () => {
             case 'post':
                 const post = item as Post;
                 router.navigate({
-                    pathname: '/postDetails',
+                    pathname: '/(communityTabs)/(feed)/_Feedscreens',
                     params: { postId: post._id }
                 });
                 break;

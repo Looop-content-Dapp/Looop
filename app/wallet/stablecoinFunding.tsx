@@ -1,14 +1,16 @@
-import { View, Text, TouchableOpacity, Image, SafeAreaView, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Image, SafeAreaView, Alert, Share } from "react-native";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { useLayoutEffect } from "react";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { Copy01Icon } from "@hugeicons/react-native";
 import * as Clipboard from 'expo-clipboard';
 import QRCode from 'react-native-qrcode-svg';
+import { useNotification } from "@/context/NotificationContext";
 
 const StablecoinFundingScreen = () => {
   const navigation = useNavigation();
   const { chain, address } = useLocalSearchParams<{ chain: string; address: string }>();
+  const { showNotification } = useNotification()
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -18,7 +20,37 @@ const StablecoinFundingScreen = () => {
 
   const handleCopyAddress = async () => {
     await Clipboard.setStringAsync(address);
-    Alert.alert("Success", "Address copied to clipboard");
+    showNotification({
+      title: 'Address Copied',
+      message: 'Address copied to clipboard',
+      type: 'success',
+      position:'top',
+    })
+  };
+
+  const handleShare = async () => {
+    try {
+      const result = await Share.share({
+        message: `Here's my ${chain} USDC address: ${address}`,
+        title: `${chain} USDC Address`,
+      });
+
+      if (result.action === Share.sharedAction) {
+        showNotification({
+          title: 'Success',
+          message: 'Address shared successfully',
+          type: 'success',
+          position: 'top',
+        });
+      }
+    } catch (error) {
+      showNotification({
+        title: 'Error',
+        message: 'Failed to share address',
+        type: 'error',
+        position: 'top',
+      });
+    }
   };
 
   return (
@@ -75,9 +107,7 @@ const StablecoinFundingScreen = () => {
         {/* Share Address Button */}
         <TouchableOpacity
           className="bg-[#111318] py-4 rounded-[10px] mt-8"
-          onPress={() => {
-            // Implement share functionality
-          }}
+          onPress={handleShare}
         >
           <Text className="text-[#FF6D1B] text-center text-[16px] font-PlusJakartaSansBold">
             Share address

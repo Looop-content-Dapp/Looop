@@ -22,6 +22,8 @@ import { Feather } from '@expo/vector-icons';
 import AddToPlaylistBottomSheet from './AddToPlaylistBottomSheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Clipboard from '@react-native-clipboard/clipboard';
+import { Track } from '@/utils/types';
+import TrackPlayer from 'react-native-track-player';
 
 interface ShareProps {
   isVisible: boolean;
@@ -30,10 +32,10 @@ interface ShareProps {
     title?: string;
     artist?: string;
     image?: string;
-    duration?: number;  // Change to number type
+    duration?: number;
     type?: string;
     id?: string;
-    tracks?: any[];
+    tracks?: Track[];  // Update type to Track[]
   };
 }
 
@@ -55,6 +57,11 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
   const handleCopyLink = () => {
     Clipboard.setString(shareContent.url);
     Alert.alert('Success', 'Link copied to clipboard');
+  };
+
+  const handleAddToPlaylist = () => {
+    setIsPlaylistSheetVisible(true);
+    onClose();
   };
 
 
@@ -209,9 +216,59 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
       .toUpperCase();
   };
 
-  const handleAddToQueue = () => {
-    Alert.alert('Success', 'Added to queue');
-    onClose();
+  const [isInQueue, setIsInQueue] = useState(false);
+
+  // Add this useEffect to check if track is in queue when component mounts
+  useEffect(() => {
+    checkIfInQueue();
+  }, [album?.id]);
+
+  const checkIfInQueue = async () => {
+    try {
+      const queue = await TrackPlayer.getQueue();
+      const isAlreadyInQueue = queue.some(track => track.id === album?.id);
+      setIsInQueue(isAlreadyInQueue);
+    } catch (error) {
+      console.error('Error checking queue:', error);
+    }
+  };
+
+  const handleAddToQueue = async () => {
+    if (!album) return;
+
+    try {
+      if (album.tracks && album.tracks.length > 0) {
+        console.log('Album has tracks:', album.tracks);
+        // If it's an album with multiple tracks
+        const tracksToAdd = album.tracks.map(track => ({
+          id: track._id,
+          url: track.songData.fileUrl,
+          title: track.title,
+          artist: track.artist,
+          artwork: track.release.artwork.high || album.image,
+          duration: track.duration,
+        }));
+        await TrackPlayer.add(tracksToAdd);
+      } else {
+        // If it's a single track
+        const trackToAdd = {
+          id: album.id,
+          url: album.url,
+          title: album.title,
+          artist: album.artist,
+          artwork: album.image,
+          duration: album.duration,
+        };
+        await TrackPlayer.add(trackToAdd);
+      }
+
+      setIsInQueue(true);
+      Alert.alert('Success', 'Added to queue');
+      onClose();
+    } catch (error) {
+      console.error('Error adding to queue:', error);
+      Alert.alert('Error', 'Failed to add to queue. Please try again.');
+    }
   };
 
   const handleAddToFavorites = async () => {
@@ -408,10 +465,7 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={() => {
-                    setIsPlaylistSheetVisible(true);
-                    onClose();
-                  }}
+                  onPress={handleAddToPlaylist}
                 >
                   <View className='bg-[#202227] p-[20px] rounded-[56px]'>
                     <Playlist01Icon size={32} color='#9A9B9F' variant='stroke' />
@@ -420,7 +474,11 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionButton} onPress={handleAddToQueue}>
                   <View className='bg-[#202227] p-[20px] rounded-[56px]'>
-                    <Queue01Icon size={32} color='#9A9B9F' variant='stroke' />
+                    <Queue01Icon
+                      size={32}
+                      color={isInQueue ? '#FF6D1B' : '#9A9B9F'}
+                      variant={isInQueue ? 'solid' : 'stroke'}
+                    />
                   </View>
                   <Text style={styles.actionLabel}>Add to Queue</Text>
                 </TouchableOpacity>

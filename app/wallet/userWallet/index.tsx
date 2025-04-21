@@ -57,7 +57,6 @@ const WalletScreen = () => {
   const { data: transactions, isLoading: transactionsLoading } = useTransaction(userdata?._id || '');
   const filterOptions = ['Last 7 days', 'Last 30 days', 'Last 90 days', 'All time'];
   const router = useRouter();
-  console.log(transactions, "user transactions");
 
   const [walletData, setWalletData] = useState<WalletData>({
     balances: {
@@ -83,9 +82,11 @@ const WalletScreen = () => {
     // Update walletData when transactions are loaded
     useEffect(() => {
         if (transactions && Array.isArray(transactions)) {
+            console.log(transactions, "transaction")
           setWalletData(prev => ({
             ...prev,
             transactions: transactions.map((tx: APITransaction) => ({
+              id: tx?._id,
               title: tx?.title || tx?.type || '',
               amount: `${['funding', 'transfer'].includes(tx.type) ? '+' : '-'}${tx?.amount || 0} ${tx?.currency || ''}`,
               date: tx?.createdAt ? new Date(tx.createdAt).toLocaleDateString() : '',
@@ -101,6 +102,7 @@ const WalletScreen = () => {
       setWalletData(prev => ({
         ...prev,
         transactions: transactions.data.transactions.map((tx: APITransaction) => ({
+          id: tx?._id,
           title: tx.title || tx.type,
           amount: `${tx.status === 'failed' ? '' : (tx.type === 'funding' ? '+' : '-')}${tx.amount / 1000000} ${tx.currency}`,
           date: new Date(tx.createdAt).toLocaleDateString(),

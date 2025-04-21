@@ -9,7 +9,7 @@ import { showToast } from '@/components/ShowMessage';
 // Update the interface
 interface ArtistInfoProps {
   image?: string;
-  name: string;
+  name: string;  // We'll keep this in props but won't use it
   follow: string;
   desc: string;
   follower: string;
@@ -25,8 +25,10 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
   isVerfied,
   index,
   isFollow,
+  desc
 }) => {
-  const [followed, setFollowed] = useState(false); // Initialize as false
+  const [followed, setFollowed] = useState(false);
+  const [showFullDesc, setShowFullDesc] = useState(false);  // Add this state
 
   useEffect(() => {
     setFollowed(isFollow); // Update when prop changes
@@ -72,7 +74,7 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
   );
 
   const renderFollowerInfo = () => (
-    <View className="flex-row gap-3 mt-1">
+    <View className="flex-row gap-x-2">
       <Text className="text-[14px] font-PlusJakartaSansMedium text-[#9A9B9F]">
         {formatNumber(follow)} Followers
       </Text>
@@ -83,20 +85,9 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
   );
 
   return (
-    <View className="max-h-[256px] ml-[14px] my-[24px] gap-4">
-      <View className="flex-row items-start justify-around">
-        <View className="gap-1 flex-1">
-          <View className="flex-row items-center flex-wrap gap-2">
-            <Text
-              numberOfLines={1}
-              ellipsizeMode="tail"
-              className="text-[24px] font-PlusJakartaSansBold text-white"
-            >
-              {name}
-            </Text>
-            {renderVerificationBadge()}
-            {/* <Text className="text-[#787A80] text-sm">#4 in Nigeria</Text> */}
-          </View>
+    <View className="gap-y-[14px]">
+      <View className="flex-row items-center justify-around ml-[14px]">
+        <View className=" flex-1">
           {renderFollowerInfo()}
         </View>
 
@@ -115,7 +106,20 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
             </Text>
           </TouchableOpacity>
         )}
-
+      </View>
+      <View className='bg-[#12141B] p-[16px] gap-y-[8px] rounded-[15px] mx-auto mb-6'>
+        <Text numberOfLines={1} className='text-[14px] font-PlusJakartaSansBold text-[#9A9B9F]'>About {name}</Text>
+        <Text
+          numberOfLines={showFullDesc ? undefined : 1}
+          className='text-[14px] font-PlusJakartaSansRegular text-[#9A9B9F]'
+        >
+          {desc}
+        </Text>
+        <TouchableOpacity onPress={() => setShowFullDesc(!showFullDesc)}>
+          <Text className='text-[14px] text-[#D2D3D5] font-PlusJakartaSansBold'>
+            {showFullDesc ? 'See less' : 'See more'}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

@@ -12,6 +12,7 @@ interface ImageUploadProps {
   maxSize?: string;
   acceptedFormats?: string;
   error?: string;
+  type?: 'rounded' | 'square';  // Add new type prop
 }
 
 export const ImageUpload = ({
@@ -21,16 +22,16 @@ export const ImageUpload = ({
   onChange,
   maxSize,
   acceptedFormats,
-  error
+  error,
+  type = 'rounded'  // Default to rounded if not specified
 }: ImageUploadProps) => {
   const { pickFile, isLoading } = useFileUpload();
-  console.log('ImageUpload:', value);
 
   const handlePickImage = async () => {
     try {
       const result = await pickFile(FileType.IMAGE);
-      if (result) {
-        onChange(result);
+      if (result?.success && result.file) {
+        onChange(result.file);
       }
     } catch (error) {
       console.error('Error picking image:', error);
@@ -39,56 +40,61 @@ export const ImageUpload = ({
 
   return (
     <View className="gap-y-[12px]">
-      <View>
+      <View className="self-start">
         <Text className="text-[#F4F4F4] text-[16px] font-PlusJakartaSansMedium">{label}</Text>
         {description && (
           <Text className="text-[#787A80] text-[14px] font-PlusJakartaSansMedium">{description}</Text>
         )}
-        {/* {(maxSize || acceptedFormats) && (
-          <Text className="text-[#787A80] text-sm">
-            {maxSize && `Max size: ${maxSize}`}
-            {maxSize && acceptedFormats && ' • '}
-            {acceptedFormats && `Format: ${acceptedFormats}`}
-          </Text>
-        )} */}
       </View>
 
-      {!value ? (
-        <TouchableOpacity
-          onPress={handlePickImage}
-          disabled={isLoading}
-          className="border border-[#202227] bg-[#111318] rounded-lg py-[158px] items-center justify-center"
-        >
-          {isLoading ? (
-            <View className="items-center space-y-2">
-              <ActivityIndicator color="#57E09A" />
-              <Text className="text-[#787A80]">Uploading...</Text>
-            </View>
-          ) : (
-            <>
-              <ImageAdd01Icon  size={34} color="#63656B" />
-              <Text className="text-[#63656B] text-[16px] font-PlusJakartaSansMedium mt-2">Click to upload image</Text>
-            </>
-          )}
-        </TouchableOpacity>
-      ) : (
-        <View>
-          <Image
-            source={{ uri: value.file.uri }}
-            className="w-full h-[200px] rounded-lg"
-            resizeMode="cover"
-          />
+      <View className="items-center">
+        {!value ? (
           <TouchableOpacity
-            onPress={() => onChange(null)}
-            className="absolute top-2 right-2 bg-black/50 rounded-full p-2"
+            onPress={handlePickImage}
+            disabled={isLoading}
+            className={`border border-[#202227] bg-[#111318] ${
+              type === 'rounded'
+                ? 'rounded-full w-[220px] h-[220px]'
+                : 'rounded-lg w-full py-[158px]'
+            } items-center justify-center`}
           >
-            <Ionicons name="close" size={20} color="#fff" />
+            {isLoading ? (
+              <View className="items-center space-y-2">
+                <ActivityIndicator color="#57E09A" />
+                <Text className="text-[#787A80]">Uploading...</Text>
+              </View>
+            ) : (
+              <>
+                <ImageAdd01Icon size={type === 'rounded' ? 24 : 34} color="#63656B" />
+                <Text className="text-[#63656B] text-[14px] font-PlusJakartaSansMedium mt-2">
+                  {type === 'rounded' ? 'Upload' : 'Click to upload image'}
+                </Text>
+              </>
+            )}
           </TouchableOpacity>
-        </View>
-      )}
+        ) : (
+          <View className={type === 'rounded' ? 'w-[220px] h-[220px]' : 'w-full'}>
+            <Image
+              source={{ uri: value.uri }} 
+              className={`${
+                type === 'rounded'
+                  ? 'w-[220px] h-[220px] rounded-full'
+                  : 'w-full h-[200px] rounded-lg'
+              }`}
+              resizeMode="cover"
+            />
+            <TouchableOpacity
+              onPress={() => onChange(null)}
+              className="absolute top-2 right-2 bg-black/50 rounded-full p-2"
+            >
+              <Ionicons name="close" size={16} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
 
       {error && (
-        <Text className="text-red-500 text-sm">{error}</Text>
+        <Text className="text-red-500 text-sm self-start">{error}</Text>
       )}
     </View>
   );

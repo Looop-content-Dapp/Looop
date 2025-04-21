@@ -33,11 +33,26 @@ export const ImageGrid: React.FC<ImageGridProps> = ({ thumbnails }) => {
     if (thumbnails.length === 4) {
       return (
         <>
-          <View style={styles.row}>
-            <TouchableOpacity onPress={() => handleImagePress(0)}>
+          <View style={styles.row} className='gap-x-4 py-2'>
+            <TouchableOpacity
+                              onPress={() => handleImagePress(0)}
+                              className="rounded-tl-xl overflow-hidden"
+                            >
+                              <FastImage
+                                source={{
+                                  uri: thumbnails[0],
+                                  priority: FastImage.priority.normal,
+                                  cache: FastImage.cacheControl.immutable
+                                }}
+                                style={[styles.halfImage, { width: imageWidth / 2 - 2 }]}
+                                className="rounded-tl-xl"
+                                resizeMode={FastImage.resizeMode.cover}
+                              />
+                            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleImagePress(0)}  className="rounded-tr-xl overflow-hidden">
               <FastImage
                 source={{
-                  uri: thumbnails[0],
+                  uri: thumbnails[1],
                   priority: FastImage.priority.normal,
                   cache: FastImage.cacheControl.immutable
                 }}
@@ -46,8 +61,8 @@ export const ImageGrid: React.FC<ImageGridProps> = ({ thumbnails }) => {
               />
             </TouchableOpacity>
           </View>
-          <View style={styles.row}>
-            <TouchableOpacity onPress={() => handleImagePress(2)}>
+          <View style={styles.row} className='gap-x-4'>
+            <TouchableOpacity onPress={() => handleImagePress(2)} className="rounded-bl-xl overflow-hidden">
               <FastImage
                 source={{
                     uri: thumbnails[2],
@@ -58,7 +73,7 @@ export const ImageGrid: React.FC<ImageGridProps> = ({ thumbnails }) => {
                 resizeMode={FastImage.resizeMode.cover}
               />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleImagePress(3)}>
+            <TouchableOpacity onPress={() => handleImagePress(3)} className="rounded-br-xl overflow-hidden">
               <FastImage
                 source={{
                     uri: thumbnails[3],
@@ -190,7 +205,6 @@ const styles = StyleSheet.create({
   },
   halfImage: {
     height: 210,
-    borderRadius: 15,
     overflow: 'hidden',
   },
   largeImage: {

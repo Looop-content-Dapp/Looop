@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 interface NotificationModalProps {
     visible: boolean;
-    type: 'success' | 'error';
+    type: 'success' | 'error' | 'info';  // Added 'info' type
     title: string;
     message: string;
     onClose: () => void;
@@ -23,9 +23,17 @@ const NotificationModal = ({
 }: NotificationModalProps) => {
     const slideAnim = useRef(new Animated.Value(0)).current;
     const { height } = Dimensions.get('window');
-    const iconName = type === 'success' ? 'checkmark-circle' : type === 'error' ? 'alert-circle' : 'information-circle';
-    const iconColor = type === 'success' ? '#FFFFFF' : type === 'error' ? '#FFFFFF' : '#FFFFFF';
-    const backgroundColor = type === 'success' ? '#4CAF50' : type === 'error' ? '#FF6B6B' : '#202227'; 
+    const iconName = type === 'success' ? 'checkmark-circle' :
+                    type === 'error' ? 'alert-circle' :
+                    'information-circle';
+
+    const backgroundColor = type === 'success' ? '#E8F5E9' :
+                          type === 'error' ? '#FFF2F2' :
+                          '#F5F5F5';  // Light gray for info
+
+    const iconColor = type === 'success' ? '#4CAF50' :
+                     type === 'error' ? '#FF6B6B' :
+                     '#2196F3';  // Blue for info
 
     const panResponder = useRef(
         PanResponder.create({
@@ -90,36 +98,61 @@ const NotificationModal = ({
                 position: 'absolute',
                 left: 20,
                 right: 20,
-                zIndex: 1000
+                zIndex: 9000,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.15,
+                shadowRadius: 12,
+                elevation: 8
             }}
             {...panResponder.panHandlers}
         >
-            <TouchableOpacity
+            <View
                 style={{
-                    backgroundColor, // Apply dynamic background color
+                    backgroundColor,
                     borderRadius: 12,
                     padding: 16,
                     flexDirection: 'row',
                     alignItems: 'center',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.8,
-                    shadowRadius: 2,
-                    elevation: 5
                 }}
-                activeOpacity={0.9}
-                onPress={hideNotification}
             >
-                <Ionicons name={iconName} size={24} color={iconColor} style={{ marginRight: 12 }} />
+                <Ionicons
+                    name={iconName}
+                    size={24}
+                    color={iconColor}
+                    style={{ marginRight: 12 }}
+                />
                 <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: type === 'success' ? '#FFFFFF' : type === 'error' ? '#FFFFFF' : '#f4f4f4' }}>
+                    <Text style={{
+                        fontSize: 16,
+                        fontWeight: '500',
+                        color: type === 'success' ? '#1B5E20' : type === 'error' ? '#FF6B6B' : '#f4f4f4',
+                        marginBottom: 2
+                    }}>
                         {title}
                     </Text>
-                    <Text style={{ fontSize: 14, color: type === 'success' ? '#FFFFFF' : type === 'error' ? '#FFFFFF' : '#787A80' }}>
+                    <Text style={{
+                        fontSize: 14,
+                        color: type === 'success' ? '#2E7D32' : type === 'error' ? '#FF6B6B' : '#787A80',
+                        opacity: type === 'success' ? 0.8 : 0.8
+                    }}>
                         {message}
                     </Text>
                 </View>
-            </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={hideNotification}
+                    style={{
+                        padding: 4,
+                        marginLeft: 12
+                    }}
+                >
+                    <Ionicons
+                        name="close"
+                        size={24}
+                        color={type === 'success' ? '#4CAF50' : '#FF6B6B'}
+                    />
+                </TouchableOpacity>
+            </View>
         </Animated.View>
     );
 };

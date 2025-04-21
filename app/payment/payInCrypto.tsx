@@ -69,6 +69,7 @@ import { useAppSelector } from "@/redux/hooks";
             message: 'Successfully joined the community!',
             position: 'top'
           });
+          router.dismissTo(`${currentRoute}`)
         } else {
           throw new Error('Join community response was not successful');
         }

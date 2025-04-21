@@ -339,36 +339,10 @@ export default function CommentScreen() {
           </View>
 
           {/* Display uploaded files */}
-          {files.length > 0 && (
-            <View className="mt-4 flex-row flex-wrap gap-2">
-              {files.map((file, index) => (
-                <View key={index} className="relative">
-                  <Image
-                    source={{ uri: file.uri }}
-                    className="w-24 h-24 rounded-lg"
-                  />
-                  <TouchableOpacity
-                    className="absolute top-1 right-1 bg-black/50 rounded-full p-1"
-                    onPress={() => removeFile(file)}
-                  >
-                    <Text className="text-white">×</Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </View>
-          )}
+
 
           {/* Bottom Toolbar */}
-          <View className="flex-row items-center justify-between mt-4">
-            <View className="flex-row gap-x-4">
-              <TouchableOpacity onPress={handleImagePick}>
-                <Image02Icon size={24} color="#787A80" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleGifPick}>
-                <Gif02Icon size={24} color="#787A80" />
-              </TouchableOpacity>
-            </View>
-
+          <View className="flex-row items-center justify-end mt-4">
             <TouchableOpacity
               className="bg-Orange/08 px-4 py-2 rounded-full"
               disabled={(!comment.trim() && files.length === 0) || isUploading || isCommenting || isReplying}

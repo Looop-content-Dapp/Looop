@@ -1,17 +1,50 @@
-import { View, Text, TouchableOpacity, Image, SafeAreaView } from "react-native";
+import { View, Text, TouchableOpacity, Image, SafeAreaView, StyleSheet, Platform } from "react-native";
 import { router, useNavigation } from "expo-router";
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState, useEffect } from "react";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import FilterButton from "@/components/app-components/FilterButton";
 import { useAppSelector } from "@/redux/hooks";
 import { ArrowRight01Icon, BankIcon } from "@hugeicons/react-native";
+import { startOnrampSDK, onRampSDKNativeEvent, closeOnrampSDK } from '@onramp.money/onramp-react-native-sdk';
+import { WebView } from 'react-native-webview';
 
 const FundWalletScreen = () => {
   const navigation = useNavigation();
   const [selectedChain, setSelectedChain] = useState('XION');
   const { userdata } = useAppSelector(state => state.auth);
+  const [webviewVisible, setWebviewVisible] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState<string | null>(null);
+  const [isOnrampVisible, setIsOnrampVisible] = useState(false);
+
+  const WIDGET_ID = 'YOUR_WIDGET_ID'; // Replace with your Kado widget ID
 
   const chainOptions = ['XION', 'Starknet'];
+
+  useEffect(() => {
+    const onRampEventListener = onRampSDKNativeEvent.addListener(
+      'widgetEvents',
+      eventData => {
+        console.log('Received onRampEvent:', eventData);
+        // Handle different events
+        switch(eventData.type) {
+          case 'ONRAMP_WIDGET_TX_COMPLETED':
+            setIsOnrampVisible(false);
+            // Handle successful transaction
+            break;
+          case 'ONRAMP_WIDGET_CLOSE_REQUEST_CONFIRMED':
+            setIsOnrampVisible(false);
+            break;
+        }
+      },
+    );
+
+    return () => {
+      onRampEventListener.remove();
+      if (isOnrampVisible) {
+        closeOnrampSDK();
+      }
+    };
+  }, [isOnrampVisible]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -30,9 +63,60 @@ const FundWalletScreen = () => {
   };
 
   const handleBankTransfer = () => {
-    // Implement bank transfer logic
-    console.log("Bank transfer selected");
+    const walletAddress = userdata?.wallets?.[selectedChain.toLowerCase()]?.address;
+
+    startOnrampSDK({
+      appId: 1, // Replace with your actual appID
+      walletAddress: walletAddress,
+      flowType: 1, // Onramp
+      fiatType: 2, // USD
+      paymentMethod: 2, // Bank transfer
+      network: selectedChain === 'XION' ? 'NOBLE' : 'STARKNET',
+    });
+
+    setIsOnrampVisible(true);
   };
+
+  if (webviewVisible && currentUrl) {
+    return (
+      <>
+        <WebView
+          containerStyle={styles.modalContainer}
+          onMessage={(event) => {
+            const eventData = event?.nativeEvent?.data;
+            try {
+              const message = JSON.parse(eventData);
+              console.log('Post Message Logs', message);
+              if (message?.type === 'PLAID_NEW_ACH_LINK') {
+                const achLink = message?.payload?.link;
+                Linking.openURL(achLink);
+              }
+            } catch (error) {
+              console.error('Error parsing message:', error);
+            }
+          }}
+          allowUniversalAccessFromFileURLs
+          geolocationEnabled
+          javaScriptEnabled
+          allowsInlineMediaPlayback
+          mediaPlaybackRequiresUserAction={false}
+          originWhitelist={['*']}
+          source={{ uri: currentUrl }}
+          allowsBackForwardNavigationGestures
+          onError={(e) => {
+            console.warn('error occurred', e);
+          }}
+          style={styles.webview}
+        />
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={() => setWebviewVisible(false)}
+        >
+          <Text style={styles.closeButtonText}>Close</Text>
+        </TouchableOpacity>
+      </>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-[#040405]">
@@ -82,7 +166,7 @@ const FundWalletScreen = () => {
         </TouchableOpacity>
 
         {/* Add via bank transfer */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={handleBankTransfer}
           className="bg-[#111318] p-4 rounded-[10px] flex-row items-center"
         >
@@ -98,10 +182,41 @@ const FundWalletScreen = () => {
             </Text>
           </View>
           <ArrowRight01Icon size={24} color="#787A80" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    marginTop: Platform.OS === 'ios' ? 45 : 0,
+  },
+  webview: {
+    width: '100%',
+    height: '100%',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 45 : 20,
+    right: 20,
+    backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 5,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  closeButtonText: {
+    fontSize: 16,
+    color: '#333',
+  },
+});
 
 export default FundWalletScreen;
