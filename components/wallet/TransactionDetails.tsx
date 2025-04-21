@@ -206,20 +206,20 @@ export default function TransactionDetails({ transactionId }: TransactionDetails
         {transaction.status === 'failed' && (
           <Pressable
             onPress={handleContactSupport}
-            className="bg-[#2C2C2E] rounded-[56px] py-4 flex-row items-center justify-center mb-4"
+            className="bg-[#2C2C2E] gap-x-4 rounded-[56px] py-4 flex-row items-center justify-center mb-4"
           >
             <MessageQuestionIcon size={24} color="#FFFFFF" className="mr-2" />
-            <Text className="text-[#FFFFFF] text-[16px] font-PlusJakartaSansBold">
+            <Text className="text-[#FFFFFF] text-[16px] font-PlusJakartaSansMedium">
               Contact Support
             </Text>
           </Pressable>
         )}
         <Pressable
           onPress={handleShare}
-          className="bg-Orange/08 rounded-[56px] py-4 flex-row items-center justify-center"
+          className="bg-Orange/08 rounded-[56px] gap-x-4 py-4 flex-row items-center justify-center"
         >
-          <Share01Icon size={24} color="#FFFFFF" className="mr-2" />
-          <Text className="text-[#FFFFFF] text-[16px] font-PlusJakartaSansBold">
+          <Share01Icon size={24} color="#040405" className="mr-2" />
+          <Text className="text-[#040405] text-[16px] font-PlusJakartaSansMedium">
             Share Transaction
           </Text>
         </Pressable>
