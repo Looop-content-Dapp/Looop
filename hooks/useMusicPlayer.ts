@@ -243,7 +243,6 @@ const useMusicPlayer = () => {
   };
 
   if (playlist) {
-    console.log("playlist", playlist)
   const formattedPlaylist = playlist.map((t) => ({
   id: t.songData._id,
   url: t.songData.fileUrl,
@@ -255,7 +254,6 @@ const useMusicPlayer = () => {
   genre: "", // Ensure this field is present
   date: new Date().toISOString(), // Ensure this field is present
   }));
-  console.log("formattedPlaylist", formattedPlaylist)
   await TrackPlayer.add(formattedPlaylist);
   await TrackPlayer.skip(trackIndex);
   } else {
@@ -345,49 +343,61 @@ const useMusicPlayer = () => {
   const next = useCallback(async () => {
     try {
       const queue = await TrackPlayer.getQueue();
-      const currentIndex = await TrackPlayer.getActiveTrackIndex();
+      const currentIndex = await TrackPlayer.getCurrentTrack();
 
-      // Changed condition to check if queue is empty or currentIndex is invalid
+      // Return if queue is empty or currentIndex is invalid
       if (queue.length === 0 || currentIndex === null || currentIndex === undefined) return;
 
-      // Calculate next index based on shuffle state
-      let nextIndex = currentIndex;
-      if (shuffle) {
-        const availableIndices = Array.from(
-          { length: queue.length },
-          (_, i) => i
-        ).filter(i => i !== currentIndex);
-        nextIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-      } else {
-        nextIndex = (currentIndex + 1) % queue.length;
-      }
+      // Calculate next index
+      let nextIndex = currentIndex + 1;
 
-      // Update UI immediately
-      if (playlist && playlist.length > 0) {
-        const nextTrack = playlist[nextIndex];
-        if (nextTrack && albumInfo) {
-          dispatch(playTrack({ track: nextTrack, albumInfo, playlist }));
-          dispatch(updateCurrentIndex(nextIndex));
+      // If we're at the end of the queue and repeat is on, go back to start
+      if (nextIndex >= queue.length) {
+        if (repeat) {
+          nextIndex = 0;
+        } else {
+          return; // End of queue and no repeat
         }
       }
 
-      await TrackPlayer.skip(nextIndex);
-      const playerState = await TrackPlayer.getState();
-      if (playerState !== State.Playing) {
-        await TrackPlayer.play();
+      // Get the next track
+      const nextTrack = await TrackPlayer.getTrack(nextIndex);
+      if (nextTrack && albumInfo) {
+        // Update UI state
+        dispatch(playTrack({
+          track: {
+            _id: nextTrack.id,
+            title: nextTrack.title,
+            artist: { name: nextTrack.artist },
+            songData: {
+              fileUrl: nextTrack.url,
+              duration: nextTrack.duration || 0
+            },
+            release: {
+              artwork: { high: nextTrack.artwork }
+            }
+          },
+          albumInfo,
+          playlist: queue
+        }));
+        dispatch(updateCurrentIndex(nextIndex));
       }
+
+      // Skip to next track and play
+      await TrackPlayer.skip(nextIndex);
+      await TrackPlayer.play();
     } catch (error) {
       console.error("Error skipping to next:", error);
     }
-  }, [dispatch, playlist, albumInfo, shuffle]);
+  }, [dispatch, albumInfo, repeat]);
 
   const previous = useCallback(async () => {
     try {
       const queue = await TrackPlayer.getQueue();
-      const currentIndex = await TrackPlayer.getActiveTrackIndex();
+      const currentIndex = await TrackPlayer.getCurrentTrack();
       const position = await TrackPlayer.getProgress().then((progress) => progress.position);
 
-      if (!currentIndex || currentIndex === null || !queue.length) return;
+      if (currentIndex === null || currentIndex === undefined || !queue.length) return;
 
       // If current position > 3 seconds, restart track
       if (position > 3) {
@@ -396,54 +406,84 @@ const useMusicPlayer = () => {
       }
 
       // Calculate previous index
-      const prevIndex = currentIndex === 0 ? queue.length - 1 : currentIndex - 1;
-
-      // Update UI immediately
-      if (playlist) {
-        const prevTrack = playlist[prevIndex];
-        if (prevTrack && albumInfo) {
-          dispatch(playTrack({ track: prevTrack, albumInfo, playlist }));
-          dispatch(updateCurrentIndex(prevIndex));
-        }
+      let prevIndex = currentIndex - 1;
+      if (prevIndex < 0) {
+        prevIndex = repeat ? queue.length - 1 : 0;
       }
 
+      // Get the previous track
+      const prevTrack = await TrackPlayer.getTrack(prevIndex);
+      if (prevTrack && albumInfo) {
+        // Update UI state
+        dispatch(playTrack({
+          track: {
+            _id: prevTrack.id,
+            title: prevTrack.title,
+            artist: { name: prevTrack.artist },
+            songData: {
+              fileUrl: prevTrack.url,
+              duration: prevTrack.duration || 0
+            },
+            release: {
+              artwork: { high: prevTrack.artwork }
+            }
+          },
+          albumInfo,
+          playlist: queue
+        }));
+        dispatch(updateCurrentIndex(prevIndex));
+      }
+
+      // Skip to previous track and play
       await TrackPlayer.skip(prevIndex);
       await TrackPlayer.play();
     } catch (error) {
       console.error("Error skipping to previous:", error);
     }
-  }, [dispatch, playlist, albumInfo]);
+  }, [dispatch, albumInfo, repeat]);
 
   const toggleShuffle = useCallback(async () => {
     try {
       dispatch(toggleShuffleMode());
+
+      const queue = await TrackPlayer.getQueue();
+      const currentTrack = await TrackPlayer.getActiveTrackIndex();
+
+      if (!currentTrack || currentTrack === null || !queue.length) return;
+
       if (!shuffle) {
-        await (dispatch as AppDispatch)(shufflePlaylist()).unwrap();
+        // Get current track
+        const currentTrackData = queue[currentTrack];
+
+        // Remove current track from queue for shuffling
+        const remainingTracks = queue.filter((_, index) => index !== currentTrack);
+
+        // Shuffle remaining tracks
+        for (let i = remainingTracks.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [remainingTracks[i], remainingTracks[j]] = [remainingTracks[j], remainingTracks[i]];
+        }
+
+        // Create new queue with current track at start
+        const shuffledQueue = [currentTrackData, ...remainingTracks];
 
         // Update TrackPlayer queue
-        const currentTrack = await TrackPlayer.getActiveTrackIndex();
-        if (currentTrack && currentTrack !== null && playlist) {
-          await TrackPlayer.reset();
-          const formattedTracks = playlist.map(track => ({
-            id: track._id,
-            url: track.songData.fileUrl,
-            title: track.title || "Unknown Title",
-            artist: track.artist?.name || "Unknown Artist",
-            artwork: albumInfo?.coverImage,
-            duration: track.songData.duration,
-            album: albumInfo?.title,
-          }));
-          await TrackPlayer.add(formattedTracks);
-          await TrackPlayer.skip(currentTrack);
-          if (isPlaying) {
-            await TrackPlayer.play();
-          }
+        await TrackPlayer.reset();
+        await TrackPlayer.add(shuffledQueue);
+        await TrackPlayer.skip(0); // Skip to first track (current track)
+
+        // If was playing, resume playback
+        if (isPlaying) {
+          await TrackPlayer.play();
         }
+
+        // Update Redux state
+        dispatch(setQueue(shuffledQueue));
       }
     } catch (error) {
       console.error("Error toggling shuffle:", error);
     }
-  }, [dispatch, shuffle, playlist, albumInfo, isPlaying]);
+  }, [dispatch, shuffle, isPlaying]);
 
   const toggleRepeat = useCallback(async () => {
     try {

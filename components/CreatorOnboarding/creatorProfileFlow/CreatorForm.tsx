@@ -120,8 +120,6 @@ const CreatorForm = ({
     })),
     [genres]
   );
-
-  console.log("genres", genreOptions[0])
 //   console.log("genre", genres)
 
   const countryOptions = useMemo(() =>

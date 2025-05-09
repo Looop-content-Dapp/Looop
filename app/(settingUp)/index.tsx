@@ -21,13 +21,13 @@ const WelcomeToLooop = () => {
             <ImageBackground
               source={welcomeBg as ImageSourcePropType}
               resizeMode='contain'
-              style={{ width: '100%', height: '100%', backgroundColor: "#8D4FB4" }}
+              style={{ width: wp("100%"), height: '100%', backgroundColor: "#8D4FB4" }}
             >
               <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', marginTop: 55 }}>
                 <Image
                   source={welcome as ImageSourcePropType}
                   resizeMode='contain'
-                  style={{ width: '100%', height: '100%' }}
+                  style={{ width: wp("100%"), height: '100%' }}
                 />
               </View>
             </ImageBackground>
@@ -38,7 +38,7 @@ const WelcomeToLooop = () => {
               Welcome to Looop
             </Text>
             <Text className='text-[24px] text-center text-[#f4f4f4] leading-[30px] font-PlusJakartaSansBold'>
-              The music is now closer than ever!  What do you want to do first?
+              The music is now closer than ever!  What do you want to do?
             </Text>
           </View>
 

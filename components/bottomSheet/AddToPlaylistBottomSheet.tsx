@@ -43,15 +43,16 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
   const handleAddSong = async () => {
     if (!userdata?._id || selectedPlaylists.length === 0) return;
     try {
-      const trackIds = album?.tracks?.map((track: any) => track._id);
+      // Handle both single track and multiple tracks
+      const trackIds = album?._id ? [album._id] : album?.tracks?.map((track: any) => track._id);
 
       if (!trackIds?.length) {
         showNotification({
-            type: 'error',
-            title: 'Error',
-            message: 'No tracks found to add',
-            position: 'top'
-          });
+          type: 'error',
+          title: 'Error',
+          message: 'No tracks found to add',
+          position: 'top'
+        });
         return;
       }
 
@@ -63,33 +64,32 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
         onSuccess: (data) => {
           const trackCount = trackIds.length;
           const playlistCount = selectedPlaylists.length;
-          handleCancel()
+          handleCancel();
           showNotification({
             type: 'success',
             title: 'Success',
             message: `${trackCount} ${trackCount > 1 ? 'tracks' : 'track'} added to ${playlistCount} ${playlistCount > 1 ? 'playlists' : 'playlist'} successfully`,
             position: 'top'
           });
-
         },
         onError: (error) => {
-            handleCancel()
-            showNotification({
-                type: 'error',
-                title: 'Error',
-                message: 'Failed to add songs to playlists',
-                position: 'top'
-              });
-        }
-      });
-    } catch (error) {
-        handleCancel()
-        showNotification({
+          handleCancel();
+          showNotification({
             type: 'error',
             title: 'Error',
             message: 'Failed to add songs to playlists',
             position: 'top'
           });
+        }
+      });
+    } catch (error) {
+      handleCancel();
+      showNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to add songs to playlists',
+        position: 'top'
+      });
     }
   };
 

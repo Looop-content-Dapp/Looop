@@ -22,6 +22,7 @@ import { useAppSelector } from '@/redux/hooks';
 import { Avatar } from 'react-native-elements';
 
 const CommentScreen = () => {
+  const [isCommentsVisible, setIsCommentsVisible] = useState(false);
   const { id } = useLocalSearchParams();
   const navigation = useNavigation()
   const { data: postData, isLoading } = useGetPost(id as string);
@@ -62,7 +63,15 @@ const CommentScreen = () => {
 
     return (
       <>
-        <PostCard item={postData?.data} />
+        <>
+          <PostCard item={postData?.data} />
+          <CommentsBottomSheet
+            isVisible={isCommentsVisible}
+            onClose={() => setIsCommentsVisible(false)}
+            postId={id as string}
+            commentsCount={postData?.data?.commentsCount || 0}
+          />
+        </>
         <View
           style={{ width: wp('100%') }}
           className="bg-[#12141B] py-[11px] px-3 my-4 flex-row items-center gap-3 h-[40px]"
@@ -70,7 +79,7 @@ const CommentScreen = () => {
           <Text className="text-[12px] text-[#fff]">Sort comments by</Text>
           <ArrowDown01Icon variant="solid" size={20} color="#787A80" />
         </View>
-        <CommentsScreen postId={id as string} />
+        {!isCommentsVisible && <CommentsScreen postId={id as string} />}
       </>
     );
   };

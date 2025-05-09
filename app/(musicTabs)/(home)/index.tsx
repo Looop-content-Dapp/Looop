@@ -58,7 +58,7 @@ const Index = () => {
             />
         </ImageBackground>
 
-        <MoodSection />
+        {/* <MoodSection /> */}
 
           {/* Daily Mixes */}
           <DailyMixesSection

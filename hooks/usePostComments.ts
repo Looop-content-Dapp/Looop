@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import api from "@/config/apiConfig";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getAblyChannel } from '@/config/ablyConfig';
 
 type UserLocation = {
   country: string | null;
@@ -34,7 +36,7 @@ type Comment = {
   timestamp: string;
   text: string;
   likes: number;
-  replies: any[]; // You can define a specific type for replies if needed
+  replies: any[];
   isEdited: boolean;
 };
 
@@ -49,6 +51,47 @@ type PostCommentsResponse = {
 };
 
 export const usePostComments = (postId: string) => {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!postId) return;
+
+    const channel = getAblyChannel(`post-${postId}-comments`);
+
+    channel.subscribe('new-comment', (message) => {
+      queryClient.setQueryData(['postComments', postId], (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          data: {
+            ...oldData.data,
+            comments: [message.data, ...oldData.data.comments],
+            totalComments: oldData.data.totalComments + 1
+          }
+        };
+      });
+    });
+
+    channel.subscribe('comment-updated', (message) => {
+      queryClient.setQueryData(['postComments', postId], (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          data: {
+            ...oldData.data,
+            comments: oldData.data.comments.map((comment: Comment) =>
+              comment.id === message.data.id ? message.data : comment
+            )
+          }
+        };
+      });
+    });
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [postId, queryClient]);
+
   return useQuery({
     queryKey: ["postComments", postId],
     queryFn: async () => {

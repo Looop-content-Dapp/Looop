@@ -7,7 +7,7 @@ import {
   Alert,
 } from "react-native";
 import React, { useCallback, useEffect, useLayoutEffect, useState } from "react";
-import { MoreHorizontalIcon, Settings02Icon, Share05Icon, Wallet02Icon } from "@hugeicons/react-native";
+import { MoreHorizontalIcon, Settings02Icon, Share05Icon, Wallet02Icon, UserAdd01Icon } from "@hugeicons/react-native";
 import { Avatar } from "react-native-elements";
 import {
   ProfilePlaylist,
@@ -19,7 +19,6 @@ import { useQuery } from "../../hooks/useQuery";
 import { formatNumber } from "../../utils/ArstsisArr";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { AppBackButton } from "@/components/app-components/back-btn";
-import { setUserData } from "@/redux/slices/auth";
 import { useGetUser } from "@/hooks/useGetUser"; // Add this import
 import { FlatList } from 'react-native' // Add this import if not already present
 import {
@@ -30,10 +29,15 @@ import {
   DropdownMenuItemTitle
 } from "@/components/DropDown";
 import { useClerkAuthentication } from "@/hooks/useClerkAuthentication";
+import { useAbstraxionAuth } from "@/hooks/useSocialAuth";
+import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
+
 
 const profile = () => {
   const [selectedTab, setSelectedTab] = useState("Playlists");
+  const [showFullBio, setShowFullBio] = useState(false);
   const { handleLogout } = useClerkAuthentication()
+  const { logout } = useAbstraxionAccount()
   const navigation = useNavigation();
 
   const { userdata } = useAppSelector((state) => state.auth);
@@ -43,7 +47,9 @@ const profile = () => {
   const { data: result, isLoading } = useGetUser(userdata?._id);
 
   // Use result instead of userdata from Redux
-  const currentUser = result || userdata;
+  const currentUser = {
+    ...(result || userdata)
+  };
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -76,35 +82,38 @@ const profile = () => {
                   key="logout"
                   textValue="Log Out"
                   onSelect={() => {
-                   handleLogout();
+                  handleLogout()
+                  router.dismissTo("/")
                   }}
                   className="py-2 px-3"
                 >
                   <Text className="text-[#f4f4f4] text-[14px]">Log Out</Text>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  key="delete-account"
-                  textValue="Delete Account"
-                  onSelect={() => {
-                    Alert.alert(
-                      "Delete Account",
-                      "Are you sure you want to delete your account? This action cannot be undone.",
-                      [
-                        { text: "Cancel", style: "cancel" },
-                        {
-                          text: "Delete",
-                          style: "destructive",
-                          onPress: () => {
-                            // Add your delete account logic here
-                          }
-                        }
-                      ]
-                    );
-                  }}
-                  className="py-2 px-3"
-                >
-                  <Text className="text-[#7F0107] text-[14px]">Delete Account</Text>
-                </DropdownMenuItem>
+  key="delete-account"
+  textValue="Delete Account"
+  onSelect={() => {
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            // Add your delete account logic here
+          }
+        }
+      ]
+    );
+  }}
+  className="py-2 px-3"
+>
+  <DropdownMenuItemTitle color="red" style={{ color: "red" }}>
+    Delete Account
+  </DropdownMenuItemTitle>
+</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenuRoot>
           </View>
@@ -160,7 +169,7 @@ const profile = () => {
       case "Playlists":
         return <ProfilePlaylist />;
       case "Tribes":
-        return <ProfileTribes />;
+        return <ProfileTribes userId={currentUser._id} />;
       case "Star spotlight":
         return <StarSpotLight />;
       default:
@@ -174,30 +183,27 @@ const profile = () => {
         ListHeaderComponent={() => (
           <>
             <View className="gap-y-[24px]">
-              <View className="flex-row items-center justify-between h-[80px]">
-                <View className="flex-row items-center gap-x-[16px]">
+              <View className="flex-row items-center justify-center mt-[5%]">
+                <View className="items-center gap-y-[16px]">
                   <Avatar
                     source={{
                       uri: currentUser?.profileImage ||
                         "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
                     }}
-                    size={64}
+                    size={75}
                     rounded
+                    avatarStyle={{
+                        borderWidth: 2,
+                        borderColor: "#f4f4f4",
+                      }}
                   />
                   <View className="flex-row items-center gap-x-[12px]">
-                    <Text className="text-[20px] text-[#f4f4f4] font-PlusJakartaSansBold overflow-hidden">
+                    <Text className="text-[24px] text-[#f4f4f4] font-PlusJakartaSansBold overflow-hidden">
                       {currentUser?.username}
                     </Text>
-                    {/* <TouchableOpacity onPress={() => router.push("/(profile)/editProfile")} className="border border-Grey/06 py-[8px] px-[12px] rounded-[24px]">
-                      <Text className="text-[12px] text-Grey/04 font-PlusJakartaSansBold">
-                        Edit
-                      </Text>
-                    </TouchableOpacity> */}
                   </View>
                 </View>
-                <TouchableOpacity onPress={() => onShare(currentUser)}>
-                  <Share05Icon size={24} color="#787A80" />
-                </TouchableOpacity>
+
               </View>
 
               {/* Stats section */}
@@ -217,7 +223,10 @@ const profile = () => {
                 <View className="mx-[12px] bg-gray-600 w-[1px] h-[24px]" />
 
                 <TouchableOpacity
-                  onPress={() => router.push("/(profile)/profileFriends")}
+                  onPress={() => router.push({
+                    pathname: "/(profile)/profileFriends",
+                    params: { userId: currentUser?._id },
+                  })}
                   className="items-center"
                 >
                   <Text className="text-[20px] font-PlusJakartaSansBold text-[#f4f4f4]">
@@ -240,18 +249,46 @@ const profile = () => {
                 </TouchableOpacity>
               </View>
 
-              <TouchableOpacity
-                onPress={() => currentUser?.artist !== null ? router.push("/(artisteTabs)/(dashboard)"): router.push("/creatorOnboarding")}
-                className="border border-[#787A80] rounded-[10px] my-6 items-center py-[14px]"
-              >
-                <Text className="text-[14px] font-PlusJakartaSansMedium text-Grey/04">
-                  Switch to Artiste profile
+              <View className="flex-row justify-around items-center mt-4 gap-x-2 px-4">
+                <TouchableOpacity
+                  onPress={() => router.push("/(profile)/editProfile")}
+                  className="flex-1 flex-row items-center justify-center py-4 px-4 bg-[#12141B] border border-[#2A2B32] rounded-[12px] gap-x-2">
+                  <Text className="text-[16px] text-[#D2D3D5] font-PlusJakartaSansMedium">Edit Profile</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => onShare(currentUser)}
+                  className="flex-1 flex-row items-center justify-center py-4 px-4 bg-[#12141B] border border-[#2A2B32] rounded-[12px] gap-x-2">
+                  <Text className="text-[16px] text-[#D2D3D5] font-PlusJakartaSansMedium">Share Profile</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => router.push("/(profile)/addFriends")}
+                  className="flex-row items-center justify-center p-3 bg-[#12141B] border border-[#2A2B32] rounded-[12px]">
+                  <UserAdd01Icon size={24} color="#63656B" variant="solid" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Description Section */}
+              <View className="mt-4 mx-auto">
+                <Text
+                  className="text-[14px] text-center text-[#D2D3D5] font-PlusJakartaSansMedium"
+                  numberOfLines={showFullBio ? undefined : 1}
+                >
+                  {currentUser?.bio || 'No description available'}
                 </Text>
-              </TouchableOpacity>
+                {currentUser?.bio && currentUser.bio.length > 100 && (
+                  <TouchableOpacity onPress={() => setShowFullBio(!showFullBio)}>
+                    <Text className="text-[12px] text-center text-[#FF6D1B] font-PlusJakartaSansMedium mt-2">
+                      {showFullBio ? 'See Less' : 'See More'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
 
             {/* Tab Navigation */}
-            <View className="flex-row justify-between items-center mt-[24px] mb-[24px]">
+            <View className="flex-row justify-between items-center mt-[10%] mb-[24px]">
               {["Playlists", "Tribes", "Star spotlight"].map((tab) => (
                 <TouchableOpacity
                   key={tab}

@@ -8,58 +8,59 @@ const moods = [
         name: 'Chill',
         iconFamily: Ionicons,
         iconName: 'sunny-outline',
-        color: '#8C5AFF',
-        bgColor: '#929DFF',
+        color: '#1DF4F4',
+        bgColor: '#1DF4F4',
     },
     {
         id: 2,
         name: 'Party',
         iconFamily: MaterialCommunityIcons,
         iconName: 'party-popper',
-        color: '#FF4B6E',
-        bgColor: '#FFAE35',
+        color: '#FFF01A',
+        bgColor: '#FFF01A',
     },
     {
         id: 3,
         name: 'Workout',
         iconFamily: MaterialIcons,
         iconName: 'sports-gymnastics',
-        color: '#2DD881',
-        bgColor: '#643EFF',
+        color: '#A3DA3F',
+        bgColor: '#A3DA3F',
     },
     {
         id: 4,
         name: 'Relax',
         iconFamily: MaterialCommunityIcons,
         iconName: 'heart-multiple',
-        color: '#FF8F5B',
-        bgColor: '#FF668B',
+        color: '#FF6F61',
+        bgColor: '#FF6F61',
     },
     {
         id: 5,
         name: 'Focus',
         iconFamily: Ionicons,
         iconName: 'bulb-outline',
-        color: '#FF7A1B',
-        bgColor: '#FF7A1B',
+        color: '#0072F5',
+        bgColor: '#0072F5',
     },
     {
         id: 6,
         name: 'Sleep',
         iconFamily: Ionicons,
         iconName: 'moon-outline',
-        color: '#00C2FF',
-        bgColor: '#00C2FF',
+        color: '#5A00A1',
+        bgColor: '#5A00A1',
     },
     {
         id: 7,
         name: 'Relax',
         iconFamily: MaterialCommunityIcons,
         iconName: 'meditation',
-        color: '#FF8F5B',
-        bgColor: '#FF8F5B',
+        color: '#005F73',
+        bgColor: '#005F73',
     },
 ];
+
 
 const MoodSection = () => {
   return (
@@ -82,7 +83,7 @@ const MoodSection = () => {
                 }}
                 className="w-[70px] h-[70px] rounded-[16px] items-center justify-center"
               >
-                <IconComponent name={mood.iconName} size={32} color={"#F4F4F4"} />
+                <IconComponent name={mood.iconName} size={32} color={"#fff"} />
               </Pressable>
               <Text
                 className="text-white font-PlusJakartaSansBold text-center text-[14px] mt-2"

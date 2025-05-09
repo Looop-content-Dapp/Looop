@@ -15,7 +15,7 @@ export const LibrarySkeleton = () => {
       </View>
 
       {/* Recently played skeleton */}
-      <View className="mt-6 px-4">
+      <View className="mt-6 gap-x-4">
         <View className="h-6 w-32 bg-gray-200 rounded-md animate-pulse" />
         <View className="mt-4 flex-row flex-wrap gap-4">
           {[1, 2, 3, 4].map((_, index) => (

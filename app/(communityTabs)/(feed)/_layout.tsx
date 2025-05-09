@@ -1,10 +1,12 @@
 import React from "react";
 import { Stack } from "expo-router";
 import { useHeader } from "@/hooks/useHeader";
+import { PortalProvider } from '@gorhom/portal';
 
 export default function FeedLayout() {
   return (
-    <Stack
+   <PortalProvider>
+     <Stack
     screenOptions={{
         headerShown: true,
         contentStyle: {
@@ -20,5 +22,6 @@ export default function FeedLayout() {
           headerShown: false,
         }} />
     </Stack>
+   </PortalProvider>
   );
 };

@@ -7,6 +7,7 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
+  Modal
 } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 import { AppButton } from "@/components/app-components/button";
@@ -16,15 +17,10 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSendEmailOTP } from "@/hooks/useVerifyEmail";
 import AuthHeader from "@/components/AuthHeader";
-import { InformationCircleIcon } from "@hugeicons/react-native";
-import * as WebBrowser from "expo-web-browser";
+import { ArrowDown01Icon, InformationCircleIcon, LoginSquare02Icon } from "@hugeicons/react-native";
 import { Pressable } from "react-native";
-import { useGoogleAuth, useAppleAuth } from "@/hooks/useSocialAuth";
-import {
-    useAbstraxionAccount,
-    useAbstraxionSigningClient,
-  } from "@burnt-labs/abstraxion-react-native";
-import { useEffect } from 'react';
+import { useGoogleAuth, useAppleAuth, useAbstraxionAuth } from "@/hooks/useSocialAuth";
+import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 
 // Validation schema
@@ -82,6 +78,7 @@ const SocialButton: React.FC<SocialButtonProps> = ({
 );
 
 const EmailSignUp: React.FC = () => {
+  const [showOtherSignInModal, setShowOtherSignInModal] = useState(false);
   const {
     mutate: sendOtpEmail,
     isPending,
@@ -95,16 +92,8 @@ const EmailSignUp: React.FC = () => {
   };
   const { handleGoogleSignIn, loading: googleLoading, isAuthenticating } = useGoogleAuth();
   const { handleAppleSignIn, loading: appleLoading, isAuthenticating:isAppleAuthenticating } = useAppleAuth();
-  const {
-    data: account,
-    logout,
-    login,
-    isConnected,
-    isConnecting,
-  } = useAbstraxionAccount();
-  console.log(login, "login")
-  const { client, signArb } = useAbstraxionSigningClient();
-  console.log(account)
+  const { handleAbstraxionLogin, loading: abstraxionLoading, isConnecting, isAuthenticating: isAbstraxionAuthenticating } = useAbstraxionAuth();
+
 
   const {
     control,
@@ -188,26 +177,57 @@ const EmailSignUp: React.FC = () => {
         </View>
 
         <View className="flex-col gap-y-4">
-          <SocialButton
-            onPress={handleGoogleSignIn}
-            imageSource={require("../../assets/images/google.png")}
-            text="Sign in with Google"
-            loading={googleLoading || isAuthenticating}
-          />
-          <SocialButton
-            onPress={handleAppleSignIn}
-            imageSource={require("../../assets/images/apple.png")}
-            text="Sign in with Apple"
-            loading={appleLoading || isAppleAuthenticating}
-          />
-         {/* <SocialButton
-            onPress={() => login()}
-            imageSource={require("../../assets/images/apple.png")}
-            text="Sign in with Apple"
-            loading={appleLoading || isAppleAuthenticating}
-          /> */}
+        <SocialButton
+          onPress={handleGoogleSignIn}
+          imageSource={require("../../assets/images/google.png")}
+          text="Sign in with Google"
+          loading={googleLoading || isAuthenticating}
+        />
+        <SocialButton
+          onPress={handleAppleSignIn}
+          imageSource={require("../../assets/images/apple.png")}
+          text="Sign in with Apple"
+          loading={appleLoading || isAppleAuthenticating}
+        />
 
-        </View>
+        <TouchableOpacity
+          onPress={() => setShowOtherSignInModal(true)}
+          className="flex-row items-center gap-x-2 mx-auto"
+        >
+          <Text className="text-[14px] text-[#787A80] font-PlusJakartaSansMedium">
+            Sign in with others
+          </Text>
+          <ArrowDown01Icon size={20} color="#787A80" />
+        </TouchableOpacity>
+      </View>
+
+      <Modal
+  visible={showOtherSignInModal}
+  animationType="slide"
+  transparent={true}
+  onRequestClose={() => setShowOtherSignInModal(false)}
+>
+  <View className="flex-1 justify-end">
+    <View className="bg-[#1A1B1E] rounded-t-3xl p-8 w-full" style={{minHeight: '20%'}}>
+      <View className="flex-row justify-between items-center mb-6">
+        <Text className="text-[20px] font-PlusJakartaSansBold text-white">
+          Other Sign In Options
+        </Text>
+        <TouchableOpacity onPress={() => setShowOtherSignInModal(false)}>
+          <Text className="text-white text-2xl">×</Text>
+        </TouchableOpacity>
+      </View>
+
+
+  <SocialButton
+    onPress={handleAbstraxionLogin}
+    imageSource={require("../../assets/images/XIONB.png")}
+    text="Sign in with xion"
+    loading={abstraxionLoading || isConnecting || isAuthenticating}
+  />
+    </View>
+  </View>
+</Modal>
 
         <Pressable
           onPress={() => router.navigate("/(auth)/signin")}

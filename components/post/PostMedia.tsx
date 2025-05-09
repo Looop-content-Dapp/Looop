@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Pressable } from 'react-native';
 import ImageGrid from '../ImageGrid';
 import VideoScreen from '../VideoScreen';
 import AudioMedia from './AudioMedia';
 import { Media } from '@/hooks/useCreateCommunity';
+import Animated, { FadeIn } from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
 
 interface PostMediaProps {
   media: Media[];
@@ -18,18 +20,34 @@ const PostMedia: React.FC<PostMediaProps> = ({ media }) => {
 
   if (imageMedia.length > 0) {
     return (
-      <View onStartShouldSetResponder={() => true}>
-        <ImageGrid thumbnails={imageMedia.map((img) => img.url)} />
-      </View>
+      <Animated.View
+        entering={FadeIn.duration(300)}
+        className="overflow-hidden rounded-2xl">
+        <Pressable onStartShouldSetResponder={() => true}>
+          <ImageGrid thumbnails={imageMedia.map((img) => img.url)} />
+        </Pressable>
+      </Animated.View>
     );
   } else if (videoMedia) {
     return (
-      <View style={{ width: '100%', aspectRatio: 16 / 9, marginVertical: 8 }}>
-        <VideoScreen videoUrl={videoMedia.url} />
-      </View>
+      <Animated.View
+        entering={FadeIn.duration(300)}
+        className="w-full overflow-hidden rounded-2xl my-2">
+        <View className="aspect-video w-full">
+          <VideoScreen videoUrl={videoMedia.url} />
+        </View>
+      </Animated.View>
     );
   } else if (audioMedia) {
-    return <AudioMedia uri={audioMedia.url} />;
+    return (
+      <Animated.View
+        entering={FadeIn.duration(300)}
+        className="my-2 rounded-2xl overflow-hidden">
+        <BlurView intensity={30} tint="dark" className="rounded-2xl">
+          <AudioMedia uri={audioMedia.url} />
+        </BlurView>
+      </Animated.View>
+    );
   }
 
   return null;

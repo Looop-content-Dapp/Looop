@@ -122,17 +122,16 @@ type SubscriptionsResponse = {
   data: Subscription[];
 };
 
-export const useTribes = (page: number = 1, limit: number = 10, refetchInterval: number = 30000) => {
-  const { userdata } = useAppSelector((auth) => auth.auth);
+export const useTribes = (page: number = 1, limit: number = 10, refetchInterval: number = 30000, userId: string) => {
   return useQuery<TribesResponse>({
-    queryKey: ["tribes", userdata?._id, page, limit],
+    queryKey: ["tribes",userId, page, limit],
     queryFn: async () => {
       const { data } = await api.get(
-        `/api/community/user/${userdata?._id}?page=${page}&limit=${limit}`
+        `/api/community/user/${userId}?page=${page}&limit=${limit}`
       );
       return data;
     },
-    enabled: !!userdata?._id,
+    enabled: !!userId,
     refetchInterval: refetchInterval,
     refetchIntervalInBackground: false,
     staleTime: 2 * 60 * 1000, // Data stays fresh for 2 minutes

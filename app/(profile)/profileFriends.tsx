@@ -11,33 +11,37 @@ import {
   import { ArrowLeft02Icon, Search01Icon } from '@hugeicons/react-native';
   import { router } from 'expo-router';
   import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
-  import { useQuery } from '../../hooks/useQuery';
   import { MotiView } from 'moti';
 
-  const ProfileFriends = () => {
-    const [artistFollowing, setArtistFollowing] = useState<App.Artist[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const { fetchFollowingArtists, retrieveUserId, getUserFriends } = useQuery();
+  import { useLocalSearchParams } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import api from '@/config/apiConfig';
 
-    useEffect(() => {
-      // Fetching the list of artists that the user is following
-      const fetchData = async () => {
-        try {
-          setIsLoading(true);
-          const userId = await retrieveUserId();
-          if (userId) {
-            const followingArtists = await getUserFriends(userId);
-            setArtistFollowing(followingArtists.friends);
-            console.log("my friends", followingArtists.friends)
-          }
-        } catch (error) {
-          console.error('Failed to fetch following artists:', error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchData();
-    }, []);
+  interface User {
+    _id: string;
+    username: string;
+    fullname: string;
+    profileImage: string | null;
+    bio: string | null;
+    email: string;
+    role: string;
+    referralCode: string;
+    isPremium: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }
+
+const ProfileFriends = () => {
+  const { userId } = useLocalSearchParams<{ userId: string }>();
+
+    const { data: users = [], isLoading } = useQuery<User[]>({
+        queryKey: ['user'],
+        queryFn: async () => {
+          const response = await api.get(`/api/user/friend/${userId}`);
+          console.log("my friends", response.data.data)
+          return response.data.data
+        },
+      });
 
     return (
       <SafeAreaView style={{ flex: 1, minHeight: '100%' }}>
@@ -66,7 +70,7 @@ import {
 
         {/* List of Artists or Skeleton Loading */}
         <FlatList
-            data={artistFollowing}
+            data={users}
             keyExtractor={(item) => item._id}
             renderItem={({ item }) => <FollowingCard user={item} loading={isLoading}  />}
             contentContainerStyle={{ paddingHorizontal: 24 }}
@@ -81,7 +85,7 @@ import {
     return (
         <>
         {loading ? (
-           <View style={{ paddingHorizontal: 24 }}>
+           <View style={{ paddingHorizontal: 14 }}>
            {Array.from({ length: 5 }).map((_, index) => (
              <MotiView
                key={index}
@@ -148,25 +152,32 @@ import {
            ))}
          </View>
         ): (
-            <View className="flex-row items-center justify-between py-[12px]">
-            <View className="flex-row items-center gap-x-[12px]">
-              <Image
-                source={{ uri: user.profileImage }}
-                style={{ width: 48, height: 48, borderRadius: 24 }}
-              />
-              <View>
-                <Text className="text-[#f4f4f4] font-PlusJakartaSansBold text-[16px]">
-                  {user.name}
-                </Text>
-                <Text className="text-[#787A80] font-PlusJakartaSansRegular text-[14px]">
-                  Genre: {user.genre}
-                </Text>
-              </View>
-            </View>
-            <Pressable className="px-[24px] py-[8px] bg-[#1C1C1E] rounded-[24px]">
-              <Text className="text-[#f4f4f4] font-PlusJakartaSansMedium">Following</Text>
-            </Pressable>
-          </View>
+    <TouchableOpacity
+      onPress={() => router.push({
+        pathname: '/(profile)/userProfileView',
+        params: { userId: user?._id }
+      })}
+      className="flex-row items-center justify-between p-4 border-b border-[#2A2B32]">
+      <View className="flex-row items-center gap-x-3">
+        <Image
+          source={{ uri: user?.profileImage || 'https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg' }}
+          className="w-12 h-12 rounded-full"
+        />
+        <View>
+          <Text className="text-[16px] text-[#f4f4f4] font-PlusJakartaSansBold">{user?.fullname || user?.username}</Text>
+          <Text className="text-[14px] text-[#787A80] font-PlusJakartaSansMedium">{user?.email.slice(0, 12)}...{user?.email.slice(15, 20)}</Text>
+        </View>
+      </View>
+      <TouchableOpacity
+        onPress={(e) => {
+          e.stopPropagation();
+        //   handleAddFriend(item._id);
+        }}
+        className="bg-[#FF6D1B] px-4 py-2 rounded-[8px]"
+      >
+        <Text className="text-[14px] text-[#f4f4f4] font-PlusJakartaSansMedium">Add Friend</Text>
+      </TouchableOpacity>
+    </TouchableOpacity>
         )}
         </>
 

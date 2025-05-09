@@ -26,7 +26,9 @@ type FormData = {
   username: string;
   name: string;
   referralCode?: string;
+  bio: string;
 };
+
 const schema = z.object({
   username: z
     .string({
@@ -39,16 +41,22 @@ const schema = z.object({
     })
     .nonempty({ message: "Name is required" }),
   referralCode: z.string().optional(),
+  bio: z
+    .string({
+      message: "Bio is required",
+    })
+    .nonempty({ message: "Bio is required" })
 });
 const EnterUserName = () => {
   const { showNotification } = useNotification();
   const { mutate: createUser, isPending, error, isError } = useCreateUser();
-  const { email, password, dob, gender, oauthProvider } = useLocalSearchParams<{
+  const { email, password, dob, gender, oauthProvider, walletAddress } = useLocalSearchParams<{
     email: string;
     password: string;
     dob: string;
     gender: string;
-    oauthProvider?: "google" | "apple";
+    oauthProvider?: "google" | "apple" | "xion" | "argent";
+    walletAddress: string
   }>();
   const router = useRouter();
   // Add watch to useForm destructuring
@@ -100,14 +108,16 @@ const onSubmit = (data: FormData) => {
 
     createUser(
       {
-        email,
+        email: email || "",
         password: password ? password : "",
         age: calculateAge(dob).toLocaleString(),
         fullname: data.name,
         username: data.username,
         gender,
         referralCode: data.referralCode,
-        oauthprovider: oauthProvider
+        oauthprovider: oauthProvider,
+        walletAddress: walletAddress,
+        bio: data.bio || ""
       },
       {
         onSuccess: () => {
@@ -119,11 +129,11 @@ const onSubmit = (data: FormData) => {
             });
             router.navigate({
               pathname: "/(settingUp)",
-              params: { email, password, ...data },
+              params: { email: email || "", password, ...data },
             });
           },
-          onError: (error) => {
-            console.error("User creation failed:", error.message);
+          onError: (error: any) => {
+            console.error("User creation failed:", error?.response?.data.message);
             setErrorMessage(error.message);
             showNotification({
               type: 'error',
@@ -159,18 +169,6 @@ if(isPending){
         title="Tell Us About Yourself"
         description="Just a few more details to personalize your experience!"
       />
-
-      {isError && (
-        <View className="flex-row items-center gap-x-2 mt-4">
-          <InformationCircleIcon size={20} color="#FF1B1B" />
-          <Text className="text-[#FF1B1B] font-PlusJakartaSansRegular text-xs">
-            {
-              // @ts-ignore
-              error?.response?.data.message || "Failed to send email. Please try again."
-            }
-          </Text>
-        </View>
-      )}
 
       <View className="gap-y-6">
         <Controller
@@ -252,6 +250,29 @@ if(isPending){
               autoCapitalize="none"
               autoCorrect={false}
               returnKeyType="done"
+            />
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="bio"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <Input
+              label="Bio"
+              description="Tell us a bit about yourself"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              placeholder="Enter your bio"
+              placeholderTextColor="#787A80"
+              keyboardAppearance="dark"
+              autoCapitalize="sentences"
+              autoCorrect={true}
+              returnKeyType="done"
+              multiline={true}
+              numberOfLines={3}
+              error={errors.bio?.message}
             />
           )}
         />

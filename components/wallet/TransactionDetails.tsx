@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, Pressable, Share, Platform } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, Pressable, Share, Platform, Image } from 'react-native';
 import { useTransactionDetails } from '@/hooks/useTransaction';
 import { Copy01Icon, Share01Icon, MessageQuestionIcon } from '@hugeicons/react-native';
 import * as Clipboard from 'expo-clipboard';
@@ -149,8 +149,15 @@ export default function TransactionDetails({ transactionId }: TransactionDetails
   };
 
   return (
-    <ScrollView className="flex-1  px-4">
-           <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 0.9 }}>
+    <ScrollView className="flex-1 px-4">
+           <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 0.9 }} style={{ backgroundColor: '#040405' }}>
+            <View style={{ alignItems: 'center', marginTop: 16 }}>
+              <Image
+                source={require('@/assets/images/logo-orange.png')}
+                className="w-[60px] h-[20px]"
+                resizeMode="contain"
+              />
+            </View>
       <View className="mt-6 mb-8">
       {transaction.title && (
           <Text className="text-[#FFFFFF] text-[14px] font-PlusJakartaSansMedium text-center mt-2">

@@ -9,6 +9,7 @@ type PostsProps = {
 
 const Posts = ({ communityId }: PostsProps) => {
   const { data, isLoading } = useGetCommunityPosts(communityId);
+  console.log(data);
 
   if (isLoading) {
     return (

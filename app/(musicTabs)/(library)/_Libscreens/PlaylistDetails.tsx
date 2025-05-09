@@ -388,6 +388,7 @@ const PlaylistDetails = () => {
                     <Image source={{
                         uri: track.releaseImage
                     }}
+                    defaultSource={require('@/assets/images/default-artwork.png')}
                     className="w-[40px] h-[40px] rounded-lg"
                      />
                     <View style={{ flex: 1 }}>

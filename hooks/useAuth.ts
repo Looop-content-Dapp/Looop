@@ -31,17 +31,16 @@ interface OAuthResponse {
 }
 
 interface OAuthPayload {
-  channel: "google" | "apple";
-  email: string;
-  token: string;
+  channel: "google" | "apple" | "xion" | "argent";
+  email?: string;
+  token?: string;
+  walletAddress?: string
 }
 
 export const useAuth = () => {
   const verifyOAuthToken = async (payload: OAuthPayload): Promise<OAuthResponse> => {
-    console.log('Attempting OAuth verification with payload:', payload)
     try {
       const response = await api.post("/api/oauth/auth", payload);
-      console.log("Auth response", response.data)
       return response.data;
     } catch (error) {
       console.error("API Error:", error);
@@ -60,19 +59,21 @@ export const useAuth = () => {
 
       if (response.data.isNewUser) {
         console.log("New user detected, redirecting to user details:", response.data.user)
-        router.push({
+
+        router.replace({
           pathname: "/(auth)/userDetail",
           params: {
             email: response.data.user.email,
             oauthId: response.data.user._id,
             isOAuth: "true",
-            oauthProvider: variables.channel
+            oauthProvider: variables.channel,
+            walletAddress: variables.walletAddress
           },
         });
       } else {
         console.log("Existing user detected, redirecting to music tabs:", response.data)
         store.dispatch(setUserData(response.data));
-        router.push("/(musicTabs)");
+        router.replace("/(musicTabs)");
       }
     },
     onError: (error: any) => {

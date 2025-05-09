@@ -89,10 +89,11 @@ type CommunityPostsResponse = {
 };
 
 export const useGetCommunityPosts = (communityId: string) => {
+    const { userdata } = useAppSelector((state) => state.auth);
   return useQuery({
     queryKey: ['communityPosts', communityId],
     queryFn: async () => {
-      const { data } = await api.get<CommunityPostsResponse>(`/api/post/community/${communityId}`);
+      const { data } = await api.get<CommunityPostsResponse>(`/api/post/community/${communityId}&userId=${userdata?._id}`);
       return data;
     },
     enabled: !!communityId,

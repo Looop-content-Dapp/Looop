@@ -104,8 +104,12 @@ const TribeItem = ({ item }) => {
   )
 }
 
-const ProfileTribes = () => {
-  const { data, isLoading, error } = useTribes()
+interface ProfileTribesProps {
+  userId: string;
+}
+
+const ProfileTribes = ({ userId }: ProfileTribesProps) => {
+  const { data, isLoading, error } = useTribes(1, 10, 30000, userId)
 
   if (isLoading) {
     return (

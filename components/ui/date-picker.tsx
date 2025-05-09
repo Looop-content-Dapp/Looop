@@ -35,7 +35,9 @@ export const DatePicker = ({
 
       <TouchableOpacity
         onPress={() => setIsVisible(true)}
-        className="bg-[#202227] py-[20px] px-[24px]  rounded-[56px] flex-row gap-x-[8px] items-center"
+        className={`bg-[#111318] py-[20px] px-[24px] rounded-[56px] border-2 ${
+            error ? 'border-red-500' : 'border-[#202227]'
+          } flex-row justify-between items-center`}
       >
           <Ionicons name="calendar-outline" size={20} color="#787A80" />
         <Text className="text-[#F4F4F4] text-[16px] font-PlusJakartaSansMedium">

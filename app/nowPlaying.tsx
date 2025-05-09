@@ -198,24 +198,35 @@ import {
             </View>
             <TouchableOpacity
               className="p-2"
-              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+              onPress={handleSharePress}
             >
               <MoreHorizontalIcon size={24} color={textColor} />
             </TouchableOpacity>
           </View>
 
-          <FastImage
-              source={{
-                uri: cover,
-                priority: FastImage.priority.high,
-              }}
-              style={{
-                width: '100%', // Set width to 100% to take full screen width
-                height: 400,
-                marginTop: 0 // Remove margin if necessary
-              }}
-              resizeMode={FastImage.resizeMode.cover}
-            />
+          <View style={{
+    width: '95%',
+    height: 400,
+    marginTop: 0,
+    marginHorizontal: 'auto',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 8,
+}}>
+    <FastImage
+        source={{
+            uri: cover,
+            priority: FastImage.priority.high,
+        }}
+        style={{
+            width: '100%',
+            height: '100%',
+        }}
+        resizeMode={FastImage.resizeMode.cover}
+    />
+</View>
 
           <View className="px-[24px] my-[24px]">
             <View className="flex-row items-center justify-between">
@@ -235,13 +246,13 @@ import {
                   {currentTrack?.artist?.name}
                 </Text>
               </View>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={() =>
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
                 }
               >
                 <FavouriteIcon size={32} color={subTextColor} />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             <View className="mt-4">
@@ -365,10 +376,13 @@ import {
           </View>
         </ScrollView>
         <AddToPlaylistBottomSheet
-              isVisible={isPlaylistSheetVisible}
-              closeSheet={() => setIsPlaylistSheetVisible(false)}
-              album={currentTrack}
-            />
+      isVisible={isPlaylistSheetVisible}
+      closeSheet={() => setIsPlaylistSheetVisible(false)}
+      album={{
+        _id: currentTrack?._id,
+        tracks: [currentTrack],
+      }}
+    />
 <Share
     isVisible={isShareModalVisible}
     onClose={() => setIsShareModalVisible(false)}

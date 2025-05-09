@@ -5,6 +5,8 @@ import { useState, useCallback, useEffect } from "react";
 import { AuthRequest, AuthRequestPromptOptions, AuthSessionResult } from 'expo-auth-session';
 import { jwtDecode } from "jwt-decode";
 import { useAuth } from "./useAuth";
+import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
+import { useNotification } from "@/context/NotificationContext";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -45,10 +47,9 @@ export const useGoogleAuth = () => {
             token: authentication.idToken,
           });
         } catch (error) {
+            setLoading(false);
           console.error("Google Auth Processing Error:", error);
-        } finally {
-          setLoading(false);
-        }
+        } 
       } else if (response !== null) {
         console.error("Google Auth failed:", response);
         setLoading(false);
@@ -121,7 +122,6 @@ export const useAppleAuth = () => {
           stack: (e as Error).stack,
         });
       }
-    } finally {
       setLoading(false);
     }
   }, [authenticateUser]);
@@ -133,3 +133,57 @@ export const useAppleAuth = () => {
     isAuthenticating: isPending,
   };
 };
+
+export const useAbstraxionAuth = () => {
+    const [loading, setLoading] = useState(false);
+    const {showNotification} = useNotification()
+    const { data, isConnected, isConnecting, login, logout } = useAbstraxionAccount();
+    const { authenticateUser, isPending } = useAuth();
+
+    const handleAbstraxionLogin = async () => {
+      try {
+        setLoading(true);
+        await login();
+
+        if (!isConnected || !data?.bech32Address) {
+          showNotification({
+            title: "Abstraxion Login Failed",
+            message: "Please try again later",
+            type: "error",
+            position: "bottom"
+          });
+          return;
+        }
+
+      } catch (error) {
+        // setLoading(false);
+        console.error('Login error:', error);
+        showNotification({
+          title: "Login Error",
+          message: "An error occurred during login",
+          type: "error",
+          position: "bottom"
+        });
+      }
+    };
+
+    useEffect(() => {
+      if(isConnected && data?.bech32Address){
+        authenticateUser({
+            channel: "xion",
+            walletAddress: data.bech32Address
+          });
+          setLoading(false)
+      }
+    }, [isConnected, data?.bech32Address])
+
+    return {
+      handleAbstraxionLogin,
+      loading: loading || isPending,
+      isConnecting,
+      isConnected,
+      data,
+      logout,
+      isAuthenticating: isPending,
+    };
+  };

@@ -61,7 +61,6 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
 
   const handleAddToPlaylist = () => {
     setIsPlaylistSheetVisible(true);
-    onClose();
   };
 
 
@@ -503,7 +502,10 @@ const Share: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
       <AddToPlaylistBottomSheet
         isVisible={isPlaylistSheetVisible}
         closeSheet={() => setIsPlaylistSheetVisible(false)}
-        album={album}
+        album={{
+          _id: album?.id,
+          tracks: album?.tracks || [{ _id: album?.id }],
+        }}
       />
     </Modal>
   );

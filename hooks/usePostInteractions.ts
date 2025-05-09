@@ -1,5 +1,6 @@
 import api from "@/config/apiConfig";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { getAblyChannel } from '@/config/ablyConfig';
 
 interface CommentInput {
   userId: string;
@@ -41,6 +42,12 @@ export const usePostInteractions = () => {
     mutationFn: async (input: LikeInput) => {
       const { data } = await api.post("/api/post/like", input);
       return data;
+    },
+    onSuccess: (data) => {
+      // Update the post data with the server response
+      if (data?.postId) {
+        queryClient.setQueryData(['post', data.postId], data);
+      }
     },
     onMutate: async ({ postId, userId }) => {
       // Cancel any outgoing refetches
@@ -109,6 +116,11 @@ export const usePostInteractions = () => {
   const commentMutation = useMutation({
     mutationFn: async (input: CommentInput) => {
       const response = await api.post("/api/post/comment", input);
+
+      // Publish the new comment to Ably
+      const channel = getAblyChannel(`post-${input.postId}-comments`);
+      channel.publish('new-comment', response.data);
+
       return response.data;
     },
     onMutate: async (newComment) => {

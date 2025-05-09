@@ -339,7 +339,7 @@ import {
                 )}
               />
 
-              <Controller
+              {/* <Controller
                 control={control}
                 name="preferences.favoriteGenres"
                 render={({ field: { onChange, value } }) => (
@@ -351,7 +351,7 @@ import {
                     error={errors.preferences?.favoriteGenres?.message}
                   />
                 )}
-              />
+              /> */}
             </View>
           </View>
 

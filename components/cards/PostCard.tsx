@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Pressable, Text } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
 import { Skeleton } from 'moti/skeleton';
 import { StatusBar } from 'expo-status-bar';
 import UserSection from '../post/UserSection';
@@ -10,6 +12,7 @@ import { Post } from '@/hooks/useUserFeed'; // Updated import
 import { useAppSelector } from '@/redux/hooks';
 import SharePost from '../bottomSheet/SharePost';
 import { formatTimeAgo } from '@/utils/dateUtils';
+import { Portal } from '@gorhom/portal'
 
 interface PostCardProps {
   item: Post;
@@ -17,17 +20,28 @@ interface PostCardProps {
 
 const PostCard: React.FC<PostCardProps> = ({ item }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [localLikeCount, setLocalLikeCount] = useState(item?.likeCount || 0);
+  const [localHasLiked, setLocalHasLiked] = useState(item?.hasLiked || false);
   const { userdata } = useAppSelector((state) => state.auth);
-  const [likeCount, setLikeCount] = useState(item?.likeCount || 0);
   const [isShareSheetVisible, setIsShareSheetVisible] = useState(false);
+  const [isCommentsVisible, setIsCommentsVisible] = useState(false);
+  console.log('item', item.communityId); // Add this lin
 
   useEffect(() => {
     if (!item) setIsLoading(true);
-    setLikeCount(item?.likeCount || 0);
+    setLocalLikeCount(item?.likeCount || 0);
+    setLocalHasLiked(item?.hasLiked || false);
   }, [item]);
 
-  const handleLikeUpdate = (newCount: number) => {
-    setLikeCount(newCount);
+  const handleLikeUpdate = (success: boolean) => {
+    if (success) {
+      setLocalHasLiked(!localHasLiked);
+      setLocalLikeCount(prevCount => localHasLiked ? prevCount - 1 : prevCount + 1);
+    } else {
+      // Revert on failure
+      setLocalLikeCount(item?.likeCount || 0);
+      setLocalHasLiked(item?.hasLiked || false);
+    }
   };
 
   const renderContent = (content: string) => {
@@ -50,59 +64,69 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
   };
 
   return (
-    <View className="h-auto gap-y-[16px] border-b border-Grey/07 py-[10px]">
-      <StatusBar style="light" />
-      <UserSection
-        item={item}
-        loading={isLoading}
-        onMorePress={() => setIsShareSheetVisible(true)}
-      />
+    <Animated.View
+      entering={FadeInDown.duration(400).springify()}
+      className="mb-4 overflow-hidden">
+      <BlurView intensity={20} tint="dark" className="rounded-2xl">
+        <View className="p-4 gap-y-4">
+          <StatusBar style="light" />
+          <UserSection
+            item={item}
+            loading={isLoading}
+            onMorePress={() => setIsShareSheetVisible(true)}
+          />
 
-      <Skeleton
-        transition={{ type: 'timing', duration: 1000 }}
-        show={isLoading}
-      >
-        <View className="gap-y-[16px] pl-[24px]">
-          <Pressable
-            onPress={() =>
-              router.navigate({
-                pathname: '/(communityTabs)/(feed)/_Feedscreens',
-                params: { id: item?._id },
-              })
-            }
+          <Skeleton
+            transition={{ type: "timing", duration: 1000 }}
+            show={isLoading}
           >
-            <Text className="text-white text-[16px] font-PlusJakartaSansMedium">
-              {renderContent(item?.content)}
-            </Text>
-          </Pressable>
-          <PostMedia media={item?.media} />
-        </View>
-      </Skeleton>
+            <View className="gap-y-4">
+              <Pressable
+                onPress={() =>
+                  router.navigate({
+                    pathname: "/(communityTabs)/(feed)/_Feedscreens",
+                    params: { id: item?._id },
+                  })
+                }
+                className="active:opacity-80"
+              >
+                <Text className="text-white text-[16px] leading-[24px] font-PlusJakartaSansMedium">
+                  {renderContent(item?.content)}
+                </Text>
+              </Pressable>
+              <PostMedia media={item?.media} />
+            </View>
+          </Skeleton>
 
-      <Skeleton show={isLoading}>
-        <EngagementSection
-          index={item?._id}  // Change from item?.id to item?._id
-          engagement={{
-            likes: likeCount,
-            comments: item?.commentCount,
-            shares: item?.shareCount,
-          }}
-          actions={{ like: item?.hasLiked || false }}
-          onLikeUpdate={handleLikeUpdate}
-        />
-      </Skeleton>
-      <SharePost
-  isVisible={isShareSheetVisible}
-  onClose={() => setIsShareSheetVisible(false)}
-  album={{
-    id: item?._id,
-    title: item?.content,
-    artist: item?.artistId?.name,
-    image: item?.media?.[0]?.url,
-    duration: formatTimeAgo(item?.createdAt)
-  }}
-/>
-    </View>
+          <Skeleton show={isLoading}>
+            <EngagementSection
+              index={item?._id}
+              engagement={{
+                likes: localLikeCount,
+                comments: item?.commentCount,
+                shares: item?.shareCount,
+              }}
+              actions={{ like: localHasLiked }}
+              onLikeUpdate={handleLikeUpdate}
+              onCommentPress={() => setIsCommentsVisible(true)}
+            />
+          </Skeleton>
+       <Portal>
+       <SharePost
+        isVisible={isShareSheetVisible}
+        onClose={() => setIsShareSheetVisible(false)}
+        album={{
+          title: item?.content || '',
+          artist: item?.artistId?.name || '',
+          image: item?.artistId?.profileImage || '',
+          communityName: item?.communityId?.communityName || '',
+        }}
+          />
+       </Portal>
+
+        </View>
+      </BlurView>
+    </Animated.View>
   );
 };
 
