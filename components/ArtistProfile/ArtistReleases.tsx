@@ -1,11 +1,9 @@
-import { View, Text } from 'react-native'
+import { View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useQuery } from '../../hooks/useQuery'
-import { Artist } from '../../utils/types'
 import Hottest from '../cards/Hottest'
 import AlbumsAndEps from '../cards/AlbumsAndEps'
 import Singles from '../cards/Singles'
-import api from '@/config/apiConfig'
 
 type Props ={
     artistId: string

@@ -54,7 +54,7 @@ const RecommededMusic = ({ data, isLoading, title = "Recommended For You" }) => 
 
   return (
     <View style={styles.container}>
-      <Text className="text-[#F4F4F4] text-[20px] leading-[22px] tracking-[-0.69px] font-PlusJakartaSansBold px-4 mb-4">{title}</Text>
+      <Text className='text-[#D2D3D5] text-[20px] font-PlusJakartaSansMedium mb-4'>{title}</Text>
       <View style={styles.cardsContainer}>
         <ScrollView
           horizontal

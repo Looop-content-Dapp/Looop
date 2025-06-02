@@ -68,14 +68,15 @@
           }
         }
       ],
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/splash.png",
-
-          "backgroundColor": "#FF6D1B"
-        }
-      ],
+      ["expo-splash-screen",
+      {
+        "ios": {
+            "backgroundColor": "#ffffff",
+            "image": "./assets/images/splash.png",
+            "resizeMode": "cover"
+          }
+      }
+    ],
       [
         "expo-screen-orientation",
         {

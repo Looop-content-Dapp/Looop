@@ -1,27 +1,45 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native'
+import { View, Text, Image, TouchableOpacity, Dimensions, SafeAreaView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { AppButton } from '@/components/app-components/button'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Audit01Icon, HeadphonesIcon, UserGroupIcon } from '@hugeicons/react-native'
 import LoadingScreen from '../loadingScreen'
 import Confetti from '@/assets/svg/Confetti'
+import { useJoinCommunity } from '@/hooks/useJoinCommunity'
+import { useAppSelector } from '@/redux/hooks'
+
+const { width, height } = Dimensions.get('window');
 
 const successful = () => {
-  const { name, image } = useLocalSearchParams()
+  const { name, image, userId, communityId } = useLocalSearchParams()
+  const { userdata } = useAppSelector((state) => state.auth)
   const router = useRouter()
   const [showMintingScreen, setShowMintingScreen] = useState(true);
-  
+  const joinCommunityMutation = useJoinCommunity();
 
   useEffect(() => {
-    // After 3 seconds, show the success screen
-    const timer = setTimeout(() => {
-      setShowMintingScreen(false);
-    }, 3000);
+    const joinCommunity = async () => {
+      try {
+        await joinCommunityMutation.mutateAsync({
+          userId: userdata?._id as string,
+          communityId: communityId as string,
+          type: 'starknet'
+        });
 
-    return () => clearTimeout(timer);
+        // Only hide the minting screen after successful join
+        setTimeout(() => {
+          setShowMintingScreen(false);
+        }, 3000);
+      } catch (error) {
+        console.error('Failed to join community:', error);
+        // Handle error appropriately
+      }
+    };
+
+    joinCommunity();
   }, []);
 
-  if (showMintingScreen) {
+  if (showMintingScreen || joinCommunityMutation.isPending) {
     return (
       <LoadingScreen
         words={[
@@ -40,7 +58,8 @@ const successful = () => {
   }
 
   return (
-    <View className="flex-1 bg-[#040405] px-6">
+    <SafeAreaView className="flex-1 bg-[#040405]">
+      <View className="flex-1 bg-[#040405] px-6">
       <View className="flex-1 items-center mt-[100px]">
         <View className="w-full relative">
           {/* Main Image Container with Icons */}
@@ -50,25 +69,25 @@ const successful = () => {
               className="w-[216px] aspect-square rounded-[32px]"
               style={{ resizeMode: "cover" }}
             />
-            
+
             {/* Floating Icons */}
             <View className="absolute -top-3 -left-3">
               <View className="w-12 h-12 bg-[#1ED760] rounded-full items-center justify-center">
                 <Audit01Icon size={24} color="#000000" />
-                
+
               </View>
             </View>
-            
+
             <View className="absolute -top-28 right-4">
                <Confetti />
             </View>
-            
+
             <View className="absolute -bottom-3  left-12">
               <View className="w-[90px] h-[90px] bg-[#A187B5] rounded-[24px] items-center justify-center">
                  <UserGroupIcon size={46} color='black' variant='solid' />
               </View>
             </View>
-            
+
             <View className="absolute bottom-12 right-20">
               <View className="w-[64px] h-[64px] bg-[#FF8A49] rounded-[24px] items-center justify-center">
                 <HeadphonesIcon size={34.133} color='black' variant='solid' />
@@ -93,11 +112,17 @@ const successful = () => {
             color="#FF6D1B"
             text="Start exploring"
             loading={false}
-            onPress={() => router.push('/(tabs)')}
+            onPress={() => router.navigate({
+                pathname: "/CommunityDetails",
+                params: {
+                    id: communityId,
+                }
+            })}
           />
         </View>
       </View>
     </View>
+    </SafeAreaView>
   )
 }
 

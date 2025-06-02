@@ -14,16 +14,34 @@ import Annoucement from '../components/community/Annoucement';
 import Events from '../components/community/Events';
 import { ArrowLeft01Icon } from '@hugeicons/react-native';
 import { formatNumber } from '@/utils/ArstsisArr';
+import { useGetCommunities } from '@/hooks/useGetCommunities';
 
 const HEADER_MAX_HEIGHT = 200;
 const HEADER_MIN_HEIGHT = 80;
 const TAB_HEIGHT = 50;
 
 const CommunityDetails = () => {
-    const { id, name, description, image, noOfMembers } = useLocalSearchParams();
+    const { id } = useLocalSearchParams();
+    const { data: communities, isLoading } = useGetCommunities();
+    const community = communities?.find(comm => comm._id === id);
     const [activeTab, setActiveTab] = useState('posts');
     const scrollY = useRef(new Animated.Value(0)).current;
-    const { height: SCREEN_HEIGHT } = useWindowDimensions();
+
+    if (isLoading) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#040405' }}>
+                <Text style={{ color: '#fff' }}>Loading...</Text>
+            </View>
+        );
+    }
+
+    if (!community) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#040405' }}>
+                <Text style={{ color: '#fff' }}>Community not found</Text>
+            </View>
+        );
+    }
 
     const headerHeight = scrollY.interpolate({
         inputRange: [0, HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT],
@@ -59,8 +77,7 @@ const CommunityDetails = () => {
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <View style={{ flex: 1, backgroundColor: '#040405' }}>
-
-            <Animated.View
+                <Animated.View
                     style={{
                         position: 'absolute',
                         top: 0,
@@ -72,7 +89,7 @@ const CommunityDetails = () => {
                     }}
                 >
                     <ImageBackground
-                        source={{ uri: image as string }}
+                        source={{ uri: community.coverImage }}
                         style={{
                             flex: 1,
                             backgroundColor: '#040405',
@@ -110,7 +127,9 @@ const CommunityDetails = () => {
                     }}
                 >
                     <TouchableOpacity
-                        onPress={() => router.back()}
+                        onPress={() => router.navigate({
+                            pathname: '/(communityTabs)',
+                        })}
                         style={{
                             width: 40,
                             height: 40,
@@ -123,7 +142,7 @@ const CommunityDetails = () => {
                        <ArrowLeft01Icon size={24} color='#f4f4f4' variant='stroke' />
                     </TouchableOpacity>
                     <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', marginLeft: 16 }}>
-                        {name}
+                        {community.communityName}
                     </Text>
                 </Animated.View>
 
@@ -136,7 +155,9 @@ const CommunityDetails = () => {
                     }}
                 >
                     <TouchableOpacity
-                        onPress={() => router.back()}
+                         onPress={() => router.navigate({
+                            pathname: '/(communityTabs)/(feed)',
+                        })}
                         style={{
                             width: 40,
                             height: 40,
@@ -167,23 +188,23 @@ const CommunityDetails = () => {
                         <View className="flex-row justify-between">
                             <View>
                                 <Text numberOfLines={1} ellipsizeMode='clip' className="text-white text-xl font-bold">
-                                    {name}
+                                    {community.communityName}
                                 </Text>
                                 <View className="bg-[#12141B] py-1 px-2 rounded mt-2">
-                                    <Text className="text-white text-xs">{formatNumber(noOfMembers as string)} Members</Text>
+                                    <Text className="text-white text-xs">{formatNumber(community.memberCount.toString())} Members</Text>
                                 </View>
                             </View>
                             <TouchableOpacity
                                 className="bg-[#202227] py-2.5 px-6 items-center justify-center rounded-full"
                             >
-                                <Text className="text-white text-sm">Member</Text>
+                                <Text className="text-white text-sm">{community.isJoined ? 'Member' : 'Join'}</Text>
                             </TouchableOpacity>
                         </View>
                         <Text
                             className="text-white text-sm opacity-80 mt-4 font-PlusJakartaSansRegular"
                             numberOfLines={3}
                         >
-                            {description}
+                            {community.description}
                         </Text>
                     </View>
 

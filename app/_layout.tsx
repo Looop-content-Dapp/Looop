@@ -1,5 +1,5 @@
 import "react-native-get-random-values";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import { KeyboardProvider } from "react-native-keyboard-controller";
@@ -12,6 +12,8 @@ import { playbackService } from '@/services/PlaybackService';
 import { setupPlayer } from '../services/PlaybackService';
 import { PortalProvider } from "@gorhom/portal";
 import { AbstraxionProvider } from "@burnt-labs/abstraxion-react-native";
+import { Asset } from "expo-asset";
+import Constants from "expo-constants";
 import { Buffer } from "buffer";
 import crypto from "react-native-quick-crypto";
 
@@ -32,6 +34,7 @@ import TrackPlayer from 'react-native-track-player';
 import * as Sentry from '@sentry/react-native';
 import { NotificationProvider } from "@/context/NotificationContext";
 import { Pressable, Text } from "react-native";
+import { useAppSelector } from "@/redux/hooks";
 
 
 
@@ -63,6 +66,9 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 function AppContent() {
+  const { userdata } = useAppSelector((state) => state.auth);
+  const { onBoarded } = useAppSelector((state) => state.misc);
+  const [isSplashReady, setSplashReady] = useState(false);
   const [fontsLoaded, fontsError] = useFonts({
     PlusJakartaSansBold: require("../assets/fonts/PlusJakartaSans-Bold.ttf"),
     PlusJakartaSansLight: require("../assets/fonts/PlusJakartaSans-Light.ttf"),
@@ -72,13 +78,32 @@ function AppContent() {
   });
 
   useEffect(() => {
-    if (fontsLoaded && !fontsError) {
-      SplashScreen.hideAsync();
+    async function prepare() {
+      try {
+        // Load all assets here
+        await Promise.all([
+          Asset.loadAsync(require("../assets/images/logo"))
+        ]);
+
+        // Hide the splash screen once everything is ready
+        await SplashScreen.hideAsync();
+        setSplashReady(true);
+      } catch (e) {
+        console.warn(e);
+        setSplashReady(true);
+      }
     }
-  }, [fontsLoaded, fontsError]);
+
+    prepare();
+  }, []);
+
+
+
+  if (!isSplashReady || !fontsLoaded) {
+    return null;
+  }
 
   return (
-
     <>
       <StatusBar
         style="light"
@@ -111,8 +136,6 @@ function AppContent() {
             presentation: "fullScreenModal",
           }}
         />
-        <Stack.Screen name="creatorOnboarding" />
-        <Stack.Screen name="(artisteTabs)" />
         <Stack.Screen
           name="createPlaylist"
           options={{
@@ -120,9 +143,6 @@ function AppContent() {
           }}
         />
         <Stack.Screen name="communityDetails" />
-        <Stack.Screen name="uploadMusic" options={{
-          presentation: "fullScreenModal"
-        }} />
         <Stack.Screen
           name="withdrawFundsScreen"
           options={{

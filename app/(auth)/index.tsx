@@ -190,7 +190,7 @@ const EmailSignUp: React.FC = () => {
           loading={appleLoading || isAppleAuthenticating}
         />
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() => setShowOtherSignInModal(true)}
           className="flex-row items-center gap-x-2 mx-auto"
         >
@@ -198,10 +198,10 @@ const EmailSignUp: React.FC = () => {
             Sign in with others
           </Text>
           <ArrowDown01Icon size={20} color="#787A80" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
-      <Modal
+      {/* <Modal
   visible={showOtherSignInModal}
   animationType="slide"
   transparent={true}
@@ -217,8 +217,6 @@ const EmailSignUp: React.FC = () => {
           <Text className="text-white text-2xl">×</Text>
         </TouchableOpacity>
       </View>
-
-
   <SocialButton
     onPress={handleAbstraxionLogin}
     imageSource={require("../../assets/images/XIONB.png")}
@@ -227,7 +225,7 @@ const EmailSignUp: React.FC = () => {
   />
     </View>
   </View>
-</Modal>
+</Modal> */}
 
         <Pressable
           onPress={() => router.navigate("/(auth)/signin")}

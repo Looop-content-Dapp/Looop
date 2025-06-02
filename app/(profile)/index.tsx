@@ -5,9 +5,11 @@ import {
   ScrollView,
   Share,
   Alert,
+  Modal,
+  Pressable,
 } from "react-native";
 import React, { useCallback, useEffect, useLayoutEffect, useState } from "react";
-import { MoreHorizontalIcon, Settings02Icon, Share05Icon, Wallet02Icon, UserAdd01Icon } from "@hugeicons/react-native";
+import { MoreHorizontalIcon, Settings02Icon, Share05Icon, Wallet02Icon, UserAdd01Icon, Edit01Icon, UserLock01Icon, UserMinus01Icon } from "@hugeicons/react-native";
 import { Avatar } from "react-native-elements";
 import {
   ProfilePlaylist,
@@ -21,15 +23,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { useGetUser } from "@/hooks/useGetUser"; // Add this import
 import { FlatList } from 'react-native' // Add this import if not already present
-import {
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuRoot,
-  DropdownMenuTrigger,
-  DropdownMenuItemTitle
-} from "@/components/DropDown";
 import { useClerkAuthentication } from "@/hooks/useClerkAuthentication";
-import { useAbstraxionAuth } from "@/hooks/useSocialAuth";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 
 
@@ -51,6 +45,8 @@ const profile = () => {
     ...(result || userdata)
   };
 
+  const [showOptionsModal, setShowOptionsModal] = useState(false);
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: true,
@@ -63,64 +59,61 @@ const profile = () => {
             <TouchableOpacity onPress={() => router.navigate("/wallet/userWallet")} className="bg-[#202227] p-[12px] rounded-full">
               <Wallet02Icon size={24} color="#63656B" variant="solid" />
             </TouchableOpacity>
-            <DropdownMenuRoot>
-              <DropdownMenuTrigger asChild>
-                <TouchableOpacity className="rounded-full">
-                  <MoreHorizontalIcon size={24} color="#63656B" variant="solid" />
-                </TouchableOpacity>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent sideOffset={5} align="end" className="bg-[#202227] rounded-[10px] w-[150px]">
-                <DropdownMenuItem
-                  key="edit-profile"
-                  textValue="Edit Profile"
-                  onSelect={() => router.push("/(profile)/editProfile")}
-                  className="py-2 px-3"
-                >
-                  <Text className="text-[#f4f4f4] text-[14px]">Edit Profile</Text>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  key="logout"
-                  textValue="Log Out"
-                  onSelect={() => {
-                  handleLogout()
-                  router.dismissTo("/")
-                  }}
-                  className="py-2 px-3"
-                >
-                  <Text className="text-[#f4f4f4] text-[14px]">Log Out</Text>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-  key="delete-account"
-  textValue="Delete Account"
-  onSelect={() => {
-    Alert.alert(
-      "Delete Account",
-      "Are you sure you want to delete your account? This action cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => {
-            // Add your delete account logic here
-          }
-        }
-      ]
-    );
-  }}
-  className="py-2 px-3"
->
-  <DropdownMenuItemTitle color="red" style={{ color: "red" }}>
-    Delete Account
-  </DropdownMenuItemTitle>
-</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenuRoot>
+            <TouchableOpacity
+              onPress={() => setShowOptionsModal(true)}
+              className="rounded-full bg-[#202227] p-[12px]">
+              <MoreHorizontalIcon size={24} color="#63656B" variant="solid" />
+            </TouchableOpacity>
           </View>
         )
       },
     });
   }, [navigation]);
+
+  const OptionsModal = ({ visible, onClose, onEditProfile, onLogout, onDeleteAccount }) => (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={visible}
+      onRequestClose={onClose}
+    >
+      <Pressable
+        className="flex-1 bg-black/50"
+        onPress={onClose}
+      >
+        <Pressable
+          className="mt-auto bg-[#202227] rounded-t-[20px] pb-10"
+          onPress={(e) => e.stopPropagation()}
+        >
+          <View className="w-12 h-1 bg-[#2A2B32] rounded-full mx-auto mt-3 mb-6" />
+
+          <TouchableOpacity
+            onPress={onEditProfile}
+            className="flex-row items-center px-6 py-4 border-b border-[#2A2B32]"
+          >
+            <Edit01Icon size={24} color="#63656B" variant="solid" />
+            <Text className="text-[16px] text-[#f4f4f4] ml-4 font-PlusJakartaSansMedium">Edit Profile</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={onLogout}
+            className="flex-row items-center px-6 py-4 border-b border-[#2A2B32]"
+          >
+            <UserLock01Icon size={24} color="#63656B" variant="solid" />
+            <Text className="text-[16px] text-[#f4f4f4] ml-4 font-PlusJakartaSansMedium">Log Out</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={onDeleteAccount}
+            className="flex-row items-center px-6 py-4"
+          >
+            <UserMinus01Icon size={24} color="#FF3B30" variant="solid" />
+            <Text className="text-[16px] text-[#FF3B30] ml-4 font-PlusJakartaSansMedium">Delete Account</Text>
+          </TouchableOpacity>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
 
   // Function to generate a shareable link for the user
   const getAlbumShareLink = (albumId: any) => {
@@ -156,14 +149,6 @@ const profile = () => {
     }
   };
 
-//   if (isLoading) {
-//     return (
-//       <View className="flex-1 items-center justify-center">
-//         <Text className="text-[#f4f4f4]">Loading...</Text>
-//       </View>
-//     );
-//   }
-
   const renderTabContent = () => {
     switch (selectedTab) {
       case "Playlists":
@@ -179,6 +164,36 @@ const profile = () => {
 
   return (
     <View className="pt-5 px-[24px] flex-1">
+      <OptionsModal
+        visible={showOptionsModal}
+        onClose={() => setShowOptionsModal(false)}
+        onEditProfile={() => {
+          setShowOptionsModal(false);
+          router.push("/(profile)/editProfile");
+        }}
+        onLogout={() => {
+          setShowOptionsModal(false);
+          handleLogout();
+          router.dismissTo("/");
+        }}
+        onDeleteAccount={() => {
+          setShowOptionsModal(false);
+          Alert.alert(
+            "Delete Account",
+            "Are you sure you want to delete your account? This action cannot be undone.",
+            [
+              { text: "Cancel", style: "cancel" },
+              {
+                text: "Delete",
+                style: "destructive",
+                onPress: () => {
+                  // Add your delete account logic here
+                }
+              }
+            ]
+          );
+        }}
+      />
       <FlatList
         ListHeaderComponent={() => (
           <>
