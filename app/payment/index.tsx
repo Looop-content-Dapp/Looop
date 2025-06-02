@@ -1,5 +1,5 @@
 import { View, Text, Image, TouchableOpacity, Modal, Alert, ScrollView } from "react-native";
-import React, { useLayoutEffect, useState } from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 import {
   useLocalSearchParams,
   useNavigation,
@@ -7,23 +7,16 @@ import {
 } from "expo-router";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { AppButton } from "@/components/app-components/button";
-import { Money02Icon } from "@hugeicons/react-native";
 import { useAppSelector } from "@/redux/hooks";
-import Payaza, {
-  type IPayaza,
-  type PayazaErrorResponse,
-  type PayazaSuccessResponse,
-  PayazaConnectionMode,
-} from "react-native-payaza";
+import { Paystack, paystackProps } from 'react-native-paystack-webview';
 
 const Index = () => {
-  const { name, image, communityId, collectionAddress, type, userAddress, currentRoute } = useLocalSearchParams();
+  const { name, image, communityId, collectionAddress, type, userAddress } = useLocalSearchParams();
+  const paystackWebViewRef = useRef<paystackProps.PayStackRef>();
   const navigation = useNavigation();
   const router = useRouter();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { userdata } = useAppSelector((state) => state.auth);
-
-  const payaza = React.useRef<IPayaza>(null);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -33,54 +26,28 @@ const Index = () => {
     });
   }, [navigation]);
 
-  // Update USDC payment handler in the modal
-  <AppButton.Primary
-    color="#FF6D1B"
-    text="Pay with USDC"
-    loading={false}
-    icon={
-      <Image
-        source={require("../../assets/images/usdc-icon.png")}
-        className="w-5 h-5"
-      />
-    }
-    onPress={() => {
-      setIsModalVisible(false);
-      router.push({
-        pathname: "/payment/payInCrypto",
-        params: {
-          name,
-          image,
-          price: 2,
-          communityId,
-          collectionAddress,
-          type: type,
-          userAddress: userAddress,
-        },
-      });
-    }}
-  />
-
-  const handleSuccess = async (response: PayazaSuccessResponse) => {
+  const handlePaystackSuccess = (response: any) => {
     try {
-      const { payaza_reference } = response.data;
-      Alert.alert(
-        "Payment Successful",
-        `Transaction reference: ${payaza_reference}`
-      );
-      setIsModalVisible(false);
-      router.push({
-        pathname: "/payment/success",
-        params: {
-          name,
-          image,
-          reference: payaza_reference,
-          communityId,
-          collectionAddress,
-          type: "xion",
-          userAddress: userdata?.wallets?.xion,
-        },
-      });
+      const { reference, transaction, status } = response;
+      if (status === 'success') {
+        Alert.alert(
+          "Payment Successful",
+          `Transaction reference: ${reference}`
+        );
+        setIsModalVisible(false);
+        router.push({
+          pathname: "/payment/success",
+          params: {
+            name,
+            image,
+            reference,
+            communityId,
+            collectionAddress,
+            type: "paystack",
+            userAddress: userdata?.wallets?.xion,
+          },
+        });
+      }
     } catch (error) {
       Alert.alert(
         "Verification Failed",
@@ -89,23 +56,13 @@ const Index = () => {
     }
   };
 
-  const payNow = () => {
-    const transactionReference = `P-C-${new Date().toISOString().slice(0,10)}-${Math.random().toString(36).substring(2,12).toUpperCase()}`;
-
-    payaza.current?.createTransaction({
-      amount: Number(2),
-      connectionMode: PayazaConnectionMode.TEST_CONNECTION_MODE,
-      email: userdata?.email as string,
-      firstName: userdata?.username as string,
-      lastName: "<last name>",
-      phoneNumber: userdata?.tel as string,
-      currencyCode: "USD",
-      transactionReference,
-    });
+  const handlePaystackCancel = () => {
+    Alert.alert("Payment Cancelled", "You cancelled the payment");
+    setIsModalVisible(false);
   };
 
-  const handleError = (response: PayazaErrorResponse) => {
-    Alert.alert(response.data.message, "Error Occurred");
+  const payNow = () => {
+    paystackWebViewRef?.current?.startTransaction();
   };
 
   return (
@@ -125,7 +82,7 @@ const Index = () => {
               Mint your Tribe Pass
             </Text>
             <Text className="text-[18px] font-PlusJakartaSansMedium text-[#D2D3D5] mb-4">
-            Mint an NFT of your favorite artist to gain exclusive access to their Tribe. This NFT serves as your key pass to connect with fans, join conversations, and unlock unique experiences.
+              Mint an NFT of your favorite artist to gain exclusive access to their Tribe. This NFT serves as your key pass to connect with fans, join conversations, and unlock unique experiences.
             </Text>
           </View>
 
@@ -135,8 +92,8 @@ const Index = () => {
               className="w-full aspect-square rounded-[24px]"
               style={{ resizeMode: "cover" }}
             />
-             <Text numberOfLines={1} className="text-[24px] text-[#FAFBFB] font-PlusJakartaSansBold pl-[16px] pt-[6px]">{name}</Text>
-             <View className="flex-row items-center justify-between px-[16px] mt-[8px]">
+            <Text numberOfLines={1} className="text-[24px] text-[#FAFBFB] font-PlusJakartaSansBold pl-[16px] pt-[6px]">{name}</Text>
+            <View className="flex-row items-center justify-between px-[16px] mt-[8px]">
               <View className="flex-1">
                 <View className="flex-row items-center self-start bg-[#A187B5] py-[6px] rounded-[56px] px-[12px]">
                   <Text className="text-[#0A0B0F] text-[14px] font-PlusJakartaSansBold" numberOfLines={1}>
@@ -166,7 +123,7 @@ const Index = () => {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={(e) => e.stopPropagation()}
-                className="bg-[#040405] h-[45%] rounded-t-[32px] p-6"
+                className="bg-[#040405] h-[35%] rounded-t-[32px] p-6"
               >
                 <View className="w-[48px] h-[4px] bg-[#787A80] rounded-full mx-auto mb-6" />
 
@@ -183,55 +140,26 @@ const Index = () => {
                 </View>
 
                 <AppButton.Primary
-                color="#FF6D1B"
-                text="Pay with USDC"
-                loading={false}
-                icon={
-                <Image
-                source={require("../../assets/images/usdc-icon.png")}
-                className="w-5 h-5"
-                />
-                }
-                onPress={() => {
-                setIsModalVisible(false);
-                router.push({
-                pathname: "/payment/payInCrypto",
-                params: {
-                name: name,
-                image: image,
-                price: 2,
-                communityId: communityId,
-                collectionAddress: collectionAddress,
-                type: "xion",
-                userAddress: userdata?.wallets.xion.address,
-                currentRoute: currentRoute,
-                },
-                });
-                }}
+                  color="#FF6D1B"
+                  text="Pay Now"
+                  loading={false}
+                  onPress={payNow}
                 />
 
-                <Text className="text-gray-500 text-center my-4">Or</Text>
-                <View className="w-full gap-y-[32px]">
-                  <AppButton.Primary
-                    color="#FFFFFF"
-                    text="Pay wisth Cash"
-                    loading={false}
-                    icon={
-                      <Money02Icon size={24} color="black" variant="solid" />
-                    }
-                    onPress={payNow}
-                  />
-                </View>
               </TouchableOpacity>
             </TouchableOpacity>
           </Modal>
 
-          <Payaza
-            onSuccess={handleSuccess}
-            onError={handleError}
-            onClose={console.log}
-            merchantKey="PZ78-PKTEST-FF00C2E4-3339-4D9A-93AF-1CD4F3A834DC"
-            ref={payaza}
+          <Paystack
+            paystackKey="pk_test_e33557a82d21529a1933a0e04200c28edd269b7e"
+            billingEmail={userdata?.email as string}
+            amount={"5"} // Amount in kobo (₦5000.00)
+            billingName={userdata?.username || ''}
+            channels={['card', 'bank', 'ussd',]}
+            currency="NGN"
+            onCancel={handlePaystackCancel}
+            onSuccess={handlePaystackSuccess}
+            ref={paystackWebViewRef}
           />
         </View>
       </ScrollView>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -17,12 +17,11 @@ import {
 import Icon from 'react-native-vector-icons/Feather';
 import * as Contacts from 'expo-contacts';
 import { Avatar } from 'react-native-elements';
-import { AlertDiamondIcon, CdIcon, FavouriteIcon, Playlist01Icon, Queue01Icon } from '@hugeicons/react-native';
+import { Bookmark01Icon, Alert01Icon } from '@hugeicons/react-native';
 import { Feather } from '@expo/vector-icons';
 import AddToPlaylistBottomSheet from './AddToPlaylistBottomSheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { Track } from '@/utils/types';
 import TrackPlayer from 'react-native-track-player';
 
 interface ShareProps {
@@ -45,23 +44,29 @@ const SharePost: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
   const slideAnim = React.useRef(new Animated.Value(0)).current;
   const [animationReady, setAnimationReady] = useState(false);
 
-  const shareContent = {
+  const shareContent = useMemo(() => ({
     title: album?.title || 'Check out this track',
     message: `Check out "${album?.title}" by ${album?.artist} on Looop Music!`,
-    url: `https://looop.com/track/${album?.id}`, // Replace with your actual sharing URL
-  };
+    url: `https://looop.com/track/${album?.id}`,
+    hashtags: ['LooopMusic', 'Music', 'NewMusic'].join(','),
+    subject: `${album?.title} by ${album?.artist} on Looop Music`
+  }), [album]);
 
-  const handleCopyLink = () => {
-    Clipboard.setString(shareContent.url);
-    Alert.alert('Success', 'Link copied to clipboard');
-  };
+  const handleCopyLink = useCallback(() => {
+    try {
+      Clipboard.setString(shareContent.url);
+      Alert.alert('Success', 'Link copied to clipboard');
+    } catch (error) {
+      console.error('Error copying link:', error);
+      Alert.alert('Error', 'Failed to copy link');
+    }
+  }, [shareContent.url]);
 
-  const handleAddToPlaylist = () => {
+  const handleAddToPlaylist = useCallback(() => {
     setIsPlaylistSheetVisible(true);
-  };
+  }, []);
 
-
-  const handleShareToWhatsApp = async () => {
+  const handleShareToWhatsApp = useCallback(async () => {
     try {
       const message = encodeURIComponent(`${shareContent.message}\n${shareContent.url}`);
       const whatsappUrl = `whatsapp://send?text=${message}`;
@@ -70,51 +75,118 @@ const SharePost: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
       if (supported) {
         await Linking.openURL(whatsappUrl);
       } else {
-        await RNShare.share({
-          message: `${shareContent.message}\n${shareContent.url}`,
+        const result = await RNShare.share({
+          title: shareContent.title,
+          message: shareContent.message,
+          url: shareContent.url,
+          
         });
+        if (result.action === RNShare.dismissedAction) {
+          console.log('Share dismissed');
+        }
       }
     } catch (error) {
-      Alert.alert('Error', 'Could not open WhatsApp. Make sure it is installed.');
+      console.error('WhatsApp share error:', error);
+      Alert.alert(
+        'Sharing Error',
+        'Could not share to WhatsApp. Please try again later.'
+      );
     }
-  };
+  }, [shareContent]);
 
-  const handleShareToSnapchat = async () => {
+  const handleShareToSnapchat = useCallback(async () => {
     try {
-      await RNShare.share({
-        message: `${shareContent.message}\n${shareContent.url}`,
-      });
+      // Try to use Snapchat's URL scheme first
+      const snapchatUrl = `snapchat://share?text=${encodeURIComponent(shareContent.message)}&url=${encodeURIComponent(shareContent.url)}`;
+      const isSnapchatInstalled = await Linking.canOpenURL(snapchatUrl);
+
+      if (isSnapchatInstalled) {
+        await Linking.openURL(snapchatUrl);
+      } else {
+        // Fallback to native share dialog
+        const result = await RNShare.share({
+          title: shareContent.title,
+          message: `${shareContent.message}\n${shareContent.url}`,
+        });
+
+        if (result.action === RNShare.dismissedAction) {
+          console.log('Share dismissed');
+        }
+      }
     } catch (error) {
-      Alert.alert('Error', 'Could not share to Snapchat.');
+      console.error('Snapchat share error:', error);
+      // Fallback to native share dialog if Snapchat sharing fails
+      try {
+        const result = await RNShare.share({
+          title: shareContent.title,
+          message: `${shareContent.message}\n${shareContent.url}`,
+        });
+        if (result.action === RNShare.dismissedAction) {
+          console.log('Share dismissed');
+        }
+      } catch (fallbackError) {
+        console.error('Native share fallback error:', fallbackError);
+        Alert.alert(
+          'Sharing Error',
+          'Could not share content. Please try again later.'
+        );
+      }
     }
-  };
+  }, [shareContent]);
 
-  const handleShareToInstagram = async () => {
+  const handleShareToInstagram = useCallback(async () => {
     try {
-      await RNShare.share({
-        message: `${shareContent.message}\n${shareContent.url}`,
-      });
+      const instagramUrl = `instagram://library?AssetPath=${encodeURIComponent(album?.image || '')}`;
+      const supported = await Linking.canOpenURL(instagramUrl);
+
+      if (supported) {
+        await Linking.openURL(instagramUrl);
+      } else {
+        const result = await RNShare.share({
+          title: shareContent.title,
+          message: shareContent.message,
+          url: shareContent.url,
+          social: RNShare.Social.INSTAGRAM
+        });
+        if (result.action === RNShare.dismissedAction) {
+          console.log('Share dismissed');
+        }
+      }
     } catch (error) {
-      Alert.alert('Error', 'Could not share to Instagram.');
+      console.error('Instagram share error:', error);
+      Alert.alert(
+        'Sharing Error',
+        'Could not share to Instagram. Please try again later.'
+      );
     }
-  };
+  }, [shareContent, album?.image]);
 
-  const handleShareToTwitter = async () => {
+  const handleShareToTwitter = useCallback(async () => {
     try {
-      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareContent.message)}&url=${encodeURIComponent(shareContent.url)}`;
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareContent.message)}&url=${encodeURIComponent(shareContent.url)}&hashtags=${shareContent.hashtags}`;
       const supported = await Linking.canOpenURL(twitterUrl);
 
       if (supported) {
         await Linking.openURL(twitterUrl);
       } else {
-        await RNShare.share({
-          message: `${shareContent.message}\n${shareContent.url}`,
+        const result = await RNShare.share({
+          title: shareContent.title,
+          message: `${shareContent.message} ${shareContent.hashtags.split(',').map(tag => `#${tag}`).join(' ')}`,
+          url: shareContent.url,
+          social: RNShare.Social.TWITTER
         });
+        if (result.action === RNShare.dismissedAction) {
+          console.log('Share dismissed');
+        }
       }
     } catch (error) {
-      Alert.alert('Error', 'Could not share to Twitter.');
+      console.error('Twitter share error:', error);
+      Alert.alert(
+        'Sharing Error',
+        'Could not share to Twitter. Please try again later.'
+      );
     }
-  };
+  }, [shareContent]);
 
   const handleClose = () => {
     Animated.parallel([
@@ -451,7 +523,7 @@ const SharePost: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
               <View style={styles.actionButtons}>
                 <TouchableOpacity style={styles.actionButton} onPress={handleAddToFavorites}>
                   <View className='bg-[#202227] p-[20px] rounded-[56px]'>
-                    <FavouriteIcon
+                    <Bookmark01Icon
                       size={32}
                       color={isFavorite ? '#FF6D1B' : '#9A9B9F'}
                       variant={isFavorite ? 'solid' : 'stroke'}
@@ -464,7 +536,7 @@ const SharePost: React.FC<ShareProps> = ({ isVisible, onClose, album }) => {
                   onPress={handleAddToPlaylist}
                 >
                   <View className='bg-[#202227] p-[20px] rounded-[56px]'>
-                    <Playlist01Icon size={32} color='#9A9B9F' variant='stroke' />
+                    <Alert01Icon size={32} color='#9A9B9F' variant='stroke' />
                   </View>
                   <Text style={styles.actionLabel}>Add to Playlist</Text>
                 </TouchableOpacity>

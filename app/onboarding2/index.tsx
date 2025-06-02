@@ -10,6 +10,8 @@ import {
   Dimensions,
   ScrollView,
   Animated,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from "react-native";
 import React, { useState, useRef } from "react";
 import {
@@ -25,22 +27,14 @@ import {
   onboardbg4,
 } from "@/assets/images/images";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Onboarding from "react-native-onboarding-swiper";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 
 import CustomBottomContent from "./BottomComponent";
-import { z } from "zod";
 
 const { width, height } = Dimensions.get("window");
-export interface ISize {
-  width: number;
-  height: number;
-}
-
-
 
 const pagesBackgroundColor = [
   "#FF6D1B",
@@ -55,7 +49,7 @@ const doubleImageContainer = {
   justifyContent: "center",
   alignItems: "center",
   width: wp("100%"),
-  marginTop: -hp("10%"),
+  marginTop: hp("10%"),
 };
 
 const sideImageStyle = {
@@ -78,17 +72,22 @@ const imageStyle: ImageStyle = {
   width: wp("100%"),
   height: hp("50%"),
   resizeMode: "contain",
-  marginTop: -hp("15%"),
+  marginTop: hp("5%"),
 };
 
 const Onboard2 = () => {
   const [pageIndex, setPageIndex] = useState<number>(0);
-  const onboardingRef = useRef(null);
   const scrollX = useRef(new Animated.Value(0)).current;
+  const scrollViewRef = useRef<ScrollView>(null);
 
-  const changePageHandler = (index: number) => {
-    setPageIndex(index);
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    const newPageIndex = Math.round(offsetX / width);
+    if (newPageIndex !== pageIndex) {
+      setPageIndex(newPageIndex);
+    }
   };
+
   const getBackgroundImage = (pageIndex: number): ImageSourcePropType => {
     switch (pageIndex) {
       case 0:
@@ -101,6 +100,7 @@ const Onboard2 = () => {
         return onboardbg4 as ImageSourcePropType;
     }
   };
+
   return (
     <>
       <StatusBar
@@ -114,145 +114,69 @@ const Onboard2 = () => {
           <Image
             source={getBackgroundImage(pageIndex)}
             style={styles.backgroundImage}
-            resizeMode="contain"
+            resizeMode="cover"
           />
-          <View style={[
-            styles.darkOverlay,
-            { backgroundColor: pagesBackgroundColor[pageIndex] }
-          ]} />
-        </View>
-
-        <SafeAreaView style={[
-          styles.safeAreaContainer,
-          { backgroundColor: 'transparent' }
-        ]}>
-          <Image source={logowhite} style={logoStyle} />
-
-          <Onboarding
-            ref={onboardingRef}
-            bottomBarHighlight={false}
-            showSkip={false}
-            showNext={false}
-            showDone={false}
-            showPagination={false}
-            pageIndexCallback={changePageHandler}
-            controlStatusBar={false}
-            allowFontScaling={false}
-            transitionAnimationDuration={500}
-            flatlistProps={{
-              bounces: false,
-              scrollEnabled: true,
-              decelerationRate: 0.85,
-              showsHorizontalScrollIndicator: false,
-              scrollEventThrottle: 16,
-              snapToInterval: width,
-              snapToAlignment: "center",
-              disableIntervalMomentum: true,
-              onScroll: Animated.event(
-                [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-                { useNativeDriver: false }
-              ),
-              onMomentumScrollEnd: (e) => {
-                const offsetX = e.nativeEvent.contentOffset.x;
-                const newPageIndex = Math.round(offsetX / width);
-                if (newPageIndex !== pageIndex) {
-                  setPageIndex(newPageIndex);
-                }
-              },
-            }}
-            containerStyles={{
-              paddingHorizontal: 0,
-              flex: 1,
-              width,
-              paddingLeft: 0,
-              paddingRight: 0,
-            }}
-            imageContainerStyles={{
-              paddingBottom: 0,
-              marginBottom: 0,
-              flex: Platform.OS === 'ios' ? 0.5 : undefined,
-            }}
-            titleStyles={{
-              height: 0,
-              margin: 0,
-              padding: 0,
-            }}
-            subTitleStyles={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              top: 50,
-              height: hp('45%'),
-              marginBottom: 0,
-              paddingBottom: 0,
-              width,
-              margin: 0,
-              padding: 0,
-            }}
-            pages={[
-              {
-                title: '',
-                subtitle: <CustomBottomContent pageIndex={0} />,
-                backgroundColor: 'transparent',
-                image: (
-                  <Image
-                    source={newonboard1 as ImageSourcePropType}
-                    style={imageStyle}
-                  />
-                ),
-              },
-              {
-                title: '',
-                subtitle: <CustomBottomContent pageIndex={1} />,
-                backgroundColor: 'transparent',
-                image: (
-                  <Image
-                    source={newonboard2 as ImageSourcePropType}
-                    style={imageStyle}
-                  />
-                ),
-              },
-              {
-                title: '',
-                subtitle: <CustomBottomContent pageIndex={2} />,
-                backgroundColor: 'transparent',
-                image: (
-                  <Image
-                    source={newonboard3 as ImageSourcePropType}
-                    style={imageStyle}
-                  />
-                ),
-              },
-              {
-                title: '',
-                subtitle: <CustomBottomContent pageIndex={3} />,
-                backgroundColor: 'transparent',
-                image: (
-                  <View style={doubleImageContainer as ViewStyle}>
-                    <Image
-                      source={newonboard4 as ImageSourcePropType}
-                      style={sideImageStyle as ImageStyle}
-                    />
-                    <Image
-                      source={newonboard5 as ImageSourcePropType}
-                      style={sideImageStyle as ImageStyle}
-                    />
-                  </View>
-                ),
-              },
+          <View
+            style={[
+              styles.darkOverlay,
+              { backgroundColor: pagesBackgroundColor[pageIndex] },
             ]}
           />
+        </View>
+
+        <SafeAreaView
+          style={[styles.safeAreaContainer, { backgroundColor: "transparent" }]}
+        >
+          <Image source={logowhite} style={logoStyle} />
+
+          <ScrollView
+            ref={scrollViewRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            bounces={false}
+            scrollEventThrottle={16}
+            decelerationRate={0.85}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+              { useNativeDriver: false, listener: handleScroll }
+            )}
+          >
+            <View style={styles.pageContainer}>
+              <Image source={newonboard1 as ImageSourcePropType} style={imageStyle} resizeMode="cover"  />
+              <CustomBottomContent pageIndex={0} />
+            </View>
+
+            <View style={styles.pageContainer}>
+              <Image source={newonboard2 as ImageSourcePropType} style={imageStyle} resizeMode="cover" />
+              <CustomBottomContent pageIndex={1} />
+            </View>
+
+            <View style={styles.pageContainer}>
+              <Image source={newonboard3 as ImageSourcePropType} style={imageStyle} resizeMode="cover" />
+              <CustomBottomContent pageIndex={2} />
+            </View>
+
+            <View style={styles.pageContainer} >
+              <View style={doubleImageContainer as ViewStyle}>
+                <Image
+                  source={newonboard4 as ImageSourcePropType}
+                  style={sideImageStyle as ImageStyle}
+                />
+                <Image
+                  source={newonboard5 as ImageSourcePropType}
+                  style={sideImageStyle as ImageStyle}
+                />
+              </View>
+              <CustomBottomContent pageIndex={3} />
+            </View>
+          </ScrollView>
         </SafeAreaView>
 
-        <BottomBlackComponent />
+        <View style={styles.bottomBlackcontainer} />
       </View>
     </>
   );
-};
-
-const BottomBlackComponent = () => {
-  return <View style={styles.bottomBlackcontainer} />;
 };
 
 export default Onboard2;
@@ -272,26 +196,20 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     width,
-
     zIndex: 1,
-
   },
   backgroundImage: {
-
-
-    resizeMode: "contain",
-
-
-
-
+    width: wp("100%"),
+    height: hp("100%"),
+    // resizeMode: "cover",
   },
   darkOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
-    width: '100%',
-    height: '100%',
-    opacity: 0.8,
+    width: wp("100%"),
+    height: hp("100%"),
+    opacity: 0.9,
     zIndex: 2,
   },
   bottomBlackcontainer: {
@@ -301,7 +219,16 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: hp('10%'),
-    zIndex: 10,
+    height: hp('45%'),
+    zIndex: 3,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  pageContainer: {
+    width,
+    height: hp("100%"),
+    flex: 1,
+    alignItems: "center",
   },
 });

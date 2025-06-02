@@ -115,7 +115,7 @@ const DailyMixesSection = ({
 
   return (
     <View style={styles.container}>
-     <Text className="text-white text-[20px] font-PlusJakartaSansBold mb-4">
+     <Text className='text-[#D2D3D5] text-[20px] font-PlusJakartaSansMedium mb-4'>
        {title}
       </Text>
       <ScrollView

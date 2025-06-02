@@ -114,30 +114,31 @@ export default function WalletBalance({
     Wallet addresses
   </Text>
   <View className="gap-y-[12px]">
-    {addresses.map((addr, index) => (
-      <TouchableOpacity
-        key={index}
-        className="flex-row items-center justify-between"
-        onPress={() => addr.address && onCopyAddress?.(addr.address)}
-      >
-        <View className="flex-row items-center gap-x-2 flex-1">
-          <Image
-            source={addr.chain === "XION" ? XIONB : StarknetB}
-            className="w-5 h-5"
-          />
-          <Text
-            className="text-[#f4f4f4] text-[16px] font-PlusJakartaSansMedium flex-1"
-            numberOfLines={1}
-            // ellipsizeMode="middle"
-          >
-            {addr.address
-              ? `${addr.address.slice(0, 35)}...`
-              : "No address"}
-          </Text>
-        </View>
-        <Copy01Icon size={16} color="#63656B" style={{ marginLeft: 8 }} />
-      </TouchableOpacity>
-    ))}
+    {addresses
+      .filter(addr => addr.chain === "Starknet")
+      .map((addr, index) => (
+        <TouchableOpacity
+          key={index}
+          className="flex-row items-center justify-between"
+          onPress={() => addr.address && onCopyAddress?.(addr.address)}
+        >
+          <View className="flex-row items-center gap-x-2 flex-1">
+            <Image
+              source={StarknetB}
+              className="w-5 h-5"
+            />
+            <Text
+              className="text-[#f4f4f4] text-[16px] font-PlusJakartaSansMedium flex-1"
+              numberOfLines={1}
+            >
+              {addr.address
+                ? `${addr.address.slice(0, 35)}...`
+                : "No address"}
+            </Text>
+          </View>
+          <Copy01Icon size={16} color="#63656B" style={{ marginLeft: 8 }} />
+        </TouchableOpacity>
+      ))}
   </View>
 </View>
     </View>

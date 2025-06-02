@@ -107,7 +107,7 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
           </TouchableOpacity>
         )}
       </View>
-      <View className='bg-[#12141B] p-[16px] gap-y-[8px] rounded-[15px] mx-auto mb-6'>
+      {/* <View className='bg-[#12141B] p-[16px] gap-y-[8px] rounded-[15px] mx-auto mb-6'>
         <Text numberOfLines={1} className='text-[14px] font-PlusJakartaSansBold text-[#9A9B9F]'>About {name}</Text>
         <Text
           numberOfLines={showFullDesc ? undefined : 1}
@@ -120,7 +120,7 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
             {showFullDesc ? 'See less' : 'See more'}
           </Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 };

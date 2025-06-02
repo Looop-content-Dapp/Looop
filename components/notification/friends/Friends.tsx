@@ -7,19 +7,25 @@ import * as Contacts from "expo-contacts";
 import * as Sharing from 'expo-sharing';
 import { useAppSelector } from "@/redux/hooks";
 import api from "@/config/apiConfig";
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { withRepeat, withSequence, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 
 const Friends = () => {
   const [contacts, setContacts] = useState([]);
   const [referralData, setReferralData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { userdata } = useAppSelector((auth) => auth.auth);
 
   const handleFetchReferral = async () => {
     if (!userdata?._id) return;
     try {
+      setIsLoading(true);
       const response = await api.get(`/api/referral/${userdata?._id}`);
       setReferralData(response.data.data);
     } catch (error) {
       console.error('Error fetching referral:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -56,10 +62,46 @@ const Friends = () => {
     })();
   }, []);
 
+  const SkeletonLoader = () => {
+    const animatedStyle = useAnimatedStyle(() => {
+      return {
+        opacity: withRepeat(
+          withSequence(
+            withTiming(0.5, { duration: 1000 }),
+            withTiming(1, { duration: 1000 })
+          ),
+          -1,
+          true
+        ),
+      };
+    });
+
+    return (
+      <View className="items-center">
+        <Animated.View
+          style={[
+            { width: wp("90%") },
+            animatedStyle
+          ]}
+          className="h-[160px] rounded-[24px] overflow-hidden"
+        >
+          <LinearGradient
+            colors={['#f0f0f0', '#e0e0e0', '#f0f0f0']}
+            className="w-full h-full"
+          />
+        </Animated.View>
+      </View>
+    );
+  };
+
+  if (isLoading) {
+    return <SkeletonLoader />;
+  }
+
   return (
     <View className="items-center">
       <ImageBackground
-        source={require("../../../assets/images/friends.png")}
+        source={require("@/assets/images/friends.png")}
         style={{ width: wp("90%") }}
         className="h-[160px] rounded-[24px] pt-[40px] pl-[20px] overflow-hidden"
       >

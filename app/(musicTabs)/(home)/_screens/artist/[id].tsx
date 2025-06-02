@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   Platform,
   useWindowDimensions,
-  ActivityIndicator
+  ActivityIndicator,
+  Text
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft02Icon } from '@hugeicons/react-native';
@@ -19,6 +20,7 @@ import { useAppSelector } from '@/redux/hooks';
 import { useArtistCommunity } from '@/hooks/useArtistCommunity';
 import FastImage from 'react-native-fast-image';
 import { useFetchArtist } from '@/hooks/useFetchArtist'; // Import the hook
+import { CheckmarkBadge01Icon } from '@hugeicons/react-native';
 
 // Add this component for animated FastImage background
 const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
@@ -29,6 +31,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const ArtistDetails = () => {
   const { id } = useLocalSearchParams(); // Use only id
+  const [showFullDesc, setShowFullDesc] = useState(false);
   const { data: artistData, isLoading: isArtistLoading } = useFetchArtist(id as string); // Fetch artist data
   const { userdata } = useAppSelector((state) => state.auth);
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -185,7 +188,15 @@ const ArtistDetails = () => {
                 </TouchableOpacity>
 
               </View>
-              <Animated.View style={styles.artistNameContainer} className="mt-[42%]">
+              <Animated.View style={styles.artistNameContainer} className="mt-[35%]">
+                {artistData?.verified && (
+                  <View className="flex-row items-center gap-x-2 mb-2 shadow-black">
+                    <CheckmarkBadge01Icon size={20} variant="solid" color="#2DD881" />
+                    <Text className="text-[14px] font-PlusJakartaSansMedium text-[#2DD881]">
+                      Verified Artist
+                    </Text>
+                  </View>
+                )}
                 <Animated.Text numberOfLines={1} style={styles.artistName} className="font-PlusJakartaSansBold">
                   {artistData?.name}
                 </Animated.Text>
@@ -243,6 +254,25 @@ const ArtistDetails = () => {
                 />
 
                 <ArtistReleases artistId={id as string} />
+
+                {artistData?.biography && (
+                  <View className='bg-[#12141B] p-[16px] gap-y-[8px] rounded-[15px] mx-[16px] mt-6'>
+                    <Text numberOfLines={1} className='text-[14px] font-PlusJakartaSansBold text-[#9A9B9F]'>
+                      About {artistData.name}
+                    </Text>
+                    <Text
+                      numberOfLines={showFullDesc ? undefined : 1}
+                      className='text-[14px] font-PlusJakartaSansRegular text-[#9A9B9F]'
+                    >
+                      {artistData.biography}
+                    </Text>
+                    <TouchableOpacity onPress={() => setShowFullDesc(!showFullDesc)}>
+                      <Text className='text-[14px] text-[#D2D3D5] font-PlusJakartaSansBold'>
+                        {showFullDesc ? 'See less' : 'See more'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
             </Animated.ScrollView>
           </>

@@ -20,7 +20,7 @@ interface LocationInfo {
 interface DeviceInfo {
   brand: string | null;
   modelName: string | null;
-  osName: Device.OsName;
+  osName: Device.DeviceType;
   osVersion: string;
   isDevice: boolean;
   platformOs: string;

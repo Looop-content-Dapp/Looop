@@ -1,10 +1,11 @@
-import { View, Text, TextInput, TouchableOpacity, FlatList, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ImageBackground } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useNavigation, useRouter } from 'expo-router';
 import { AppBackButton } from '@/components/app-components/back-btn';
-import { Search01Icon, UserAdd01Icon } from '@hugeicons/react-native';
+import { Link05Icon, Search01Icon, UserAdd01Icon } from '@hugeicons/react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useNotification } from '@/context/NotificationContext';
+import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 
 import * as Contacts from 'expo-contacts';
 import { useAppSelector } from '@/redux/hooks';
@@ -132,6 +133,7 @@ const AddFriends = () => {
     </TouchableOpacity>
   );
 
+
   const renderContactItem = ({ item }: { item: Contacts.Contact }) => (
     <View className="flex-row items-center justify-between p-4 border-b border-[#2A2B32]">
       <View className="flex-row items-center gap-x-3">
@@ -191,15 +193,40 @@ const AddFriends = () => {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
 
-      <FlatList
-        data={tab === 'all' ? filteredUsers : filteredContacts}
-        renderItem={tab === 'all' ? renderUserItem : renderContactItem}
-        keyExtractor={(item) => item._id || item.id || ''}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      />
+        {tab === 'contacts' && (
+          <ImageBackground
+            source={require("@/assets/images/friends.png")}
+            style={{ width: wp("90%") }}
+            className="h-[160px] rounded-[24px] pt-[40px] pl-[20px] overflow-hidden mb-[32px] mt-[16px] mx-auto"
+          >
+            <View className="">
+              <Text className="text-[20px] font-PlusJakartaSansBold text-Grey/07 leading-[30px]">
+                Looop is fun-er with friends
+              </Text>
+              <Text className="text-[14px] font-PlusJakartaSansMedium text-Grey/07 leading-[30px]">
+                Invite friends and unlock future rewards!
+              </Text>
+            </View>
+            <View className="absolute right-6 bottom-4">
+              <TouchableOpacity className="item bg-[#fff] px-[16px] py-[12px] flex-row items-center rounded-[24px] gap-x-[8px]">
+                <Link05Icon size={16} color="#0A0B0F" variant="stroke" />
+                <Text className="text-[14px] font-PlusJakartaSansMedium text-Grey/07">
+                  Invite friends
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ImageBackground>
+        )}
+
+        <FlatList
+          data={tab === 'all' ? filteredUsers : filteredContacts}
+          renderItem={tab === 'all' ? renderUserItem : renderContactItem}
+          keyExtractor={(item) => item._id || item.id || ''}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        />
+      </View>
     </View>
   );
 };

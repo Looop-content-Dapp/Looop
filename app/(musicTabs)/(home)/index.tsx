@@ -1,6 +1,6 @@
 // index.js
-import { View, ScrollView, Text, ImageBackground, Image } from "react-native";
-import React from "react";
+import { View, ScrollView, Text, ImageBackground, Image, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
 import BasedOnSubscription from "../../../components/home/BasedOnSubscription";
 import useMusicPlayer from "../../../hooks/useMusicPlayer";
 import DailyMixesSection from "../../../components/cards/DailyMix";
@@ -12,8 +12,11 @@ import MoodSection from "../../../components/home/MoodSection";
 
 const Index = () => {
   const { currentTrack } = useMusicPlayer();
+  const [activeCategory, setActiveCategory] = useState("All")
   const { data: dailyMix, isLoading: isDailyMixesLoading } = useDailyMix();
   const { data: userFeedData, isLoading: isUserFeedLoading } = useUserDashboard();
+
+  const categories = ["All", "Party", "Blues", "Workout", "Sleep", "Hip Hop", "Rap", "Country", "Pop", "Jazz", "R&B", "Rock"]
 
   // Extract data from userFeed
   const dailyMixes = dailyMix?.data?.mixes ?? []
@@ -37,7 +40,24 @@ const Index = () => {
           }}
         >
 
-        {/* Hottest On The Block */}
+          <View className="gap-y-[12px]">
+          <Text className='text-[#D2D3D5] text-[20px] font-PlusJakartaSansMedium'>Select Categories</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-x-[12px] mb-[24px]">
+         {categories.map((category, index) => (
+           <TouchableOpacity
+             key={index}
+             onPress={() => setActiveCategory(category)}
+             className={`bg-[#12141B] border border-[#2A2B32] rounded-[56px] py-[12px] px-[24px] ${activeCategory === category ? 'border-[#FF6D1B]' : ''}`}
+           >
+             <Text className={`text-[14px] font-PlusJakartaSansMedium ${activeCategory === category ? 'text-[#FF6D1B]' : 'text-[#9A9B9F]'}`}>{category}</Text>
+           </TouchableOpacity>
+         ))}
+       </ScrollView>
+          </View>
+
+
+     <View className="gap-y-[12px]">
+      <Text className='text-[#D2D3D5] text-[20px] font-PlusJakartaSansMedium'>New Collection</Text>
       <ImageBackground
           source={require("../../../assets/images/hottestBG.png")}
           className="bg-[#2DD881] w-[100%] mx-auto h-[157px] overflow-hidden flex-row items-center mb-[32px] justify-between relative rounded-[10px]"
@@ -57,6 +77,9 @@ const Index = () => {
               resizeMode="cover"
             />
         </ImageBackground>
+     </View>
+        {/* Hottest On The Block */}
+
 
         {/* <MoodSection /> */}
 
