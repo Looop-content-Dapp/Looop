@@ -20,17 +20,15 @@ const ReleaseCard: React.FC<ReleaseCardProps> = ({ id, title, type, date, coverI
   };
 
   return (
-    <View  className='bg-[#040405] gap-y-[20px]'>
-
+    <View className='bg-[#040405] gap-y-[20px]'>
       <View className='flex-row items-center justify-between'>
         <View className='flex-row items-center gap-x-[16px]'>
-        <Image source={{ uri: "https://i.pinimg.com/736x/d9/bc/d7/d9bcd7b26a81137d2dfda160f3f3f4e1.jpg" }} style={styles.coverImage} />
-        <View>
-        <Text className='text-[16px] font-PlusJakartaSansMedium text-[#f4f4f4]'>{title}</Text>
-        <Text className='text-[12px] font-PlusJakartaSansBold text-[#787A80]'>{type}</Text>
+          <Image source={{ uri: coverImage }} style={styles.coverImage} />
+          <View>
+            <Text className='text-[16px] font-PlusJakartaSansMedium text-[#f4f4f4]'>{title}</Text>
+            <Text className='text-[12px] font-PlusJakartaSansBold text-[#787A80]'>{type}</Text>
+          </View>
         </View>
-        </View>
-
         <View className='items-end'>
             <Text className='text-[20px] font-PlusJakartaSansMedium text-[#f4f4f4]'>{streams.toLocaleString()}</Text>
             <Text className='text-[14px] font-PlusJakartaSansBold text-[#787A80]'>Total Streams</Text>

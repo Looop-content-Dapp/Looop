@@ -8,8 +8,10 @@ import {
   type ViewStyle,
   Platform,
   Dimensions,
+  ScrollView,
+  Animated,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   newonboard1,
   newonboard2,
@@ -81,6 +83,8 @@ const imageStyle: ImageStyle = {
 
 const Onboard2 = () => {
   const [pageIndex, setPageIndex] = useState<number>(0);
+  const onboardingRef = useRef(null);
+  const scrollX = useRef(new Animated.Value(0)).current;
 
   const changePageHandler = (index: number) => {
     setPageIndex(index);
@@ -104,33 +108,58 @@ const Onboard2 = () => {
         translucent={true}
         barStyle="light-content"
       />
-      
+
       <View style={styles.mainContainer}>
         <View style={styles.backgroundContainer}>
-          <Image 
+          <Image
             source={getBackgroundImage(pageIndex)}
             style={styles.backgroundImage}
             resizeMode="contain"
           />
           <View style={[
-            styles.darkOverlay, 
+            styles.darkOverlay,
             { backgroundColor: pagesBackgroundColor[pageIndex] }
           ]} />
         </View>
-        
+
         <SafeAreaView style={[
           styles.safeAreaContainer,
           { backgroundColor: 'transparent' }
         ]}>
           <Image source={logowhite} style={logoStyle} />
-          
+
           <Onboarding
+            ref={onboardingRef}
             bottomBarHighlight={false}
             showSkip={false}
             showNext={false}
             showDone={false}
             showPagination={false}
             pageIndexCallback={changePageHandler}
+            controlStatusBar={false}
+            allowFontScaling={false}
+            transitionAnimationDuration={500}
+            flatlistProps={{
+              bounces: false,
+              scrollEnabled: true,
+              decelerationRate: 0.85,
+              showsHorizontalScrollIndicator: false,
+              scrollEventThrottle: 16,
+              snapToInterval: width,
+              snapToAlignment: "center",
+              disableIntervalMomentum: true,
+              onScroll: Animated.event(
+                [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                { useNativeDriver: false }
+              ),
+              onMomentumScrollEnd: (e) => {
+                const offsetX = e.nativeEvent.contentOffset.x;
+                const newPageIndex = Math.round(offsetX / width);
+                if (newPageIndex !== pageIndex) {
+                  setPageIndex(newPageIndex);
+                }
+              },
+            }}
             containerStyles={{
               paddingHorizontal: 0,
               flex: 1,
@@ -215,7 +244,7 @@ const Onboard2 = () => {
             ]}
           />
         </SafeAreaView>
-        
+
         <BottomBlackComponent />
       </View>
     </>
@@ -243,25 +272,25 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     width,
-    
+
     zIndex: 1,
-    
+
   },
   backgroundImage: {
-    
-    
+
+
     resizeMode: "contain",
-    
-    
-  
-    
+
+
+
+
   },
   darkOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     width: '100%',
-    height: '100%', 
+    height: '100%',
     opacity: 0.8,
     zIndex: 2,
   },

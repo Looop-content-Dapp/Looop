@@ -5,13 +5,15 @@ interface InitialState {
   token: string | null;
   claimId: string | null;
   artistId: string | null
+  channel: string | null
 }
 
 const initialState: InitialState = {
   token: null,
   userdata: null,
   claimId: null,
-  artistId: null
+  artistId: null,
+  channel: null
 };
 
 const authSlice = createSlice({
@@ -30,9 +32,12 @@ const authSlice = createSlice({
     setArtistId: (state, action) => {
         state.artistId = action.payload;
       },
+    setChannel: (state, action) => {
+        state.channel = action.payload;
+      },
   },
 });
 
-export const { setToken, setUserData, setClaimId, setArtistId } = authSlice.actions;
+export const { setToken, setUserData, setClaimId, setArtistId, setChannel } = authSlice.actions;
 
 export default authSlice.reducer;

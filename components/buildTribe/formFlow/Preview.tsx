@@ -4,101 +4,42 @@ import { useQuery } from '../../../hooks/useQuery'
 
 const Preview = ({ formData }) => {
   return (
-    <ScrollView style={{ flex: 1}}>
+    <ScrollView className="flex-1">
       {/* Header */}
-      <View style={{ height: 200 }}>
+      <View className="h-[200px]">
         <Image
           source={{ uri: formData?.coverImage }}
-          style={{
-            width: '100%',
-            height: '100%',
-            resizeMode: 'cover'
-          }}
+          className="w-full h-full object-cover"
         />
       </View>
 
       {/* Tribe Info */}
-      <View style={{ padding: 20 }}>
-        <Text style={{
-          fontSize: 28,
-          fontWeight: 'bold',
-          color: '#FFFFFF',
-          marginBottom: 10
-        }}>
+      <View className="p-5">
+        <Text className="text-[28px] font-PlusJakartaSansBold text-white mb-2.5">
           {formData?.tribeName}
         </Text>
 
-        <Text style={{
-          fontSize: 16,
-          color: '#FFFFFF',
-          opacity: 0.8,
-          marginBottom: 30
-        }}>
+        <Text className="text-[14px] text-[#f4f4f4] mb-[30px] font-PlusJakartaSansRegular">
           {formData?.description}
         </Text>
 
         {/* Tribe Pass Section */}
-        <Text style={{
-          fontSize: 24,
-          fontWeight: 'bold',
-          color: '#FFFFFF',
-          marginBottom: 20
-        }}>
+        <Text className="text-[20px] font-bold text-[#f4f4f4] mb-5">
           Tribe pass
         </Text>
 
         {/* Pass Card */}
-        <View style={{
-          backgroundColor: '#161616',
-          borderRadius: 20,
-          overflow: 'hidden',
-          marginBottom: 30
-        }}>
+        <View className="bg-[#111318] rounded-[20px] overflow-hidden mb-[30px] p-2 border-[0.5px] border-[#63656B]">
           <Image
             source={{ uri: formData?.collectibleMedia }}
-            style={{
-              width: '100%',
-              height: 300,
-              resizeMode: 'cover'
-            }}
+            className="w-full h-[300px] object-cover"
           />
 
-          <View style={{ padding: 20 }}>
-            <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginBottom: 10
-            }}>
-              <Text style={{
-                color: '#FF8C00',
-                backgroundColor: 'rgba(255, 140, 0, 0.2)',
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 15,
-                overflow: 'hidden',
-                fontSize: 14,
-                marginRight: 10
-              }}>
-                🔥 Tribe Pass
-              </Text>
-            </View>
-
-            <Text style={{
-              fontSize: 24,
-              fontWeight: 'bold',
-              color: '#FFFFFF',
-              marginBottom: 8
-            }}>
+          <View className="flex-row items-center justify-between w-full px-[10px] py-[16px]">
+            <Text className="text-[24px] font-PlusJakartaSansBold text-white mb-2">
               {formData?.collectibleName}
             </Text>
-
-            <Text style={{
-              fontSize: 16,
-              color: '#FFFFFF',
-              opacity: 0.8
-            }}>
-              {formData?.CollectibleDescription}
-            </Text>
+            <Image source={require("../../../assets/images/logo-gray.png")} className='w-[49px] h-[22px]' />
           </View>
         </View>
 

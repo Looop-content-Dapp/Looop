@@ -19,7 +19,7 @@ import { feed } from "../../../utils";
 import { FeedItem } from "../../../utils/types";
 import PostCard from "../../../components/cards/PostCard";
 import CommentBox from "../../../components/post/CommentBox";
-import Comments from "../../../components/post/Comments";
+import Comments from "../../../components/post/CommentScreen";
 
 const Comment = () => {
   const { id } = useLocalSearchParams();

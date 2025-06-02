@@ -549,7 +549,6 @@ export const useQuery = () => {
   const getSinglesForArtist = useCallback(async (artistId: string) => {
     try {
       const response = await api.get(`/api/song/artist/${artistId}/singles`);
-      console.log("Singles fetched successfully:", response.data)
       return response.data;
     } catch (error) {
       console.error("Error fetching singles for artist:", error);
@@ -638,7 +637,7 @@ export const useQuery = () => {
   // Get Last Played Songs
   const getLastPlayedSongs = useCallback(async (userId: string) => {
     try {
-      const response = await axios.get(
+      const response = await api.get(
         `/api/song/history/last-played/${userId}`
       );
       return response.data;
@@ -920,7 +919,6 @@ export const useQuery = () => {
   const commentOnPost = useCallback(async (commentData: CommentData) => {
     try {
       const response = await axios.post(`/api/post/commentonpost`, commentData);
-      console.log("Comment added successfully:", response.data);
       return response.data;
     } catch (error) {
       console.error("Error adding comment:", error);

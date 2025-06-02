@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CommunityTab from '../../components/TabSection/CommunityTab';
 import DraggableButton from '../../components/Draggable/DraggableButton';
 import { MusicNote03Icon, UserGroupIcon } from '@hugeicons/react-native';
+import { PortalProvider } from "@gorhom/portal";
 
 export default function _TabsLayout() {
   // Get screen height and safe area insets for dynamic positioning
@@ -14,6 +15,7 @@ export default function _TabsLayout() {
 
   return (
     <View style={styles.container}>
+    <PortalProvider>
       <StatusBar style="light" />
 
       {/* Community Tab content */}
@@ -29,6 +31,7 @@ export default function _TabsLayout() {
           y: screenHeight - tabBarHeight - insets.bottom - 0 // Ensures it stays above tab bar dynamically
         }}
       />
+     </PortalProvider>
     </View>
   );
 }

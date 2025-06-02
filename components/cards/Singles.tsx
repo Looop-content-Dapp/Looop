@@ -1,8 +1,7 @@
 import React from 'react';
 import { View, Text, Image, FlatList, Pressable, StyleSheet } from 'react-native';
-import { Songs, Album, EP } from '../../utils/types';
 import { useRouter } from 'expo-router';
-import { MotiView } from 'moti';
+import { SkeletonLoader } from '../shared/SkeletonLoader';
 
 type Props = {
   songs: any;
@@ -15,8 +14,8 @@ const Singles: React.FC<Props> = ({ songs, isLoading }) => {
   const renderItem = ({ item }: { item: any }) => {
     return (
         <Pressable
-        onPress={() => router.push({ pathname: "/musicDetails",  params: {
-            id: item?.id,
+        onPress={() => router.push({ pathname: "/(musicTabs)/(home)/_screens/musicDetails",  params: {
+            id: item?._id,
             title: item?.title,
             artist: item?.artist?.name,
             image: item?.artwork.high,
@@ -29,17 +28,41 @@ const Singles: React.FC<Props> = ({ songs, isLoading }) => {
   }
 
   const renderSkeleton = () => (
-    <MotiView
-      from={{ opacity: 0.3 }}
-      animate={{ opacity: 1 }}
-      transition={{ loop: true, type: 'timing', duration: 1000 }}
-      style={styles.skeletonItem}
-    />
+    <View style={styles.singleContainer}>
+      <SkeletonLoader width={150} height={199} />
+      <View style={styles.skeletonTextContainer}>
+        <SkeletonLoader width={130} height={16} borderRadius={4} />
+        <SkeletonLoader width={70} height={12} borderRadius={4} />
+      </View>
+    </View>
   );
 
-  return (
-    <View className='gap-y-[16px] pl-[14px]'>
+  // Update styles
+  const styles = StyleSheet.create({
+    singleContainer: {
+      width: 150,
+      height: 250,
+      marginHorizontal: 8,
+      marginVertical: 24,
+    },
+    skeletonTextContainer: {
+      gap: 8,
+      marginTop: 12,
+    },
+    skeletonItem: {
+        width: 199,
+        height: 250,
+        backgroundColor: '#ccc',
+        borderRadius: 24,
+        marginHorizontal: 8,
+      },
+  })
 
+  return (
+    <View className=' pl-[14px]'>
+    {songs.length > 0 && (
+             <Text className='text-[#D2D3D5] text-[20px] font-PlusJakartaSansMedium ml-[16px]'>Singles</Text>
+        )}
     {isLoading ? (
         <FlatList
           data={[1, 2, 3]} // Placeholder array to render skeletons
@@ -55,15 +78,6 @@ const Singles: React.FC<Props> = ({ songs, isLoading }) => {
           showsHorizontalScrollIndicator={false}
         />
       )}
-     {/* <Text className="text-[20px] font-PlusJakartaSansBold text-Grey/04 my-2 ml-2">Singles</Text>
-      <FlatList
-        data={songs}
-        horizontal
-        keyExtractor={(item) => item?.title}
-        renderItem={renderItem}
-        showsHorizontalScrollIndicator={false}
-        className="px-2"
-      /> */}
     </View>
   );
 };

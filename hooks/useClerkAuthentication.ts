@@ -5,7 +5,9 @@ import { account } from "@/appWrite";
 import store, { persistor } from "@/redux/store";
 import { setClaimId, setUserData } from "@/redux/slices/auth";
 import api from "@/config/apiConfig";
-import { showToast } from "@/config/ShowMessage";
+import { showToast } from "@/components/ShowMessage";
+import { useAbstraxionAuth } from "./useSocialAuth";
+import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 
 /**
  * Custom hook to handle authentication with OAuth providers
@@ -15,6 +17,7 @@ export const useClerkAuthentication = () => {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState("");
+  const { logout } = useAbstraxionAccount()
 
   const handleOAuthSignIn = async (provider: "google" | "apple") => {
     setLoading(true);
@@ -96,7 +99,8 @@ export const useClerkAuthentication = () => {
     try {
       store.dispatch(setUserData(null));
       persistor.purge();
-      router.replace("/");
+      logout()
+      router.dismissTo("/");
     } catch (error) {
       console.error("Error during logout:", error);
       showToast("Failed to logout. Please try again.", "error");

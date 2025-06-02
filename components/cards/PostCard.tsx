@@ -1,49 +1,132 @@
-// PostCard.tsx
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Pressable, Text } from 'react-native';
-import { IWaveformRef } from '@simform_solutions/react-native-audio-waveform';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
 import { Skeleton } from 'moti/skeleton';
-import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import UserSection from '../post/UserSection';
 import PostMedia from '../post/PostMedia';
 import EngagementSection from '../post/EngagementSection';
-import { FeedItem } from '../../utils/types';
+import { router } from 'expo-router';
+import { Post } from '@/hooks/useUserFeed'; // Updated import
+import { useAppSelector } from '@/redux/hooks';
+import SharePost from '../bottomSheet/SharePost';
+import { formatTimeAgo } from '@/utils/dateUtils';
+import { Portal } from '@gorhom/portal'
 
 interface PostCardProps {
-  item: FeedItem;
+  item: Post;
 }
 
 const PostCard: React.FC<PostCardProps> = ({ item }) => {
-    const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [localLikeCount, setLocalLikeCount] = useState(item?.likeCount || 0);
+  const [localHasLiked, setLocalHasLiked] = useState(item?.hasLiked || false);
+  const { userdata } = useAppSelector((state) => state.auth);
+  const [isShareSheetVisible, setIsShareSheetVisible] = useState(false);
+  const [isCommentsVisible, setIsCommentsVisible] = useState(false);
+  console.log('item', item.communityId); // Add this lin
 
   useEffect(() => {
-  if(!item){
-    setIsLoading(true)
-  }
+    if (!item) setIsLoading(true);
+    setLocalLikeCount(item?.likeCount || 0);
+    setLocalHasLiked(item?.hasLiked || false);
   }, [item]);
+
+  const handleLikeUpdate = (success: boolean) => {
+    if (success) {
+      setLocalHasLiked(!localHasLiked);
+      setLocalLikeCount(prevCount => localHasLiked ? prevCount - 1 : prevCount + 1);
+    } else {
+      // Revert on failure
+      setLocalLikeCount(item?.likeCount || 0);
+      setLocalHasLiked(item?.hasLiked || false);
+    }
+  };
+
+  const renderContent = (content: string) => {
+    if (!content) return null;
+
+    const words = content.split(/(\s+)/);
+    return words.map((word, index) => {
+      if (word.startsWith('#')) {
+        return (
+          <Text
+            key={index}
+            className="text-[#1DA1F2] text-[16px] font-PlusJakartaSansMedium"
+          >
+            {word}
+          </Text>
+        );
+      }
+      return <Text key={index}>{word}</Text>;
+    });
+  };
+
   return (
-    <View className='h-auto gap-y-[16px] mx-[14px]'>
-      <StatusBar style='light' />
+    <Animated.View
+      entering={FadeInDown.duration(400).springify()}
+      className="mb-4 overflow-hidden">
+      <BlurView intensity={20} tint="dark" className="rounded-2xl">
+        <View className="p-4 gap-y-4">
+          <StatusBar style="light" />
+          <UserSection
+            item={item}
+            loading={isLoading}
+            onMorePress={() => setIsShareSheetVisible(true)}
+          />
 
-      <UserSection user={item?.user} loading={!item} />
+          <Skeleton
+            transition={{ type: "timing", duration: 1000 }}
+            show={isLoading}
+          >
+            <View className="gap-y-4">
+              <Pressable
+                onPress={() =>
+                  router.navigate({
+                    pathname: "/(communityTabs)/(feed)/_Feedscreens",
+                    params: { id: item?._id },
+                  })
+                }
+                className="active:opacity-80"
+              >
+                <Text className="text-white text-[16px] leading-[24px] font-PlusJakartaSansMedium">
+                  {renderContent(item?.content)}
+                </Text>
+              </Pressable>
+              <PostMedia media={item?.media} />
+            </View>
+          </Skeleton>
 
-      <Skeleton
-      transition={{
-        type: "timing",
-        duration: 20000
-      }} show={isLoading}>
-        <Pressable className='gap-y-[16px]'>
-          <Text className='text-Green/01 font-PlusJakartaSansRegular'>{item?.content}</Text>
-          <PostMedia media={item?.media} engagement={item?.engagement} />
-        </Pressable>
-      </Skeleton>
+          <Skeleton show={isLoading}>
+            <EngagementSection
+              index={item?._id}
+              engagement={{
+                likes: localLikeCount,
+                comments: item?.commentCount,
+                shares: item?.shareCount,
+              }}
+              actions={{ like: localHasLiked }}
+              onLikeUpdate={handleLikeUpdate}
+              onCommentPress={() => setIsCommentsVisible(true)}
+            />
+          </Skeleton>
+       <Portal>
+       <SharePost
+        isVisible={isShareSheetVisible}
+        onClose={() => setIsShareSheetVisible(false)}
+        album={{
+          title: item?.content || '',
+          artist: item?.artistId?.name || '',
+          image: item?.artistId?.profileImage || '',
+          communityName: item?.communityId?.communityName || '',
+        }}
+          />
+       </Portal>
 
-   <Skeleton show={isLoading}>
-   <EngagementSection index={item?.id} engagement={item?.engagement} actions={item?.actions} />
-   </Skeleton>
-
-    </View>
+        </View>
+      </BlurView>
+    </Animated.View>
   );
 };
 

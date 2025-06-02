@@ -1,209 +1,56 @@
-import React, { useState, useEffect } from "react";
-import {
-    View,
-    Text,
-    TouchableOpacity,
-    GestureResponderEvent,
-    Animated,
-} from "react-native";
-import { PlayIcon, PauseIcon } from "@hugeicons/react-native";
-import { Audio } from "expo-av";
-import Svg, { Rect } from "react-native-svg";
-import ImageGrid from "../ImageGrid";
-import Ellipse from "../Ellipse";
-import VideoScreen from "../VideoScreen";
-import AudioWaveform from "../animated/AudioWaveForm";
-
-interface Media {
-    type: "image" | "audio" | "video";
-    thumbnail?: string[];
-    audioPath?: string;
-}
-
-interface Engagement {
-    plays: number;
-    shares: number;
-}
+import React from 'react';
+import { View, Pressable } from 'react-native';
+import ImageGrid from '../ImageGrid';
+import VideoScreen from '../VideoScreen';
+import AudioMedia from './AudioMedia';
+import { Media } from '@/hooks/useCreateCommunity';
+import Animated, { FadeIn } from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
 
 interface PostMediaProps {
-    media: Media | null;
-    engagement: Engagement;
+  media: Media[];
 }
 
-const PostMedia: React.FC<PostMediaProps> = ({ media, engagement }) => {
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [sound, setSound] = useState<Audio.Sound | null>(null);
-    const [progress, setProgress] = useState(0);
-    const [duration, setDuration] = useState(0);
-    const [isLoaded, setIsLoaded] = useState(false);
-    const progressAnimation = React.useRef(new Animated.Value(0)).current;
-    const [waveformBars, setWaveformBars] = useState<number[]>([]);
+const PostMedia: React.FC<PostMediaProps> = ({ media }) => {
+  if (!media || media.length === 0) return null;
 
-    // Generate waveform bars with varying heights
-    useEffect(() => {
-        const generateBars = () => {
-            const totalBars = 100;
-            const bars: number[] = [];
-            let prevHeight = Math.random() * 15 + 10; // Start with a random height
+  const imageMedia = media.filter((m) => m.type === 'image');
+  const audioMedia = media.find((m) => m.type === 'audio');
+  const videoMedia = media.find((m) => m.type === 'video');
 
-            for (let i = 0; i < totalBars; i++) {
-                // Generate a new height that's not too different from the previous one
-                let newHeight = prevHeight + (Math.random() * 6 - 3); // Add/subtract up to 3px
-                // Keep height within bounds
-                newHeight = Math.max(8, Math.min(25, newHeight));
-                bars.push(newHeight);
-                prevHeight = newHeight;
-            }
-            return bars;
-        };
+  if (imageMedia.length > 0) {
+    return (
+      <Animated.View
+        entering={FadeIn.duration(300)}
+        className="overflow-hidden rounded-2xl">
+        <Pressable onStartShouldSetResponder={() => true}>
+          <ImageGrid thumbnails={imageMedia.map((img) => img.url)} />
+        </Pressable>
+      </Animated.View>
+    );
+  } else if (videoMedia) {
+    return (
+      <Animated.View
+        entering={FadeIn.duration(300)}
+        className="w-full overflow-hidden rounded-2xl my-2">
+        <View className="aspect-video w-full">
+          <VideoScreen videoUrl={videoMedia.url} />
+        </View>
+      </Animated.View>
+    );
+  } else if (audioMedia) {
+    return (
+      <Animated.View
+        entering={FadeIn.duration(300)}
+        className="my-2 rounded-2xl overflow-hidden">
+        <BlurView intensity={30} tint="dark" className="rounded-2xl">
+          <AudioMedia uri={audioMedia.url} />
+        </BlurView>
+      </Animated.View>
+    );
+  }
 
-        setWaveformBars(generateBars());
-    }, []);
-
-    const handleAudioToggle = async () => {
-        if (!isLoaded) {
-            try {
-                console.log("Loading Sound");
-                const { sound, status } = await Audio.Sound.createAsync(
-                    require("/Users/macbook/Desktop/LOOOP_OFFICIAL/assets/audio/Zinoleesky-Ft.-Naira-Marley---Abanikanda.mp3"),
-                    { shouldPlay: true, isLooping: true },
-                    onPlaybackStatusUpdate
-                );
-                setSound(sound);
-                if (status.isLoaded) {
-                    setIsLoaded(true);
-                    setDuration(status.durationMillis || 0);
-                }
-            } catch (error) {
-                console.error("Error loading audio:", error);
-            }
-        } else {
-            if (isPlaying) {
-                await sound?.pauseAsync();
-            } else {
-                await sound?.playAsync();
-            }
-        }
-    };
-
-    const onPlaybackStatusUpdate = (status: any) => {
-        if (status.isLoaded) {
-            const newProgress = status.positionMillis / (status.durationMillis || 1);
-            setProgress(newProgress);
-            setIsPlaying(status.isPlaying);
-
-            // Smooth animation for progress updates
-            Animated.timing(progressAnimation, {
-                toValue: newProgress,
-                duration: 100,
-                useNativeDriver: false,
-            }).start();
-        }
-    };
-
-    const handleSeek = async (event: GestureResponderEvent) => {
-        if (!sound || !duration) return;
-        const { locationX } = event.nativeEvent;
-        const containerWidth = 300; // Adjust based on your layout
-        const seekPosition = (locationX / containerWidth) * duration;
-        await sound.setPositionAsync(seekPosition);
-        setProgress(seekPosition / duration);
-    };
-
-    useEffect(() => {
-        Audio.setAudioModeAsync({
-            allowsRecordingIOS: false,
-            playsInSilentModeIOS: true,
-            shouldDuckAndroid: true,
-            staysActiveInBackground: true,
-            playThroughEarpieceAndroid: false,
-        });
-
-        return () => {
-            sound?.unloadAsync();
-        };
-    }, []);
-
-    if (!media) return null;
-
-    if (media.type === "image" && media.thumbnail) {
-        return <ImageGrid thumbnails={media.thumbnail} />;
-    }
-
-    if (media.type === "audio") {
-        return (
-            <View style={{
-                padding: 10,
-                borderRadius: 10,
-                backgroundColor: "#0A0B0F",
-            }}>
-                <View style={{ height: 50, marginBottom: 10 }}>
-                <AudioWaveform
-            isPlaying={isPlaying}
-           progress={progress}
-         onPlayPause={handleAudioToggle}
-  onSeek={(position) => {
-    if (sound && duration) {
-      const seekPosition = position * duration;
-      sound.setPositionAsync(seekPosition);
-      setProgress(position);
-    }
-  }}
-/>
-
-                    <View style={{
-                        flexDirection: "row",
-                        justifyContent: "flex-end",
-                        alignItems: "center",
-                    }}>
-                        <Text style={{
-                            color: "#D2D3D5",
-                            fontSize: 10,
-                            fontWeight: "bold",
-                        }}>
-                            Audio
-                        </Text>
-                        <Ellipse />
-                        <Text style={{
-                            color: "#D2D3D5",
-                            fontSize: 10,
-                            fontWeight: "bold",
-                        }}>
-                            {new Date(progress * duration).toISOString().slice(14, 19)}
-                        </Text>
-                    </View>
-                </View>
-
-                <View style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginBottom: 10,
-                }}>
-                    <Text style={{
-                        color: "#D2D3D5",
-                        fontSize: 10,
-                        fontWeight: "bold",
-                    }}>
-                        {engagement?.plays} plays
-                    </Text>
-                    <Ellipse />
-                    <Text style={{
-                        color: "#D2D3D5",
-                        fontSize: 10,
-                        fontWeight: "bold",
-                    }}>
-                        {engagement?.shares} shares
-                    </Text>
-                </View>
-            </View>
-        );
-    }
-
-    if (media.type === "video") {
-        return <VideoScreen />;
-    }
-
-    return null;
+  return null;
 };
 
 export default PostMedia;

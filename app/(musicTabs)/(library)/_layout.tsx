@@ -41,6 +41,10 @@ export default () => {
             headerShown: false,
             presentation: "modal"
         }}  />
+          <Stack.Screen name="_Libscreens"
+       options={{
+          headerShown: false,
+        }} />
     </Stack>
   );
 };

@@ -1,41 +1,18 @@
-import React, { useState } from "react";
-import { FormField } from "../../app-components/formField";
-import { Text, View } from "react-native";
-import { useEPUpload } from "@/context/EPUploadContext";
+import React from 'react';
+import { View, Text } from 'react-native';
+import { Control, Controller } from 'react-hook-form';
 import useFileUpload, { FileType } from "@/hooks/useFileUpload";
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { ImageUpload } from '@/components/ui/image-upload';
 
-const EPBasicInfo: React.FC<{ onTrackCountChange: (count: number) => void }> = ({ onTrackCountChange }) => {
-  const { epData, updateEPData } = useEPUpload();
-  const { pickFile, isLoading } = useFileUpload();
+interface EPBasicInfoProps {
+  control: Control<any>;
+}
 
-  const handleNumberOfSongsChange = (value: string) => {
-    const count = parseInt(value);
-    if (count >= 2 && count <= 6) {
-      onTrackCountChange(count); // Update parent component
-      updateEPData({ 
-        numberOfSongs: value,
-        tracks: Array(count).fill({
-          trackName: '',
-          songType: '',
-          audioFile: null,
-          explicitLyrics: '',
-          writers: [],
-          producers: [],
-          isrc: '',
-          creatorUrl: ''
-        })
-      });
-    }
-  };
+const EPBasicInfo: React.FC<EPBasicInfoProps> = ({ control }) => {
+  const { pickFile } = useFileUpload();
 
-  const handleCoverImageUpload = async () => {
-    const result = await pickFile(FileType.IMAGE);
-    if (result?.success && result.file) {
-      updateEPData({ coverImage: result.file });
-    }
-  };
-
-  // Remove unused state variables since we're using context
   const genreOptions = [
     { label: "Afrobeats", value: "afrobeats" },
     { label: "Hip Hop", value: "hiphop" },
@@ -49,55 +26,83 @@ const EPBasicInfo: React.FC<{ onTrackCountChange: (count: number) => void }> = (
 
   return (
     <>
-      <Text className="text-[24px] font-PlusJakartaSansBold leading-[30px] text-[#F4F4F4] mt-[32px]">
+      <Text className="text-[20px] pl-[24px] font-PlusJakartaSansBold leading-[30px] text-[#F4F4F4] mt-[32px]">
         Upload EP - Basic info
       </Text>
-      <View className="py-[32px] px-[24px] bg-[#0A0B0F] gap-y-[32px] mt-[32px] rounded-[24px] mb-[32px]">
-        <FormField.TextField
-          label="EP name"
-          description="What do you want to name your EP"
-          value={epData.epName}
-          onChangeText={(value) => updateEPData({ epName: value })}
-          required
+      <View className="py-[32px] px-[24px] gap-y-[32px] mt-[32px] rounded-[24px]">
+        <Controller
+          control={control}
+          name="epName"
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <Input
+              label="EP name"
+              description="What do you want to name your EP"
+              value={value}
+              onChangeText={onChange}
+              error={error?.message}
+            />
+          )}
         />
 
-        <FormField.PickerField
-          label="No. of songs"
-          description="You can have between 2 - 6 songs on your EP"
-          value={epData.numberOfSongs}
-          onSelect={handleNumberOfSongsChange}
-          options={songNumberOptions}
-          placeholder="Select number of songs"
-          required
+        <Controller
+          control={control}
+          name="numberOfSongs"
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <Select
+              label="No. of songs"
+              description="You can have between 2 - 6 songs on your EP"
+              value={String(value)}
+              onValueChange={onChange}
+              options={songNumberOptions}
+              error={error?.message}
+            />
+          )}
         />
 
-        <FormField.PickerField
-          label="Primary Genre"
-          description="Add main genres"
-          value={epData.primaryGenre}
-          onSelect={(value) => updateEPData({ primaryGenre: value })}
-          options={genreOptions}
-          placeholder="Select genre"
-          required
+        <Controller
+          control={control}
+          name="primaryGenre"
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <Select
+              label="Primary Genre"
+              description="Add main genres"
+              value={value}
+              onValueChange={onChange}
+              options={genreOptions}
+              error={error?.message}
+            />
+          )}
         />
 
-        <FormField.PickerField
-          label="Secondary Genre (Optional)"
-          description="Add a secondary genre"
-          value={epData.secondaryGenre}
-          onSelect={(value) => updateEPData({ secondaryGenre: value })}
-          options={genreOptions}
-          placeholder="Select genre"
+        <Controller
+          control={control}
+          name="secondaryGenre"
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <Select
+              label="Secondary Genre (Optional)"
+              description="Add a secondary genre"
+              value={value}
+              onValueChange={onChange}
+              options={genreOptions}
+              error={error?.message}
+            />
+          )}
         />
 
-        <FormField.ImageUploadField
-          label="Cover art"
-          description="Upload your song/EP art."
-          value={epData.coverImage?.uri}
-          onUpload={handleCoverImageUpload}
-          maxSize="20MB"
-          acceptedFormats="JPEG"
-          required
+        <Controller
+          control={control}
+          name="coverImage"
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <ImageUpload
+              label="Cover art"
+              description="Upload your EP art."
+              value={value}
+              onChange={onChange}
+              maxSize="20MB"
+              acceptedFormats="JPEG"
+              error={error?.message}
+            />
+          )}
         />
       </View>
     </>

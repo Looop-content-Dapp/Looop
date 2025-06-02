@@ -5,9 +5,10 @@ import {
     Image,
     TouchableOpacity,
     ScrollView,
+    ActivityIndicator,
+    Dimensions
   } from 'react-native';
-  import { useNavigation } from '@react-navigation/native';
-  import React, { useEffect } from 'react';
+  import React, { useEffect, useState } from 'react';
   import { SafeAreaView } from 'react-native-safe-area-context';
   import {
     ArrowLeft02Icon,
@@ -23,14 +24,37 @@ import {
     Share05Icon,
     ShuffleIcon,
   } from '@hugeicons/react-native';
-  import { useLocalSearchParams } from 'expo-router';
+  import { router, useLocalSearchParams, useNavigation } from 'expo-router';
   import { LinearGradient } from 'expo-linear-gradient';
   import Slider from '@react-native-community/slider';
   import * as Haptics from 'expo-haptics';
-  import useMusicPlayer from '../hooks/useMusicPlayer';
-import { useQuery } from '../hooks/useQuery';
+  import { getColors } from 'react-native-image-colors';
+  import { BlurView } from 'expo-blur';
+  import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
+  import TrackPlayer, { useProgress } from 'react-native-track-player';
+  import AddToPlaylistBottomSheet from '@/components/bottomSheet/AddToPlaylistBottomSheet';
+  import Share from '@/components/bottomSheet/Share';
+  import FastImage from 'react-native-fast-image';
+  import { widthPercentageToDP as wp} from 'react-native-responsive-screen'
+
+  const getContrastColor = (bgColor: string) => {
+    const r = parseInt(bgColor.slice(1, 3), 16);
+    const g = parseInt(bgColor.slice(3, 5), 16);
+    const b = parseInt(bgColor.slice(5, 7), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5 ? '#000000' : '#FFFFFF';
+  };
+
+  // Add this import at the top with other imports
+
 
   const NowPlaying = () => {
+    // Add this state near other state declarations
+    const [isPlaylistSheetVisible, setIsPlaylistSheetVisible] = useState(false);
+    const [isShareModalVisible, setIsShareModalVisible] = useState(false);
+    const [backgroundColor, setBackgroundColor] = useState('#000000');
+    const [textColor, setTextColor] = useState('#FFFFFF');
+    const [subTextColor, setSubTextColor] = useState('#D2D3D5');
     const { cover, albumTitle } = useLocalSearchParams();
     const navigation = useNavigation();
     const {
@@ -41,222 +65,337 @@ import { useQuery } from '../hooks/useQuery';
       repeat,
       play,
       pause,
-      toggleShuffleMode,
-      toggleRepeatMode,
+      toggleShuffle,
+      toggleRepeat,
       next,
       previous,
-    } = useMusicPlayer();
-    const { retrieveUserId, saveAlbum,likeSong}= useQuery()
+      currentTime,
+      duration,
+      buffering,
+      seekTo,
+    } = useMusicPlayerContext();
+    const progress = useProgress();
 
-    const [progress, setProgress] = React.useState(0);
-    const [trackDuration] = React.useState(180); // 3 minutes in seconds
-    const progressRef = React.useRef(progress);
-    progressRef.current = progress;
-    
-
-    // const handleLikePress = async () => {
-    //     try {
-    //         const userId = await retrieveUserId();
-    //         if (!userId) return;
-
-    //         if (type === 'album') {
-    //             await saveAlbum(userId, id as string);
-    //             await likeSong(userId, id as string);
-    //             setIsSaved(true);
-    //             setIsLiked(true);
-    //         } else {
-    //             await likeSong(userId, id as string);
-    //             setIsLiked(true);
-    //         }
-    //     } catch (error) {
-    //         console.error("Error liking/saving:", error);
-    //     }
-    // };
+    const formatTime = (seconds: number) => {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = Math.floor(seconds % 60);
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
 
     useEffect(() => {
-      let interval: NodeJS.Timeout;
-      if (isPlaying) {
-        interval = setInterval(() => {
-          setProgress((prev) => {
-            if (prev >= 1) {
-              clearInterval(interval);
-              next(); // Automatically play next track
-              return 0;
+      const fetchColors = async () => {
+        const imageUrl = cover || albumInfo?.coverImage;
+        if (cover) {
+          try {
+            const result = await getColors(cover as string, {
+              fallback: '#000000',
+              cache: true,
+            });
+            let bgColor = '#000000';
+            if (result.platform === 'android') {
+              bgColor = result.dominant;
+            } else if (result.platform === 'ios') {
+              bgColor = result.background;
             }
-            return prev + 0.01;
-          });
-        }, 1000);
-      }
-      return () => clearInterval(interval);
-    }, [isPlaying, next]);
+            setBackgroundColor(bgColor);
+            const mainColor = getContrastColor(bgColor);
+            setTextColor(mainColor);
+            setSubTextColor(mainColor === '#FFFFFF' ? '#D2D3D5' : '#666666');
+          } catch (error) {
+            setBackgroundColor('#000000');
+            setTextColor('#FFFFFF');
+            setSubTextColor('#D2D3D5');
+          }
+        }
+      };
+      fetchColors();
+    }, [cover, albumInfo?.coverImage, currentTrack]);
 
-    // Reset progress when track changes
-    useEffect(() => {
-      setProgress(0);
-    }, [currentTrack?._id]);
-
-    const handlePrevious = async () => {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      // If track has played for more than 3 seconds, restart it
-      if (progressRef.current * trackDuration > 3) {
-        setProgress(0);
-      } else {
-        previous();
+    const togglePlayPause = async () => {
+      try {
+        if (isPlaying) {
+          await pause();
+        } else {
+          await TrackPlayer.play();
+        }
+      } catch (error) {
+        console.error("Error toggling play/pause:", error);
       }
     };
 
-    const togglePlayPause = async () => {
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        if (isPlaying) {
-          pause();
-        } else if (currentTrack) {
-          play(currentTrack, albumInfo!);
-        }
+    const handlePlaylistPress = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        setIsPlaylistSheetVisible(true);
+      };
+
+      const handleSharePress = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        setIsShareModalVisible(true);
+      };
+
+      const handleQueuePress = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+         router.push("/queue");
       };
 
     const handleNext = async () => {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      next();
-      setProgress(0); // Reset progress for new track
+      try {
+        await next();
+      } catch (error) {
+        console.error("Error skipping to next:", error);
+      }
     };
 
-    const formatTime = (progress: number) => {
-      const totalSeconds = Math.floor(progress * trackDuration);
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
-      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    const handlePrevious = async () => {
+      try {
+        const position = progress.position;
+        if (position > 3) {
+          await TrackPlayer.seekTo(0);
+        } else {
+          await previous();
+        }
+      } catch (error) {
+        console.error("Error skipping to previous:", error);
+      }
     };
+
+    if (!currentTrack) return null;
 
     return (
-      <SafeAreaView style={{ flex: 1, minHeight: '100%' }} className="bg-black">
-        <ScrollView showsHorizontalScrollIndicator={false}>
-          <View className='flex-row items-center justify-between px-[24px]'>
-            <View className="flex-row items-center gap-x-[8px]">
+      <SafeAreaView style={{ flex: 1, minHeight: '100%', backgroundColor }}>
+        <ScrollView
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 6
+          }}
+        >
+          <View className="flex-row items-center justify-between w-full py-4">
+            <View className="flex-row items-center flex-1 gap-x-3">
               <Pressable
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   navigation.goBack();
                 }}
+                className="p-2"
               >
-                <ArrowLeft02Icon size={32} color='#fff' />
+                <ArrowLeft02Icon size={28} color={textColor} />
               </Pressable>
-              <View>
-                <Text className="text-[#787A80] text-[14px] font-PlusJakartaSansMedium">Playing from</Text>
-                <Text className="text-[#D2D3D5] text-[16px] font-PlusJakartaSansMedium overflow-x-hidden">"{albumTitle || albumInfo?.title}"</Text>
+              <View className="flex-1 mr-4">
+                <Text
+                  style={{ color: subTextColor }}
+                  className="text-[12px] font-PlusJakartaSansMedium mb-0.5"
+                >
+                  Playing from
+                </Text>
+                <Text
+                  style={{ color: textColor }}
+                  className="text-[15px] font-PlusJakartaSansMedium"
+                  numberOfLines={1}
+                >
+                  {albumTitle || albumInfo?.title}
+                </Text>
               </View>
             </View>
-            <MoreHorizontalIcon color="#fff" />
+            <TouchableOpacity
+              className="p-2"
+              onPress={handleSharePress}
+            >
+              <MoreHorizontalIcon size={24} color={textColor} />
+            </TouchableOpacity>
           </View>
 
-          <View className="relative">
-            <Image
-              source={{ uri: cover || albumInfo?.coverImage }}
-              className='w-full h-[400px] mt-[19px]'
-              resizeMode='cover'
-            />
-            <LinearGradient
-              colors={['transparent', '#000000']}
-              locations={[0.5, 1]}
-              className="absolute bottom-0 z-40 w-full h-[400px]"
-            />
-          </View>
+          <View style={{
+    width: '95%',
+    height: 400,
+    marginTop: 0,
+    marginHorizontal: 'auto',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 8,
+}}>
+    <FastImage
+        source={{
+            uri: cover,
+            priority: FastImage.priority.high,
+        }}
+        style={{
+            width: '100%',
+            height: '100%',
+        }}
+        resizeMode={FastImage.resizeMode.cover}
+    />
+</View>
 
-          <View className='px-[24px] my-[24px]'>
-            <View className='flex-row items-center justify-between'>
-              <View>
-                <Text className='text-[24px] font-PlusJakartaSansMedium text-[#f4f4f4]'>
+          <View className="px-[24px] my-[24px]">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1 mr-4">
+                <Text
+                  style={{ color: textColor }}
+                  className="text-[20px] font-PlusJakartaSansMedium"
+                  numberOfLines={1}
+                >
                   {currentTrack?.title}
                 </Text>
-                <Text className='text-[14px] font-PlusJakartaSansRegular text-[#D2D3D5]'>
-                  {/* {currentTrack?.artist?.join(', ')} */}
+                <Text
+                  style={{ color: subTextColor }}
+                  className="text-[14px] font-PlusJakartaSansRegular"
+                  numberOfLines={1}
+                >
+                  {currentTrack?.artist?.name}
                 </Text>
               </View>
-              <TouchableOpacity
-                onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+              {/* <TouchableOpacity
+                onPress={() =>
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                }
               >
-                <FavouriteIcon size={32} color='#787A80' />
-              </TouchableOpacity>
+                <FavouriteIcon size={32} color={subTextColor} />
+              </TouchableOpacity> */}
             </View>
 
-            {/* Progress Bar */}
-            <View className="mt-">
+            <View className="mt-4">
               <Slider
                 style={{ width: '100%', height: 40 }}
                 minimumValue={0}
-                maximumValue={1}
-                value={progress}
+                maximumValue={progress.duration || 1}
+                value={progress.position}
                 minimumTrackTintColor="#FF6D1B"
                 maximumTrackTintColor="#4D4D4D"
                 thumbTintColor="#FF6D1B"
-                onValueChange={setProgress}
+                onSlidingComplete={(value) => seekTo(value)}
+                disabled={buffering}
               />
               <View className="flex-row justify-between">
-                <Text className="text-[#D2D3D5]">{formatTime(progress)}</Text>
-                <Text className="text-[#D2D3D5]">3:00</Text>
+                <Text style={{ color: subTextColor }}>
+                  {formatTime(progress.position)}
+                </Text>
+                <Text style={{ color: subTextColor }}>
+                  {formatTime(progress.duration)}
+                </Text>
               </View>
             </View>
 
-            {/* Player Controls */}
-            <View className="flex-row items-center justify-between mt-">
-      <TouchableOpacity
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          toggleShuffleMode();
-        }}
-        className="w-[48px] h-[48px] items-center justify-center"
-      >
-        <ShuffleIcon size={24} color={shuffle ? "#FF6D1B" : "#D2D3D5"} />
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={handlePrevious}
-        className="w-[48px] h-[48px] items-center justify-center"
-      >
-        <Backward01Icon size={40} color="#fff" variant='solid' />
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={togglePlayPause}
-        className="bg-[#FAFBFB] w-[88px] h-[88px] rounded-full items-center justify-center"
-      >
-        {isPlaying ? (
-          <PauseIcon size={40} color="#0A0B0F" variant='solid' />
-        ) : (
-          <PlayIcon size={40} color="#0A0B0F" fill="#fff" variant='solid' />
-        )}
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={handleNext}
-        className="w-[48px] h-[48px] items-center justify-center"
-      >
-        <NextIcon size={40} color="#fff" variant='solid' />
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          toggleRepeatMode();
-        }}
-        className="w-[48px] h-[48px] items-center justify-center"
-      >
-        <RepeatIcon size={24} color={repeat ? "#FF6D1B" : "#D2D3D5"} />
-      </TouchableOpacity>
-    </View>
-
-            <View className='flex-row items-center justify-between px-[24px] border border-[#12141B] rounded-[24px] p-[12px] mt-[24px]'>
-              <TouchableOpacity>
-                <Queue02Icon size={32} color='#787A80'/>
+            <View className="flex-row items-center justify-between mt-8">
+              <TouchableOpacity
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  toggleShuffle();
+                }}
+                className="w-[48px] h-[48px] items-center justify-center"
+              >
+                <ShuffleIcon
+                  size={24}
+                  color={shuffle ? '#FF6D1B' : subTextColor}
+                />
               </TouchableOpacity>
-              <TouchableOpacity>
-                <Playlist01Icon size={32} color='#787A80' />
+
+              <TouchableOpacity
+                onPress={handlePrevious}
+                className="w-[48px] h-[48px] items-center justify-center"
+              >
+                <Backward01Icon size={32} color={textColor} variant="solid" />
               </TouchableOpacity>
-              <TouchableOpacity>
-                <Share05Icon size={32} color='#787A80' />
+
+              <TouchableOpacity
+                onPress={togglePlayPause}
+                className="items-center justify-center"
+                style={{
+                  width: 88,
+                  height: 88,
+                  borderRadius: 44,
+                  backgroundColor: textColor,
+                  shadowColor: backgroundColor,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 8,
+                }}
+                disabled={buffering}
+              >
+                {buffering ? (
+                  <ActivityIndicator size="large" color={backgroundColor} />
+                ) : isPlaying ? (
+                  <PauseIcon
+                    size={40}
+                    color={backgroundColor}
+                    variant="solid"
+                    style={{ opacity: 0.9 }}
+                  />
+                ) : (
+                  <PlayIcon
+                    size={40}
+                    color={backgroundColor}
+                    variant="solid"
+                    style={{ opacity: 0.9 }}
+                  />
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleNext}
+                className="w-[48px] h-[48px] items-center justify-center"
+              >
+                <NextIcon size={32} color={textColor} variant="solid" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  toggleRepeat();
+                }}
+                className="w-[48px] h-[48px] items-center justify-center"
+              >
+                <RepeatIcon
+                  size={24}
+                  color={repeat ? '#FF6D1B' : subTextColor}
+                />
               </TouchableOpacity>
             </View>
+
+            <BlurView intensity={20} className="mt-8 rounded-[24px] overflow-hidden">
+              <View
+                className="flex-row items-center justify-between px-[24px] p-[12px]"
+                style={{ borderColor: `${subTextColor}40` }}
+              >
+              <TouchableOpacity onPress={handleQueuePress}>
+                <Queue02Icon size={32} color={subTextColor} />
+              </TouchableOpacity>
+                <TouchableOpacity onPress={handlePlaylistPress}>
+                  <Playlist01Icon size={32} color={subTextColor} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleSharePress}>
+                  <Share05Icon size={32} color={subTextColor} />
+                </TouchableOpacity>
+              </View>
+            </BlurView>
+
+
+
           </View>
         </ScrollView>
+        <AddToPlaylistBottomSheet
+      isVisible={isPlaylistSheetVisible}
+      closeSheet={() => setIsPlaylistSheetVisible(false)}
+      album={{
+        _id: currentTrack?._id,
+        tracks: [currentTrack],
+      }}
+    />
+<Share
+    isVisible={isShareModalVisible}
+    onClose={() => setIsShareModalVisible(false)}
+    album={{
+      title: currentTrack?.title,
+      artist: currentTrack?.artist?.name,
+      image: currentTrack?.release?.artwork?.high,
+      duration: progress.duration,
+      type: 'track',
+      id: currentTrack?._id,
+      tracks: [currentTrack]
+    }}
+  />
       </SafeAreaView>
     );
   };

@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import React, { useState, useEffect } from "react";
 import AuthHeader from "@/components/AuthHeader";
 import { useForm, Controller } from "react-hook-form";
@@ -12,6 +12,7 @@ import {
 } from "@hugeicons/react-native";
 import { AppButton } from "@/components/app-components/button";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { Input } from "@/components/ui/input";
 
 const schema = z.object({
   password: z
@@ -59,45 +60,48 @@ const ChoosePassword = () => {
   }, [password]);
 
   return (
-    <View className="flex-1 pt-10 px-6 gap-12">
+    <ScrollView className="flex-1">
+    <View className="flex-1 px-6 pb-10 gap-12">
       <AuthHeader
         title="Secure your account"
         description="The safety of your account is important to us. Your Looop account acts as both an account and a wallet for storing your in-app funds. Create a password to secure it."
       />
 
-      <View className="gap-y-4">
-        <Text className="text-lg text-gray-200 font-PlusJakartaSansBold">
-          Choose a password
-        </Text>
-
-        <View className="flex-row items-center bg-Grey/07 rounded-full pr-5">
-          <Controller
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <TextInput
-                className="h-16 text-sm font-PlusJakartaSansRegular bg-Grey/07 text-Grey/04 rounded-full px-8"
-                style={{ flex: 1, color: "#D2D3D5" }}
-                placeholder="Enter password"
-                placeholderTextColor="#D2D3D5"
-                secureTextEntry={!passwordView}
+      <View className="gap-y-6">
+        <Controller
+          control={control}
+          name="password"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <View className="relative w-full">
+              <Input
+                label="Choose a Password"
+                description="Your password must be at least 12 characters long"
+                onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
+                placeholder="Enter your password"
+                placeholderTextColor="#787A80"
+                secureTextEntry={!passwordView}
+                keyboardAppearance="dark"
+                autoCapitalize="none"
+                autoCorrect={false}
               />
-            )}
-            name="password"
-            defaultValue=""
-          />
-          <TouchableOpacity onPress={() => setPasswordView(!passwordView)}>
-            {passwordView ? (
-              <ViewOffIcon size={24} color="#D2D3D5" />
-            ) : (
-              <ViewIcon size={24} color="#D2D3D5" />
-            )}
-          </TouchableOpacity>
-        </View>
+              <TouchableOpacity
+                onPress={() => setPasswordView(!passwordView)}
+                className="absolute right-6 top-[73px]"
+              >
+                {passwordView ? (
+                  <ViewOffIcon size={24} color="#787A80" />
+                ) : (
+                  <ViewIcon size={24} color="#787A80" />
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
+        />
 
         <View className="gap-6">
-          <View className="mt-4">
+          <View className="mt-2">
             <ValidationItem
               isValid={validationState.hasLetter}
               text="At least one letter"
@@ -116,25 +120,22 @@ const ChoosePassword = () => {
             />
           </View>
 
-          <View className="bg-[#2A1708] p-[12px] flex-row items-start gap-[12px] max-w-full rounded-[12px] overflow-hidden">
-            <View>
-              <InformationCircleIcon
-                size={24}
-                color="#EC6519"
-                variant="stroke"
-              />
-            </View>
-            <View className="flex-1">
-              <Text className="text-[14px] text-[#EC6519] font-PlusJakartaSansRegular flex-shrink">
-                Your password is encrypted and used to create a local backup of
-                your private key to your device so you don’t lose access to your
-                account. Think private keys as a pin to access your
-                account/wallet
-              </Text>
-            </View>
+          <View className="bg-[#2A1708] p-4 flex-row items-start gap-3 rounded-xl">
+            <InformationCircleIcon
+              size={24}
+              color="#EC6519"
+              variant="stroke"
+            />
+            <Text className="flex-1 text-[14px] text-[#EC6519] font-PlusJakartaSansRegular">
+              Your password is encrypted and used to create a local backup of
+              your private key to your device so you don't lose access to your
+              account. Think private keys as a pin to access your
+              account/wallet
+            </Text>
           </View>
         </View>
       </View>
+
       <AppButton.Secondary
         text="Continue"
         color="#FF7A1B"
@@ -152,6 +153,7 @@ const ChoosePassword = () => {
         }
       />
     </View>
+  </ScrollView>
   );
 };
 

@@ -1,35 +1,99 @@
+import { useNotification } from '@/context/NotificationContext';
 import {
     View,
     Text,
     Image,
     ScrollView,
-    Alert,
+    TouchableOpacity
   } from "react-native";
   import React, { useLayoutEffect, useState } from "react";
   import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
   import { AppBackButton } from "@/components/app-components/back-btn";
   import { AppButton } from "@/components/app-components/button";
 import ChainPicker from "@/components/app-components/ChainPicker";
+import { useJoinCommunity } from "@/hooks/useJoinCommunity";
+import { useAppSelector } from "@/redux/hooks";
+
 
   const payInCrypto = () => {
-    const {name, image} = useLocalSearchParams();
+    const { showNotification } = useNotification();
+    const {
+      name,
+      image,
+      communityId,
+      collectionAddress,
+      type,
+      userAddress,
+      currentRoute
+    } = useLocalSearchParams();
     const navigation = useNavigation();
     const router = useRouter()
     const [isModalVisible, setIsModalVisible] = useState(false);
-
+    const [isLoading, setIsLoading] = useState(false);
+    const { userdata } = useAppSelector((state) => state.auth);
+    const joinCommunity = useJoinCommunity();
+    console.log("currentRoute", currentRoute)
 
     useLayoutEffect(() => {
       navigation.setOptions({
-        headerLeft: () => <AppBackButton name="Crypto Payment" onBackPress={() => router.back()} />
+        headerLeft: () => (
+          <AppBackButton
+            name="Crypto Payment"
+            onBackPress={() => router.back()}
+          />
+        ),
       });
     }, [navigation]);
 
-    const showTestModeAlert = () => {
-      Alert.alert(
-        "Test Mode",
-        "This is a test version of crypto payments. Real transactions are not enabled in this build.",
-        [{ text: "OK", onPress: () => setIsModalVisible(true) }]
-      );
+    const checkBalanceAndProceed = async () => {
+      try {
+        setIsLoading(true);
+        console.log('Starting join community process:', {
+          userId: userdata?._id,
+          communityId,
+          type
+        });
+
+        const result = await joinCommunity.mutateAsync({
+          userId: userdata?._id || "",
+          communityId: communityId as string,
+          type: type as string,
+        });
+
+        console.log('Join community result:', result);
+
+        if (result.status === "success") {
+          showNotification({
+            type: 'success',
+            title: 'Success',
+            message: 'Successfully joined the community!',
+            position: 'top'
+          });
+          router.dismissTo(`${currentRoute}`)
+        } else {
+          throw new Error('Join community response was not successful');
+        }
+      } catch (error: any) {
+        console.error('Join community error details:', {
+          error: error.message,
+          response: error.response?.data.error,
+          stack: error.stack
+        });
+
+        const errorMessage = error.response?.data?.error ||
+                           error.response?.data?.error ||
+                           "Failed to join community. Please try again.";
+
+                           showNotification({
+                            type: 'error',
+                            title: 'Error',
+                            message: errorMessage,
+                            position: 'top'
+                          });
+        router.dismissTo(`${currentRoute}`)
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     return (
@@ -44,7 +108,7 @@ import ChainPicker from "@/components/app-components/ChainPicker";
               </Text>
             </View>
 
-            <ChainPicker />
+            <ChainPicker userId={userdata?._id} />
 
             <View className="bg-[#12141B] p-3 rounded-[8px]">
               <Text className="text-[12px] text-[#A5A6AA]">
@@ -62,17 +126,19 @@ import ChainPicker from "@/components/app-components/ChainPicker";
               className="w-full aspect-square rounded-[24px]"
               style={{ resizeMode: "cover" }}
             />
-            <View className="flex-row items-end px-[16px] mt-[16px]">
-              <View className="flex-1 gap-y-[8px]">
-                <Text className="text-[24px] text-[#FAFBFB] font-PlusJakartaSansBold">Rave Pass</Text>
-                <View className="flex-row items-center w-[93px] bg-[#A187B5] py-[8px] rounded-[56px] px-[12px]">
-                  <Text className="text-[#0A0B0F] text-[14px] font-PlusJakartaSansBold">$2/month</Text>
+             <Text numberOfLines={1} className="text-[24px] text-[#FAFBFB] font-PlusJakartaSansBold pl-[16px] pt-[6px]">{name}</Text>
+             <View className="flex-row items-center justify-between px-[16px] mt-[8px]">
+              <View className="flex-1">
+                <View className="flex-row items-center self-start bg-[#A187B5] py-[6px] rounded-[56px] px-[12px]">
+                  <Text className="text-[#0A0B0F] text-[14px] font-PlusJakartaSansBold" numberOfLines={1}>
+                    $5/month
+                  </Text>
                 </View>
               </View>
               <Image
                 source={require("../../assets/images/logo-gray.png")}
-                className="w-[49px] h-[22px]"
-                style={{ resizeMode: "cover" }}
+                className="w-[49px] h-[22px] ml-[16px]"
+                style={{ resizeMode: "contain" }}
               />
             </View>
           </View>
@@ -81,10 +147,14 @@ import ChainPicker from "@/components/app-components/ChainPicker";
         <View className="px-[24px] pb-[24px]">
           <AppButton.Primary
             color="#FF6D1B"
-            text="Continue (Test Mode)"
-            loading={false}
-            onPress={showTestModeAlert}
+            text={"Continue (Test Mode)"}
+            loading={isLoading}
+            disabled={isLoading}
+            onPress={checkBalanceAndProceed}
           />
+          {/* <TouchableOpacity onPress={checkBalanceAndProceed} className="w-full bg-[#FF6D1B]">
+            <Text>Continue (Test Mode)</Text>
+          </TouchableOpacity> */}
         </View>
       </View>
     );

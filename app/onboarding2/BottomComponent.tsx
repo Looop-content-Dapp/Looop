@@ -18,11 +18,10 @@ const CustomBottomContent = ({ pageIndex }: { pageIndex: number }) => {
     <View style={styles.subtitleWrapper}>
       <View style={styles.bottomContainer}>
         <View style={styles.textContainer}>
-          <Text className="text-white" style={styles.bigText}>
+          <Text style={styles.bigText}>
             {ONBOARDING_TEXTS[pageIndex].first.text}
             <Text
-              className="font-TankerRegular"
-              style={{ color: ONBOARDING_TEXTS[pageIndex].second.color }}
+              style={[styles.bigText, { color: ONBOARDING_TEXTS[pageIndex].second.color }]}
             >
               {ONBOARDING_TEXTS[pageIndex].second.text}
             </Text>
@@ -45,18 +44,20 @@ const CustomBottomContent = ({ pageIndex }: { pageIndex: number }) => {
               key={index}
               style={[
                 styles.paginationDot,
-                pageIndex === index && styles.paginationDotActive,
+                index === pageIndex ? styles.paginationDotActive : styles.paginationDotInactive
               ]}
             />
           ))}
         </View>
 
-        <TouchableOpacity style={styles.button}
+        <TouchableOpacity
+          style={styles.button}
           onPress={() => {
             dispatch(updateOnBoarded());
-            router.push("/(auth)")}}
+            router.push("/(auth)")
+          }}
         >
-          <Text style={styles.buttonText}>Continue to Sign in</Text>
+          <Text className="text-[16px] font-PlusJakartaSansMedium text-[#f4f4f4]">Continue to Sign in</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -66,78 +67,80 @@ const CustomBottomContent = ({ pageIndex }: { pageIndex: number }) => {
 export default CustomBottomContent;
 
 
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-    },
-    subtitleWrapper: {
-      width,
-      height: hp("45%"),
-      right: 0,
-      left: 0,
-    },
-    bottomContainer: {
-      width: width,
-      backgroundColor: "#000",
-      paddingHorizontal: wp("2%"),
-      paddingVertical: hp("1%"),
-      height: "100%",
-      alignItems: "center",
-      justifyContent: "space-between",
-    },
-    bigText: {
-      color: "#fff",
-      fontSize: wp("7%"),
-      fontWeight: "bold",
-      textAlign: "left",
-      marginTop: hp("2%"),
-      letterSpacing: 0.1,
-      textTransform: "uppercase",
-      fontFamily: "TankerRegular",
-    },
-    paginationContainer: {
-      flexDirection: "row",
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    paginationDot: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: "#666",
-      marginHorizontal: 5,
-    },
-    paginationDotActive: {
-      backgroundColor: "#fff",
-      width: wp("5%"),
-      height: hp("1%"),
-    },
-    button: {
-      backgroundColor: "#FF7A1B",
-      paddingVertical: hp("2%"),
-      borderRadius: wp("10%"),
-      marginBottom: Platform.OS === 'ios' ? hp("4%") : hp("2%"),
-      width: wp("80%"),
-      alignItems: "center",
-      ...Platform.select({
-        ios: {
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.3,
-          shadowRadius: 4,
-          zIndex: 10,
-        }
-      }),
-    },
-    buttonText: {
-      color: '#fff',
-      fontWeight: '600',
-    },
-    textContainer: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      justifyContent: "center",
-      alignItems: "center",
-      marginTop: hp("2%"),
-    },
-  });
+const styles = StyleSheet.create({
+  subtitleWrapper: {
+    width,
+    height: hp("45%"),
+    right: 0,
+    left: 0,
+  },
+  bottomContainer: {
+    width: width,
+    backgroundColor: "#000",
+    paddingHorizontal: wp("2%"),
+    paddingVertical: hp("3%"),
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  bigText: {
+    color: "#fff",
+    fontSize: 40,
+    fontWeight: "bold",
+    textAlign: "left",
+    letterSpacing: -0.8,
+    lineHeight: wp("10%"),
+    fontFamily: "TankerRegular",
+  },
+  paginationContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: hp("2%"),
+  },
+  paginationDot: {
+    height: hp("0.8%"),
+    marginHorizontal: wp("1%"),
+    borderRadius: 4,
+  },
+  paginationDotActive: {
+    backgroundColor: "#fff",
+    width: wp("5%"),
+  },
+  paginationDotInactive: {
+    backgroundColor: "rgba(255,255,255,0.3)",
+    width: wp("2%"),
+  },
+  button: {
+    backgroundColor: "#FF7A1B",
+    paddingVertical: hp("2%"),
+    borderRadius: 50,
+    marginBottom: Platform.OS === 'ios' ? hp("2%") : hp("1%"),
+    width: wp("90%"),
+    alignItems: "center",
+    justifyContent: "center",
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 5,
+      }
+    }),
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: wp("2.5%"),
+  },
+  textContainer: {
+    paddingHorizontal: wp("2%"),
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    width: "100%",
+    marginTop: hp("2%"),
+  },
+});

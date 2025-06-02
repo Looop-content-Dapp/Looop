@@ -9,10 +9,8 @@ import {
   Dimensions,
   TextInput,
 } from "react-native";
-import { useQuery } from "@/hooks/useQuery"; // Adjust the import path as necessary
-import { MotiView } from "moti";
-import { Tick01Icon, Search01Icon } from "@hugeicons/react-native"; // Adjust icon names as necessary
-import { useAppSelector } from "@/redux/hooks";
+import { Tick01Icon, Search01Icon } from "@hugeicons/react-native";
+import FastImage from 'react-native-fast-image';
 
 const { width } = Dimensions.get("window");
 
@@ -25,8 +23,8 @@ interface Artist {
 }
 
 interface ArtistSectionListProps {
-  loading?: boolean;
-  userId?: string; // Optional userId prop
+  sections: Artist[];
+  onFollow: (artistId: string) => void;
 }
 
 const CARD_WIDTH = width * 0.3; // Adjusted for a 3-column grid
@@ -36,33 +34,26 @@ const SKELETON_ANIMATION = {
   transition: { type: "timing", duration: 1000, repeatReverse: true, loop: true },
 } as const;
 
-// Memoized Skeleton Card
-const SkeletonArtistCard = memo(() => (
-  <View style={styles.card}>
-    <MotiView
-      {...SKELETON_ANIMATION}
-      style={[styles.artistImage, { backgroundColor: "#2e2e2e" }]}
-    />
-    <MotiView {...SKELETON_ANIMATION} style={styles.skeletonText} />
-  </View>
-));
-
 // Memoized Artist Card
 const ArtistCard = memo(({ artist, onFollow }: { artist: Artist; onFollow: (id: string, follow: boolean) => void }) => {
   const [isFollowing, setIsFollowing] = useState(artist.isFollowing || false);
 
   const handleFollow = () => {
     setIsFollowing(!isFollowing);
-    onFollow(artist._id, !isFollowing); // Pass the artist ID and new follow state
+    onFollow(artist._id, !isFollowing);
   };
 
   return (
     <View style={styles.card}>
       <TouchableOpacity onPress={handleFollow} style={styles.imageContainer}>
-        <Image
-          source={{ uri: artist.profileImage || "https://via.placeholder.com/100" }} // Fallback image
+        <FastImage
+          source={{
+            uri: artist.profileImage || "https://via.placeholder.com/100",
+            priority: FastImage.priority.normal,
+            cache: FastImage.cacheControl.immutable
+          }}
           style={styles.artistImage}
-          resizeMode="cover"
+          resizeMode={FastImage.resizeMode.cover}
         />
         {isFollowing && (
           <View style={styles.checkmarkOverlay}>
@@ -77,42 +68,15 @@ const ArtistCard = memo(({ artist, onFollow }: { artist: Artist; onFollow: (id: 
   );
 });
 
-const ArtistSectionList: React.FC<ArtistSectionListProps> = ({ loading: initialLoading = false }) => {
-  const { getAllArtists, followArtist } = useQuery();
-  const [artists, setArtists] = useState<Artist[]>([]);
-  const [filteredArtists, setFilteredArtists] = useState<Artist[]>([]);
-  const [loading, setLoading] = useState(initialLoading);
-  const [error, setError] = useState<string | null>(null);
+const ArtistSectionList: React.FC<ArtistSectionListProps> = ({ sections, onFollow }) => {
+  const [artists, setArtists] = useState<Artist[]>(sections);
+  const [filteredArtists, setFilteredArtists] = useState<Artist[]>(sections);
   const [searchQuery, setSearchQuery] = useState("");
-  const { userdata } = useAppSelector((auth) => auth.auth)
 
   useEffect(() => {
-    const fetchArtists = async () => {
-      setLoading(true);
-      try {
-        const response = await getAllArtists();
-        if (response && response.data) {
-          const artistsWithFollowState = response.data.map((artist: Artist) => ({
-            ...artist,
-            isFollowing: artist.isFollowing || false, // Ensure isFollowing is initialized
-          }));
-          setArtists(artistsWithFollowState);
-          setFilteredArtists(artistsWithFollowState); // Initially show all artists
-        } else {
-          setArtists([]);
-          setFilteredArtists([]);
-        }
-      } catch (err) {
-        setError("Failed to load artists. Please try again.");
-        setArtists([]);
-        setFilteredArtists([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchArtists();
-  }, [getAllArtists]);
+    setArtists(sections);
+    setFilteredArtists(sections);
+  }, [sections]);
 
   // Handle search
   const handleSearch = (query: string) => {
@@ -127,42 +91,9 @@ const ArtistSectionList: React.FC<ArtistSectionListProps> = ({ loading: initialL
     }
   };
 
-  const handleFollow = async (artistId: string, newFollowState: boolean) => {
-    try {
-      if (newFollowState && userdata?._id) {
-        const response = await followArtist(userdata?._id, artistId);
-        if (response?.status !== "success") throw new Error("Failed to follow artist");
-      }
-      // Update the artists state to reflect the follow state
-      setArtists((prevArtists) =>
-        prevArtists.map((artist) =>
-          artist._id === artistId ? { ...artist, isFollowing: newFollowState } : artist
-        )
-      );
-      setFilteredArtists((prevArtists) =>
-        prevArtists.map((artist) =>
-          artist._id === artistId ? { ...artist, isFollowing: newFollowState } : artist
-        )
-      );
-    } catch (err) {
-      console.error("Error following artist:", err);
-      // Revert the follow state on failure
-      setArtists((prevArtists) =>
-        prevArtists.map((artist) =>
-          artist._id === artistId ? { ...artist, isFollowing: !newFollowState } : artist
-        )
-      );
-      setFilteredArtists((prevArtists) =>
-        prevArtists.map((artist) =>
-          artist._id === artistId ? { ...artist, isFollowing: !newFollowState } : artist
-        )
-      );
-    }
-  };
-
   const renderItem = ({ item }: { item: Artist | null }) => {
-    if (loading || !item) return <SkeletonArtistCard />;
-    return <ArtistCard artist={item} onFollow={handleFollow} />;
+    if (!item) return null;
+    return <ArtistCard artist={item} onFollow={onFollow} />;
   };
 
   return (
@@ -179,19 +110,15 @@ const ArtistSectionList: React.FC<ArtistSectionListProps> = ({ loading: initialL
         />
       </View>
 
-      {error ? (
-        <Text style={styles.errorText}>{error}</Text>
-      ) : (
-        <FlatList
-          data={loading ? Array(15).fill(null) : filteredArtists} // 15 skeletons for initial loading
-          renderItem={renderItem}
-          keyExtractor={(item, index) => item?._id || `skeleton-${index}`}
-          numColumns={3} // 3-column grid to match the image layout
-          contentContainerStyle={styles.artistList}
-          showsVerticalScrollIndicator={false}
-          columnWrapperStyle={styles.columnWrapper}
-        />
-      )}
+      <FlatList
+        data={filteredArtists}
+        renderItem={renderItem}
+        keyExtractor={(item) => item?._id}
+        numColumns={3}
+        contentContainerStyle={styles.artistList}
+        showsVerticalScrollIndicator={false}
+        columnWrapperStyle={styles.columnWrapper}
+      />
     </View>
   );
 };

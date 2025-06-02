@@ -13,7 +13,9 @@ import { persistStore, persistReducer } from "redux-persist";
 import authReducer from "./slices/auth";
 import playerReducer from "./slices/PlayerSlice";
 import miscReducer from "./slices/miscelleaneous";
+import searchReducer from "./slices/searchSlice";
 import reactotron from "@/ReactotronConfig";
+import notificationsReducer from './slices/notifications';
 
 const persistConfig = {
   key: "root",
@@ -40,6 +42,8 @@ const store = configureStore({
     auth: persistedAuthReducer,
     player: persistedReducer,
     misc: persistedMiscReducer,
+    search: searchReducer,
+    notifications: notificationsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

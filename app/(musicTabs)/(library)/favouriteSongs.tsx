@@ -208,6 +208,13 @@ const FavouriteSongs = () => {
             ListComponent={ListComponent}
             title="Favourite"
             loading={loading}
+            renderItem={(item) => ({
+              _id: item._id,
+              track: { title: item.title },
+              artist: { name: item.artist },
+              release: item.release,
+              featuredArtists: item.featuredArtists
+            })}
           />
         </View>
       </Animated.ScrollView>
@@ -250,7 +257,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 40,
     fontFamily: "PlusJakartaSansBold",
-    color: "#D2D3D5",
+    color: "#f4f4f4",
   },
   headerSubtitle: {
     fontSize: 14,

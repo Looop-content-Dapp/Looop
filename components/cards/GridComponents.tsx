@@ -1,4 +1,4 @@
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { Skeleton } from 'moti/skeleton';
 
@@ -36,6 +36,15 @@ interface GridItemProps {
   featuredArtists: Artist[];
   release: Release;
   track: Track;
+  onPress?: () => void;  // Add onPress prop
+}
+
+interface PlaylistItemProps {
+  _id: string;
+  title: string;
+  coverImage: string;
+  description: string;
+  totalTracks: number;
 }
 
 const GridComponent = ({ item }: { item: GridItemProps }) => {
@@ -52,7 +61,7 @@ const GridComponent = ({ item }: { item: GridItemProps }) => {
   }, [item]);
 
   return (
-    <View style={{ paddingHorizontal: 4, paddingVertical: 16 }}>
+    <TouchableOpacity onPress={item.onPress} style={{ paddingHorizontal: 4, paddingVertical: 16 }}>
       <Skeleton
         transition={{
           type: 'timing',
@@ -60,45 +69,39 @@ const GridComponent = ({ item }: { item: GridItemProps }) => {
         }}
         show={isLoading}
       >
-        {item?.release?.artwork?.medium && (
-          <Image
-            source={{ uri: item.release.artwork.medium }}
-            style={{ width: 183, height: 183, borderRadius: 5 }}
-            onLoadStart={() => setIsLoading(true)}
-            onLoadEnd={() => setIsLoading(false)}
-          />
-        )}
+        <Image
+          source={{ uri: item.release.artwork.medium }}
+          style={{ width: 183, height: 183, borderRadius: 5 }}
+          onLoadStart={() => setIsLoading(true)}
+          onLoadEnd={() => setIsLoading(false)}
+        />
       </Skeleton>
 
       <Skeleton show={isLoading}>
-        {item?.track?.title && (
-          <Text
-            style={{
-              fontSize: 16,
-              color: '#F4F4F4',
-              fontFamily: 'PlusJakartaSansBold',
-              marginTop: 8
-            }}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {truncate(item.track.title)}
-          </Text>
-        )}
+        <Text
+          style={{
+            fontSize: 16,
+            color: '#F4F4F4',
+            fontFamily: 'PlusJakartaSansBold',
+            marginTop: 8
+          }}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
+          {truncate(item.track.title)}
+        </Text>
       </Skeleton>
 
       <Skeleton show={isLoading}>
-        {item?.artist?.name && (
-          <Text style={{
-            fontSize: 14,
-            color: '#787A80',
-            fontFamily: 'PlusJakartaSansRegular'
-          }}>
-            {item.artist.name}
-          </Text>
-        )}
+        <Text style={{
+          fontSize: 14,
+          color: '#787A80',
+          fontFamily: 'PlusJakartaSansRegular'
+        }}>
+          {item.artist.name}
+        </Text>
       </Skeleton>
-    </View>
+    </TouchableOpacity>
   );
 };
 

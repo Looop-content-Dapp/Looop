@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   Text,
@@ -15,20 +15,25 @@ import ToggleFlatListView from "../../../components/view/ToggleFlatlistView";
 import GridComponent from "../../../components/cards/GridComponents";
 import ListComponent from "../../../components/cards/ListComponents";
 import { useRouter } from "expo-router";
-import { useQuery } from "../../../hooks/useQuery";
+import { useUserPlaylists } from "../../../hooks/usePlaylist";
+import { useMusicPlayerContext } from "../../../context/MusicPlayerContext";
 
-const AnimatedImageBackground =
-  Animated.createAnimatedComponent(ImageBackground);
+const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
 
 const MyPlaylist = () => {
   const scrollY = useRef(new Animated.Value(0)).current;
+  const musicPlayer = useMusicPlayerContext()
   const [showStickySearch, setShowStickySearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredPlaylists, setFilteredPlaylists] = useState([]);
   const route = useRouter();
-  const [userPlaylists, setUserPlaylists] = useState([]); // State to store fetched playlists
-  const [loading, setLoading] = useState(true); // Loading state for skeleton
-  const { getAllPlaylistsForUser, retrieveUserId } = useQuery();
+
+  // Replace useLibrary with useUserPlaylists
+  const { data: playlistResponse, isLoading, error } = useUserPlaylists();
+
+
+  // Update how we extract the playlist data
+  const playlistData = playlistResponse?.data || [];
 
   const searchAnimation = useRef(new Animated.Value(1)).current;
 
@@ -63,33 +68,28 @@ const MyPlaylist = () => {
     });
   };
 
-  useEffect(() => {
-    const fetchUserPlaylists = async () => {
-      setLoading(true);
-      try {
-        const userId = await retrieveUserId();
-        if (userId) {
-          const data = await getAllPlaylistsForUser(userId);
-          console.log("user Playlist", data.data);
-          setUserPlaylists(data.data);
-          setFilteredPlaylists(data.data);
-        }
-      } catch (error) {
-        console.error("Error fetching user playlists:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserPlaylists();
-  }, [getAllPlaylistsForUser]);
-
   const handleSearchChange = (text: string) => {
     setSearchQuery(text);
-    const filtered = userPlaylists.filter((playlist) =>
-      playlist.name.toLowerCase().includes(text.toLowerCase())
-    );
-    setFilteredPlaylists(filtered);
+    if (playlistData) {
+      const filtered = playlistData.filter((playlist) =>
+        playlist.title.toLowerCase().includes(text.toLowerCase())
+      );
+      setFilteredPlaylists(filtered);
+    }
+  };
+
+  // Update filtered playlists when data changes
+  React.useEffect(() => {
+    if (playlistData) {
+      setFilteredPlaylists(playlistData);
+    }
+  }, [playlistData]);
+
+  const handlePlaylistPress = (playlistId: string) => {
+    route.push({
+      pathname: "/(musicTabs)/(library)/_Libscreens/PlaylistDetails",
+      params: { id: playlistId }
+    });
   };
 
   return (
@@ -159,6 +159,9 @@ const MyPlaylist = () => {
           }
         )}
         scrollEventThrottle={16}
+        contentContainerStyle={{
+            paddingBottom: musicPlayer.currentTrack ? 80 : 40
+        }}
       >
         {/* Search Bar Below Header with Animation */}
         <Animated.View
@@ -179,14 +182,24 @@ const MyPlaylist = () => {
           </View>
         </Animated.View>
 
-        {/* Content */}
         <View style={{ paddingTop: 20 }}>
           <ToggleFlatListView
             data={filteredPlaylists}
             GridComponent={GridComponent}
             ListComponent={ListComponent}
             title="My Playlists"
-            loading={loading}
+            loading={isLoading}
+            error={error}
+            renderItem={(item) => ({
+              _id: item._id,
+              track: { title: item.title },
+              artist: { name: `${item.totalTracks} tracks` },
+              release: {
+                artwork: { medium: item.coverImage },
+                title: item.description || 'Playlist'
+              },
+              onPress: () => handlePlaylistPress(item._id)
+            })}
           />
         </View>
       </Animated.ScrollView>
@@ -229,7 +242,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 40,
     fontFamily: "PlusJakartaSansBold",
-    color: "#D2D3D5",
+    color: "#f4f4f4",
   },
   headerSubtitle: {
     fontSize: 14,

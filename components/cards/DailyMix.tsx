@@ -6,11 +6,16 @@ import {
   TouchableOpacity,
   Dimensions,
   StyleSheet,
+  ImageBackground,
+  Pressable,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { MaterialIcons } from "@expo/vector-icons";
-import { getGradientColors } from "../../utils";
 import DailyMixSkeleton from "../SkeletonLoading/DailyMixSkelton";
+import { PlayIcon, PauseIcon } from '@hugeicons/react-native'
+import { Image } from "react-native";
+import useMusicPlayer from "../../hooks/useMusicPlayer";
+import FastImage from 'react-native-fast-image';
+import { useMusicPlayerContext } from "@/context/MusicPlayerContext";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.7;
@@ -19,48 +24,60 @@ const CARD_HEIGHT = 350;
 const DailyMixCard = ({
   mix,
   onPress,
+  isPlaying = false, // Add new prop
 }: {
   mix: DailyMixesMix;
   onPress: () => void;
+  isPlaying?: boolean;
 }) => {
-  const colors = getGradientColors(mix.genre);
   return (
     <TouchableOpacity
-      style={styles.cardContainer}
-      onPress={onPress}
-      activeOpacity={0.9}
+    style={styles.cardContainer}
+    activeOpacity={0.9}
+  >
+    <FastImage
+      source={{
+        uri: mix.artwork,
+        priority: FastImage.priority.normal,
+        cache: FastImage.cacheControl.immutable
+      }}
+      style={styles.gradient}
+      resizeMode={FastImage.resizeMode.cover}
     >
-      <LinearGradient
-        colors={[colors.start, colors.end]}
-        style={styles.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        {/* Optional Pattern Overlay */}
-        <View style={styles.pattern} />
+      <View style={styles.overlay} />
+      <FastImage
+        source={require("../../assets/images/logo-orange.png")}
+        style={styles.logo}
+        resizeMode={FastImage.resizeMode.contain}
+      />
+      <View style={styles.contentContainer}>
+        <Text style={styles.title} className="capitalize" numberOfLines={2}>
+          {mix.name}
+        </Text>
+        <Text style={styles.description} numberOfLines={2}>
+          {mix.description}
+        </Text>
 
-        {/* Content Container */}
-        <View style={styles.contentContainer}>
-          <Text style={styles.title} className="capitalize" numberOfLines={2}>
-            {mix.name}
-          </Text>
-          <Text style={styles.description} numberOfLines={2}>
-            {mix.description}
-          </Text>
-
-          <View style={styles.footer}>
-            <MaterialIcons
-              name="playlist-play"
-              size={24}
+        <Pressable
+         onPress={onPress}
+         style={styles.footer}>
+          {isPlaying ? (
+            <PauseIcon
+              size={34}
               color="rgba(255,255,255,0.9)"
+              variant="solid"
             />
-            <Text style={styles.trackCount}>
-              {mix.tracks?.length || 0} tracks
-            </Text>
-          </View>
-        </View>
-      </LinearGradient>
-    </TouchableOpacity>
+          ) : (
+            <PlayIcon
+              size={34}
+              color="rgba(255,255,255,0.9)"
+              variant="solid"
+            />
+          )}
+        </Pressable>
+      </View>
+    </FastImage>
+  </TouchableOpacity>
   );
 };
 
@@ -73,12 +90,34 @@ const DailyMixesSection = ({
   title: string;
   isLoading: boolean;
 }) => {
+  const { play, currentTrack } = useMusicPlayerContext();
+//   console.log("songdata", mixes[0]?.tracks[0]?.songData?._id);
+
   if (isLoading) {
     return <DailyMixSkeleton count={3} />;
   }
 
+  const handleMixPress = async (mix: DailyMixesMix) => {
+    const albumInfo = {
+      title: mix.name,
+      type: "album",
+      coverImage: mix.artwork
+    };
+
+    if (mix.tracks && mix.tracks.length > 0) {
+      // Format the track data to match ExtendedTrack interface
+      const formattedTracks = mix.tracks.map(track => ({
+        ...track,
+      }));
+      await play(formattedTracks[0], albumInfo, formattedTracks);
+    }
+  };
+
   return (
     <View style={styles.container}>
+     <Text className="text-white text-[20px] font-PlusJakartaSansBold mb-4">
+       {title}
+      </Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -89,9 +128,8 @@ const DailyMixesSection = ({
           <DailyMixCard
             key={mix.id}
             mix={mix}
-            onPress={() => {
-              console.log("handle mix press");
-            }}
+            onPress={() => handleMixPress(mix)}
+            isPlaying={currentTrack?.songData?._id === mix.tracks?.[0]?._id}
           />
         ))}
       </ScrollView>
@@ -129,14 +167,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
   },
-  pattern: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0.3,
-    // Add pattern if desired
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  logo: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    width: 50,
+    height: 50,
+    resizeMode: 'contain',
   },
   contentContainer: {
     padding: 20,

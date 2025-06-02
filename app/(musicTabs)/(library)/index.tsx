@@ -4,22 +4,38 @@ import {
   ScrollView,
   TouchableOpacity,
   ImageBackground,
-  FlatList,
   RefreshControl,
+  ActivityIndicator,
 } from "react-native";
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import { router } from "expo-router";
 import ToggleFlatListView from "../../../components/view/ToggleFlatlistView";
 import GridComponent from "../../../components/cards/GridComponents";
 import ListComponent from "../../../components/cards/ListComponents";
-import { useQuery } from "../../../hooks/useQuery";
-import { useFocusEffect, useIsFocused } from "@react-navigation/native";
+import { useLibrary } from "../../../hooks/useLibrary";
+import { useAppSelector } from "@/redux/hooks";
+import { useMusicPlayerContext } from "../../../context/MusicPlayerContext";
+import { LibrarySkeleton } from "../../../components/skeletons/LibrarySkeleton";
 
 const index = () => {
-  const [isGridView, setIsGridView] = useState(false);
-  const [lastPlayed, setLastPlayed] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { getLastPlayedSongs, retrieveUserId } = useQuery();
+  const { userdata } = useAppSelector((auth) => auth.auth);
+  const { lastPlayed } = useLibrary(userdata?._id);
+  const musicPlayer = useMusicPlayerContext();
+
+  // Show skeleton while initial data is being fetched
+  if (!lastPlayed.data && lastPlayed.isLoading) {
+    return (
+      <ScrollView
+        className="flex-1 min-h-screen"
+        contentContainerStyle={{ paddingBottom: musicPlayer?.currentTrack ? 260 : 190 }}
+      >
+        <LibrarySkeleton />
+      </ScrollView>
+    );
+  }
+
+  // Extract the actual track data from the response
+  const recentlyPlayedTracks = lastPlayed?.data?.data || [];
 
   const frames = [
     {
@@ -29,7 +45,7 @@ const index = () => {
     },
     {
       image: require("../../../assets/images/savedAlbums.png"),
-      title: "Saved Albums",
+      title: "Offline Download",
       route: "/savedAlbums",
     },
     {
@@ -39,39 +55,69 @@ const index = () => {
     },
   ];
 
-  const fetchLastPlayed = useCallback(async () => {
-    setLoading(true);
-    try {
-      const userId = await retrieveUserId();
-      if (userId) {
-        const data = await getLastPlayedSongs(userId);
-        setLastPlayed(data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching last played:", error);
-    } finally {
-      setLoading(false);
+  const handleItemPress = (item) => {
+    if (item.track) {
+      const albumInfo = {
+        title: item.release.title,
+        type: item.release.type || "album",
+        coverImage: item.release.artwork.high,
+      };
+      console.log("Album Info:", item);
+
+      musicPlayer.play(
+        {
+          _id: item._id,
+          title: item.track.title,
+          artist: item.artist,
+          songData: {
+            _id: item._id,
+            fileUrl: item.track.fileUrl,
+            duration: item.track.duration,
+          },
+          release: item.release,
+        },
+        albumInfo,
+        recentlyPlayedTracks
+      );
     }
-  }, [getLastPlayedSongs]);
+  };
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchLastPlayed();
+  // Show loading indicator while initial data is being fetched
+  if (!lastPlayed.data && lastPlayed.isLoading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#000" />
+        <Text className="mt-2 font-PlusJakartaSansMedium">Loading your library...</Text>
+      </View>
+    );
+  }
 
-      const intervalId = setInterval(fetchLastPlayed, 30000);
-
-      return () => clearInterval(intervalId);
-    }, [fetchLastPlayed])
-  );
+  // Show error state if data fetching failed
+  if (lastPlayed.error) {
+    return (
+      <View className="flex-1 justify-center items-center p-4">
+        <Text className="text-red-500 font-PlusJakartaSansBold text-lg text-center">
+          Oops! Something went wrong.
+        </Text>
+        <TouchableOpacity
+          onPress={() => lastPlayed.refetch?.()}
+          className="mt-4 bg-black px-6 py-3 rounded-full"
+        >
+          <Text className="text-white font-PlusJakartaSansMedium">Try Again</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
-      contentContainerStyle={{ paddingBottom: 190 }}
+      contentContainerStyle={{ paddingBottom: musicPlayer?.currentTrack ? 260 : 190 }}
+      showsVerticalScrollIndicator={false}
       className="flex-1 min-h-screen"
       refreshControl={
         <RefreshControl
-          refreshing={loading}
-          onRefresh={fetchLastPlayed}
+          refreshing={lastPlayed.isLoading}
+          onRefresh={() => lastPlayed.refetch?.()}
           tintColor="#000"
         />
       }
@@ -81,7 +127,7 @@ const index = () => {
           marginTop: 24,
           gap: 12,
           paddingLeft: 8,
-          height: 140,
+          height: 160,
         }}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -90,22 +136,37 @@ const index = () => {
           <TouchableOpacity key={index} onPress={() => router.push(item.route)}>
             <ImageBackground
               source={item.image}
-              className="w-[160px] h-[140px]"
+              className="w-[190px] h-[160px] rounded-[24px]"
             >
-              <Text className="absolute bottom-4 left-3 text-[20px] font-PlusJakartaSansBold w-[83px]">
-                {item.title}
-              </Text>
+              <View className="absolute bottom-4 left-3">
+                <Text className="text-[20px] font-PlusJakartaSansBold">
+                  {item.title.split(' ')[0]}
+                </Text>
+                <Text className="text-[20px] font-PlusJakartaSansBold">
+                  {item.title.split(' ').slice(1).join(' ')}
+                </Text>
+              </View>
             </ImageBackground>
           </TouchableOpacity>
         ))}
       </ScrollView>
 
+
       <ToggleFlatListView
-        data={lastPlayed}
+        data={recentlyPlayedTracks}
         GridComponent={GridComponent}
         ListComponent={ListComponent}
         title="Recently Played"
-        loading={loading}
+        loading={lastPlayed.isLoading}
+        error={lastPlayed.error}
+        renderItem={(item) => ({
+          _id: item._id,
+          track: item.track,
+          artist: item.artist,
+          release: item.release,
+          featuredArtists: item.featuredArtists,
+          onPress: () => handleItemPress(item)
+        })}
       />
     </ScrollView>
   );

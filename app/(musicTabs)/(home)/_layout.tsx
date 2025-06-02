@@ -9,7 +9,7 @@ import { router } from "expo-router";
 
 export default function HomeLayout() {
   const headerConfig = useHeader({ title: "" });
-  const { userdata } = useAppSelector((state) => state.auth);
+
   return (
     <Stack
       screenOptions={{
@@ -28,12 +28,10 @@ export default function HomeLayout() {
           ...headerConfig,
         }}
       />
-      <Stack.Screen
-        name="artist/[id]"
-        options={{
+      <Stack.Screen name="_screens"
+       options={{
           headerShown: false,
-        }}
-      />
+        }} />
     </Stack>
   );
 }

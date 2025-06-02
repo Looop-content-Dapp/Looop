@@ -6,35 +6,19 @@ import { MotiView } from 'moti';
 import { router } from 'expo-router';
 import { useQuery } from '../../hooks/useQuery';
 import { useAppSelector } from '@/redux/hooks';
+import { useAddSongToPlaylist, useUserPlaylists } from '@/hooks/usePlaylist';
+import { useNotification } from '@/context/NotificationContext';
 
 const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible: boolean; closeSheet: () => void; album: any }) => {
+    const { showNotification } = useNotification();
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const { getAllPlaylistsForUser, addSongToPlaylist } = useQuery();
   const { userdata } = useAppSelector((state) => state.auth);
-  const [playlists, setPlaylists] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
-
-  const fetchPlaylists = useCallback(async () => {
-    if (!userdata?._id) return;
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await getAllPlaylistsForUser(userdata._id);
-      setPlaylists(response?.data || []);
-    } catch (err) {
-      setError('Failed to fetch playlists');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [getAllPlaylistsForUser]);
-
-  useEffect(() => {
-    if (isVisible) {
-      fetchPlaylists();
-    }
-  }, [isVisible, fetchPlaylists]);
+  const { data: playlistResponse, isLoading: isPlaylistsLoading, isFetching } = useUserPlaylists();
+  const playlists = playlistResponse?.data || [];
+  const addSong = useAddSongToPlaylist();
+  // Update state to handle multiple playlist selection
+  const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>([]);
 
   const handleSheetChanges = useCallback((index: number) => {
     if (index === -1) {
@@ -42,29 +26,76 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
     }
   }, [closeSheet]);
 
-  const openBottomSheet = useCallback(() => {
-    bottomSheetRef.current?.expand();
-  }, []);
+  const handleCancel = () => {
+    bottomSheetRef.current?.close();
+    closeSheet();
+  };
 
-  const handleAddSong = async (playlistId: string) => {
-    if (!userdata?._id) return;
+  const handlePlaylistSelection = (playlistId: string) => {
+    setSelectedPlaylists(prev => {
+      if (prev.includes(playlistId)) {
+        return prev.filter(id => id !== playlistId);
+      }
+      return [...prev, playlistId];
+    });
+  };
+
+  const handleAddSong = async () => {
+    if (!userdata?._id || selectedPlaylists.length === 0) return;
     try {
-      const trackIds = album?.tracks?.map((item: any) => item._id) || [];
+      // Handle both single track and multiple tracks
+      const trackIds = album?._id ? [album._id] : album?.tracks?.map((track: any) => track._id);
 
-      if (!trackIds.length) {
-        Alert.alert('Error', 'No tracks found to add');
+      if (!trackIds?.length) {
+        showNotification({
+          type: 'error',
+          title: 'Error',
+          message: 'No tracks found to add',
+          position: 'top'
+        });
         return;
       }
 
-      await addSongToPlaylist(trackIds, playlistId, userdata?._id);
-      Alert.alert('Success', 'Songs added to playlist');
+      addSong.mutate({
+        tracks: trackIds,
+        playlistIds: selectedPlaylists,
+        userId: userdata?._id
+      }, {
+        onSuccess: (data) => {
+          const trackCount = trackIds.length;
+          const playlistCount = selectedPlaylists.length;
+          handleCancel();
+          showNotification({
+            type: 'success',
+            title: 'Success',
+            message: `${trackCount} ${trackCount > 1 ? 'tracks' : 'track'} added to ${playlistCount} ${playlistCount > 1 ? 'playlists' : 'playlist'} successfully`,
+            position: 'top'
+          });
+        },
+        onError: (error) => {
+          handleCancel();
+          showNotification({
+            type: 'error',
+            title: 'Error',
+            message: 'Failed to add songs to playlists',
+            position: 'top'
+          });
+        }
+      });
     } catch (error) {
-      Alert.alert('Error', 'Failed to add songs to playlist');
+      handleCancel();
+      showNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to add songs to playlists',
+        position: 'top'
+      });
     }
   };
 
+  // Update the renderPlaylists function to handle multiple selection
   const renderPlaylists = () => {
-    if (isLoading) {
+    if (isFetching) {
       return (
         <FlatList
           data={Array(5).fill({})}
@@ -91,7 +122,7 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
       return <Text style={{ color: 'red' }}>{error}</Text>;
     }
 
-    if (playlists.length === 0) {
+    if (playlists?.length === 0) {
       return (
         <View style={{ alignItems: 'center', marginTop: 20 }}>
           <Text style={{ color: 'white', fontSize: 16 }}>No playlists available.</Text>
@@ -105,16 +136,24 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <TouchableOpacity
-            className="flex-row items-center mb-3"
-            onPress={() => handleAddSong(item._id)}
+            className="flex-row items-center justify-between mb-3"
+            onPress={() => handlePlaylistSelection(item._id)}
           >
-            <Image
-              source={{ uri: item.image }}
-              style={{ width: 50, height: 50, borderRadius: 8 }}
-            />
-            <View className="ml-3">
-              <Text className="text-white">{item.title}</Text>
-              <Text className="text-gray-400">{item.songs.length} Songs</Text>
+            <View className='flex-row items-center gap-x-3'>
+              <Image
+                source={{ uri: item.coverImage }}
+                style={{ width: 60, height: 60, borderRadius: 8 }}
+              />
+              <View className="ml-3">
+                <Text className="text-[#f4f4f4] text-[16px] font-PlusJakartaSansBold">{item.title}</Text>
+                <Text className="text-Grey/06 text-[14px] font-PlusJakartaSansMedium">{item.songs.length} Songs</Text>
+              </View>
+            </View>
+
+            <View className="w-6 h-6 rounded-full border-2 border-[#FF7A1B] mr-3 items-center justify-center">
+              {selectedPlaylists.includes(item._id) && (
+                <View className="w-4 h-4 rounded-full bg-[#FF7A1B]" />
+              )}
             </View>
           </TouchableOpacity>
         )}
@@ -122,14 +161,15 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
     );
   };
 
+  // Update the Done button
   return (
     <BottomSheet
       index={isVisible ? 0 : -1}
       ref={bottomSheetRef}
       onChange={handleSheetChanges}
-      snapPoints={[450, 700]}
+      snapPoints={['80%']}
       enablePanDownToClose={true}
-      backgroundStyle={{ backgroundColor: '#12141B' }}
+      backgroundStyle={{ backgroundColor: '#111318' }}
       handleIndicatorStyle={{
         backgroundColor: '#787A80',
         width: 80,
@@ -137,9 +177,9 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
         borderRadius: 10,
       }}
     >
-      <BottomSheetView style={{ backgroundColor: '#12141B', padding: 16 }}>
-        <View className="flex-row gap-x-[40px] items-center mb-4 border-b-2 border-[#1D2029] border-spacing-6">
-          <TouchableOpacity onPress={closeSheet}>
+      <BottomSheetView style={{ backgroundColor: '#111318', padding: 16, flex: 1 }}>
+        <View className="flex-row gap-x-[40px] items-center mb-4 border-b-2 border-[#1D2029] pb-[20px]">
+          <TouchableOpacity onPress={handleCancel}>
             <Text className="text-[14px] font-PlusJakartaSansMedium text-Grey/04">Cancel</Text>
           </TouchableOpacity>
           <Text className="text-[16px] font-PlusJakartaSansMedium text-[#f4f4f4] font-bold">Add to Playlist</Text>
@@ -157,19 +197,33 @@ const AddToPlaylistBottomSheet = ({ isVisible, closeSheet, album }: { isVisible:
 
         {/* Create new playlist */}
         <TouchableOpacity
-          className="flex-row items-center mb-4"
+          className="flex-row items-center mb-4 bg-[#202227] p-[12px] rounded-[10px]"
           onPress={() => router.push("/createPlaylist")}
         >
-          <View className="w-[40px] h-[40px] bg-[#1D2029] items-center justify-center rounded-[10px]">
+          <View className="w-[40px] h-[40px] bg-[#111318] items-center justify-center rounded-[10px]">
             <Add01Icon size={24} color="#787A80" />
           </View>
-          <Text className="ml-3 text-white">Create a new playlist</Text>
+          <Text className="ml-3 text-[16px] font-PlusJakartaSansMedium text-white">Create a new playlist</Text>
         </TouchableOpacity>
 
         {/* Playlist section */}
-        <Text className="text-white mb-2">My Library</Text>
+        <Text className="text-[#f4f4f4] text-[20px] font-PlusJakartaSansMedium mb-2">My Library</Text>
 
         {renderPlaylists()}
+
+        {/* Add Done Button */}
+        <TouchableOpacity
+          className={`p-4 rounded-[56px] w-[120px] mx-auto ${
+            selectedPlaylists.length > 0 ? 'bg-[#2DD881]' : 'bg-[#242424]'
+          }`}
+          onPress={handleAddSong}
+          disabled={selectedPlaylists.length === 0}
+          style={{ marginTop: 'auto' }}
+        >
+          <Text className="text-white text-center font-PlusJakartaSansBold text-[16px]">
+            Done ({selectedPlaylists.length})
+          </Text>
+        </TouchableOpacity>
       </BottomSheetView>
     </BottomSheet>
   );

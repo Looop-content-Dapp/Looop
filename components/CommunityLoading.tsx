@@ -62,7 +62,7 @@ const CommunityLoading = () => {
   });
 
   return (
-    <View className="flex-1 items-center justify-center px-4 bg-white">
+    <View className="flex-1 items-center justify-center px-4">
       <Animated.View
         className="items-center"
         style={{
@@ -71,7 +71,7 @@ const CommunityLoading = () => {
         }}
       >
         <View className="mb-10 bg-blue-50 p-6 rounded-full">
-          <Animated.View 
+          <Animated.View
             className="bg-blue-100 rounded-full p-3"
             style={{ transform: [{ rotate: spin }] }}
           >

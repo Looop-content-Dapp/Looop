@@ -10,7 +10,7 @@ const musicStreams = () => {
     const navigation = useNavigation()
     const filterTimeFrame: string[] = ["Last 30 days", "2 months", "1 year"];
     const [timeFrame, setTimeFrame] = useState('Last 30 days');
-    
+
     // Sample data - replace with actual data
     const earnings = 32578.48;
     const percentageChange = 43.85;
@@ -24,7 +24,7 @@ const musicStreams = () => {
 
     // Group payouts by month and year
     const groupedPayouts = payoutHistory.reduce((groups, payout) => {
-      const monthYear = payout.date; // Already in "Month Year" format
+      const monthYear = payout.date;
       if (!groups[monthYear]) {
         groups[monthYear] = [];
       }
@@ -39,12 +39,12 @@ const musicStreams = () => {
       }, [])
 
     return (
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingBottom: 32
-        }} 
+        }}
         showsVerticalScrollIndicator={false}
       >
         {/* Next Payout Notice */}
@@ -60,7 +60,7 @@ const musicStreams = () => {
           <View className="flex-row justify-between items-start">
        <View className='gap-y-[8px]'>
           <Text className="text-[#787A80] font-PlusJakartaSansBold text-[16px]">Earnings</Text>
-         
+
 
      <Text className="text-[#f4f4f4] text-[28px] font-PlusJakartaSansBold">
              ${earnings.toLocaleString('en-US', { minimumFractionDigits: 2 })}
@@ -76,8 +76,8 @@ const musicStreams = () => {
               onOptionSelect={setTimeFrame}
             />
           </View>
-          
-         
+
+
         </View>
 
         {/* Payout History */}
@@ -85,16 +85,16 @@ const musicStreams = () => {
           <Text className="text-[#f4f4f4] text-[20px] font-PlusJakartaSansMedium font-semibold mb-[24px]">
             Payouts History
           </Text>
-          
+
           {Object.entries(groupedPayouts).map(([monthYear, payouts]) => (
             <View key={monthYear} className="mb-[24px]">
               <Text className="text-[#787A80] text-[16px] font-PlusJakartaSansMedium mb-3">
                 {monthYear}
               </Text>
-              
+
               {payouts.map((payout, index) => (
-                <View 
-                  key={payout.txId} 
+                <View
+                  key={payout.txId}
                   className={`bg-[#12141B] rounded-lg p-4 flex-row justify-between items-center ${
                     index !== 0 ? 'mt-2' : ''
                   }`}
@@ -102,7 +102,7 @@ const musicStreams = () => {
                   <View>
                     <View className="flex-row items-center">
                       <Text className="text-white font-PlusJakartaSansBold text-[16px]">
-                        You received 
+                        You received
                       </Text>
                       <Text className="text-[#73F762] font-PlusJakartaSansBold text-[16px] ml-1">
                         ${payout.amount.toLocaleString()}
@@ -112,7 +112,7 @@ const musicStreams = () => {
                       txID: {payout.txId}
                     </Text>
                   </View>
-                  
+
                   <View className="items-end">
                     <Text className="text-gray-400 text-sm">
                       {payout.time}

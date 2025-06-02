@@ -8,11 +8,11 @@ type Props = {
 
 const AuthHeader = (props: Props) => {
     return (
-        <View className="gap-y-2 pt-6">
+        <View className="gap-y-2 pt-2">
             <Text className="text-white text-[24px] font-PlusJakartaSansBold">
                 {props.title}
             </Text>
-            <Text className="text-[#D2D3D5] text-sm font-PlusJakartaSansRegular">
+            <Text className="text-[#D2D3D5] text-[16px] font-PlusJakartaSansRegular">
                 {props.description}
             </Text>
         </View>

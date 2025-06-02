@@ -1,17 +1,52 @@
-import { View, Text, FlatList, ScrollView } from 'react-native'
+import { View, Text, ScrollView } from 'react-native'
 import React from 'react'
 import CommunitySmallCard from './cards/CommunitySmallCard'
-import { artistsArr } from '../utils/ArstsisArr'
+import { useFollowedCommunities } from '../hooks/useFollowedCommunities'
+import { useAppSelector } from '@/redux/hooks'
+import { SmallCardSkeleton } from './skeletons/CommunityCardSkeleton'
 
 const ArtistYouFollow = () => {
+    const { userdata } = useAppSelector((state) => state.auth)
+    const { data: communities, isLoading } = useFollowedCommunities(userdata?._id || '');
+
+    if (isLoading) {
+      return (
+        <View className='gap-y-[16px] pt-[32px] h-[284px]'>
+          <Text className='text-[20px] text-[#fff] font-PlusJakartaSansMedium'>Artist You Follow</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{
+            gap: 16
+          }}>
+            {[1,2,3,4].map((_, index) => (
+              <SmallCardSkeleton key={index} />
+            ))}
+          </ScrollView>
+        </View>
+      );
+    }
+
+    if (!communities?.length) {
+      return null;
+    }
+
   return (
-    <View className='pl-[24px] gap-y-[16px] pt-[32px] h-[284px]'>
+    <View className='gap-y-[16px] pt-[32px] h-[284px]'>
       <Text className='text-[20px] text-[#fff] font-PlusJakartaSansMedium'>Artist You Follow</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{
         gap: 16
       }}>
-        {artistsArr.map((item, index) => (
-            <CommunitySmallCard key={index} item={item} />
+        {communities.map((community) => (
+          <CommunitySmallCard
+            key={community._id}
+            item={{
+              id: community._id,
+              name: community.communityName,
+              image: community.coverImage,
+              description: community.description,
+              memberCount: community.memberCount,
+              members: community.members,
+              tribePass: community.tribePass
+            }}
+          />
         ))}
       </ScrollView>
     </View>

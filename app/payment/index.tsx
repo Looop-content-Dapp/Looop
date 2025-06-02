@@ -17,7 +17,7 @@ import Payaza, {
 } from "react-native-payaza";
 
 const Index = () => {
-  const { name, image } = useLocalSearchParams();
+  const { name, image, communityId, collectionAddress, type, userAddress, currentRoute } = useLocalSearchParams();
   const navigation = useNavigation();
   const router = useRouter();
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -33,7 +33,65 @@ const Index = () => {
     });
   }, [navigation]);
 
+  // Update USDC payment handler in the modal
+  <AppButton.Primary
+    color="#FF6D1B"
+    text="Pay with USDC"
+    loading={false}
+    icon={
+      <Image
+        source={require("../../assets/images/usdc-icon.png")}
+        className="w-5 h-5"
+      />
+    }
+    onPress={() => {
+      setIsModalVisible(false);
+      router.push({
+        pathname: "/payment/payInCrypto",
+        params: {
+          name,
+          image,
+          price: 2,
+          communityId,
+          collectionAddress,
+          type: type,
+          userAddress: userAddress,
+        },
+      });
+    }}
+  />
+
+  const handleSuccess = async (response: PayazaSuccessResponse) => {
+    try {
+      const { payaza_reference } = response.data;
+      Alert.alert(
+        "Payment Successful",
+        `Transaction reference: ${payaza_reference}`
+      );
+      setIsModalVisible(false);
+      router.push({
+        pathname: "/payment/success",
+        params: {
+          name,
+          image,
+          reference: payaza_reference,
+          communityId,
+          collectionAddress,
+          type: "xion",
+          userAddress: userdata?.wallets?.xion,
+        },
+      });
+    } catch (error) {
+      Alert.alert(
+        "Verification Failed",
+        "Unable to verify your payment. Please contact support."
+      );
+    }
+  };
+
   const payNow = () => {
+    const transactionReference = `P-C-${new Date().toISOString().slice(0,10)}-${Math.random().toString(36).substring(2,12).toUpperCase()}`;
+
     payaza.current?.createTransaction({
       amount: Number(2),
       connectionMode: PayazaConnectionMode.TEST_CONNECTION_MODE,
@@ -42,40 +100,16 @@ const Index = () => {
       lastName: "<last name>",
       phoneNumber: userdata?.tel as string,
       currencyCode: "USD",
-      transactionReference: "transaction_reference",
+      transactionReference,
     });
   };
 
   const handleError = (response: PayazaErrorResponse) => {
     Alert.alert(response.data.message, "Error Occurred");
   };
-  
-  const handleSuccess = async (response: PayazaSuccessResponse) => {
-      try {
-        const { payaza_reference, message } = response.data;
-        Alert.alert(
-          "Payment Successful",
-          `Transaction reference: ${payaza_reference}`
-        );
-        setIsModalVisible(false);
-        router.push({
-          pathname: "/payment/success",
-          params: {
-            name: name,
-            image: image,
-            reference: payaza_reference
-          }
-        });
-      } catch (error) {
-        Alert.alert(
-          "Verification Failed",
-          "Unable to verify your payment. Please contact support."
-        );
-      }
-    };
 
   return (
-    <View className="flex-1 bg-[#0A0B0F]">
+    <View className="flex-1">
       <AppButton.Primary
         color="#FF6D1B"
         text="Continue to Payment"
@@ -95,27 +129,25 @@ const Index = () => {
             </Text>
           </View>
 
-          <View className="px-[8px] pt-[8px] pb-[32px] aspect-[3/4] border-[0.5px] border-[#787A80] bg-[#0A0B0F] gap-y-[16px] rounded-[32px] shadow-lg">
+          <View className="px-[8px] pt-[8px] pb-[24px] border-[0.5px] border-[#787A80] bg-[#0A0B0F] rounded-[32px] mt-[24px] mb-[24px]">
             <Image
               source={{ uri: image as string }}
-              className="w-full h-[70%] rounded-[24px]"
+              className="w-full aspect-square rounded-[24px]"
               style={{ resizeMode: "cover" }}
             />
-            <View className="flex-row items-end px-[16px]">
-              <View className="flex-1 gap-y-[8px]">
-                <Text className="text-[28px] text-[#FAFBFB] font-PlusJakartaSansBold">
-                  {name as string}
-                </Text>
-                <View className="flex-row items-center w-[93px] bg-[#A187B5] py-[8px] rounded-[56px] px-[12px]">
-                  <Text className="text-[#0A0B0F] text-[14px] font-PlusJakartaSansBold">
-                    $2/month
+             <Text numberOfLines={1} className="text-[24px] text-[#FAFBFB] font-PlusJakartaSansBold pl-[16px] pt-[6px]">{name}</Text>
+             <View className="flex-row items-center justify-between px-[16px] mt-[8px]">
+              <View className="flex-1">
+                <View className="flex-row items-center self-start bg-[#A187B5] py-[6px] rounded-[56px] px-[12px]">
+                  <Text className="text-[#0A0B0F] text-[14px] font-PlusJakartaSansBold" numberOfLines={1}>
+                    $5/month
                   </Text>
                 </View>
               </View>
               <Image
                 source={require("../../assets/images/logo-gray.png")}
-                className="w-[49px] h-[22px]"
-                style={{ resizeMode: "cover" }}
+                className="w-[49px] h-[22px] ml-[16px]"
+                style={{ resizeMode: "contain" }}
               />
             </View>
           </View>
@@ -146,31 +178,36 @@ const Index = () => {
                     pay
                   </Text>
                   <Text className="text-[28px] font-PlusJakartaSansBold text-white mb-6">
-                    $2.00
+                    $5.00
                   </Text>
                 </View>
 
                 <AppButton.Primary
-                  color="#FF6D1B"
-                  text="Pay with USDC"
-                  loading={false}
-                  icon={
-                    <Image
-                      source={require("../../assets/images/usdc-icon.png")}
-                      className="w-5 h-5"
-                    />
-                  }
-                  onPress={() => {
-                    setIsModalVisible(false);
-                    router.push({
-                      pathname: "/payment/payInCrypto",
-                      params: {
-                        name: name,
-                        image: image,
-                        price: 2,
-                      },
-                    });
-                  }}
+                color="#FF6D1B"
+                text="Pay with USDC"
+                loading={false}
+                icon={
+                <Image
+                source={require("../../assets/images/usdc-icon.png")}
+                className="w-5 h-5"
+                />
+                }
+                onPress={() => {
+                setIsModalVisible(false);
+                router.push({
+                pathname: "/payment/payInCrypto",
+                params: {
+                name: name,
+                image: image,
+                price: 2,
+                communityId: communityId,
+                collectionAddress: collectionAddress,
+                type: "xion",
+                userAddress: userdata?.wallets.xion.address,
+                currentRoute: currentRoute,
+                },
+                });
+                }}
                 />
 
                 <Text className="text-gray-500 text-center my-4">Or</Text>

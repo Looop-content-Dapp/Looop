@@ -30,7 +30,7 @@ export const useHeader = ({title}: {title: string}) => {
       </View>
     ),
     headerRight: () => (
-      <View className="flex-row items-center gap-x-[10px] px-4">
+      <View className="flex-row items-center gap-x-[16px] px-4">
         <Notification02Icon
           size={24}
           color="#787A80"
@@ -44,12 +44,12 @@ export const useHeader = ({title}: {title: string}) => {
                 ? userdata?.profileImage
                 : "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
           }}
-          size={30}
+          size={35}
           rounded
           onPress={() => router.push("/(profile)") }
           avatarStyle={{
             borderWidth: 2,
-            borderColor: "#FF7700",
+            borderColor: "#f4f4f4",
           }}
         />
       </View>

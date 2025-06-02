@@ -19,6 +19,39 @@ export default function _WalletLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="musicStreams" />
         <Stack.Screen name="tribeSubscriptions" />
+        <Stack.Screen
+        name="fund"
+        options={{
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#040405"
+          },
+          headerTintColor: "#fff",
+          title: ""
+        }}
+      />
+       <Stack.Screen
+        name="stablecoinFunding"
+        options={{
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#040405"
+          },
+          headerTintColor: "#fff",
+          title: ""
+        }}
+      />
+        <Stack.Screen
+        name="transaction-details"
+        options={{
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#040405"
+          },
+          headerTintColor: "#fff",
+          title: ""
+        }}
+      />
     </Stack>
   )
 }

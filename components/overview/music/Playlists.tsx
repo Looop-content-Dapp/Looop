@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,26 +6,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
-  SafeAreaView
+  SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
+import { useArtistMusic } from '@/hooks/useArtistMusic';
 
-const PlaylistCard = ({ title, coverUrl, songsCount, listeners, totalStreams }) => {
-  return (
-    <TouchableOpacity style={styles.cardContainer}>
-      <Image source={{ uri: coverUrl }} style={styles.coverImage} />
-      <View style={styles.infoContainer}>
-        <Text style={styles.title}>{title}</Text>
-        <View>
-          <Text style={styles.infoText}>Songs on playlist: <Text style={styles.infoHighlight}>{songsCount}</Text></Text>
-          <Text style={styles.infoText}>Listeners: <Text style={styles.infoHighlight}>{listeners.toLocaleString()}</Text></Text>
-          <Text style={styles.infoText}>Total streams: <Text style={styles.infoHighlight}>{totalStreams.toLocaleString()}</Text></Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-};
-
-const SectionHeader = ({ title }) => (
+// Add the missing components
+const SectionHeader = ({ title }: { title: string }) => (
   <View style={styles.sectionHeader}>
     <Text style={styles.sectionTitle}>{title}</Text>
   </View>
@@ -37,87 +24,57 @@ const SectionFooter = () => (
   </TouchableOpacity>
 );
 
+const PlaylistCard = ({ title, coverImage, totalTracks, followerCount, totalStreams }) => {
+  return (
+    <TouchableOpacity style={styles.cardContainer}>
+      <Image source={{ uri: coverImage }} style={styles.coverImage} />
+      <View style={styles.infoContainer}>
+        <Text style={styles.title}>{title}</Text>
+        <View>
+          <Text style={styles.infoText}>Songs on playlist: <Text style={styles.infoHighlight}>{totalTracks}</Text></Text>
+          <Text style={styles.infoText}>Listeners: <Text style={styles.infoHighlight}>{followerCount.toLocaleString()}</Text></Text>
+          <Text style={styles.infoText}>Total streams: <Text style={styles.infoHighlight}>{totalStreams?.toLocaleString()}</Text></Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+const EmptyState = () => (
+  <View style={styles.emptyContainer}>
+    <Image
+      source={require('@/assets/images/ghost.png')}
+      style={styles.emptyImage}
+    />
+    <Text style={styles.emptyTitle}>No playlists yet</Text>
+    <Text style={styles.emptyText}>Apply for your music to be added to Editorial Playlist, or when music is added to playlist you will see them here.</Text>
+  </View>
+);
+
 const Playlists = () => {
-  const sections = [
-    {
-      title: "Algorithmic",
-      data: [
-        {
-          title: "Can't Get Enough",
-          coverUrl: "https://i.pinimg.com/736x/00/8f/2a/008f2ab2e4af832c63df61ddaa558016.jpg",
-          songsCount: 2,
-          listeners: 21437382,
-          totalStreams: 811272860
-        },
-        {
-          title: "The Off Radar",
-          coverUrl: "https://i.pinimg.com/736x/00/8f/2a/008f2ab2e4af832c63df61ddaa558016.jpg",
-          songsCount: 2,
-          listeners: 21437382,
-          totalStreams: 811272860
-        },
-        {
-          title: "HipHop Essentials",
-          coverUrl: "https://i.pinimg.com/736x/00/8f/2a/008f2ab2e4af832c63df61ddaa558016.jpg",
-          songsCount: 2,
-          listeners: 21437382,
-          totalStreams: 811272860
-        }
-      ]
-    },
-    {
-      title: "Listener playlists",
-      data: [
-        {
-          title: "Top Hits 2023",
-          coverUrl: "https://i.pinimg.com/736x/00/8f/2a/008f2ab2e4af832c63df61ddaa558016.jpg",
-          songsCount: 3,
-          listeners: 18765432,
-          totalStreams: 723456789
-        },
-        {
-          title: "Chill Vibes",
-          coverUrl: "https://i.pinimg.com/736x/00/8f/2a/008f2ab2e4af832c63df61ddaa558016.jpg",
-          songsCount: 4,
-          listeners: 15678901,
-          totalStreams: 567890123
-        },
-        {
-          title: "Workout Mix",
-          coverUrl: "https://i.pinimg.com/736x/00/8f/2a/008f2ab2e4af832c63df61ddaa558016.jpg",
-          songsCount: 5,
-          listeners: 12345678,
-          totalStreams: 456789012
-        }
-      ]
-    },
-    {
-      title: "Looop editorials",
-      data: [
-        {
-          title: "New Releases",
-          coverUrl: "https://i.pinimg.com/736x/00/8f/2a/008f2ab2e4af832c63df61ddaa558016.jpg",
-          songsCount: 6,
-          listeners: 9876543,
-          totalStreams: 345678901
-        },
-        {
-          title: "Throwback Thursdays",
-          coverUrl: "https://i.pinimg.com/736x/00/8f/2a/008f2ab2e4af832c63df61ddaa558016.jpg",
-          songsCount: 7,
-          listeners: 7654321,
-          totalStreams: 234567890
-        },
-        {
-          title: "Indie Discoveries",
-          coverUrl: "https://i.pinimg.com/736x/00/8f/2a/008f2ab2e4af832c63df61ddaa558016.jpg",
-          songsCount: 8,
-          listeners: 5432109,
-          totalStreams: 123456789
-        }
-      ]
-    }
-  ];
+  const { data, isLoading } = useArtistMusic();
+
+  const sections = useMemo(() => {
+    if (!data?.data.playlists.items) return [];
+    return [
+      {
+        title: "All Playlists",
+        data: data.data.playlists.items
+      }
+    ];
+  }, [data]);
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#A187B5" />
+      </View>
+    );
+  }
+
+  if (!data?.data.playlists.items?.length) {
+    return <EmptyState />;
+  }
 
   const renderItem = ({ item, index, section }) => {
     if (index === 0) {
@@ -213,6 +170,34 @@ const styles = StyleSheet.create({
   seeAllButton: {
     color: 'gray',
     fontFamily: 'PlusJakartaSansRegular',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  emptyImage: {
+    width: 120,
+    height: 120,
+    marginBottom: 24,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    color: '#f4f4f4',
+    fontFamily: 'PlusJakartaSansMedium',
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#787A80',
+    fontFamily: 'PlusJakartaSansRegular',
+    textAlign: 'center',
   },
 });
 

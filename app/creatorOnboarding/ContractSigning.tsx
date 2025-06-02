@@ -1,10 +1,12 @@
-import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { useRouter } from 'expo-router';
 import Intro from '@/components/CreatorOnboarding/ContractFlow/Intro';
 import ContractIntro from '@/components/CreatorOnboarding/ContractFlow/ContractIntro';
 import ContractAgreement from '@/components/CreatorOnboarding/ContractFlow/ContractAgreement';
 import SignContract from '@/components/CreatorOnboarding/ContractFlow/SignContract';
+import { useSignArtistContract } from '@/hooks/useSignArtistContract';
+import { useNotification } from '@/context/NotificationContext';
 
 type ContractFlowState =
   | "REVIEWED"
@@ -14,9 +16,11 @@ type ContractFlowState =
   | "COMPLETED";
 
 const ContractSigning = () => {
+    const { showNotification } = useNotification();
     const [currentFlow, setCurrentFlow] = useState<ContractFlowState>("REVIEWED");
     const [fullName, setFullName] = useState<string>('') // Add type
     const [isChecked, setIsChecked] = useState<boolean>(false) // Add type
+    const signContract = useSignArtistContract();
     const { width, height } = useWindowDimensions();
     const { push } = useRouter();
 
@@ -48,27 +52,68 @@ const ContractSigning = () => {
                 isChecked={isChecked}
                 setIsChecked={setIsChecked}
                  />;
-            default:
-                return <Intro />;
         }
     }
 
     const handleNext = () => {
         switch (currentFlow) {
             case "REVIEWED":
+                // Smoothly transition to intro
                 setCurrentFlow("INTRO");
                 break;
             case "INTRO":
+                // Move to contract review
                 setCurrentFlow("CONTRACT");
                 break;
             case "CONTRACT":
+                // Move to signing phase
                 setCurrentFlow("SIGN");
                 break;
             case "SIGN":
-              if (fullName && isChecked) {
-                push("/(artisteTabs)/(dashboard)");
-            }
+                // Validate before proceeding
+                if (!fullName.trim()) {
+                    showNotification({
+                        type: 'error',
+                        title: 'Missing Information',
+                        message: 'Please enter your full name to continue',
+                        position: 'top'
+                    });
+                    return;
+                }
+
+                if (!isChecked) {
+                    showNotification({
+                        type: 'error',
+                        title: 'Agreement Required',
+                        message: 'Please review and accept the terms to continue',
+                        position: 'top'
+                    });
+                    return;
+                }
+
+                // Sign the contract
+                signContract.mutate({ fullName: fullName }, {
+                    onSuccess: (data) => {
+                        showNotification({
+                            type: 'success',
+                            title: 'Success',
+                            message: 'Contract signed successfully!',
+                            position: 'top'
+                        });
+                        push("/(artisteTabs)/(dashboard)");
+                    },
+                    onError: (error: any) => {
+                        showNotification({
+                            type: 'error',
+                            title: 'Contract Signing Failed',
+                            message: error?.message || 'Failed to sign the contract. Please try again.',
+                            position: 'top'
+                        });
+                    }
+                });
                 break;
+            default:
+                setCurrentFlow("REVIEWED");
         }
     };
 

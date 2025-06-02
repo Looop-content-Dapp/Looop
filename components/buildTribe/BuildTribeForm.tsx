@@ -10,22 +10,25 @@ import api from '@/config/apiConfig';
 import { useRouter } from 'expo-router';
 import TribeSuccessScreen from './TribeSuccessScreen';
 import TribeForm, { FormData } from './formFlow/TribeForm';
+import { useCreateCommunity } from '@/hooks/useCreateCommunity';
 
 const STEPS = {
     BASIC: 'basic',
+    MEMBERSHIP: 'membership',
     PREVIEW: 'preview',
     SUCCESS: 'success'
   };
 
 const STEP_COLORS = {
   [STEPS.BASIC]: '#A187B5',
+  [STEPS.MEMBERSHIP]: '#87A1B5',
   [STEPS.PREVIEW]: '#87B5A1'
 };
 
 const BuildTribeForm = () => {
   const [currentStep, setCurrentStep] = useState(STEPS.BASIC);
   const [isSuccess, setIsSuccess] = useState(false);
-  const { back } = useRouter()
+  const { back, push } = useRouter()
   const [formData, setFormData] = useState<FormData>({
     tribeName: '',
     description: '',
@@ -37,34 +40,46 @@ const BuildTribeForm = () => {
     communitySymbol: ""
   });
   const scrollViewRef = useRef(null);
-  const { userdata, artistId } = useAppSelector((state) => state.auth);
+  const { userdata } = useAppSelector((state) => state.auth);
+  const createCommunityMutation = useCreateCommunity();
 
   const handleCreateCommunity =  async() => {
-     const payload = {
-    "communityName": formData?.tribeName,
-    "description": formData?.description,
-    "coverImage": formData?.coverImage,
-    "collectibleName": formData?.collectibleName,
-    "collectibleDescription":formData?.CollectibleDescription,
-    "collectibleImage": formData?.collectibleMedia,
-    "collectibleType": formData?.collectibleType,
-    "artistId": artistId,
-    "artistAddress": userdata?.wallets?.xion,
-    "communitySymbol":formData?.communitySymbol
-    }
-    console.log(payload)
-     try {
-        const response = await api.post("/api/community/createcommunity", payload)
-        console.log(JSON.stringify(response))
-        if(response.data.status === "success"){
-            setCurrentStep(STEPS.SUCCESS);
-        }else{
-            Alert.alert("Error", "Failed to create community. Please try again.");
-        }
-      } catch (error) {
-       console.log("error creating community", error)
-       Alert.alert("Error", "Something went wrong. Please try again.");
+    if (!userdata?.artist) {
+        Alert.alert("Error", "Artist ID is required");
+        return;
       }
+
+    const payload = {
+        communityName: formData?.tribeName,
+        description: formData?.description,
+        coverImage: formData?.coverImage,
+        collectibleName: formData?.collectibleName,
+        collectibleDescription: formData?.CollectibleDescription,
+        collectibleImage: formData?.collectibleMedia,
+        collectibleType: formData?.collectibleType,
+        artistId: userdata?.artist,
+        communitySymbol: formData?.communitySymbol
+      };
+
+      createCommunityMutation.mutate(payload, {
+        onSuccess: (data) => {
+            Alert.alert(
+                "Success",
+                "Community Created successfully!",
+                [{
+                    text: "OK",
+                    onPress: () => setCurrentStep(STEPS.SUCCESS)
+                }]
+            );
+
+        },
+        onError: (error: any) => {
+            Alert.alert(
+                "Error",
+                error?.message || "Failed to Create a Community. Please try again."
+            );
+        }
+    });
   }
 
   const updateFormData = (field: any, value: any) => {
@@ -74,20 +89,23 @@ const BuildTribeForm = () => {
   const renderCurrentStep = () => {
     switch (currentStep) {
       case STEPS.BASIC:
+      case STEPS.MEMBERSHIP:
         return <TribeForm
-        formData={formData}
-        updateFormData={updateFormData}
-        // errors={errors}
+          formData={formData}
+          updateFormData={updateFormData}
+          currentStep={currentStep}
+          STEPS={STEPS}
         />;
       case STEPS.PREVIEW:
         return <Preview formData={formData}/>;
-        case STEPS.SUCCESS:
-            return <TribeSuccessScreen tribeName={formData} />;
+      case STEPS.SUCCESS:
+        return <TribeSuccessScreen tribeName={formData} />;
       default:
-        return<TribeForm
-        formData={formData}
-        updateFormData={updateFormData}
-        // errors={errors}
+        return <TribeForm
+          formData={formData}
+          updateFormData={updateFormData}
+          currentStep={currentStep}
+          STEPS={STEPS}
         />;
     }
   };
@@ -95,20 +113,37 @@ const BuildTribeForm = () => {
   const handleNext = () => {
     switch (currentStep) {
       case STEPS.BASIC:
-        if (formData.tribeName && formData.description && formData.coverImage && formData.collectibleName  && formData.CollectibleDescription && formData.collectibleMedia) {
-            setCurrentStep(STEPS.PREVIEW);
+        // Validate basic info
+        if (!formData.tribeName || !formData.description || !formData.coverImage) {
+          Alert.alert("Required Fields", "Please fill in all required fields");
+          return;
         }
+        setCurrentStep(STEPS.MEMBERSHIP);
         break;
+
+      case STEPS.MEMBERSHIP:
+        // Validate membership info
+        if (!formData.collectibleName || !formData.CollectibleDescription ||
+            !formData.collectibleMedia || !formData.communitySymbol) {
+          Alert.alert("Required Fields", "Please fill in all required fields");
+          return;
+        }
+        setCurrentStep(STEPS.PREVIEW);
+        break;
+
       case STEPS.PREVIEW:
-        handleCreateCommunity()
+        handleCreateCommunity();
         break;
     }
   };
 
   const handleBack = () => {
     switch (currentStep) {
-      case STEPS.PREVIEW:
+      case STEPS.MEMBERSHIP:
         setCurrentStep(STEPS.BASIC);
+        break;
+      case STEPS.PREVIEW:
+        setCurrentStep(STEPS.MEMBERSHIP);
         break;
       default:
         back();

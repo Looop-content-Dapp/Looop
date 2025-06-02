@@ -3,7 +3,7 @@
     "name": "Looop",
     "slug": "looop",
     "scheme": "looop",
-    "version": "1.1",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -11,9 +11,6 @@
       "supportsTablet": true,
       "usesAppleSignIn": true,
       "bundleIdentifier": "com.looop.music",
-    //   "entitlements": {
-    //     "com.apple.developer.signin": ["Default"]
-    //  },
       "infoPlist": {
         "NSMicrophoneUsageDescription": "This app requires microphone access to play and record audio.",
         "NSContactsUsageDescription": "This app needs access to your contacts to demonstrate its functionality.",
@@ -25,7 +22,8 @@
         "NSLocationAlwaysUsageDescription": "This app needs access to your location to provide location-based services and show relevant content based on where you are, even when the app is in the background.",
         "UIBackgroundModes": [
           "location",
-          "fetch"
+          "fetch",
+          "audio"
         ]
       }
     },
@@ -45,7 +43,9 @@
         "android.permission.ACCESS_BACKGROUND_LOCATION",
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",
-        "android.permission.WRITE_CONTACTS"
+        "android.permission.WRITE_CONTACTS",
+        "FOREGROUND_SERVICE",
+        "WAKE_LOCK"
       ]
     },
     "web": {
@@ -57,11 +57,22 @@
       "expo-video",
       "expo-apple-authentication",
       [
+        "react-native-video",
+        {
+          "enableNotificationControls": true,
+          "androidExtensions": {
+            "useExoplayerRtsp": false,
+            "useExoplayerSmoothStreaming": false,
+            "useExoplayerHls": false,
+            "useExoplayerDash": false
+          }
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/splash.png",
-          "imageWidth": 1500,
-        //   "resizeMode": "cover",
+
           "backgroundColor": "#FF6D1B"
         }
       ],
@@ -75,16 +86,14 @@
       [
         "expo-av",
         {
-          "isIosBackgroundAudioEnabled": true,
-          "android": {
-            "playbackAlwaysInForeground": false
-          }
+          "microphonePermission": false,
+          "backgroundMode": true
         }
       ],
       [
         "expo-media-library",
         {
-          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to let you upload cover images and collectibles.",
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
           "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
           "isAccessMediaLocationEnabled": true
         }
@@ -109,7 +118,27 @@
           "locationWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location to provide location-based services and show relevant content based on where you are."
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow $(PRODUCT_NAME) to use Face ID."
+        }
+      ],
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "react-native",
+          "organization": "looop-00"
+        }
+      ]
     ],
     "extra": {
       "router": {
@@ -119,6 +148,6 @@
         "projectId": "1d164336-acca-4487-8db1-3188eb5d89fb"
       }
     },
-    "owner": "josephweb3"
+    "owner": "Ivan Dubin"
   }
 }

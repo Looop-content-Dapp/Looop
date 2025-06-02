@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "../../../hooks/useQuery";
 import BuildTribeForm from "../../../components/buildTribe/BuildTribeForm";
-import WelcomeScreen from "../../../components/buildTribe/WelcomScreen";
 import ArtistCommunityDetails from "../../../components/buildTribe/ArtistCommunityDetails";
 import CommunityLoading from "../../../components/CommunityLoading";
 import { useAppSelector } from "@/redux/hooks";
 import api from "@/config/apiConfig";
+import WelcomeScreen from "@/components/buildTribe/WelcomeScreen";
+import { Text, View } from "react-native";
+
+// Removed unused import: useQuery
 
 interface Community {
   _id: string;
@@ -16,36 +18,52 @@ interface Community {
   __v: number;
 }
 
-interface CommunityResponse {
-  message: string;
-  data: Community[];
-}
+// Removed unused interface: CommunityResponse
 
 const OnboardingFlow = () => {
-  const [currentStep, setCurrentStep] = useState('welcome');
+  const [currentStep, setCurrentStep] = useState<'welcome' | 'buildTribe'>('welcome');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [artistCommunity, setArtistCommunity] = useState<Community | null>(null);
-  const { artistId } = useAppSelector((state) => state.auth);
+  const { userdata } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchArtistCommunity = async () => {
+      if (!userdata?.artist) {
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
-        const response = await api.get(`/api/community/${artistId}`)
+        setError(null);
+
+        const response = await api.get(`/api/community/${userdata.artist}`);
         setArtistCommunity(response?.data?.data);
       } catch (error) {
         console.error('Error fetching artist community:', error);
+        setError('Failed to load community data. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchArtistCommunity();
-  }, []);
+  }, [userdata?.artist]);
 
-  // Show skeleton loader while fetching data
+  // Handle loading state
   if (loading) {
     return <CommunityLoading />;
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <View className="flex flex-col items-center justify-center p-6 text-center">
+        <Text className="text-xl font-semibold text-red-600 mb-2">Error</Text>
+        <Text>{error}</Text>
+      </View>
+    );
   }
 
   // If artist already has a community, show the community detail view
@@ -53,19 +71,18 @@ const OnboardingFlow = () => {
     return <ArtistCommunityDetails community={artistCommunity} />;
   }
 
-  // If no community exists, show the onboarding flow
-  const renderStep = () => {
-    switch (currentStep) {
-      case 'welcome':
-        return <WelcomeScreen onNext={() => setCurrentStep('buildTribe')} />;
-      case 'buildTribe':
-        return <BuildTribeForm onBack={() => setCurrentStep('welcome')} />;
-      default:
-        return <WelcomeScreen onNext={() => setCurrentStep('buildTribe')} />;
-    }
-  };
 
-  return renderStep();
+  const handleNext = () => setCurrentStep('buildTribe');
+  const handleBack = () => setCurrentStep('welcome');
+
+  switch (currentStep) {
+    case 'welcome':
+      return <WelcomeScreen onNext={handleNext} />;
+    case 'buildTribe':
+      return <BuildTribeForm onBack={handleBack} />;
+    default:
+      return <WelcomeScreen onNext={handleNext} />;
+  }
 };
 
 export default OnboardingFlow;

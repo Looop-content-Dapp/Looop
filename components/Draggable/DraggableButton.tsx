@@ -22,8 +22,10 @@ const StaticButton = ({ icon: Icon, route, color }) => {
       style={[
         {
           position: 'absolute',
-          right: 16, // SAFETY_MARGIN
-          bottom: Platform.OS === 'ios' ? insets.bottom + 50 : 16,
+          right: 16,
+          bottom: Platform.OS === 'ios'
+            ? insets.bottom + (currentTrack ? 130 : 50)
+            : currentTrack ? 96 : 16,
           zIndex: 1000,
           ...(Platform.OS === 'android' && {
             elevation: 1000,

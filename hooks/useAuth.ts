@@ -31,37 +31,49 @@ interface OAuthResponse {
 }
 
 interface OAuthPayload {
-  channel: "google" | "apple";
-  email: string;
-  token: string;
+  channel: "google" | "apple" | "xion" | "argent";
+  email?: string;
+  token?: string;
+  walletAddress?: string
 }
 
 export const useAuth = () => {
   const verifyOAuthToken = async (payload: OAuthPayload): Promise<OAuthResponse> => {
-    console.log('Attempting OAuth verification with payload:', payload)
-    const response = await api.post("/api/oauth/auth", payload);
-    console.log("Auth response", response.data)
-    return response.data;
+    try {
+      const response = await api.post("/api/oauth/auth", payload);
+      return response.data;
+    } catch (error) {
+      console.error("API Error:", error);
+      throw error; // Re-throw to be caught by mutation error handler
+    }
   };
 
   const { mutate: authenticateUser, isPending, error } = useMutation({
     mutationFn: verifyOAuthToken,
-    onSuccess: (response) => {
+    onSuccess: (response, variables) => {
       console.log('OAuth mutation succeeded:', response)
+      if (!response.data) {
+        console.error("Invalid response format:", response);
+        return;
+      }
+
       if (response.data.isNewUser) {
         console.log("New user detected, redirecting to user details:", response.data.user)
-        router.navigate({
+
+        router.replace({
           pathname: "/(auth)/userDetail",
           params: {
             email: response.data.user.email,
             oauthId: response.data.user._id,
             isOAuth: "true",
+            oauthProvider: variables.channel,
+            walletAddress: variables.walletAddress
           },
         });
       } else {
-        console.log("Existing user detected, redirecting to music tabs:", response.data.user)
-        store.dispatch(setUserData(response.data.user));
-        router.navigate("/(musicTabs)");
+        console.log("Existing user detected, redirecting to music tabs:", response.data)
+        store.dispatch(setUserData(response.data));
+        router.replace("/(musicTabs)");
       }
     },
     onError: (error: any) => {
@@ -71,6 +83,7 @@ export const useAuth = () => {
         status: error.response?.status,
         data: error.response?.data
       });
+      // You might want to show an error message to the user here
     },
   });
 

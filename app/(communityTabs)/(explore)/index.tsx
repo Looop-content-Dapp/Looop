@@ -1,43 +1,48 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Pressable, Keyboard, TextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft02Icon, MoreHorizontalIcon, MusicNote03Icon, Search01Icon } from '@hugeicons/react-native';
+import React, { useLayoutEffect, useState } from 'react';
+import { View, Text, ScrollView, Pressable, Animated } from 'react-native';
+import { useNavigation, router } from 'expo-router';
+import { Search01Icon } from '@hugeicons/react-native';
 import CommunityNearYou from '../../../components/CommunityNearYou';
 import ArtistYouFollow from '../../../components/ArtistYouFollow';
-import SearchResult from '../../../components/SearchResult';
-import DraggableButton from '../../../components/Draggable/DraggableButton';
 
 const Feed = () => {
-  const [isSearching, setIsSearching] = useState(false);
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+    const navigation = useNavigation();
 
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => setIsKeyboardVisible(true));
-    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
-      setIsKeyboardVisible(false);
-      setIsSearching(false);
-    });
-
-    return () => {
-      keyboardDidHideListener.remove();
-      keyboardDidShowListener.remove();
+    const handleSearchPress = () => {
+        router.push('/(communityTabs)/(explore)/search');
     };
-  }, []);
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerShown: true,
+            headerTitle: "",
+            headerLeft: () => (
+                <View className="flex-row items-center gap-x-[16px] pr-[24px]">
+                    <Text className="text-[#f4f4f4] font-PlusJakartaSansBold text-[20px]">
+                        Discover Tribes
+                    </Text>
+                </View>
+            ),
+            headerRight: () => (
+                <Pressable
+                    onPress={handleSearchPress}
+                    className="flex-row items-center gap-x-[16px] pr-[24px]"
+                >
+                    <Search01Icon size={32} color='#63656B' variant='solid' />
+                </Pressable>
+            ),
+        });
+    }, []);
 
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 pl-[16px]">
          <ScrollView
          showsVerticalScrollIndicator={false}
          contentContainerStyle={{ paddingBottom: 64,}}
        >
          <ArtistYouFollow />
          <View className="gap-y-[24px]">
-           <Text className="text-[24px] font-PlusJakartaSansMedium text-Orange/08 font-medium pl-[24px]">
-             Explore The World
-           </Text>
            <CommunityNearYou />
          </View>
        </ScrollView>

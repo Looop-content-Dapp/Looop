@@ -1,119 +1,108 @@
-import React, { useState } from "react";
-import { FormField } from "../../app-components/formField";
-import { Text, View } from "react-native";
-import { useAlbumUpload } from "@/context/AlbumUploadContext";
+import React from 'react';
+import { View, Text } from 'react-native';
+import { Control, Controller } from 'react-hook-form';
 import useFileUpload, { FileType } from "@/hooks/useFileUpload";
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 interface AlbumBasicInfoProps {
-  onTrackCountChange: (count: number) => void;
+  control: Control<any>;
 }
 
-const AlbumBasicInfo: React.FC<AlbumBasicInfoProps> = ({ onTrackCountChange }) => {
-  const { albumData, updateAlbumData } = useAlbumUpload();
-  const { pickFile, isLoading } = useFileUpload();
-
-  const handleCoverImageUpload = async () => {
-    const result = await pickFile(FileType.IMAGE);
-    if (result?.success && result.file) {
-      updateAlbumData({ coverImage: result.file });
-    }
-  };
-
-  const handleNumberOfSongsChange = (value: string) => {
-    const count = parseInt(value);
-    updateAlbumData({ 
-      numberOfSongs: value,
-      tracks: Array(count).fill({
-        trackName: '',
-        songType: '',
-        audioFile: null,
-        explicitLyrics: '',
-        writers: [],
-        producers: [],
-        isrc: '',
-        featuredArtists: []
-      })
-    });
-    onTrackCountChange(count);
-  };
-
-  const [albumName, setAlbumName] = useState("");
-  const [numberOfSongs, setNumberOfSongs] = useState("");
-  const [primaryGenre, setPrimaryGenre] = useState("");
-  const [secondaryGenre, setSecondaryGenre] = useState("");
-  const [coverImage, setCoverImage] = useState(null);
+const AlbumBasicInfo: React.FC<AlbumBasicInfoProps> = ({ control }) => {
+  const { pickFile } = useFileUpload();
 
   const genreOptions = [
     { label: "Afrobeats", value: "afrobeats" },
     { label: "Hip Hop", value: "hiphop" },
     { label: "R&B", value: "rnb" }
-    // Add more genres as needed
   ];
 
-  const songNumberOptions = Array.from({ length: 25 }, (_, i) => ({
+  const songNumberOptions = Array.from({ length: 19 }, (_, i) => ({
     label: `${i + 2} songs`,
     value: `${i + 2}`
   }));
 
-  // const handleNumberOfSongsChange = (value: string) => {
-  //   setNumberOfSongs(value);
-  //   onTrackCountChange(parseInt(value));
-  // };
-
   return (
     <>
-      <Text className="text-[24px] font-PlusJakartaSansBold leading-[30px] text-[#F4F4F4] mt-[32px]">
+      <Text className="text-[20px] pl-[24px] font-PlusJakartaSansBold leading-[30px] text-[#F4F4F4] mt-[32px]">
         Upload Album - Basic info
       </Text>
-      <View className="py-[32px] px-[24px] bg-[#0A0B0F] gap-y-[32px] mt-[32px] rounded-[24px] mb-[32px]">
-        <FormField.TextField
-          label="Album name"
-          description="What do you want to name you Album"
-          value={albumName}
-          onChangeText={setAlbumName}
-          required
+      <View className="py-[32px] px-[24px] gap-y-[32px] mt-[32px] rounded-[24px]">
+        <Controller
+          control={control}
+          name="albumName"
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <Input
+              label="Album name"
+              description="What do you want to name your album"
+              value={value}
+              onChangeText={onChange}
+              error={error?.message}
+            />
+          )}
         />
 
-        <FormField.PickerField
-          label="No. of songs"
-          description="You can have between 2 - 26 songs on your Album"
-          value={numberOfSongs}
-          onSelect={handleNumberOfSongsChange}
-          options={songNumberOptions}
-          placeholder="Select number of songs"
-          required
+        <Controller
+          control={control}
+          name="numberOfSongs"
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <Select
+              label="No. of songs"
+              description="Select the number of songs in your album"
+              value={String(value)}
+              onValueChange={onChange}
+              options={songNumberOptions}
+              error={error?.message}
+            />
+          )}
         />
 
-        <FormField.PickerField
-          label="Primary Genre"
-          description="Add main genres"
-          value={primaryGenre}
-          onSelect={setPrimaryGenre}
-          options={genreOptions}
-          placeholder="Select genre"
-          required
+        <Controller
+          control={control}
+          name="primaryGenre"
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <Select
+              label="Primary Genre"
+              description="Add main genres"
+              value={value}
+              onValueChange={onChange}
+              options={genreOptions}
+              error={error?.message}
+            />
+          )}
         />
 
-        <FormField.PickerField
-          label="Secondary Genre (Optional)"
-          description="Add a secondary genre"
-          value={secondaryGenre}
-          onSelect={setSecondaryGenre}
-          options={genreOptions}
-          placeholder="Select genre"
+        <Controller
+          control={control}
+          name="secondaryGenre"
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <Select
+              label="Secondary Genre (Optional)"
+              description="Add a secondary genre"
+              value={value}
+              onValueChange={onChange}
+              options={genreOptions}
+              error={error?.message}
+            />
+          )}
         />
 
-        <FormField.ImageUploadField
-          label="Cover art"
-          description="Upload your song/album art."
-          value={coverImage || undefined}
-          onUpload={() => {
-            // Implement image upload logic
-            setCoverImage("placeholder-url" as any);
-          }}
-          maxSize="20MB"
-          acceptedFormats="JPEG"
-          required
+        <Controller
+          control={control}
+          name="coverImage"
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <ImageUpload
+              label="Cover art"
+              description="Upload your song/EP art."
+              value={value}
+              onChange={onChange}
+              maxSize="20MB"
+              acceptedFormats="JPEG"
+              error={error?.message}
+            />
+          )}
         />
       </View>
     </>

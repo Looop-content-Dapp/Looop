@@ -1,3 +1,4 @@
+import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import {
   Platform,
   View,
@@ -5,19 +6,16 @@ import {
   ImageBackground,
   TouchableOpacity,
   Animated,
+  StyleSheet,
+  StatusBar,
 } from "react-native";
 import {
   ArrowLeft02Icon,
   Wallet01Icon,
   CheckmarkBadge01Icon,
   HeadphonesIcon,
-} from "@hugeicons/react-native"
-import React, { useEffect, useRef, useState } from "react";
-import Ellipse from "../../../components/Ellipse";
+} from "@hugeicons/react-native";
 import { useRouter } from "expo-router";
-import ArtistReleases from "../../../components/ArtistProfile/ArtistReleases";
-import ArtistCollectible from "../../../components/ArtistProfile/ArtistCollectible";
-import ArtistAbout from "../../../components/ArtistProfile/ArtistAbout";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
@@ -25,239 +23,368 @@ import {
 import api from "@/config/apiConfig";
 import { useAppSelector } from "@/redux/hooks";
 import { Artist } from "@/types/index";
-import * as Animatable from 'react-native-animatable';
+import Ellipse from "../../../components/Ellipse";
+import ArtistReleases from "../../../components/ArtistProfile/ArtistReleases";
+import ArtistCollectible from "../../../components/ArtistProfile/ArtistCollectible";
+import ArtistAbout from "../../../components/ArtistProfile/ArtistAbout";
 
-interface Community {
-  _id: string;
-  name: string;
-  description: string;
-  createdBy: string;
-  createdAt: string;
-  __v: number;
-}
+const TABS = ["releases", "collectible", "about"] as const;
+type TabType = typeof TABS[number];
 
-export type SheetType = 'main' | 'linkBank' | 'transfer' | 'password';
-
-const SkeletonLoader = () => (
-  <View className="animate-pulse">
-    <View className="h-[260px] bg-gray-800" />
-    <View className="px-[12px] mt-[40%]">
-      <View className="h-6 w-48 bg-gray-800 rounded mb-2" />
-      <View className="h-4 w-32 bg-gray-800 rounded" />
+const ProfilePlaceholder = () => (
+  <View style={styles.placeholderContainer}>
+    <View style={styles.placeholderImage} />
+    <View style={styles.placeholderTextContainer}>
+      <View style={styles.placeholderName} />
+      <View style={styles.placeholderStats} />
     </View>
   </View>
 );
 
-const index = () => {
-  const [activeTab, setActiveTab] = useState("releases");
-  const scrollY = useRef(new Animated.Value(0)).current;
-  const [showStickyTabs, setShowStickyTabs] = useState(false);
-  const [artistProfile, setArtistProfile] = useState<Artist>();
+const ArtistProfileScreen = () => {
+  const [activeTab, setActiveTab] = useState<TabType>("releases");
+  const [artistProfile, setArtistProfile] = useState<Artist | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { artistId } = useAppSelector((state) => state.auth);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const { userdata } = useAppSelector((state) => state.auth);
   const { navigate } = useRouter();
+  console.log("artist Profile", artistProfile)
 
-  const retrieveArtistInfo = async () => {
+  const animations = useMemo(
+    () => ({
+      headerContentOpacity: scrollY.interpolate({
+        inputRange: [0, 80],
+        outputRange: [1, 0],
+        extrapolate: "clamp",
+      }),
+      headerScale: scrollY.interpolate({
+        inputRange: [0, 100],
+        outputRange: [1, 0.95],
+        extrapolate: "clamp",
+      }),
+      overlayOpacity: scrollY.interpolate({
+        inputRange: [0, 200],
+        outputRange: [0.3, 0.6],
+        extrapolate: "clamp",
+      }),
+    }),
+    [scrollY]
+  );
+
+  const layoutAnimations = useMemo(
+    () => ({
+      headerHeight: scrollY.interpolate({
+        inputRange: [0, 200],
+        outputRange: [hp("30%"), hp("8%")],
+        extrapolate: "clamp",
+      }),
+    }),
+    [scrollY]
+  );
+
+  const retrieveArtistInfo = useCallback(async () => {
+    if (!userdata?.artist) return;
+
     setIsLoading(true);
     try {
-      const response = await api.get(`/api/artist/${artistId}`);
-      if (!response?.data?.data) {
-        throw new Error('Invalid artist data received');
-      }
-      setArtistProfile(response.data.data.artist);
+      const response = await api.get(`/api/artist/${userdata.artist}`);
+      setArtistProfile(response?.data?.data?.artist || null);
     } catch (error) {
-      console.error('Failed to fetch artist info:', error);
+      console.error("Failed to fetch artist info:", error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userdata?.artist]);
 
   useEffect(() => {
-    if(artistId){
-      retrieveArtistInfo();
-    }
-  }, [artistId]);
+    retrieveArtistInfo();
+  }, [retrieveArtistInfo]);
 
-  const headerHeight = scrollY.interpolate({
-    inputRange: [0, 200],
-    outputRange: [Platform.OS === "ios" ? 260 : 260, 60],
-    extrapolate: "clamp",
-  });
+  const renderTabContent = useMemo(() => {
+    const components = {
+      releases: <ArtistReleases artistId={userdata?.artist} />,
+      collectible: <ArtistCollectible />,
+      about: <ArtistAbout />,
+    };
+    return components[activeTab];
+  }, [activeTab, userdata?.artist]);
 
-  const headerOpacity = scrollY.interpolate({
-    inputRange: [100, 200],
-    outputRange: [0, 1],
-    extrapolate: "clamp",
-  });
-
-  const imageOpacity = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [1, 0],
-    extrapolate: "clamp",
-  });
-
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "releases":
-        return <ArtistReleases artistId="" />;
-      case "collectible":
-        return <ArtistCollectible />;
-      case "about":
-        return <ArtistAbout />;
-      default:
-        return null;
-    }
-  };
+  const formatNumber = (num: number = 0) => num.toLocaleString();
 
   return (
-    <View className="flex-1 min-h-screen">
-      <Animated.View style={{ height: headerHeight, opacity: imageOpacity }}>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      <Animated.View
+        style={[
+          styles.header,
+          {
+            height: layoutAnimations.headerHeight,
+            transform: [{ scale: animations.headerScale }],
+          },
+        ]}
+      >
         {isLoading ? (
-          <Animatable.View 
-            animation="pulse" 
-            easing="ease-out" 
-            iterationCount="infinite"
-            className="h-full w-full bg-[#1a1a1a]"
-          >
-            <SkeletonLoader />
-          </Animatable.View>
+          <ProfilePlaceholder />
         ) : (
           <ImageBackground
-            source={{
-              uri: artistProfile?.profileImage,
-            }}
-            style={{
-              height: hp("40.9%"),
-              width: wp("100%"),
-            }}
+            source={{ uri: artistProfile?.profileImage }}
+            style={styles.headerBackground}
+            imageStyle={styles.headerBackgroundImage}
+            resizeMode="cover"
           >
-            <View className="flex-row items-center justify-between w-full mt-[40%] px-[12px]">
-              <View>
-                <View className="flex-row gap-x-[8px] items-center">
-                  <Text className="text-[24px] font-PlusJakartaSansBold text-[#f4f4f4]">
+            <Animated.View
+              style={[
+                styles.headerOverlay,
+                { opacity: animations.overlayOpacity },
+              ]}
+            />
+            <Animated.View
+              style={[
+                styles.headerContent,
+                { opacity: animations.headerContentOpacity },
+              ]}
+            >
+              <View style={styles.artistInfo}>
+                <View style={styles.artistNameContainer}>
+                  <Text style={styles.artistName} numberOfLines={1}>
                     {artistProfile?.name}
                   </Text>
-                  {artistProfile?.verified === true && (
+                  {artistProfile?.verified && (
                     <CheckmarkBadge01Icon
-                      size={20}
-                      variant="solid"
+                      size={wp("5%")}
                       color="#2DD881"
+                      variant="solid"
                     />
                   )}
                 </View>
-                <View className="flex-row items-center gap-x-[4px]">
-                  <Text className="text-[14px] font-PlusJakartaSansMedium text-[#A5A6AA]">
-                    {artistProfile?.followers?.toLocaleString()} Followers
+                <View style={styles.statsContainer}>
+                  <Text style={styles.statsText}>
+                    {formatNumber(artistProfile?.followers.length)} Followers
                   </Text>
                   <Ellipse />
-                  <Text className="text-[14px] font-PlusJakartaSansMedium text-[#A5A6AA]">
-                    {artistProfile?.monthlyListeners.toLocaleString()} Monthly Listeners
+                  <Text style={styles.statsText} numberOfLines={1}>
+                    {formatNumber(artistProfile?.monthlyListeners)} Monthly Listeners
                   </Text>
                 </View>
               </View>
-              <View>
-                <TouchableOpacity className="border border-[#D2D3D5] py-[16px] px-[12px] rounded-[24px]">
-                  <Text className="text-[14px] font-PlusJakartaSansMedium text-[#D2D3D5]">
-                    Change Cover
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+              <TouchableOpacity style={styles.changeCoverButton}>
+                <Text style={styles.changeCoverText}>Change Cover</Text>
+              </TouchableOpacity>
+            </Animated.View>
           </ImageBackground>
         )}
       </Animated.View>
 
-      {/* Rest of the component remains the same */}
       <Animated.ScrollView
-        className="flex-1"
+        style={styles.scrollView}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          {
-            useNativeDriver: false,
-            listener: (event) => {
-              const offsetY = event?.nativeEvent?.contentOffset.y;
-              setShowStickyTabs(offsetY > 200);
-            },
-          }
+          { useNativeDriver: false }
         )}
         scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
       >
-        <View className="px-[2px] mt-[10px] gap-y-[24px]">
-          <View className="flex-row items-center gap-x-[10px] mx-auto w-full">
-            <TouchableOpacity
-              onPress={() => navigate("/(musicTabs)")}
-              className="items-center justify-center rounded-lg overflow-hidden h-[89px] w-[50%] border-2 bg-[#12141B]"
-            >
-              <View className="gap-2">
-                <HeadphonesIcon size={24} color="#FF8A49" variant="solid" />
-                <Text className="text-[#f4f4f4] text-[14px] font-PlusJakartaSansMedium">
-                  Back to Listen Mode
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() =>  navigate("/wallet")}
-              className="items-center justify-center rounded-lg overflow-hidden w-[50%] h-[89px] bg-[#12141B]"
-            >
-              <View className="gap-2">
-                <Wallet01Icon size={20} color="#A187B5" variant="stroke" />
-                <Text className="text-[#f4f4f4] text-[14px] font-PlusJakartaSansMedium">
-                  Wallet & Earnings
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View className="flex-row items-start px-[4px] py-[2px] mt-4">
+        <View style={styles.actionsContainer}>
           <TouchableOpacity
-            onPress={() => setActiveTab("releases")}
-            className={`py-[24px] px-[24px] ${
-              activeTab === "releases" ? "border-b-[#FF8A49] border" : ""
-            }`}
+            style={styles.actionButton}
+            onPress={() => navigate("/(musicTabs)")}
           >
-            <Text
-              className={`text-[16px] font-PlusJakartaSansMedium ${
-                activeTab === "releases" ? "text-white" : "text-gray-400"
-              }`}
-            >
-              Releases
-            </Text>
+            <HeadphonesIcon size={wp("6%")} color="#FF8A49" variant="solid" />
+            <Text style={styles.actionText}>Back to Listen Mode</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => setActiveTab("collectible")}
-            className={`py-[24px] px-[24px] ${
-              activeTab === "collectible" ? "border-b-[#FF8A49] border" : ""
-            }`}
+            style={styles.actionButton}
+            onPress={() => navigate("/wallet")}
           >
-            <Text
-              className={`text-[16px] font-PlusJakartaSansMedium ${
-                activeTab === "collectible" ? "text-white" : "text-gray-400"
-              }`}
-            >
-              Collectible
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveTab("about")}
-            className={`py-[24px] px-[24px] ${
-              activeTab === "about" ? "border-b-[#FF8A49] border" : ""
-            }`}
-          >
-            <Text
-              className={`text-[16px] font-PlusJakartaSansMedium ${
-                activeTab === "about" ? "text-white" : "text-gray-400"
-              }`}
-            >
-              About
-            </Text>
+            <Wallet01Icon size={wp("5%")} color="#A187B5" variant="stroke" />
+            <Text style={styles.actionText}>Wallet & Earnings</Text>
           </TouchableOpacity>
         </View>
 
-        <View className="px-4 py-2">{renderTabContent()}</View>
+        <View style={styles.tabsContainer}>
+          {TABS.map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              onPress={() => setActiveTab(tab)}
+              style={[styles.tab, activeTab === tab && styles.activeTab]}
+            >
+              <Text
+                style={[styles.tabText, activeTab === tab && styles.activeTabText]}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <View style={styles.tabContent}>{renderTabContent}</View>
       </Animated.ScrollView>
     </View>
   );
 };
 
-export default index;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#0A0A0A",
+  },
+  header: {
+    overflow: "hidden",
+    backgroundColor: "#0A0A0A",
+    borderBottomWidth: 1,
+    borderBottomColor: "#2D2D2D",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  headerBackground: {
+    height: "100%",
+    width: "100%",
+  },
+  headerBackgroundImage: {
+    opacity: 0.9,
+  },
+  headerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "#000",
+  },
+  headerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: hp("20%"),
+    paddingHorizontal: wp("5%"),
+    paddingBottom: hp("2%"),
+  },
+  artistInfo: {
+    flex: 1,
+    marginRight: wp("2%"),
+  },
+  artistNameContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: wp("2%"),
+    marginBottom: hp("1%"),
+  },
+  artistName: {
+    fontSize: wp("6%"),
+    fontFamily: "PlusJakartaSansBold",
+    color: "white",
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  statsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: wp("1.5%"),
+  },
+  statsText: {
+    fontSize: wp("3.5%"),
+    fontFamily: "PlusJakartaSansMedium",
+    color: "#FFFFFF",
+    opacity: 0.8,
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  changeCoverButton: {
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
+    paddingVertical: hp("1%"),
+    paddingHorizontal: wp("3.5%"),
+    borderRadius: 24,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  changeCoverText: {
+    fontSize: wp("3.5%"),
+    fontFamily: "PlusJakartaSansMedium",
+    color: "white",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  actionsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: wp("4%"),
+    paddingHorizontal: wp("4%"),
+    marginTop: hp("2%"),
+  },
+  actionButton: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#12141B",
+    borderRadius: 16,
+    paddingVertical: hp("2%"),
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  actionText: {
+    color: "#f4f4f4",
+    fontSize: wp("3.5%"),
+    fontFamily: "PlusJakartaSansMedium",
+    marginTop: hp("1%"),
+  },
+  tabsContainer: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: "#2D2D2D",
+    marginTop: hp("2%"),
+    paddingHorizontal: wp("1%"),
+  },
+  tab: {
+    paddingVertical: hp("2%"),
+    paddingHorizontal: wp("6%"),
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: "#FF8A49",
+  },
+  tabText: {
+    fontSize: wp("4%"),
+    fontFamily: "PlusJakartaSansMedium",
+    color: "#A5A6AA",
+  },
+  activeTabText: {
+    color: "white",
+  },
+  tabContent: {
+    flex: 1,
+    paddingTop: hp("2%"),
+  },
+  placeholderContainer: {
+    flex: 1,
+    backgroundColor: "#1a1a1a",
+  },
+  placeholderImage: {
+    height: hp("30%"),
+    backgroundColor: "#2D2D2D",
+  },
+  placeholderTextContainer: {
+    paddingHorizontal: wp("5%"),
+    marginTop: hp("2%"),
+  },
+  placeholderName: {
+    height: hp("3%"),
+    width: wp("60%"),
+    backgroundColor: "#404040",
+    borderRadius: 4,
+    marginBottom: hp("1%"),
+  },
+  placeholderStats: {
+    height: hp("2%"),
+    width: wp("40%"),
+    backgroundColor: "#404040",
+    borderRadius: 4,
+  },
+});
+
+export default ArtistProfileScreen;

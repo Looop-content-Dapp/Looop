@@ -32,6 +32,7 @@ interface TextFieldProps extends BaseFieldProps {
   multiline?: boolean;
   numberOfLines?: number;
   onSubmitEditing?: () => void;
+  error?: string;
 }
 
 interface AudioUploadFieldProps extends BaseFieldProps {
@@ -123,7 +124,8 @@ const TextField = ({
   numberOfLines = 1,
   onSubmitEditing,
   maxLength,
-  autoCapitalize = "none"
+  autoCapitalize = "none",
+  ...props
 }: TextFieldProps & {
   maxLength?: number;
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
@@ -154,6 +156,7 @@ const TextField = ({
         onSubmitEditing={onSubmitEditing}
         maxLength={maxLength}
         autoCapitalize={autoCapitalize}
+        {...props}
       />
       {error && <Text style={styles.error}>{error}</Text>}
     </View>
@@ -508,8 +511,9 @@ const PickerField = ({
               <Text style={styles.modalTitle}>{label}</Text>
               <TouchableOpacity
                 onPress={() => setModalVisible(false)}
-                style={styles.modalClose}>
-                <Ionicons name="close" size={24} color="#FFFFFF" />
+                className="flex-row justify-between items-center"
+               >
+                <Text className="text-[#f4f4f4] font-PlusJakartaSansMedium text-[16px]">Save</Text>
               </TouchableOpacity>
             </View>
 
@@ -649,7 +653,7 @@ const MultiSelectField = ({
               <TouchableOpacity
                 onPress={() => setModalVisible(false)}
                 style={styles.modalClose}>
-                <Ionicons name="close" size={24} color="#FFFFFF" />
+               <Text className="text-[16px] font-PlusJakartaSansExtraBold text-[#f4f4f4]">Save</Text>
               </TouchableOpacity>
             </View>
 
@@ -889,8 +893,8 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "transparent",
     borderRadius: 24,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: 22,
+    paddingLeft: 26,
     fontSize: 14,
     color: "white",
     borderWidth: 2,

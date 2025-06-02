@@ -1,75 +1,28 @@
 // index.js
-import { View, ScrollView, Text } from "react-native";
-import React, { useState, useEffect } from "react";
-
-import NewlyReleased from "../../../components/home/newlyRelease";
+import { View, ScrollView, Text, ImageBackground, Image } from "react-native";
+import React from "react";
 import BasedOnSubscription from "../../../components/home/BasedOnSubscription";
 import useMusicPlayer from "../../../hooks/useMusicPlayer";
 import DailyMixesSection from "../../../components/cards/DailyMix";
 import RecommededMusic from "../../../components/cards/RecommededMusic";
-
-import { useQuery } from "../../../hooks/useQuery";
-import { useAppSelector } from "@/redux/hooks";
 import { StatusBar } from "expo-status-bar";
+import { useUserDashboard } from "../../../hooks/useUserFeed";
+import { useDailyMix } from "@/hooks/useDailyMix";
+import MoodSection from "../../../components/home/MoodSection";
 
 const Index = () => {
   const { currentTrack } = useMusicPlayer();
-  const { userdata } = useAppSelector((state) => state.auth);
-  const {
-    getAllReleases,
-    getAllArtists,
-    getDashboardRecommendations,
-    getFollowedArtistsReleases,
-    getDailyMixes,
-  } = useQuery();
+  const { data: dailyMix, isLoading: isDailyMixesLoading } = useDailyMix();
+  const { data: userFeedData, isLoading: isUserFeedLoading } = useUserDashboard();
 
-  const [newReleases, setNewReleases] = useState([]);
-  const [recommendedMusic, setRecommendedMusic] = useState([]);
-  const [followedArtistReleases, setFollowedArtistReleases] = useState<
-    ArtistsYouFollowThisMonth[]
-  >([]);
-  const [dailyMixes, setDailyMixes] = useState<DailyMixesMix[]>([]);
-  const [allArtists, setAllArtists] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Extract data from userFeed
+  const dailyMixes = dailyMix?.data?.mixes ?? []
+  const followedArtists = userFeedData?.data?.followedArtists || [];
+  const recommendedArtists = userFeedData?.data?.recommendedArtists || [];
+  const suggestedTracks = userFeedData?.data?.suggestedTracks || [];
+  const recentReleases = userFeedData?.data?.recentReleases || [];
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-
-        // Fetch all data in parallel
-        const [
-          releasesResponse,
-          artistsResponse,
-          recommendationsResponse,
-          followedReleasesResponse,
-          dailyMixesResponse,
-        ] = await Promise.all([
-          getAllReleases(),
-          getAllArtists(),
-          getDashboardRecommendations(userdata?._id as string),
-          getFollowedArtistsReleases(userdata?._id as string),
-          getDailyMixes(userdata?._id as string),
-        ]);
-
-        setNewReleases(releasesResponse.data);
-        setDailyMixes(dailyMixesResponse?.data.mixes ?? []);
-        setAllArtists(artistsResponse.data);
-        setRecommendedMusic(recommendationsResponse.data);
-        setFollowedArtistReleases(
-          followedReleasesResponse?.data.releases.thisMonth ?? []
-        );
-        console.log(JSON.stringify(artistsResponse), "artist response");
-      } catch (error) {
-        console.log("Error fetching dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
-
+  const dataLoading = isDailyMixesLoading || isUserFeedLoading;
   return (
     <>
       <StatusBar translucent={true} backgroundColor="#040405" style="light" />
@@ -79,48 +32,68 @@ const Index = () => {
           contentContainerClassName="space-y-[4px]"
           contentContainerStyle={{
             paddingBottom: currentTrack ? 90 : 30,
-            paddingTop: 32,
-            paddingLeft: 16,
+            paddingTop: 12,
+            paddingLeft: 6,
           }}
         >
+
+        {/* Hottest On The Block */}
+      <ImageBackground
+          source={require("../../../assets/images/hottestBG.png")}
+          className="bg-[#2DD881] w-[100%] mx-auto h-[157px] overflow-hidden flex-row items-center mb-[32px] justify-between relative rounded-[10px]"
+          resizeMode="cover"
+        >
+          <View className="h-full px-4 justify-center z-10">
+            <View className="w-[90%]">
+              <Text className="text-[28px] w-[50%] text-[#111318] font-TankerRegular font-extrabold leading-tight">HOTTEST ON THE BLOCK</Text>
+              <Text className="text-[14px] w-[60%] text-[#111318] font-PlusJakartaSansMedium mt-1">
+                The hottest new music from Looop superstar creators.
+              </Text>
+            </View>
+          </View>
+          <Image
+              source={require("../../../assets/images/HottestTeen.png")}
+              className="h-full w-[65%] absolute right-5"
+              resizeMode="cover"
+            />
+        </ImageBackground>
+
+        {/* <MoodSection /> */}
+
           {/* Daily Mixes */}
           <DailyMixesSection
             mixes={dailyMixes}
-            isLoading={loading}
-            title="Your Daily Mixes"
+            isLoading={isDailyMixesLoading}
+            title="Daily Mixes"
           />
 
-          {/* <Text className="text-[#ffffff] text-[14px] font-PlusJakartaSansBold">Amazing sounds Coming Soon</Text> */}
 
-          {/* New Releases Section */}
-          {/* <NewlyReleased
-            musicData={newReleases}
-            isLoading={loading}
-            title="New Releases"
-          /> */}
-
-          {/* Followed Artists' New Releases */}
-          {/* {followedArtistReleases.length !== 0 && (
-            <NewlyReleased
-              musicData={followedArtistReleases}
-              isLoading={loading}
-              title="New From Artists You Follow"
-            />
-          )} */}
-
-          {/* Personalized Recommendations */}
-          {/* <RecommededMusic
-            data={recommendedMusic}
-            isLoading={loading}
-            title="Recommended For You"
-          /> */}
-
-          {/* Artists to Explore */}
+          {/* Followed Artists Section - only show if there's data */}
+          {followedArtists.length > 0 && (
           <BasedOnSubscription
-            data={allArtists}
-            isLoading={loading}
-            title="New Discographies to Explore"
-          />
+          data={followedArtists}
+          isLoading={isUserFeedLoading}
+          title="Artists You Follow"
+        />
+          )}
+
+          {/* Recommended Artists Section - only show if there's data */}
+          {recommendedArtists.length > 0 && (
+            <BasedOnSubscription
+              data={recommendedArtists}
+              isLoading={isUserFeedLoading}
+              title="Some artist for you to explore..."
+            />
+          )}
+
+          {/* Suggested Tracks Section - only show if there's data */}
+          {suggestedTracks.length > 0 && (
+            <RecommededMusic
+              data={suggestedTracks}
+              isLoading={isUserFeedLoading}
+              title="Rythms you'll love..."
+            />
+          )}
         </ScrollView>
       </View>
     </>

@@ -1,129 +1,79 @@
-import { PlayIcon, PauseIcon, VolumeOffIcon, VolumeUpIcon } from '@hugeicons/react-native';
-import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
-import { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
   Pressable,
-  Platform,
-  Alert,
   Text,
   Animated,
   PanResponder,
   Dimensions,
+  Platform,
 } from 'react-native';
-import * as ScreenOrientation from 'expo-screen-orientation';
-
-const videoSource = {
-  uri: 'https://media.gettyimages.com/id/1429694626/video/front-row-paris-fashion-week-womenswear-spring-summer-2023.mp4?s=mp4-640x640-gi&k=20&c=sxzWNI4OE5hB54L8nF4hEH_vb5fVY0AcsuzSmfZ9w98='
-};
+import { PlayIcon, VolumeOffIcon, VolumeUpIcon } from '@hugeicons/react-native';
+import Video, {
+  VideoRef,
+  OnLoadData,
+  OnProgressData,
+  OnSeekData,
+  OnBufferData,
+  OnAudioFocusChangedData,
+  OnVideoErrorData,
+  OnVideoAspectRatioData,
+  OnPlaybackRateChangeData,
+  OnPlaybackStateChangedData,
+  ResizeMode,
+} from 'react-native-video';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function VideoScreen() {
-  const videoRef = useRef<Video>(null);
+export default function VideoScreen({ videoUrl }: { videoUrl: string }) {
+  const videoRef = useRef<VideoRef>(null);
   const controlsOpacity = useRef(new Animated.Value(1)).current;
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const hideControlsTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Video state
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
-  const [isControlsVisible, setIsControlsVisible] = useState(true);
-  const [lastTap, setLastTap] = useState(0);
-  const [seekingPosition, setSeekingPosition] = useState(0);
-  const [isSeeking, setIsSeeking] = useState(false);
+  const [paused, setPaused] = useState(true);
+  const [muted, setMuted] = useState(true);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isUserInteracting, setIsUserInteracting] = useState(false);
+  const [isControlsVisible, setIsControlsVisible] = useState(true);
+  const [videoSize, setVideoSize] = useState({ width: 0, height: 0 });
 
-  const hideControlsTimer = useRef<NodeJS.Timeout>();
-
-  useEffect(() => {
-    return () => {
-      if (hideControlsTimer.current) {
-        clearTimeout(hideControlsTimer.current);
-      }
-    };
-  }, []);
-
-  const formatTime = (timeInMillis: number) => {
-    const totalSeconds = Math.floor(timeInMillis / 1000);
+  const formatTime = (timeInSeconds: number): string => {
+    const totalSeconds = Math.floor(timeInSeconds);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const showControls = () => {
-    setIsControlsVisible(true);
-    Animated.timing(controlsOpacity, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-
-    if (hideControlsTimer.current) {
-      clearTimeout(hideControlsTimer.current);
-    }
+  const togglePlay = () => {
+    if (!videoRef.current) return;
+    setPaused(!paused);
   };
 
-  const hideControls = () => {
-    // Don't hide controls if user is interacting or video is paused
-    if (isUserInteracting || !isPlaying) return;
-
-    Animated.timing(controlsOpacity, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start(() => setIsControlsVisible(false));
+  const toggleMute = () => {
+    setMuted(!muted);
   };
 
-  const resetHideControlsTimer = () => {
-    if (hideControlsTimer.current) {
-      clearTimeout(hideControlsTimer.current);
-    }
-    if (isPlaying && !isUserInteracting) {
-      hideControlsTimer.current = setTimeout(hideControls, 3000);
-    }
-  };
-
-  const handlePlaybackStatusUpdate = (status: AVPlaybackStatus) => {
-    if (status.isLoaded) {
-      setIsPlaying(status.isPlaying);
-      setPosition(status.positionMillis);
-      setDuration(status.durationMillis ?? 0);
-
-      if (status.isPlaying && !isUserInteracting) {
-        resetHideControlsTimer();
-      }
-    }
-  };
-
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onPanResponderGrant: () => {
-      setIsUserInteracting(true);
-      setIsSeeking(true);
-      showControls();
-    },
-    onPanResponderMove: (_, gestureState) => {
-      const percent = Math.max(0, Math.min(1, gestureState.moveX / SCREEN_WIDTH));
-      const newPosition = duration * percent;
-      setSeekingPosition(newPosition);
-    },
-    onPanResponderRelease: async () => {
-      setIsSeeking(false);
-      setIsUserInteracting(false);
-      if (videoRef.current) {
-        await videoRef.current.setPositionAsync(seekingPosition);
-      }
-      resetHideControlsTimer();
-    },
-  });
-
-  const handleVideoPress = async () => {
-    if (isPlaying) {
-      await videoRef.current?.pauseAsync();
+  const toggleFullScreen = async () => {
+    if (!videoRef.current) return;
+    if (isFullScreen) {
+       videoRef.current.dismissFullscreenPlayer();
     } else {
-      await videoRef.current?.playAsync();
+      videoRef.current.presentFullscreenPlayer();
     }
-    showControls();
+  };
+
+  const handleVideoPress = () => {
+    toggleFullScreen();
+    togglePlay();
+    if (!isFullScreen) {
+
+      showControls();
+    }
     resetHideControlsTimer();
   };
 
@@ -137,116 +87,192 @@ export default function VideoScreen() {
     resetHideControlsTimer();
   };
 
-  const handleDoubleTap = (event: any) => {
-    const now = Date.now();
-    const DOUBLE_TAP_DELAY = 300;
-    const seekAmount = 10000; // 10 seconds
+  // Event handlers
+  const onLoad = (data: OnLoadData) => {
+    console.log('Video loaded:', data);
+    setDuration(data.duration);
+    setIsLoading(false);
+  };
 
-    if (now - lastTap < DOUBLE_TAP_DELAY) {
-      const tapX = event.nativeEvent.locationX;
+  const onProgress = (data: OnProgressData) => {
+    setPosition(data.currentTime);
+  };
 
-      if (tapX < SCREEN_WIDTH / 2) {
-        if (videoRef.current) {
-          videoRef.current.setPositionAsync(Math.max(0, position - seekAmount));
-        }
-      } else {
-        if (videoRef.current) {
-          videoRef.current.setPositionAsync(Math.min(duration, position + seekAmount));
-        }
-      }
+  const onSeek = (data: OnSeekData) => {
+    setPosition(data.currentTime);
+  };
+
+  const onVideoBuffer = (param: OnBufferData) => {
+    setIsLoading(param.isBuffering);
+  };
+
+  const onAspectRatio = (data: OnVideoAspectRatioData) => {
+    setVideoSize({ width: data.width, height: data.height });
+  };
+
+  const onAudioBecomingNoisy = () => {
+    setPaused(true);
+  };
+
+  const onAudioFocusChanged = (event: OnAudioFocusChangedData) => {
+    setPaused(!event.hasAudioFocus);
+  };
+
+  const onError = (err: OnVideoErrorData) => {
+    console.error('Video Error:', err);
+  };
+
+  const showControls = () => {
+    setIsControlsVisible(true);
+    Animated.timing(controlsOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+    if (hideControlsTimer.current) clearTimeout(hideControlsTimer.current);
+  };
+
+  const hideControls = () => {
+    if (isUserInteracting || paused) return;
+    Animated.timing(controlsOpacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => setIsControlsVisible(false));
+  };
+
+  const resetHideControlsTimer = () => {
+    if (hideControlsTimer.current) clearTimeout(hideControlsTimer.current);
+    if (!paused && !isUserInteracting) {
+      hideControlsTimer.current = setTimeout(hideControls, 3000);
     }
-    setLastTap(now);
   };
 
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-    // Prevent hiding controls when toggling mute
-    showControls();
-    resetHideControlsTimer();
-  };
+  // Add pan responder
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        setIsUserInteracting(true);
+        showControls();
+      },
+      onPanResponderMove: (_, gestureState) => {
+        const percent = Math.max(0, Math.min(1, gestureState.moveX / SCREEN_WIDTH));
+        if (videoRef.current) {
+          videoRef.current.seek(duration * percent);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        setIsUserInteracting(false);
+        if (isFullScreen && gestureState.dy > 100) {
+          videoRef.current?.dismissFullscreenPlayer();
+        }
+        resetHideControlsTimer();
+      },
+    })
+  ).current;
 
+  // Update the JSX to use paused instead of isPlaying
   return (
     <View style={styles.container}>
-      <Pressable
-        onPress={handleVideoPress}
-        style={styles.videoContainer}
-      >
+      <View style={styles.videoContainer} {...panResponder.panHandlers}>
         <Video
           ref={videoRef}
+          source={{ uri: videoUrl }}
           style={styles.video}
-          source={videoSource}
-          resizeMode={ResizeMode.CONTAIN}
-          shouldPlay={false}
-          isLooping
-          isMuted={isMuted}
-          onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
+          resizeMode={ResizeMode.COVER}
+          paused={paused}
+          muted={muted}
+          onLoad={onLoad}
+          onProgress={onProgress}
+          onSeek={onSeek}
+          onBuffer={onVideoBuffer}
+          onAspectRatio={onAspectRatio}
+          onAudioBecomingNoisy={() => setPaused(true)}
+          onAudioFocusChanged={(event) => setPaused(!event.hasAudioFocus)}
+          onError={onError}
+          onEnd={() => setPaused(true)}
+          controls={false}
+          repeat={true}
+          playInBackground={false}
+          playWhenInactive={false}
+          ignoreSilentSwitch="ignore"
+          preventsDisplaySleepDuringVideoPlayback={true}
         />
-
-        <Pressable
-          style={styles.doubleTapArea}
-          onPress={handleDoubleTap}
-        />
-
-        {isControlsVisible && (
+        {!isFullScreen && (
+          <Pressable style={StyleSheet.absoluteFill} onPress={handleVideoPress} />
+        )}
+        {isControlsVisible && !isFullScreen && (
           <Animated.View
             style={[styles.controls, { opacity: controlsOpacity }]}
             onTouchStart={handleControlPress}
             onTouchEnd={handleControlPressEnd}
           >
             <View style={styles.centerControlsContainer}>
-              {!isPlaying && (
+              {paused && (
                 <Pressable
                   style={styles.playButton}
-                  onPress={handleVideoPress}
-                  onPressIn={handleControlPress}
-                  onPressOut={handleControlPressEnd}
+                  onPress={togglePlay}
                   hitSlop={20}
                 >
                   <PlayIcon size={64} color="#fff" />
                 </Pressable>
               )}
             </View>
-
             <View style={styles.bottomControls}>
               <View style={styles.timeContainer}>
                 <Text style={styles.timeText}>
                   {formatTime(position)} / {formatTime(duration)}
                 </Text>
-                <Pressable
-                  style={styles.muteButton}
-                  onPress={toggleMute}
-                  onPressIn={handleControlPress}
-                  onPressOut={handleControlPressEnd}
-                  hitSlop={20}
-                >
-                  {isMuted ? (
+                <Pressable style={styles.muteButton} onPress={toggleMute} hitSlop={20}>
+                  {muted ? (
                     <VolumeOffIcon size={24} color="#fff" />
                   ) : (
                     <VolumeUpIcon size={24} color="#fff" />
                   )}
                 </Pressable>
+                <Pressable
+                  style={styles.fullScreenButton}
+                  onPress={toggleFullScreen}
+                  hitSlop={20}
+                >
+                  <Text style={styles.fullScreenText}>
+                    {isFullScreen ? 'Exit FS' : 'FS'}
+                  </Text>
+                </Pressable>
               </View>
             </View>
           </Animated.View>
         )}
-      </Pressable>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    width: '100%',
+    aspectRatio: 16 / 9,  // Match the video's aspect ratio (2560/1440 ≈ 16/9)
     backgroundColor: '#000',
+    position: 'relative',
   },
   videoContainer: {
     flex: 1,
-    justifyContent: 'center',
     backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    overflow: 'hidden',
   },
   video: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
     width: '100%',
-    height: 300,
+    height: '100%',
+    backgroundColor: '#000',
   },
   controls: {
     ...StyleSheet.absoluteFillObject,
@@ -259,8 +285,6 @@ const styles = StyleSheet.create({
   },
   playButton: {
     padding: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    borderRadius: 40,
   },
   bottomControls: {
     padding: 10,
@@ -268,27 +292,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
   },
-  progressContainer: {
-    height: 40,
-    justifyContent: 'center',
-    paddingHorizontal: 10,
-  },
-  progressBar: {
-    height: 3,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 1.5,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#1DA1F2',
-    borderRadius: 1.5,
-  },
   timeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 10,
-    marginTop: 5,
   },
   timeText: {
     color: '#fff',
@@ -297,8 +305,17 @@ const styles = StyleSheet.create({
   muteButton: {
     padding: 5,
   },
-  doubleTapArea: {
+  fullScreenButton: {
+    padding: 5,
+  },
+  fullScreenText: {
+    color: '#fff',
+    fontSize: 24,
+  },
+  loaderContainer: {
     ...StyleSheet.absoluteFillObject,
-    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 });

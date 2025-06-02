@@ -1,20 +1,21 @@
 import { View, Text, Pressable, TouchableOpacity } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatNumber } from '../utils/ArstsisArr';
 import { CheckmarkBadge01Icon } from '@hugeicons/react-native';
-import { useQuery } from '../hooks/useQuery';
-import axios from 'axios';
+import { useFollowArtist } from '@/hooks/useFollowArtist';
 import { useAppSelector } from '@/redux/hooks';
+import { showToast } from '@/components/ShowMessage';
 
+// Update the interface
 interface ArtistInfoProps {
   image?: string;
-  name: string;
+  name: string;  // We'll keep this in props but won't use it
   follow: string;
   desc: string;
   follower: string;
   isVerfied: string;
   index: string;
-  isFollowing: boolean;
+  isFollow: boolean;  // Change to boolean
 }
 
 const ArtistInfo: React.FC<ArtistInfoProps> = ({
@@ -23,72 +24,100 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
   follower,
   isVerfied,
   index,
-  isFollowing,
+  isFollow,
+  desc
 }) => {
-  const [followed, setFollowed] = useState(isFollowing);
-  const { followArtist } = useQuery();
-  const { userdata } = useAppSelector((state) => state.auth);
+  const [followed, setFollowed] = useState(false);
+  const [showFullDesc, setShowFullDesc] = useState(false);  // Add this state
 
-  const handleFollowArtist = async () => {
+  useEffect(() => {
+    setFollowed(isFollow); // Update when prop changes
+  }, [isFollow]);
+  const { userdata } = useAppSelector((state) => state.auth);
+  const { handleFollowArtist, isLoading } = useFollowArtist();
+
+  const onFollowPress = async () => {
     if (!userdata?._id) {
-      console.error('User ID is required to follow an artist');
+      showToast("Please log in to follow artists", "error");
       return;
     }
 
     try {
-      const res = await followArtist(userdata._id, index);
-      setFollowed(true);
-      console.log(`Successfully followed artist: ${name}`, res);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error('Failed to follow artist:', error.response?.data);
+      // Toggle the UI state immediately for better UX
+      setFollowed(prev => !prev);
+
+      // Call the follow artist function from the hook
+      const result = await handleFollowArtist(userdata?._id, index);
+
+      // If the API call fails, revert the UI state
+      if (result === null) {
+        setFollowed(prev => !prev);
+        showToast("Failed to follow artist", "error");
       } else {
-        console.error('Unexpected error:', error);
+        // Log success
+        console.log(`Successfully ${result ? 'followed' : 'unfollowed'} artist: ${name}`);
       }
+    } catch (error) {
+      // Revert UI state on error
+      setFollowed(prev => !prev);
+      console.error('Error following artist:', error);
+      showToast("Failed to follow artist", "error");
     }
   };
 
   const renderVerificationBadge = () => (
     isVerfied && (
       <Pressable className="flex-row items-center">
-        <CheckmarkBadge01Icon size={20} variant="solid" color="#2DD881" />
+        <CheckmarkBadge01Icon size={24} variant="solid" color="#2DD881" />
       </Pressable>
     )
   );
 
   const renderFollowerInfo = () => (
-    <View className="flex-row gap-3 mt-1">
-      <Text className="text-sm font-medium text-[#787A80]">
-        {formatNumber(follow)} Following
+    <View className="flex-row gap-x-2">
+      <Text className="text-[14px] font-PlusJakartaSansMedium text-[#9A9B9F]">
+        {formatNumber(follow)} Followers
       </Text>
-      <Text className="text-sm font-medium text-[#787A80]">
-        {formatNumber(follower)} Followers
+      <Text className="text-[14px] font-PlusJakartaSansMedium text-[#9A9B9F]">
+        {formatNumber(follower)} TribeStar
       </Text>
     </View>
   );
 
   return (
-    <View className="max-h-[256px] m-4 gap-4">
-      <View className="flex-row items-center justify-between">
-        <View className="gap-1 flex-1">
-          <View className="flex-row items-center flex-wrap gap-2">
-            <Text className="text-xl font-bold text-white">{name}</Text>
-            {renderVerificationBadge()}
-            <Text className="text-[#787A80] text-sm">#4 in Nigeria</Text>
-          </View>
+    <View className="gap-y-[14px]">
+      <View className="flex-row items-center justify-around ml-[14px]">
+        <View className=" flex-1">
           {renderFollowerInfo()}
         </View>
 
-        <TouchableOpacity
-          onPress={handleFollowArtist}
-          className={`border px-6 py-2.5 rounded-full items-center ${
-            followed
-              ? 'border-2 border-[#12141B] bg-Gr'
-              : 'border-[#787A80] bg-transparent'
-          }`}
+        {userdata?.artist !== index && (
+          <TouchableOpacity
+            onPress={onFollowPress}
+            disabled={isLoading}
+            className={`border px-6 py-2.5 border-[#63656B] rounded-full items-center ${
+              followed
+                ? 'border-2 border-[#12141B] bg-Gr'
+                : 'border-[#787A80] bg-transparent'
+            }`}
+          >
+            <Text className="text-white text-[14px] font-normal">
+              {followed ? 'Following' : 'Follow'}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+      <View className='bg-[#12141B] p-[16px] gap-y-[8px] rounded-[15px] mx-auto mb-6'>
+        <Text numberOfLines={1} className='text-[14px] font-PlusJakartaSansBold text-[#9A9B9F]'>About {name}</Text>
+        <Text
+          numberOfLines={showFullDesc ? undefined : 1}
+          className='text-[14px] font-PlusJakartaSansRegular text-[#9A9B9F]'
         >
-          <Text className="text-white text-xs font-normal">
-            {followed ? 'Following' : 'Follow'}
+          {desc}
+        </Text>
+        <TouchableOpacity onPress={() => setShowFullDesc(!showFullDesc)}>
+          <Text className='text-[14px] text-[#D2D3D5] font-PlusJakartaSansBold'>
+            {showFullDesc ? 'See less' : 'See more'}
           </Text>
         </TouchableOpacity>
       </View>
