@@ -1,15 +1,17 @@
-import { View, Text, TouchableOpacity, Alert } from "react-native";
-import React, { useEffect, useLayoutEffect } from "react";
-import { Avatar } from "react-native-elements";
-import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
-import { formatNumber } from "../../utils/ArstsisArr";
-import { useAppSelector } from "@/redux/hooks";
 import { AppBackButton } from "@/components/app-components/back-btn";
-import { FlatList } from 'react-native';
-import { useQuery } from "@tanstack/react-query";
 import api from "@/config/apiConfig";
-import { ProfilePlaylist, ProfileTribes, StarSpotLight } from "../../components/profile";
 import { useNotification } from "@/context/NotificationContext";
+import { useQuery } from "@tanstack/react-query";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import React, { useLayoutEffect } from "react";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import { Avatar } from "react-native-elements";
+import {
+  ProfilePlaylist,
+  ProfileTribes,
+  StarSpotLight,
+} from "../../components/profile";
+import { formatNumber } from "../../utils/ArstsisArr";
 
 interface User {
   _id: string;
@@ -24,7 +26,7 @@ interface User {
 }
 
 const UserProfileView = () => {
-    const { showNotification } = useNotification();
+  const { showNotification } = useNotification();
   const [selectedTab, setSelectedTab] = React.useState("Playlists");
   const [showFullBio, setShowFullBio] = React.useState(false);
   const navigation = useNavigation();
@@ -34,7 +36,7 @@ const UserProfileView = () => {
 
   // Fetch user data
   const { data: userData, isLoading } = useQuery<User>({
-    queryKey: ['user', userId],
+    queryKey: ["user", userId],
     queryFn: async () => {
       const response = await api.get(`/api/user/${userId}`);
       return response.data.data;
@@ -44,18 +46,18 @@ const UserProfileView = () => {
   // Send friend request
   const handleAddFriend = async (friendId: string) => {
     try {
-      await api.post(`/api/user/friend/${userdata?._id}/${friendId}`);
+      await api.post(`/api/user/friend/${userData?._id}/${friendId}`);
       showNotification({
-        type: 'success',
-        title: 'Friend Request Sent',
-        message: 'Your friend request has been sent successfully!'
+        type: "success",
+        title: "Friend Request Sent",
+        message: "Your friend request has been sent successfully!",
       });
     } catch (error) {
-      console.error('Error sending friend request:', error);
+      console.error("Error sending friend request:", error);
       showNotification({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to send friend request. Please try again.'
+        type: "error",
+        title: "Error",
+        message: "Failed to send friend request. Please try again.",
       });
     }
   };
@@ -100,7 +102,8 @@ const UserProfileView = () => {
                 <View className="items-center gap-y-[16px]">
                   <Avatar
                     source={{
-                      uri: userData?.profileImage ||
+                      uri:
+                        userData?.profileImage ||
                         "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
                     }}
                     size={75}
@@ -122,7 +125,9 @@ const UserProfileView = () => {
               <View className="flex-row items-center justify-around gap-x-[12px]">
                 <View className="items-center">
                   <Text className="text-[20px] font-PlusJakartaSansBold text-[#f4f4f4]">
-                    {formatNumber(userData?.following?.toString() as string ?? "0")}
+                    {formatNumber(
+                      (userData?.following?.toString() as string) ?? "0"
+                    )}
                   </Text>
                   <Text className="text-[12px] font-PlusJakartaSansBold text-[#D2D3D5]">
                     Following
@@ -133,7 +138,9 @@ const UserProfileView = () => {
 
                 <View className="items-center">
                   <Text className="text-[20px] font-PlusJakartaSansBold text-[#f4f4f4]">
-                    {formatNumber(userData?.friends?.length.toString() as string ?? "0")}
+                    {formatNumber(
+                      (userData?.friends?.length.toString() as string) ?? "0"
+                    )}
                   </Text>
                   <Text className="text-[12px] font-PlusJakartaSansBold text-[#D2D3D5]">
                     Friends
@@ -155,12 +162,15 @@ const UserProfileView = () => {
               {/* Add Friend Button */}
               <View className="mt-4 px-4">
                 <TouchableOpacity
-                    onPress={(e) => {
-                        e.stopPropagation();
-                        handleAddFriend(item._id);
-                      }}
-                  className="flex-1 flex-row items-center justify-center py-4 px-4 bg-[#12141B] border border-[#2A2B32] rounded-[12px] gap-x-2">
-                  <Text className="text-[16px] text-[#D2D3D5] font-PlusJakartaSansMedium">Add Friend</Text>
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    handleAddFriend(userData?._id as string);
+                  }}
+                  className="flex-1 flex-row items-center justify-center py-4 px-4 bg-[#12141B] border border-[#2A2B32] rounded-[12px] gap-x-2"
+                >
+                  <Text className="text-[16px] text-[#D2D3D5] font-PlusJakartaSansMedium">
+                    Add Friend
+                  </Text>
                 </TouchableOpacity>
               </View>
 
@@ -170,12 +180,14 @@ const UserProfileView = () => {
                   className="text-[14px] text-center text-[#D2D3D5] font-PlusJakartaSansMedium"
                   numberOfLines={showFullBio ? undefined : 1}
                 >
-                  {userData?.bio || 'No description available'}
+                  {userData?.bio || "No description available"}
                 </Text>
                 {userData?.bio && userData.bio.length > 100 && (
-                  <TouchableOpacity onPress={() => setShowFullBio(!showFullBio)}>
+                  <TouchableOpacity
+                    onPress={() => setShowFullBio(!showFullBio)}
+                  >
                     <Text className="text-[12px] text-center text-[#FF6D1B] font-PlusJakartaSansMedium mt-2">
-                      {showFullBio ? 'See Less' : 'See More'}
+                      {showFullBio ? "See Less" : "See More"}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -211,7 +223,7 @@ const UserProfileView = () => {
             </View>
           </>
         )}
-        data={[{ key: 'content' }]}
+        data={[{ key: "content" }]}
         renderItem={() => renderTabContent()}
         showsVerticalScrollIndicator={false}
       />

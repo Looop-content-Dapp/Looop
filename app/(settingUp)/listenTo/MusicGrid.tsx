@@ -8,7 +8,7 @@ import {
   ImageBackground,
   TouchableOpacity,
 } from "react-native";
-import type { Genre } from "@/hooks/useGenre";
+import type { Genre } from "@/hooks/artist/useGenre";
 import { MotiView } from "moti";
 const { width } = Dimensions.get("window");
 const ITEM_WIDTH = width / 2 - 15;

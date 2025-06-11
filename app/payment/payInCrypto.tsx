@@ -11,7 +11,7 @@ import {
   import { AppBackButton } from "@/components/app-components/back-btn";
   import { AppButton } from "@/components/app-components/button";
 import ChainPicker from "@/components/app-components/ChainPicker";
-import { useJoinCommunity } from "@/hooks/useJoinCommunity";
+import { useJoinCommunity } from "@/hooks/community/useJoinCommunity";
 import { useAppSelector } from "@/redux/hooks";
 
 

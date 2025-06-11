@@ -1,10 +1,10 @@
-import React from 'react';
-import { View, Text } from 'react-native';
-import { Control, Controller } from 'react-hook-form';
-import useFileUpload, { FileType } from "@/hooks/useFileUpload";
-import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
-import { ImageUpload } from '@/components/ui/image-upload';
+import { ImageUpload } from "@/components/ui/image-upload";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import useFileUpload from "@/hooks/core/useFileUpload";
+import React from "react";
+import { Control, Controller } from "react-hook-form";
+import { Text, View } from "react-native";
 
 interface EPBasicInfoProps {
   control: Control<any>;
@@ -16,12 +16,12 @@ const EPBasicInfo: React.FC<EPBasicInfoProps> = ({ control }) => {
   const genreOptions = [
     { label: "Afrobeats", value: "afrobeats" },
     { label: "Hip Hop", value: "hiphop" },
-    { label: "R&B", value: "rnb" }
+    { label: "R&B", value: "rnb" },
   ];
 
   const songNumberOptions = Array.from({ length: 5 }, (_, i) => ({
     label: `${i + 2} songs`,
-    value: `${i + 2}`
+    value: `${i + 2}`,
   }));
 
   return (

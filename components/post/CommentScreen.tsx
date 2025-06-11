@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, FlatList, ActivityIndicator, Text } from 'react-native';
 import Comment from './Comment';
-import { usePostComments } from '@/hooks/usePostComments';
+import { usePostComments } from '@/hooks/community/usePostComments';
 
 type Props = {
   postId: string;

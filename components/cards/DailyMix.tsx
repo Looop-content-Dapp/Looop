@@ -12,8 +12,6 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import DailyMixSkeleton from "../SkeletonLoading/DailyMixSkelton";
 import { PlayIcon, PauseIcon } from '@hugeicons/react-native'
-import { Image } from "react-native";
-import useMusicPlayer from "../../hooks/useMusicPlayer";
 import FastImage from 'react-native-fast-image';
 import { useMusicPlayerContext } from "@/context/MusicPlayerContext";
 
@@ -51,10 +49,10 @@ const DailyMixCard = ({
         resizeMode={FastImage.resizeMode.contain}
       />
       <View style={styles.contentContainer}>
-        <Text style={styles.title} className="capitalize" numberOfLines={2}>
+        <Text style={styles.title} className="text-[#D2D3D5] text-[24px] font-TankerRegular font-bold capitalize" numberOfLines={2}>
           {mix.name}
         </Text>
-        <Text style={styles.description} numberOfLines={2}>
+        <Text style={styles.description} className="text-[#D2D3D5] text-[14px] font-PlusJakartaSansRegular" numberOfLines={2}>
           {mix.description}
         </Text>
 
@@ -115,7 +113,7 @@ const DailyMixesSection = ({
 
   return (
     <View style={styles.container}>
-     <Text className='text-[#D2D3D5] text-[20px] font-PlusJakartaSansMedium mb-4'>
+     <Text className='text-[#D2D3D5] text-[24px] font-TankerRegular font-bold mb-4'>
        {title}
       </Text>
       <ScrollView

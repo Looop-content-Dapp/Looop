@@ -14,9 +14,9 @@ import { router, useNavigation } from "expo-router";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { useAppSelector } from "@/redux/hooks";
-import { useFollowingArtists, Artist } from "@/hooks/useFollowingArtists";
+import { useFollowingArtists, Artist } from "@/hooks/artist/useFollowingArtists";
 import { formatNumber } from "@/utils/ArstsisArr";
-import { useFollowArtist } from '@/hooks/useFollowArtist';
+import { useFollowArtist } from '@/hooks/artist/useFollowArtist';
 import { showToast } from '@/components/ShowMessage';
 
 // Define the interface for the artist data
@@ -134,7 +134,7 @@ const FollowingCard = ({ item }: { item: IFollowing }) => {
 
   return (
     <View className="flex-row items-center justify-between py-[12px]">
-      <View className="flex-row items-center gap-x-[12px]">
+      <Pressable onPress={() => router.navigate(`/(musicTabs)/(home)/_screens/artist/${item._id}`)} className="flex-row items-center gap-x-[12px]">
         <Image
           source={{ uri: item.profileImage }}
           style={{ width: 48, height: 48, borderRadius: 24 }}
@@ -147,7 +147,7 @@ const FollowingCard = ({ item }: { item: IFollowing }) => {
             {formatNumber(item.followers.toLocaleString())} followers
           </Text>
         </View>
-      </View>
+      </Pressable>
       <Pressable
         onPress={onFollowPress}
         disabled={isLoading}

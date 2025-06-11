@@ -1,15 +1,17 @@
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
+  ActivityIndicator,
   Image,
   ImageSourcePropType,
-  StyleSheet,
   Pressable,
-  ActivityIndicator,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
-import React, { useState, useEffect } from "react";
 
-import Mail from "../../../assets/images/Mail.png";
+import { useSendEmailOTP } from "@/hooks/auth/useVerifyEmail";
+import { useVerifyEmailOtp } from "@/hooks/auth/useVerifyEmailOtp";
+import { InformationCircleIcon } from "@hugeicons/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   CodeField,
@@ -17,9 +19,7 @@ import {
   useBlurOnFulfill,
   useClearByFocusCell,
 } from "react-native-confirmation-code-field";
-import { useSendEmailOTP } from "@/hooks/useVerifyEmail";
-import { useVerifyEmailOtp } from "@/hooks/useVerifyEmailOtp";
-import { InformationCircleIcon } from "@hugeicons/react-native";
+import Mail from "../../../assets/images/Mail.png";
 
 const CELL_COUNT = 6;
 

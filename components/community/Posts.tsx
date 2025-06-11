@@ -1,7 +1,7 @@
-import { View, FlatList, ActivityIndicator, Text } from 'react-native';
-import React from 'react';
-import PostCard from '../cards/PostCard';
-import { useGetCommunityPosts } from '@/hooks/useCreateCommunity';
+import { useGetCommunityPosts } from "@/hooks/community/useCreateCommunity";
+import React from "react";
+import { ActivityIndicator, FlatList, Text, View } from "react-native";
+import PostCard from "../cards/PostCard";
 
 type PostsProps = {
   communityId: string;
@@ -41,8 +41,8 @@ const Posts = ({ communityId }: PostsProps) => {
         contentContainerStyle={{
           rowGap: 20,
           marginHorizontal: 4,
-          alignContent: 'center',
-          justifyContent: 'center',
+          alignContent: "center",
+          justifyContent: "center",
           marginBottom: 120,
         }}
       />

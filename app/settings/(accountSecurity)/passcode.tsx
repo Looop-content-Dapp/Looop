@@ -44,8 +44,8 @@ const Passcode = () => {
                 ))}
             </View>
 
-            <View className='flex-row flex-wrap justify-center gap-[16px]'>
-                {[1,2,3,4,5,6,7,8,9,'',0,'delete'].map((num, index) => (
+            <View className='flex-row flex-wrap justify-center gap-[16px] mt-[80%]'>
+                {[1,2,3,4,5,6,7,8,9,0,'delete'].map((num, index) => (
                     <TouchableOpacity
                         key={index}
                         className='w-[72px] h-[72px] rounded-full bg-[#0A0B0F] border-2 border-[#12141B] items-center justify-center'

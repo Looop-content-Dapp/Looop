@@ -15,7 +15,6 @@ import ToggleFlatListView from "../../../components/view/ToggleFlatlistView";
 import GridComponent from "../../../components/cards/GridComponents";
 import ListComponent from "../../../components/cards/ListComponents";
 import { useRouter } from "expo-router";
-import { useQuery } from "../../../hooks/useQuery";
 
 const AnimatedImageBackground =
   Animated.createAnimatedComponent(ImageBackground);
@@ -29,7 +28,6 @@ const FavouriteSongs = () => {
   const route = useRouter();
   const [likedSongs, setLikedSongs] = useState([]); // State to store fetched liked songs
   const [loading, setLoading] = useState(true); // Loading state for skeleton
-  const { getLikedSongs, retrieveUserId } = useQuery();
   const [page, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
   const ITEMS_PER_PAGE = 20;
@@ -38,12 +36,7 @@ const FavouriteSongs = () => {
   const handleRefresh = async () => {
     setPage(1);
     try {
-      const userId = await retrieveUserId();
-      if (userId) {
-        const data = await getLikedSongs(userId);
-        setLikedSongs(data);
-        setFilteredSongs(data);
-      }
+     
     } catch (error) {
       console.error("Error refreshing liked songs:", error);
     }
@@ -54,17 +47,8 @@ const FavouriteSongs = () => {
 
     setLoadingMore(true);
     try {
-      const userId = await retrieveUserId();
-      if (userId) {
-        const nextPage = page + 1;
-        const data = await getLikedSongs(userId, nextPage, ITEMS_PER_PAGE);
-
-        if (data.length > 0) {
-          setLikedSongs((prev) => [...prev, ...data]);
-          setFilteredSongs((prev) => [...prev, ...data]);
-          setPage(nextPage);
-        }
-      }
+     
+       
     } catch (error) {
       console.error("Error loading more liked songs:", error);
     } finally {
@@ -78,12 +62,7 @@ const FavouriteSongs = () => {
     const fetchLikedSongs = async () => {
       setLoading(true);
       try {
-        const userId = await retrieveUserId();
-        if (userId) {
-          const data = await getLikedSongs(userId);
-          setLikedSongs(data);
-          setFilteredSongs(data);
-        }
+       
       } catch (error) {
         console.error("Error fetching liked songs:", error);
       } finally {
@@ -92,7 +71,7 @@ const FavouriteSongs = () => {
     };
 
     fetchLikedSongs();
-  }, [getLikedSongs]);
+  }, []);
 
   // Animations for the header
   const headerHeight = scrollY.interpolate({

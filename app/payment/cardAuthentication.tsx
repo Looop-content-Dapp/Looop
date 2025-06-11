@@ -1,22 +1,20 @@
-import { View, Text, Image, Alert } from 'react-native';
+import { View, Text, Alert } from 'react-native';
 import React, { useState, useCallback } from 'react';
 import { AppButton } from '@/components/app-components/button';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import validateTransaction from 'flutterwave-react-native';
-import { FlutterwaveInit } from 'flutterwave-react-native';
 import {
   CodeField,
   Cursor,
   useBlurOnFulfill,
   useClearByFocusCell,
 } from 'react-native-confirmation-code-field';
-import { useFlutterwavePayment } from '@/hooks/useFlutterwavePayment';
+import { useFlutterwavePayment } from '@/hooks/payment/useFlutterwavePayment';
 
 const CELL_COUNT = 6;
 const RESEND_TIMEOUT = 30; // 30 seconds timeout for resend
 
 // Add type definitions
-interface FlutterwaveResponse {
+interface FlutterwaveResponse {   
   status: 'successful' | 'failed' | 'pending';
   transaction_id?: string;
   tx_ref?: string;
@@ -135,7 +133,7 @@ const CardAuthentication = () => {
                 shadow-sm`}
               style={{
                 transform: [{ scale: isFocused ? 1.05 : 1 }],
-                transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease'
               }}
             >
               <Text className="text-[20px] font-PlusJakartaSansBold text-white">

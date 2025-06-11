@@ -3,7 +3,7 @@ import React from "react";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import { TouchableOpacity } from "react-native";
 import { ArrowRight01Icon } from "@hugeicons/react-native";
-import useMusicPlayer from "../../hooks/useMusicPlayer";
+import useMusicPlayer from "@/hooks/music/useMusicPlayer";
 import { MotiView } from "moti";
 
 // ... existing types ...
@@ -135,7 +135,7 @@ const ChartListSection = ({ title, data, isLoading }: ChartListSectionProps) => 
       <View className="mt-6" style={{ width: wp("100%") }}>
         <View style={{ width: wp("100%") }}>
           <View className="flex-row items-center justify-between px-6 mb-4">
-            <Text className="text-[#F4F4F4] text-[22px] font-PlusJakartaSansMedium">
+            <Text className="text-[#F4F4F4] text-[24px] font-TankerRegular">
               {title}
             </Text>
             <TouchableOpacity className="flex-row items-center gap-x-[4px]">

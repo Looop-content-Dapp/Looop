@@ -1,10 +1,10 @@
-import { View, Text, Pressable, TouchableOpacity, TextInput, ScrollView, useWindowDimensions, SafeAreaView } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, ScrollView, useWindowDimensions, SafeAreaView } from 'react-native'
 import React, { useLayoutEffect, useState } from 'react'
-import { AccessIcon, ArrowRight01Icon, Notification02Icon, Settings01Icon, Shield02Icon, UserCircleIcon, Search01Icon, Delete01Icon } from '@hugeicons/react-native'
+import { ArrowRight01Icon, Notification02Icon, Settings01Icon, Shield02Icon, UserCircleIcon, Search01Icon } from '@hugeicons/react-native'
 import { router, useNavigation } from 'expo-router'
 import { AppBackButton } from '@/components/app-components/back-btn'
 import { MaterialIcons } from '@expo/vector-icons'
-import { useClerkAuthentication } from '@/hooks/useClerkAuthentication'
+import { useClerkAuthentication } from '@/hooks/auth/useAuth'
 
 const index = () => {
     const navigation = useNavigation()
@@ -12,7 +12,7 @@ const index = () => {
     const { width, height } = useWindowDimensions()
 
     // Responsive padding calculation based on screen size
-    const horizontalPadding = width < 768 ? 24 : 32
+    const horizontalPadding = width < 768 ? 16 : 32
     const itemPadding = width < 768 ? 16 : 24
 
     useLayoutEffect(() => {
@@ -70,7 +70,7 @@ const index = () => {
                 className='flex-1'
                 contentContainerStyle={{
                     paddingHorizontal: horizontalPadding,
-                    paddingBottom: 24
+                    paddingBottom: 16
                 }}
                 showsVerticalScrollIndicator={false}
             >

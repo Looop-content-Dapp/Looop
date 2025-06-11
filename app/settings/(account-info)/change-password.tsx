@@ -12,7 +12,7 @@ const ChangePassword = () => {
     const navigation = useNavigation()
     const [showNewPassword, setShowNewPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-    const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<PasswordSchema>({
+    const { control, handleSubmit, formState: { errors } } = useForm<PasswordSchema>({
         resolver: zodResolver(passwordSchema)
     })
 

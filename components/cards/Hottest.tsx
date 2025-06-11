@@ -3,7 +3,7 @@ import { View, Text, Image, FlatList, Pressable, StyleSheet, ActivityIndicator }
 import { MotiView } from 'moti'; // Import Moti for skeleton loading
 import { PlayIcon, PauseIcon } from '@hugeicons/react-native'; // Import PlayIcon icon from huge-icons
 import { SkeletonLoader } from '../shared/SkeletonLoader';
-import useMusicPlayer from '../../hooks/useMusicPlayer';
+import useMusicPlayer from '@/hooks/music/useMusicPlayer';
 
 type Props = {
   songs: any;
@@ -80,7 +80,7 @@ const Hottest: React.FC<Props> = ({ songs, isLoading }) => {
                   )}
                 </MotiView>
               </Pressable>
-              <Text className='font-TankerRegular' style={styles.number}>#{index + 1}</Text>
+              <Text className='font-TankerRegular text-[16px] leading-[22px] tracking-[-0.32px]' style={styles.number}>#{index + 1}</Text>
             </View>
             <View>
               <Text numberOfLines={1} className='text-[#f4f4f4] text-[16px] font-PlusJakartaSansBold'>{item?.title}</Text>
@@ -169,7 +169,7 @@ const Hottest: React.FC<Props> = ({ songs, isLoading }) => {
   return (
     <View style={styles.container}>
         {songs.length > 0 && (
-             <Text className='text-[#D2D3D5] text-[20px] font-PlusJakartaSansMedium ml-[16px]'>Hottest Releases</Text>
+             <Text className='text-[#D2D3D5] text-[24px] font-TankerRegular ml-[16px]'>Hottest Releases</Text>
         )}
       {isLoading ? (
         <FlatList

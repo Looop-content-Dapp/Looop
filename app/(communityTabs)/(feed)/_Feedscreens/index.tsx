@@ -1,42 +1,40 @@
-import React, { useLayoutEffect, useState, useRef, useEffect } from 'react';
+import { AppBackButton } from "@/components/app-components/back-btn";
+import CommentsBottomSheet from "@/components/bottomSheet/CommentsBottomSheet";
+import PostCard from "@/components/cards/PostCard";
+import CommentsScreen from "@/components/post/CommentScreen";
+import { useGetPost } from "@/hooks/community/useCreateCommunity";
+import { useAppSelector } from "@/redux/hooks";
+import { ArrowDown01Icon } from "@hugeicons/react-native";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
-  View,
-  SafeAreaView,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  Text,
   ActivityIndicator,
-  TextInput,
+  FlatList,
   Keyboard,
+  SafeAreaView,
+  Text,
+  TextInput,
   TouchableWithoutFeedback,
-} from 'react-native';
-import { ArrowDown01Icon, ArrowLeft02Icon } from '@hugeicons/react-native';
-import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
-import { router, useLocalSearchParams, useNavigation } from 'expo-router';
-import PostCard from '@/components/cards/PostCard';
-import { useGetPost } from '@/hooks/useCreateCommunity';
-import CommentsScreen from '@/components/post/CommentScreen';
-import { AppBackButton } from '@/components/app-components/back-btn';
-import { useAppSelector } from '@/redux/hooks';
-import { Avatar } from 'react-native-elements';
+  View,
+} from "react-native";
+import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 
 const CommentScreen = () => {
   const [isCommentsVisible, setIsCommentsVisible] = useState(false);
   const { id } = useLocalSearchParams();
-  const navigation = useNavigation()
+  const navigation = useNavigation();
   const { data: postData, isLoading } = useGetPost(id as string);
-  const { userdata } = useAppSelector((auth) => auth.auth)
-  const [comment, setComment] = useState('');
+  const { userdata } = useAppSelector((auth) => auth.auth);
+  const [comment, setComment] = useState("");
   const textInputRef = useRef<TextInput>(null);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   // Add keyboard listeners
   useEffect(() => {
-    const keyboardWillShow = Keyboard.addListener('keyboardWillShow', () => {
+    const keyboardWillShow = Keyboard.addListener("keyboardWillShow", () => {
       setIsKeyboardVisible(true);
     });
-    const keyboardWillHide = Keyboard.addListener('keyboardWillHide', () => {
+    const keyboardWillHide = Keyboard.addListener("keyboardWillHide", () => {
       setIsKeyboardVisible(false);
     });
 
@@ -48,9 +46,11 @@ const CommentScreen = () => {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerLeft: () => <AppBackButton name='Post' onBackPress={() =>  router.back()} />,
-    })
-  })
+      headerLeft: () => (
+        <AppBackButton name="Post" onBackPress={() => router.back()} />
+      ),
+    });
+  });
 
   const renderPostAndComments = () => {
     if (isLoading) {
@@ -64,16 +64,16 @@ const CommentScreen = () => {
     return (
       <>
         <>
-          <PostCard item={postData?.data} />
+          <PostCard item={postData?.data as any} />
           <CommentsBottomSheet
             isVisible={isCommentsVisible}
             onClose={() => setIsCommentsVisible(false)}
             postId={id as string}
-            commentsCount={postData?.data?.commentsCount || 0}
+            commentsCount={postData?.data?.commentCount || 0}
           />
         </>
         <View
-          style={{ width: wp('100%') }}
+          style={{ width: wp("100%") }}
           className="bg-[#12141B] py-[11px] px-3 my-4 flex-row items-center gap-3 h-[40px]"
         >
           <Text className="text-[12px] text-[#fff]">Sort comments by</Text>
@@ -92,14 +92,14 @@ const CommentScreen = () => {
     <SafeAreaView className="flex-1">
       <TouchableWithoutFeedback onPress={dismissKeyboard}>
         <View className="flex-1">
-          <View className='pl-[24px] py-[14px]'>
-            <AppBackButton name='Post' onBackPress={() => router.back()} />
+          <View className="pl-[24px] py-[14px]">
+            <AppBackButton name="Post" onBackPress={() => router.back()} />
           </View>
           <View className="flex-1">
             <FlatList
               data={[1]}
               renderItem={renderPostAndComments}
-              keyExtractor={() => 'post'}
+              keyExtractor={() => "post"}
               contentContainerStyle={{
                 paddingHorizontal: 16,
                 paddingBottom: 120,

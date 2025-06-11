@@ -1,11 +1,9 @@
-import { View, Text, Image, Pressable, ScrollView,
+import { View, Text, Image, Pressable,
   ImageSourcePropType,
   ImageBackground,
-  StatusBar
  } from 'react-native'
 import React from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { ArrowRight02Icon, HeadphonesIcon, UserGroupIcon } from '@hugeicons/react-native'
+import { ArrowRight02Icon, HeadphonesIcon } from '@hugeicons/react-native'
 import { router } from 'expo-router'
 import { welcome, welcomeBg } from '@/assets/images/images'
 import {

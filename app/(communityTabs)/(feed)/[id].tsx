@@ -1,29 +1,28 @@
-import {
-  View,
-  Text,
-  SafeAreaView,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-} from "react-native";
-import React, { useEffect, useState } from "react";
+import PostCard from "@/components/cards/PostCard";
+import CommentBox from "@/components/post/CommentBox";
+import Comments from "@/components/post/CommentScreen";
+import { feed } from "@/utils";
 import {
   ArrowDown01Icon,
   ArrowLeft02Icon,
   UserGroupIcon,
 } from "@hugeicons/react-native";
-import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import { router, useLocalSearchParams } from "expo-router";
-import { feed } from "../../../utils";
-import { FeedItem } from "../../../utils/types";
-import PostCard from "../../../components/cards/PostCard";
-import CommentBox from "../../../components/post/CommentBox";
-import Comments from "../../../components/post/CommentScreen";
+import React, { useEffect, useState } from "react";
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  SafeAreaView,
+  Text,
+  View,
+} from "react-native";
+import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 
 const Comment = () => {
   const { id } = useLocalSearchParams();
-  const [postdetails, setPostDetails] = useState<FeedItem | undefined>();
+  const [postdetails, setPostDetails] = useState<any | undefined>();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,7 +51,7 @@ const Comment = () => {
           <Text className="text-[12px] text-[#fff]">Sort comments by</Text>
           <ArrowDown01Icon variant="solid" size={20} color="#787A80" />
         </View>
-        <Comments />
+        <Comments postId={postdetails?._id} />
       </>
     );
   };

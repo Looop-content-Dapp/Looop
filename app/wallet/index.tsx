@@ -5,9 +5,9 @@ import { useAppSelector } from '@/redux/hooks';
 import FilterButton from '@/components/app-components/FilterButton';
 import { AppBackButton } from '@/components/app-components/back-btn';
 import { countries } from '@/data/data';
-import { useExchangeRates } from '@/hooks/useExchangeRates';
+import { useExchangeRates } from '@/hooks/payment/useExchangeRates';
 import * as Clipboard from 'expo-clipboard';
-import { useWalletBalance } from '@/hooks/useWalletBalance';
+import { useWalletBalance } from '@/hooks/payment/useWalletBalance';
 
 import WithdrawFunds from '@/components/wallet/WithdrawFunds';
 import ConnectedAccounts from '@/components/wallet/ConnectedAccounts';

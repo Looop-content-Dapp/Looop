@@ -1,33 +1,31 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import PostCard from "@/components/cards/PostCard";
+import { useGetPost } from "@/hooks/community/useCreateCommunity";
+import { useGetComment } from "@/hooks/community/useGetComment";
+import { usePostInteractions } from "@/hooks/community/usePostInteractions";
+import useFileUpload, { FileType } from "@/hooks/core/useFileUpload";   
+import { formatDistanceToNow } from "date-fns";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   Text,
   TextInput,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  Image,
-  ActivityIndicator,
-  FlatList,
-  Keyboard,
-} from 'react-native';
-import { useLocalSearchParams, router, useNavigation } from 'expo-router';
-import { Image02Icon, Gif02Icon, HappyIcon } from '@hugeicons/react-native';
-import PostCard from '@/components/cards/PostCard';
-import { useGetPost } from '@/hooks/useCreateCommunity';
-import useFileUpload, { FileType } from '@/hooks/useFileUpload';
-import { useGetComment } from '@/hooks/useGetComment';
-import { formatDistanceToNow } from 'date-fns';
-import { Avatar } from 'react-native-elements';
-import { usePostInteractions } from '@/hooks/usePostInteractions';
+  View,
+} from "react-native";
+import { Avatar } from "react-native-elements";
 
-import { useAppSelector } from '@/redux/hooks';
-import { useQuery } from '@tanstack/react-query';
-import api from '@/config/apiConfig';
+import api from "@/config/apiConfig";
+import { useAppSelector } from "@/redux/hooks";
+import { useQuery } from "@tanstack/react-query";
 
 // Update the Comment interface to match the API response
 interface Comment {
-  _id: string;  // Changed from id to _id to match API
+  _id: string; // Changed from id to _id to match API
   content: string;
   userId: {
     _id: string;
@@ -44,11 +42,11 @@ interface Comment {
 const CommentItem = ({
   comment,
   onReply,
-  onPress
+  onPress,
 }: {
-  comment: Comment,
-  onReply: (comment: Comment) => void,
-  onPress: (comment: Comment) => void
+  comment: Comment;
+  onReply: (comment: Comment) => void;
+  onPress: (comment: Comment) => void;
 }) => {
   return (
     <TouchableOpacity
@@ -59,12 +57,13 @@ const CommentItem = ({
         <View>
           <Avatar
             source={{
-              uri: comment.userId?.profileImage ||
-                "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg"
+              uri:
+                comment.userId?.profileImage ||
+                "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
             }}
             size={40}
             rounded
-            containerStyle={{ borderWidth: 1, borderColor: '#202227' }}
+            containerStyle={{ borderWidth: 1, borderColor: "#202227" }}
           />
         </View>
         <View className="flex-1 ml-3">
@@ -73,7 +72,10 @@ const CommentItem = ({
               {comment.userId?.username}
             </Text>
             <Text className="text-gray-400 ml-2">
-              · {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+              ·{" "}
+              {formatDistanceToNow(new Date(comment.createdAt), {
+                addSuffix: true,
+              })}
             </Text>
           </View>
 
@@ -104,23 +106,24 @@ const CommentItem = ({
 
 export default function CommentScreen() {
   const { postId, type, parentId, commentId } = useLocalSearchParams();
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
   const { userdata } = useAppSelector((auth) => auth.auth);
-  const { commentOnPost, replyToComment, isCommenting, isReplying } = usePostInteractions();
+  const { commentOnPost, replyToComment, isCommenting, isReplying } =
+    usePostInteractions();
   const navigation = useNavigation();
   const {
     files,
     isLoading: isUploading,
     error: uploadError,
     pickFile,
-    removeFile
+    removeFile,
   } = useFileUpload();
 
   const { data: postData, isLoading } = useGetPost(postId as string);
 
   const { data: commentsData, refetch: refetchComments } = useQuery({
-    queryKey: ['comments', postId],
+    queryKey: ["comments", postId],
     queryFn: async () => {
       const response = await api.get(`/api/post/comments/${postId}`);
       return response.data;
@@ -128,31 +131,34 @@ export default function CommentScreen() {
     enabled: !!postId,
     staleTime: 1000, // Reduce stale time for more frequent updates
     refetchInterval: 5000, // Poll every 5 seconds for new comments
-    onError: (error) => {
-      console.error('Error fetching comments:', error);
-    }
+    onError: (error: any) => {
+      console.error("Error fetching comments:", error);
+    },
   });
 
   // Update the useEffect for comments data
   useEffect(() => {
     if (commentsData?.data?.comments) {
-      setComments(commentsData?.data?.comments);
+      setComments(commentsData?.data?.comments as Comment[]);
     }
   }, [commentsData]);
 
   useLayoutEffect(() => {
-    const title = type === 'reply' ? 'Reply' : type === 'thread' ? 'Thread' : 'Comments';
+    const title =
+      type === "reply" ? "Reply" : type === "thread" ? "Thread" : "Comments";
 
     navigation.setOptions({
       headerShown: true,
       headerLeft: () => (
         <TouchableOpacity onPress={() => router.back()}>
-          <Text className="text-white font-PlusJakartaSansBold text-[14px]">Back</Text>
+          <Text className="text-white font-PlusJakartaSansBold text-[14px]">
+            Back
+          </Text>
         </TouchableOpacity>
       ),
       title,
       headerStyle: {
-        backgroundColor: '#000000',
+        backgroundColor: "#000000",
       },
     });
   }, [type]);
@@ -167,23 +173,23 @@ export default function CommentScreen() {
 
   const handleCommentPress = (comment: Comment) => {
     router.push({
-      pathname: '/comments',
+      pathname: "/comments",
       params: {
         postId,
         commentId: comment._id,
-        type: 'thread'
-      }
+        type: "thread",
+      },
     });
   };
 
   const handleReply = (comment: Comment) => {
     router.push({
-      pathname: '/comments',
+      pathname: "/comments",
       params: {
         postId,
         parentId: comment._id,
-        type: 'reply'
-      }
+        type: "reply",
+      },
     });
   };
 
@@ -191,7 +197,7 @@ export default function CommentScreen() {
     if (!comment.trim() && files.length === 0) return;
 
     try {
-      if (type === 'reply') {
+      if (type === "reply") {
         const replyPayload = {
           userId: userdata?._id || "",
           postId: postId as string,
@@ -210,7 +216,7 @@ export default function CommentScreen() {
       }
 
       // Clear the form and dismiss keyboard
-      setComment('');
+      setComment("");
       if (files.length > 0) {
         removeFile(files[0]);
       }
@@ -218,9 +224,8 @@ export default function CommentScreen() {
 
       // Immediately route back regardless of comment type
       router.back();
-
     } catch (error) {
-      console.error('Error submitting comment:', error);
+      console.error("Error submitting comment:", error);
     }
   };
 
@@ -242,7 +247,7 @@ export default function CommentScreen() {
 
   // Add this hook to fetch the parent comment when in reply/thread mode
   const { data: parentComment, isLoading: isParentLoading } = useGetComment(
-    type !== 'post' ? (commentId || parentId) as string : null
+    type !== "post" ? ((commentId || parentId) as string) : null
   );
 
   const textInputRef = React.useRef<TextInput>(null);
@@ -261,7 +266,7 @@ export default function CommentScreen() {
       {/* Content Section */}
       <View className="flex-1">
         {/* Show original post or parent comment based on type */}
-        {type === 'post' ? (
+        {type === "post" ? (
           <View className="border-b border-[#202227]">
             {isLoading ? (
               <View className="p-4 flex items-center justify-center">
@@ -271,12 +276,7 @@ export default function CommentScreen() {
               postData?.data && (
                 <View className="p-4">
                   <PostCard
-                    item={postData.data}
-                    containerStyle={{
-                      borderBottomWidth: 0,
-                      marginBottom: 0,
-                      paddingBottom: 0
-                    }}
+                    item={postData.data as any}
                   />
                 </View>
               )
@@ -291,8 +291,8 @@ export default function CommentScreen() {
             ) : (
               parentComment?.data && (
                 <CommentItem
-                  comment={parentComment.data}
-                  postId={postId as string}
+                  comment={parentComment.data as Comment}
+                  onReply={handleReply}
                   onPress={handleCommentPress}
                 />
               )
@@ -315,7 +315,7 @@ export default function CommentScreen() {
 
       {/* Input Section - Now positioned absolutely */}
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.select({ ios: 90, android: 0 })}
         className="absolute bottom-0 left-0 right-0 bg-black border-t border-[#202227]"
       >
@@ -324,7 +324,9 @@ export default function CommentScreen() {
             <TextInput
               ref={textInputRef}
               className="flex-1 text-white text-[16px] font-PlusJakartaSansMedium"
-              placeholder={`${type === 'reply' ? 'Write a reply...' : 'Write a comment...'}`}
+              placeholder={`${
+                type === "reply" ? "Write a reply..." : "Write a comment..."
+              }`}
               placeholderTextColor="#787A80"
               multiline
               value={comment}
@@ -340,19 +342,23 @@ export default function CommentScreen() {
 
           {/* Display uploaded files */}
 
-
           {/* Bottom Toolbar */}
           <View className="flex-row items-center justify-end mt-4">
             <TouchableOpacity
               className="bg-Orange/08 px-4 py-2 rounded-full"
-              disabled={(!comment.trim() && files.length === 0) || isUploading || isCommenting || isReplying}
+              disabled={
+                (!comment.trim() && files.length === 0) ||
+                isUploading ||
+                isCommenting ||
+                isReplying
+              }
               onPress={handleSubmit}
             >
-              {(isUploading || isCommenting || isReplying) ? (
+              {isUploading || isCommenting || isReplying ? (
                 <ActivityIndicator color="white" size="small" />
               ) : (
                 <Text className="text-white font-semibold">
-                  {type === 'reply' ? 'Reply' : 'Comment'}
+                  {type === "reply" ? "Reply" : "Comment"}
                 </Text>
               )}
             </TouchableOpacity>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import useFileUpload, { FileType, UploadedFile } from '@/hooks/useFileUpload';
+import useFileUpload, { FileType, UploadedFile } from '@/hooks/core/useFileUpload';
 import { formatBytes } from '@/utils/formatBytes';
 
 interface AudioUploadProps {

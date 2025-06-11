@@ -15,7 +15,6 @@ import { router, useRouter } from "expo-router";
 import ToggleFlatListView from "../../../components/view/ToggleFlatlistView";
 import GridComponent from "../../../components/cards/GridComponents";
 import ListComponent from "../../../components/cards/ListComponents";
-import { useQuery } from "../../../hooks/useQuery";
 
 const AnimatedImageBackground =
   Animated.createAnimatedComponent(ImageBackground);
@@ -28,7 +27,6 @@ const SavedAlbums = () => {
   const route = useRouter();
   const [savedAlbums, setSavedAlbums] = useState([]); // State to store fetched saved albums
   const [loading, setLoading] = useState(true); // Loading state for skeleton
-  const { getSavedAlbums, retrieveUserId } = useQuery();
 
   const searchAnimation = useRef(new Animated.Value(1)).current;
 
@@ -51,10 +49,10 @@ const SavedAlbums = () => {
     extrapolate: "clamp",
   });
 
-  const handleSearchChange = (text) => {
+  const handleSearchChange = (text: string) => {
     setSearchQuery(text);
     const filtered = savedAlbums.filter(
-      (album) =>
+      (album: any) =>
         album.title.toLowerCase().includes(text.toLowerCase()) ||
         album.artist.toLowerCase().includes(text.toLowerCase())
     );
@@ -65,12 +63,7 @@ const SavedAlbums = () => {
     const fetchSavedAlbums = async () => {
       setLoading(true);
       try {
-        const userId = await retrieveUserId();
-        if (userId) {
-          const data = await getSavedAlbums(userId);
-          setSavedAlbums(data);
-          setFilteredAlbums(data);
-        }
+        
       } catch (error) {
         console.error("Error fetching saved albums:", error);
       } finally {
@@ -79,7 +72,7 @@ const SavedAlbums = () => {
     };
 
     fetchSavedAlbums();
-  }, [getSavedAlbums]);
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -126,7 +119,7 @@ const SavedAlbums = () => {
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           {
             useNativeDriver: false,
-            listener: (event) => {
+            listener: (event: any) => {
               const offsetY = event?.nativeEvent?.contentOffset.y;
               if (offsetY > 180) {
                 setShowStickySearch(true);
@@ -164,7 +157,7 @@ const SavedAlbums = () => {
             ListComponent={ListComponent}
             title="Saved Albums"
             loading={loading}
-            renderItem={(item) => ({
+            renderItem={(item: any) => ({
               _id: item._id,
               track: { title: item.title },
               artist: { name: item.artist },

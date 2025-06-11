@@ -1,8 +1,17 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import useFileUpload, { FileType, UploadedFile } from '@/hooks/useFileUpload';
-import { ImageAdd01Icon } from '@hugeicons/react-native';
+import useFileUpload, {
+  FileType,
+  UploadedFile,
+} from "@/hooks/core/useFileUpload";
+import { Ionicons } from "@expo/vector-icons";
+import { ImageAdd01Icon } from "@hugeicons/react-native";
+import React from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface ImageUploadProps {
   label: string;
@@ -12,7 +21,7 @@ interface ImageUploadProps {
   maxSize?: string;
   acceptedFormats?: string;
   error?: string;
-  type?: 'rounded' | 'square';  // Add new type prop
+  type?: "rounded" | "square"; // Add new type prop
 }
 
 export const ImageUpload = ({
@@ -23,27 +32,32 @@ export const ImageUpload = ({
   maxSize,
   acceptedFormats,
   error,
-  type = 'rounded'  // Default to rounded if not specified
+  type = "rounded", // Default to rounded if not specified
 }: ImageUploadProps) => {
+    console.log("ImageUpload component rendered", value)
   const { pickFile, isLoading } = useFileUpload();
 
   const handlePickImage = async () => {
     try {
       const result = await pickFile(FileType.IMAGE);
       if (result?.success && result.file) {
-        onChange(result.file);
+        onChange(result.file.uri);
       }
     } catch (error) {
-      console.error('Error picking image:', error);
+      console.error("Error picking image:", error);
     }
   };
 
   return (
     <View className="gap-y-[12px]">
       <View className="self-start">
-        <Text className="text-[#F4F4F4] text-[16px] font-PlusJakartaSansMedium">{label}</Text>
+        <Text className="text-[#F4F4F4] text-[16px] font-PlusJakartaSansMedium">
+          {label}
+        </Text>
         {description && (
-          <Text className="text-[#787A80] text-[14px] font-PlusJakartaSansMedium">{description}</Text>
+          <Text className="text-[#787A80] text-[14px] font-PlusJakartaSansMedium">
+            {description}
+          </Text>
         )}
       </View>
 
@@ -53,9 +67,9 @@ export const ImageUpload = ({
             onPress={handlePickImage}
             disabled={isLoading}
             className={`border border-[#202227] bg-[#111318] ${
-              type === 'rounded'
-                ? 'rounded-full w-[220px] h-[220px]'
-                : 'rounded-lg w-full py-[158px]'
+              type === "rounded"
+                ? "rounded-full w-[220px] h-[220px]"
+                : "rounded-lg w-full py-[158px]"
             } items-center justify-center`}
           >
             {isLoading ? (
@@ -65,21 +79,26 @@ export const ImageUpload = ({
               </View>
             ) : (
               <>
-                <ImageAdd01Icon size={type === 'rounded' ? 24 : 34} color="#63656B" />
+                <ImageAdd01Icon
+                  size={type === "rounded" ? 24 : 34}
+                  color="#63656B"
+                />
                 <Text className="text-[#63656B] text-[14px] font-PlusJakartaSansMedium mt-2">
-                  {type === 'rounded' ? 'Upload' : 'Click to upload image'}
+                  {type === "rounded" ? "Upload" : "Click to upload image"}
                 </Text>
               </>
             )}
           </TouchableOpacity>
         ) : (
-          <View className={type === 'rounded' ? 'w-[220px] h-[220px]' : 'w-full'}>
+          <View
+            className={type === "rounded" ? "w-[220px] h-[220px]" : "w-full"}
+          >
             <Image
-              source={{ uri: value.uri }} 
+              source={{ uri: value }}
               className={`${
-                type === 'rounded'
-                  ? 'w-[220px] h-[220px] rounded-full'
-                  : 'w-full h-[200px] rounded-lg'
+                type === "rounded"
+                  ? "w-[220px] h-[220px] rounded-full"
+                  : "w-full h-[200px] rounded-lg"
               }`}
               resizeMode="cover"
             />

@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import api from "@/config/apiConfig";
+import useUserInfo from "@/hooks/user/useUserInfo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import useUserInfo from "./useUserInfo";
-import api from "@/config/apiConfig";
+import { useCallback, useState } from "react";
 
 // -----------------------------
 // TypeScript Interfaces
@@ -197,7 +197,7 @@ export const useQuery = () => {
         const response = await api.post(`/api/user/createuser`, {
           email: _email,
           password: password,
-          username: _username
+          username: _username,
         });
 
         return response?.data;
@@ -281,7 +281,7 @@ export const useQuery = () => {
         console.log("Response from saving user preferences:", response.data);
         return true;
       } catch (error) {
-        console.log("error saving genre")
+        console.log("error saving genre");
       }
     },
     []
@@ -525,9 +525,7 @@ export const useQuery = () => {
   // Get Top Songs for Artist
   const getTopSongsForArtist = useCallback(async (artistId: string) => {
     try {
-      const response = await api.get(
-        `/api/song/artist/${artistId}/top-songs`
-      );
+      const response = await api.get(`/api/song/artist/${artistId}/top-songs`);
       return response.data;
     } catch (error) {
       console.error("Error fetching top songs for artist:", error);
@@ -637,9 +635,7 @@ export const useQuery = () => {
   // Get Last Played Songs
   const getLastPlayedSongs = useCallback(async (userId: string) => {
     try {
-      const response = await api.get(
-        `/api/song/history/last-played/${userId}`
-      );
+      const response = await api.get(`/api/song/history/last-played/${userId}`);
       return response.data;
     } catch (error) {
       console.error("Error getting last played songs:", error);
@@ -752,9 +748,7 @@ export const useQuery = () => {
 
   const getUserById = useCallback(async (userId: string) => {
     try {
-      const response = await api.get(
-        `/api/user/${userId}`
-      );
+      const response = await api.get(`/api/user/${userId}`);
       return response.data;
     } catch (error: any) {}
   }, []);
@@ -1020,19 +1014,16 @@ export const useQuery = () => {
     []
   );
 
-  const getArtistCommunitiesByGenre = useCallback(
-    async (userId: string) => {
-      try {
-        const response = await axios.get(
-          `/api/community/artists-by-genre/${userId}`
-        );
-        return response.data;
-      } catch (error) {
-        console.error("Error getting artist communities by genre:", error);
-      }
-    },
-    []
-  );
+  const getArtistCommunitiesByGenre = useCallback(async (userId: string) => {
+    try {
+      const response = await axios.get(
+        `/api/community/artists-by-genre/${userId}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error getting artist communities by genre:", error);
+    }
+  }, []);
 
   const getTrendingArtistsByGenre = useCallback(
     async (userId: string, timeframe: "24h" | "7d" | "30d" = "7d") => {

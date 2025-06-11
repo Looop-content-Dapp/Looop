@@ -2,7 +2,7 @@ import { View, FlatList, ActivityIndicator, Text } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { feed } from '../../utils';
 import PostCard from '../cards/PostCard';
-import { useGetCommunityPosts } from '@/hooks/useCreateCommunity';
+import { useGetCommunityPosts } from '@/hooks/community/useCreateCommunity';
 
 type AnnoucementProps = {
     communityId: string;

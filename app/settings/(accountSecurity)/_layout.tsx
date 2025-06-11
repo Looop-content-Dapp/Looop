@@ -1,6 +1,5 @@
-import { View, Text } from 'react-native'
-import React from 'react'
-import { Stack } from 'expo-router'
+import { Stack } from "expo-router";
+import React from "react";
 
 export default function _Setttingslayout() {
   return (
@@ -22,5 +21,5 @@ export default function _Setttingslayout() {
       <Stack.Screen name="passcode" />
       <Stack.Screen name="face-id" />
     </Stack>
-  )
+  );
 }

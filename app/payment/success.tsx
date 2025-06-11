@@ -1,14 +1,14 @@
-import { View, Text, Image, TouchableOpacity, Dimensions, SafeAreaView } from 'react-native'
+import { View, Text, Image, Dimensions, SafeAreaView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { AppButton } from '@/components/app-components/button'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Audit01Icon, HeadphonesIcon, UserGroupIcon } from '@hugeicons/react-native'
 import LoadingScreen from '../loadingScreen'
 import Confetti from '@/assets/svg/Confetti'
-import { useJoinCommunity } from '@/hooks/useJoinCommunity'
+import { useJoinCommunity } from '@/hooks/community/useJoinCommunity'
 import { useAppSelector } from '@/redux/hooks'
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window'); 
 
 const successful = () => {
   const { name, image, userId, communityId } = useLocalSearchParams()

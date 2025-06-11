@@ -1,19 +1,30 @@
-import { View, Text, Image, TouchableOpacity, ImageSourcePropType, Pressable, Alert, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
-import { TextInput } from "react-native-gesture-handler";
 import { AppButton } from "@/components/app-components/button";
-import { router } from "expo-router";
-import { useForm, Controller, UseFormReturn } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import AuthHeader from "@/components/AuthHeader";
-import { InformationCircleIcon, ViewIcon, ViewOffIcon } from "@hugeicons/react-native";
-import * as WebBrowser from "expo-web-browser";
-import { useLogin } from "@/hooks/useLogin";
 import { Input } from "@/components/ui/input";
+import { useLogin } from "@/hooks/auth/useLogin";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ViewIcon, ViewOffIcon } from "@hugeicons/react-native";
+import { router } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
+import { Controller, useForm, UseFormReturn } from "react-hook-form";
+import {
+  ActivityIndicator,
+  Image,
+  ImageSourcePropType,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { z } from "zod";
 
-import { useAppleAuth, useGoogleAuth } from "@/hooks/useSocialAuth";
 import { useNotification } from "@/context/NotificationContext";
+import { useAppleAuth, useGoogleAuth } from "@/hooks/auth/useSocialAuth";
+import React from "react";
 
 // Complete WebBrowser auth session
 WebBrowser.maybeCompleteAuthSession();
@@ -33,8 +44,6 @@ const schema = z.object({
 // Define form data type from schema
 type FormData = z.infer<typeof schema>;
 
-
-
 // Props for SocialButton component
 interface SocialButtonProps {
   onPress: () => void;
@@ -43,13 +52,17 @@ interface SocialButtonProps {
   loading?: boolean; // Add loading prop
 }
 
-
-const SocialButton: React.FC<SocialButtonProps> = ({ onPress, imageSource, text, loading }) => (
+const SocialButton: React.FC<SocialButtonProps> = ({
+  onPress,
+  imageSource,
+  text,
+  loading,
+}) => (
   <TouchableOpacity
     onPress={onPress}
     disabled={loading}
     className={`flex-row items-center justify-center gap-x-4 ${
-      loading ? 'bg-gray-300' : 'bg-white'
+      loading ? "bg-gray-300" : "bg-white"
     } px-4 py-2 rounded-full w-full`}
     style={{ minHeight: 56 }}
   >
@@ -81,18 +94,20 @@ const Signin: React.FC = () => {
     resolver: zodResolver(schema),
     defaultValues: {
       email: "",
-      password: "" // Add default value for password
+      password: "", // Add default value for password
     },
   });
-
 
   useEffect(() => {
     if (error) {
       showNotification({
-        type: 'error',
-        title: 'Login Failed',
-        message: error?.response?.data.message || "Invalid email or password",
-        position: 'top'
+        type: "error",
+        title: "Login Failed",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Invalid email or password",
+        position: "top",
       });
     }
   }, [error]);
@@ -105,12 +120,13 @@ const Signin: React.FC = () => {
       },
       onError: (error: any) => {
         showNotification({
-            type: 'error',
-            title: 'Signup Failed',
-            message: error?.response?.data.message || 'Failed to send verification code',
-            position: 'top'
-          });
-      }
+          type: "error",
+          title: "Signup Failed",
+          message:
+            error?.response?.data.message || "Failed to send verification code",
+          position: "top",
+        });
+      },
     });
   };
 

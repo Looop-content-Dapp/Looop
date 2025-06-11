@@ -1,11 +1,6 @@
-import React from "react";
-import { useHeader } from "@/hooks/useHeader";
+import { useHeader } from "@/hooks/core/useHeader";
 import { Stack } from "expo-router";
-import { View } from "react-native";
-import { Notification02Icon } from "@hugeicons/react-native";
-import { Avatar } from "react-native-elements";
-import { useAppSelector } from "@/redux/hooks";
-import { router } from "expo-router";
+import React from "react";
 
 export default function HomeLayout() {
   const headerConfig = useHeader({ title: "" });
@@ -28,10 +23,12 @@ export default function HomeLayout() {
           ...headerConfig,
         }}
       />
-      <Stack.Screen name="_screens"
-       options={{
+      <Stack.Screen
+        name="_screens"
+        options={{
           headerShown: false,
-        }} />
+        }}
+      />
     </Stack>
   );
 }

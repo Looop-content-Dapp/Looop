@@ -11,12 +11,12 @@ import {
 } from "react-native";
 import { Search01Icon, ArrowLeft02Icon } from "@hugeicons/react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import ToggleFlatListView from "../../../components/view/ToggleFlatlistView";
-import GridComponent from "../../../components/cards/GridComponents";
-import ListComponent from "../../../components/cards/ListComponents";
+import ToggleFlatListView from "@/components/view/ToggleFlatlistView";
+import GridComponent from "@/components/cards/GridComponents";
+import ListComponent from "@/components/cards/ListComponents";
 import { useRouter } from "expo-router";
-import { useUserPlaylists } from "../../../hooks/usePlaylist";
-import { useMusicPlayerContext } from "../../../context/MusicPlayerContext";
+import { useUserPlaylists } from "@/hooks/music/usePlaylist";
+import { useMusicPlayerContext } from "@/context/MusicPlayerContext";
 
 const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
 
@@ -71,7 +71,7 @@ const MyPlaylist = () => {
   const handleSearchChange = (text: string) => {
     setSearchQuery(text);
     if (playlistData) {
-      const filtered = playlistData.filter((playlist) =>
+      const filtered = playlistData.filter((playlist: any) =>
         playlist.title.toLowerCase().includes(text.toLowerCase())
       );
       setFilteredPlaylists(filtered);

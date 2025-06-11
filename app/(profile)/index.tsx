@@ -2,14 +2,13 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   Share,
   Alert,
   Modal,
   Pressable,
 } from "react-native";
-import React, { useCallback, useEffect, useLayoutEffect, useState } from "react";
-import { MoreHorizontalIcon, Settings02Icon, Share05Icon, Wallet02Icon, UserAdd01Icon, Edit01Icon, UserLock01Icon, UserMinus01Icon } from "@hugeicons/react-native";
+import React, {  useLayoutEffect, useState } from "react";
+import { MoreHorizontalIcon, Wallet02Icon, UserAdd01Icon, Edit01Icon, UserLock01Icon, UserMinus01Icon, Setting06Icon } from "@hugeicons/react-native";
 import { Avatar } from "react-native-elements";
 import {
   ProfilePlaylist,
@@ -17,14 +16,13 @@ import {
   StarSpotLight,
 } from "../../components/profile";
 import { useNavigation, useRouter } from "expo-router";
-import { useQuery } from "../../hooks/useQuery";
 import { formatNumber } from "../../utils/ArstsisArr";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import {  useAppSelector } from "@/redux/hooks";
 import { AppBackButton } from "@/components/app-components/back-btn";
-import { useGetUser } from "@/hooks/useGetUser"; // Add this import
-import { FlatList } from 'react-native' // Add this import if not already present
-import { useClerkAuthentication } from "@/hooks/useClerkAuthentication";
+import { useGetUser } from "@/hooks/user/useGetUser";
+import { FlatList } from 'react-native'
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
+import { useClerkAuthentication } from "@/hooks/auth/useAuth";
 
 
 const profile = () => {
@@ -93,6 +91,17 @@ const profile = () => {
           >
             <Edit01Icon size={24} color="#63656B" variant="solid" />
             <Text className="text-[16px] text-[#f4f4f4] ml-4 font-PlusJakartaSansMedium">Edit Profile</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              onClose();
+              router.push("/settings");
+            }}
+            className="flex-row items-center px-6 py-4 border-b border-[#2A2B32]"
+          >
+            <Setting06Icon size={24} color="#63656B" variant="solid" />
+            <Text className="text-[16px] text-[#f4f4f4] ml-4 font-PlusJakartaSansMedium">Settings</Text>
           </TouchableOpacity>
 
           <TouchableOpacity

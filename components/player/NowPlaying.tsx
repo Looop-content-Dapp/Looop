@@ -1,60 +1,58 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import useMusicPlayer from '@/hooks/useMusicPlayer';
-import Waves from '@/assets/svg/Waves';
-import { NextIcon, PauseIcon, PlayIcon } from '@hugeicons/react-native';
-import { getColors } from 'react-native-image-colors';
-import { useMusicPlayerContext } from '@/context/MusicPlayerContext';
+import Waves from "@/assets/svg/Waves";
+import { useMusicPlayerContext } from "@/context/MusicPlayerContext";
+import { NextIcon, PauseIcon, PlayIcon } from "@hugeicons/react-native";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { getColors } from "react-native-image-colors";
 
 const getContrastColor = (hexColor: string) => {
   const r = parseInt(hexColor.slice(1, 3), 16);
   const g = parseInt(hexColor.slice(3, 5), 16);
   const b = parseInt(hexColor.slice(5, 7), 16);
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.5 ? '#000000' : '#FFFFFF';
+  return luminance > 0.5 ? "#000000" : "#FFFFFF";
 };
 
 const NowPlaying = () => {
-  const [backgroundColor, setBackgroundColor] = useState('#111318');
-  const [textColor, setTextColor] = useState('#FFFFFF');
-  const [subtextColor, setSubtextColor] = useState('#9A9B9F');
+  const [backgroundColor, setBackgroundColor] = useState("#111318");
+  const [textColor, setTextColor] = useState("#FFFFFF");
+  const [subtextColor, setSubtextColor] = useState("#9A9B9F");
 
-  const {
-    currentTrack,
-    albumInfo,
-    isPlaying,
-    play,
-    pause,
-    buffering,
-  } = useMusicPlayerContext();
+  const { currentTrack, albumInfo, isPlaying, play, pause, buffering } =
+    useMusicPlayerContext();
 
   useEffect(() => {
     const fetchColors = async () => {
       if (albumInfo?.coverImage) {
         try {
           const result = await getColors(albumInfo.coverImage, {
-            fallback: '#111318',
+            fallback: "#111318",
             cache: true,
           });
 
-          let bgColor = '#111318';
-          if (result.platform === 'android') {
+          let bgColor = "#111318";
+          if (result.platform === "android") {
             bgColor = result.dominant;
-          } else if (result.platform === 'ios') {
+          } else if (result.platform === "ios") {
             bgColor = result.background;
           }
 
           setBackgroundColor(bgColor);
           const mainColor = getContrastColor(bgColor);
           // Increase contrast by using pure white/black for text
-          setTextColor(mainColor === '#FFFFFF' ? '#FFFFFF' : '#000000');
+          setTextColor(mainColor === "#FFFFFF" ? "#FFFFFF" : "#000000");
           // More contrasting subtext colors
-          setSubtextColor(mainColor === '#FFFFFF' ? '#D2D3D5' : '#444444');
+          setSubtextColor(mainColor === "#FFFFFF" ? "#D2D3D5" : "#444444");
         } catch (error) {
-          setBackgroundColor('#111318');
-          setTextColor('#FFFFFF');
-          setSubtextColor('#D2D3D5');
+          setBackgroundColor("#111318");
+          setTextColor("#FFFFFF");
+          setSubtextColor("#D2D3D5");
         }
       }
     };
@@ -69,10 +67,10 @@ const NowPlaying = () => {
       className="pt-[12px] px-[24px] pb-[15px] border-b-2 border-[#202227]"
       style={{ backgroundColor }}
     >
-      <View className='flex-row items-center gap-x-[8px] mb-2'>
+      <View className="flex-row items-center gap-x-[8px] mb-2">
         <Waves />
         <Text
-          className='text-[16px] font-PlusJakartaSansBold'
+          className="text-[16px] font-PlusJakartaSansBold"
           style={{ color: textColor }}
         >
           Playing...
@@ -104,45 +102,45 @@ const NowPlaying = () => {
           </View>
         </View>
 
-        <View className='flex-row items-center gap-x-[8px]'>
+        <View className="flex-row items-center gap-x-[8px]">
           <TouchableOpacity
             onPress={isPlaying ? pause : () => play(currentTrack, albumInfo)}
             className="p-[12px] rounded-full"
             style={{
               backgroundColor: textColor,
-              opacity: 0.9 // Slightly reduce opacity for better contrast
+              opacity: 0.9, // Slightly reduce opacity for better contrast
             }}
           >
             {buffering ? (
               <ActivityIndicator color={backgroundColor} size="small" />
             ) : isPlaying ? (
-                <PauseIcon
-                  size={24}
-                  color={backgroundColor}
-                  variant="solid"
-                  style={{ opacity: 0.9 }}
-                />
-              ) : (
-                <PlayIcon
-                  size={24}
-                  color={backgroundColor}
-                  variant="solid"
-                  style={{ opacity: 0.9 }}
-                />
-              )}
+              <PauseIcon
+                size={24}
+                color={backgroundColor}
+                variant="solid"
+                style={{ opacity: 0.9 }}
+              />
+            ) : (
+              <PlayIcon
+                size={24}
+                color={backgroundColor}
+                variant="solid"
+                style={{ opacity: 0.9 }}
+              />
+            )}
           </TouchableOpacity>
           <TouchableOpacity
             onPress={isPlaying ? pause : () => play(currentTrack, albumInfo)}
             className="p-[12px] rounded-full"
             style={{
               backgroundColor: textColor,
-              opacity: 0.7 // More transparency for secondary button
+              opacity: 0.7, // More transparency for secondary button
             }}
           >
             <NextIcon
               size={24}
               color={backgroundColor}
-              variant='solid'
+              variant="solid"
               style={{ opacity: 1 }} // Keep icon fully opaque
             />
           </TouchableOpacity>

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Switch } from 'react-native'
+import { View, Text, Switch } from 'react-native'
 import React, { useLayoutEffect, useState } from 'react'
 import { router, useNavigation } from 'expo-router'
 import { AppBackButton } from '@/components/app-components/back-btn'
@@ -7,7 +7,6 @@ const DisplaySettings = () => {
     const navigation = useNavigation()
     const [darkMode, setDarkMode] = useState(true)
     const [reducedMotion, setReducedMotion] = useState(false)
-    const [fontSize, setFontSize] = useState('medium')
 
     useLayoutEffect(() => {
         navigation.setOptions({

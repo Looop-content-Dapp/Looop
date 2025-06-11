@@ -2,7 +2,7 @@ import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ImageBackgrou
 import React, { useState, useEffect } from 'react';
 import { useNavigation, useRouter } from 'expo-router';
 import { AppBackButton } from '@/components/app-components/back-btn';
-import { Link05Icon, Search01Icon, UserAdd01Icon } from '@hugeicons/react-native';
+import { Link05Icon, Search01Icon, } from '@hugeicons/react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useNotification } from '@/context/NotificationContext';
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";

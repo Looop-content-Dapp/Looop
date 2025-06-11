@@ -1,13 +1,12 @@
+import { AudioUpload } from "@/components/ui/audio-upload";
+import { CreatorInput } from "@/components/ui/creator-input";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Input } from "@/components/ui/input";
+import { RadioGroup } from "@/components/ui/radio-group";
+import useFileUpload from "@/hooks/core/useFileUpload";
 import React from "react";
-import { View, ScrollView } from "react-native";
-import { Text } from "react-native";
 import { Control, Controller, useFieldArray } from "react-hook-form";
-import useFileUpload, { FileType } from "@/hooks/useFileUpload";
-import { Input } from '@/components/ui/input';
-import { AudioUpload } from '@/components/ui/audio-upload';
-import { RadioGroup } from '@/components/ui/radio-group';
-import { CreatorInput } from '@/components/ui/creator-input';
-import { DatePicker } from '@/components/ui/date-picker';
+import { ScrollView, Text, View } from "react-native";
 
 interface TrackInfoProps {
   control: Control<any>;
@@ -18,17 +17,17 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
 
   const { fields } = useFieldArray({
     control,
-    name: "tracks"
+    name: "tracks",
   });
 
   const songTypeOptions = [
     { label: "Original song", value: "original" },
-    { label: "Cover", value: "cover" }
+    { label: "Cover", value: "cover" },
   ];
 
   const explicitOptions = [
     { label: "Yes, has explicit lyrics", value: "yes" },
-    { label: "No explicit lyrics", value: "no" }
+    { label: "No explicit lyrics", value: "no" },
   ];
 
   return (
@@ -47,7 +46,10 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
             <Controller
               control={control}
               name={`tracks.${index}.trackName`}
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({
+                field: { onChange, value },
+                fieldState: { error },
+              }) => (
                 <Input
                   label="Song name"
                   description="Don't include features in the title, you can add it later below"
@@ -61,7 +63,10 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
             <Controller
               control={control}
               name={`tracks.${index}.songType`}
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({
+                field: { onChange, value },
+                fieldState: { error },
+              }) => (
                 <RadioGroup
                   label="Is this an original song or a cover?"
                   options={songTypeOptions}
@@ -75,7 +80,10 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
             <Controller
               control={control}
               name={`tracks.${index}.featuredArtists`}
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({
+                field: { onChange, value },
+                fieldState: { error },
+              }) => (
                 <CreatorInput
                   label="Add featured artiste?"
                   description="If there are features on the song, add them using their Looop creator profile links"
@@ -88,7 +96,9 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
                     onChange(newValue);
                   }}
                   onRemoveCreator={(creator) => {
-                    const newValue = (value || []).filter((c: string) => c !== creator);
+                    const newValue = (value || []).filter(
+                      (c: string) => c !== creator
+                    );
                     onChange(newValue);
                   }}
                   error={error?.message}
@@ -99,7 +109,10 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
             <Controller
               control={control}
               name={`tracks.${index}.trackNumber`}
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({
+                field: { onChange, value },
+                fieldState: { error },
+              }) => (
                 <Input
                   label="Track number"
                   description="Set the order of tracks in your album"
@@ -120,7 +133,10 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
             <Controller
               control={control}
               name={`tracks.${index}.audioFile`}
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({
+                field: { onChange, value },
+                fieldState: { error },
+              }) => (
                 <AudioUpload
                   label="Upload audio file"
                   description="MP3, M4A, WAV, FLAC, WMA, AIFF"
@@ -135,7 +151,10 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
             <Controller
               control={control}
               name={`tracks.${index}.explicitLyrics`}
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({
+                field: { onChange, value },
+                fieldState: { error },
+              }) => (
                 <RadioGroup
                   label="Does the song contain explicit lyrics?"
                   options={explicitOptions}
@@ -149,7 +168,10 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
             <Controller
               control={control}
               name={`tracks.${index}.writers`}
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({
+                field: { onChange, value },
+                fieldState: { error },
+              }) => (
                 <CreatorInput
                   label="Add Songwriter credits"
                   description="You can give credit to songwriters here"
@@ -162,7 +184,9 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
                     onChange(newValue);
                   }}
                   onRemoveCreator={(creator) => {
-                    const newValue = (value || []).filter((c: string) => c !== creator);
+                    const newValue = (value || []).filter(
+                      (c: string) => c !== creator
+                    );
                     onChange(newValue);
                   }}
                   error={error?.message}
@@ -173,7 +197,10 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
             <Controller
               control={control}
               name={`tracks.${index}.producers`}
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({
+                field: { onChange, value },
+                fieldState: { error },
+              }) => (
                 <CreatorInput
                   label="Add Producers"
                   description="Include producers and composers"
@@ -186,7 +213,9 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
                     onChange(newValue);
                   }}
                   onRemoveCreator={(creator) => {
-                    const newValue = (value || []).filter((c: string) => c !== creator);
+                    const newValue = (value || []).filter(
+                      (c: string) => c !== creator
+                    );
                     onChange(newValue);
                   }}
                   error={error?.message}
@@ -197,7 +226,10 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
             <Controller
               control={control}
               name={`tracks.${index}.isrc`}
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({
+                field: { onChange, value },
+                fieldState: { error },
+              }) => (
                 <Input
                   label="ISRC (Optional)"
                   description="For royalties tracking."
@@ -212,7 +244,10 @@ const TrackInfo: React.FC<TrackInfoProps> = ({ control }) => {
             <Controller
               control={control}
               name={`tracks.${index}.releaseDate`}
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({
+                field: { onChange, value },
+                fieldState: { error },
+              }) => (
                 <DatePicker
                   label="Release Date"
                   value={value}

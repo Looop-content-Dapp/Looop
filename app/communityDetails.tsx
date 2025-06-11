@@ -1,11 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
     Text,
     ImageBackground,
     Animated,
     TouchableOpacity,
-    useWindowDimensions,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -14,7 +13,7 @@ import Annoucement from '../components/community/Annoucement';
 import Events from '../components/community/Events';
 import { ArrowLeft01Icon } from '@hugeicons/react-native';
 import { formatNumber } from '@/utils/ArstsisArr';
-import { useGetCommunities } from '@/hooks/useGetCommunities';
+import { useGetCommunities } from '@/hooks/community/useGetCommunities';
 
 const HEADER_MAX_HEIGHT = 200;
 const HEADER_MIN_HEIGHT = 80;
@@ -23,7 +22,7 @@ const TAB_HEIGHT = 50;
 const CommunityDetails = () => {
     const { id } = useLocalSearchParams();
     const { data: communities, isLoading } = useGetCommunities();
-    const community = communities?.find(comm => comm._id === id);
+    const community = communities?.find((comm: any) => comm._id === id);
     const [activeTab, setActiveTab] = useState('posts');
     const scrollY = useRef(new Animated.Value(0)).current;
 

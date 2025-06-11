@@ -1,9 +1,15 @@
-import React from 'react';
-import { View, Text, Image, FlatList, Pressable, StyleSheet } from 'react-native';
-import { MotiView } from 'moti';
-import { useRouter } from 'expo-router';
-import { useQuery } from "@/hooks/useQuery";
-import { SkeletonLoader } from '../shared/SkeletonLoader';
+import { useQuery } from "@/hooks/core/useQuery";
+import { useRouter } from "expo-router";
+import React from "react";
+import {
+  FlatList,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { SkeletonLoader } from "../shared/SkeletonLoader";
 
 interface Song {
   _id: string;
@@ -48,7 +54,7 @@ const AlbumsAndEps: React.FC<Props> = ({ songs, isLoading }) => {
     try {
       await getTracksFromId(id);
     } catch (error) {
-      console.log('Prefetch error:', error);
+      console.log("Prefetch error:", error);
     }
   };
 
@@ -57,12 +63,12 @@ const AlbumsAndEps: React.FC<Props> = ({ songs, isLoading }) => {
       <Pressable
         onPress={() =>
           router.push({
-            pathname: '/(musicTabs)/(home)/_screens/musicDetails',
+            pathname: "/(musicTabs)/(home)/_screens/musicDetails",
             params: {
               id: item._id,
               title: item.title,
               image: item.artwork.high,
-              artist: item.artist.name
+              artist: item.artist.name,
             },
           })
         }
@@ -72,13 +78,16 @@ const AlbumsAndEps: React.FC<Props> = ({ songs, isLoading }) => {
         <Image
           source={{ uri: item.artwork.high }}
           style={styles.albumImage}
-          onError={(e) => console.log('Image loading error:', e.nativeEvent.error)}
+          onError={(e) =>
+            console.log("Image loading error:", e.nativeEvent.error)
+          }
         />
         <Text numberOfLines={1} style={styles.albumTitle}>
           {item.title}
         </Text>
         <Text style={styles.songCount}>
-          {new Date(item.releaseDate).getFullYear()} • {item.metadata.totalTracks} Songs
+          {new Date(item.releaseDate).getFullYear()} •{" "}
+          {item.metadata.totalTracks} Songs
         </Text>
       </Pressable>
     );
@@ -102,10 +111,10 @@ const AlbumsAndEps: React.FC<Props> = ({ songs, isLoading }) => {
     },
     header: {
       fontSize: 20,
-      fontWeight: 'bold',
+      fontWeight: "bold",
       marginVertical: 8,
       marginLeft: 8,
-      color: '#fff',
+      color: "#fff",
     },
     albumContainer: {
       marginHorizontal: 8,
@@ -113,47 +122,50 @@ const AlbumsAndEps: React.FC<Props> = ({ songs, isLoading }) => {
       height: 250,
     },
     albumImage: {
-      width: '100%',
+      width: "100%",
       height: 199,
       borderRadius: 24,
-      backgroundColor: '#2a2a2a', // Add background color for image loading
+      backgroundColor: "#2a2a2a", // Add background color for image loading
     },
     albumTitle: {
       marginTop: 8,
       fontSize: 16,
-      color: '#f4f4f4',
-      fontWeight: 'bold',
+      color: "#f4f4f4",
+      fontWeight: "bold",
     },
     songCount: {
       fontSize: 12,
-      color: 'gray',
+      color: "gray",
     },
     skeletonItem: {
       width: 199,
       height: 250,
-      backgroundColor: '#ccc',
+      backgroundColor: "#ccc",
       borderRadius: 24,
       marginHorizontal: 8,
     },
     skeletonTextContainer: {
-        gap: 8,
-        marginTop: 12,
-      },
+      gap: 8,
+      marginTop: 12,
+    },
   });
 
   // Filter out duplicate albums based on title
   // Modify the uniqueSongs calculation to handle undefined/null
-  const uniqueSongs = songs?.reduce((acc: Song[], current) => {
-    const x = acc.find(item => item.title === current.title);
-    if (!x) {
-      return acc.concat([current]);
-    }
-    return acc;
-  }, []) || [];
+  const uniqueSongs =
+    songs?.reduce((acc: Song[], current) => {
+      const x = acc.find((item) => item.title === current.title);
+      if (!x) {
+        return acc.concat([current]);
+      }
+      return acc;
+    }, []) || [];
   return (
     <View style={styles.container}>
       {uniqueSongs.length > 0 && (
-        <Text className='text-[#D2D3D5] text-[20px] font-PlusJakartaSansMedium ml-[16px]'>Albums & EPs</Text>
+        <Text className="text-[#D2D3D5] text-[24px] font-TankerRegular ml-[16px]">
+          Albums & EPs
+        </Text>
       )}
 
       {isLoading ? (
@@ -165,13 +177,13 @@ const AlbumsAndEps: React.FC<Props> = ({ songs, isLoading }) => {
         />
       ) : (
         <FlatList
-        data={uniqueSongs}
-        horizontal
-        renderItem={renderItem}
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item._id}
-        // style={{ height: 250 }} // Matches albumContainer height
-      />
+          data={uniqueSongs}
+          horizontal
+          renderItem={renderItem}
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item._id}
+          // style={{ height: 250 }} // Matches albumContainer height
+        />
       )}
     </View>
   );
@@ -184,10 +196,10 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginVertical: 8,
     marginLeft: 8,
-    color: '#fff',
+    color: "#fff",
   },
   albumContainer: {
     marginHorizontal: 8,
@@ -195,25 +207,25 @@ const styles = StyleSheet.create({
     height: 250,
   },
   albumImage: {
-    width: '100%',
+    width: "100%",
     height: 199,
     borderRadius: 24,
-    backgroundColor: '#2a2a2a', // Add background color for image loading
+    backgroundColor: "#2a2a2a", // Add background color for image loading
   },
   albumTitle: {
     marginTop: 8,
     fontSize: 16,
-    color: '#f4f4f4',
-    fontWeight: 'bold',
+    color: "#f4f4f4",
+    fontWeight: "bold",
   },
   songCount: {
     fontSize: 12,
-    color: 'gray',
+    color: "gray",
   },
   skeletonItem: {
     width: 199,
     height: 250,
-    backgroundColor: '#ccc',
+    backgroundColor: "#ccc",
     borderRadius: 24,
     marginHorizontal: 8,
   },

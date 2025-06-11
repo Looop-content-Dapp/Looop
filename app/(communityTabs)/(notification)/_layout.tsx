@@ -15,7 +15,6 @@ export default function ExploreCommunityLayout() {
       }}
     >
         <Stack.Screen name="index" />
-        {/* <Stack.Screen name="favouriteSongs" /> */}
     </Stack>
   );
 };

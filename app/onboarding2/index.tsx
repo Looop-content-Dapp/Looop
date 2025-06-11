@@ -6,7 +6,6 @@ import {
   type ImageSourcePropType,
   type ImageStyle,
   type ViewStyle,
-  Platform,
   Dimensions,
   ScrollView,
   Animated,

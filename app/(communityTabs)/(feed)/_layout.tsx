@@ -1,6 +1,5 @@
 import React from "react";
 import { Stack } from "expo-router";
-import { useHeader } from "@/hooks/useHeader";
 import { PortalProvider } from '@gorhom/portal';
 
 export default function FeedLayout() {

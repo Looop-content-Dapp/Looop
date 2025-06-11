@@ -1,9 +1,6 @@
 import React from "react";
-import { Slot, Stack } from "expo-router";
-import { Image, Text, View } from "react-native";
-import { user } from "../../../utils/ArstsisArr";
-import { Avatar } from "react-native-elements";
-import { useHeader } from "@/hooks/useHeader";
+import { Stack } from "expo-router";
+import { useHeader } from "@/hooks/core/useHeader";
 
 export default () => {
     const headerConfig = useHeader({title: "Library"})

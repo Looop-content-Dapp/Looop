@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { View, FlatList, Text, TouchableOpacity } from 'react-native';
-import { GridViewIcon, ListViewIcon } from '@hugeicons/react-native';
-import { MotiView } from 'moti';
+import { GridViewIcon, ListViewIcon } from "@hugeicons/react-native";
+import { MotiView } from "moti";
+import React, { useState } from "react";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
 
 interface ToggleFlatListViewProps {
   data: any[];
@@ -20,7 +20,7 @@ const ToggleFlatListView = ({
   title,
   loading,
   error,
-  renderItem = (item) => item
+  renderItem = (item) => item,
 }: ToggleFlatListViewProps) => {
   const [isGridView, setIsGridView] = useState(true);
 
@@ -52,12 +52,12 @@ const ToggleFlatListView = ({
               animate={{ opacity: 1 }}
               transition={{
                 loop: true,
-                type: 'timing',
+                type: "timing",
                 duration: 1000,
               }}
               style={{
                 height: 60,
-                backgroundColor: '#e0e0e0',
+                backgroundColor: "#e0e0e0",
                 borderRadius: 8,
                 marginVertical: 10,
               }}
@@ -81,13 +81,13 @@ const ToggleFlatListView = ({
     }
 
     // Remove duplicates based on _id
-    const uniqueData = data.filter((item, index, self) =>
-      index === self.findIndex((t) => t._id === item._id)
+    const uniqueData = data.filter(
+      (item, index, self) => index === self.findIndex((t) => t._id === item._id)
     );
 
     return (
       <FlatList
-        key={isGridView ? 'grid' : 'list'}
+        key={isGridView ? "grid" : "list"}
         data={uniqueData} // Ensure unique data is used
         renderItem={({ item }) => {
           const adaptedItem = renderItem(item);
@@ -111,12 +111,15 @@ const ToggleFlatListView = ({
   return (
     <View className="mt-[38px]">
       <View className="flex-row items-center justify-between px-2 w-full">
-        <Text className="text-[24px] font-PlusJakartaSansBold text-[#f4f4f4]">
+        <Text className="text-[24px] font-TankerRegular text-[#f4f4f4] leading-[28px] tracking-[-0.02em]">
           {title}
         </Text>
-        <TouchableOpacity onPress={toggleView} className='border-[1.25px] border-[#202227] p-[8px] rounded-[6.25px]'>
+        <TouchableOpacity
+          onPress={toggleView}
+          className="border-[1.25px] border-[#202227] p-[8px] rounded-[6.25px]"
+        >
           {isGridView ? (
-           <GridViewIcon size={24} color="#787A80" variant="stroke" />
+            <GridViewIcon size={24} color="#787A80" variant="stroke" />
           ) : (
             <ListViewIcon size={24} color="#787A80" variant="solid" />
           )}

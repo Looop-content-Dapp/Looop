@@ -25,10 +25,8 @@ import {
 import FastImage from "react-native-fast-image";
 import Share from "@/components/bottomSheet/Share";
 import { useRef } from "react";
-import { usePlaylistDetails } from "@/hooks/usePlaylist";
+import { usePlaylistDetails } from "@/hooks/music/usePlaylist";
 import { useMusicPlayerContext } from "@/context/MusicPlayerContext";
-import AddToPlaylistBottomSheet from "@/components/bottomSheet/AddToPlaylistBottomSheet";
-import { Portal } from "@gorhom/portal";
 import { useNotification } from "@/context/NotificationContext";
 
 // ### Interfaces

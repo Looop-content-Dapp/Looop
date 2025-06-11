@@ -1,31 +1,55 @@
-import React from 'react';
-import { View, Text, Image, FlatList, Pressable, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
-import { SkeletonLoader } from '../shared/SkeletonLoader';
+import { useRouter } from "expo-router";
+import React from "react";
+import {
+  FlatList,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { SkeletonLoader } from "../shared/SkeletonLoader";
 
 type Props = {
   songs: any;
-  isLoading: boolean
+  isLoading: boolean;
 };
 
 const Singles: React.FC<Props> = ({ songs, isLoading }) => {
-  const router = useRouter()
+  const router = useRouter();
 
   const renderItem = ({ item }: { item: any }) => {
     return (
-        <Pressable
-        onPress={() => router.push({ pathname: "/(musicTabs)/(home)/_screens/musicDetails",  params: {
-            id: item?._id,
-            title: item?.title,
-            artist: item?.artist?.name,
-            image: item?.artwork.high,
-          }})} className="w-[150px] h-[250px] mx-2 my-[24px]">
-          <Image source={{ uri: item?.artwork.high }} className="w-full h-[199px] rounded-[24px]" />
-          <Text className="mt-2 text-[16px] font-PlusJakartaSansBold text-[#f4f4f4f4]">{item?.title}</Text>
-          <Text className="text-[12px] text-[#A5A6AA]">{item.releaseDate.slice(0, 4)}</Text>
-        </Pressable>
-    )
-  }
+      <Pressable
+        onPress={() =>
+          router.push({
+            pathname: "/(musicTabs)/(home)/_screens/musicDetails",
+            params: {
+              id: item?._id,
+              title: item?.title,
+              artist: item?.artist?.name,
+              image: item?.artwork.high,
+            },
+          })
+        }
+        className="w-[199px] h-[250px] mx-2"
+      >
+        <Image
+          source={{ uri: item?.artwork.high }}
+          className="w-full h-[199px] rounded-[24px]"
+        />
+        <Text
+          numberOfLines={1}
+          className="mt-2 text-[16px] font-PlusJakartaSansBold text-[#f4f4f4f4]"
+        >
+          {item?.title}
+        </Text>
+        <Text className="text-[12px] text-[#A5A6AA]">
+          {item.releaseDate.slice(0, 4)}
+        </Text>
+      </Pressable>
+    );
+  };
 
   const renderSkeleton = () => (
     <View style={styles.singleContainer}>
@@ -50,20 +74,22 @@ const Singles: React.FC<Props> = ({ songs, isLoading }) => {
       marginTop: 12,
     },
     skeletonItem: {
-        width: 199,
-        height: 250,
-        backgroundColor: '#ccc',
-        borderRadius: 24,
-        marginHorizontal: 8,
-      },
-  })
+      width: 199,
+      height: 250,
+      backgroundColor: "#ccc",
+      borderRadius: 24,
+      marginHorizontal: 8,
+    },
+  });
 
   return (
-    <View className=' pl-[14px]'>
-    {songs.length > 0 && (
-             <Text className='text-[#D2D3D5] text-[20px] font-PlusJakartaSansMedium ml-[16px]'>Singles</Text>
-        )}
-    {isLoading ? (
+    <View className=" pl-[14px]">
+      {songs.length > 0 && (
+        <Text className="text-[#D2D3D5] text-[24px] font-TankerRegular ml-[16px] mb-[16px] mt-[24px]">
+          Singles
+        </Text>
+      )}
+      {isLoading ? (
         <FlatList
           data={[1, 2, 3]} // Placeholder array to render skeletons
           horizontal
@@ -83,13 +109,13 @@ const Singles: React.FC<Props> = ({ songs, isLoading }) => {
 };
 
 const styles = StyleSheet.create({
-    skeletonItem: {
-        width: 199,
-        height: 250,
-        backgroundColor: '#ccc',
-        borderRadius: 24,
-        marginHorizontal: 8,
-      },
-})
+  skeletonItem: {
+    width: 199,
+    height: 250,
+    backgroundColor: "#ccc",
+    borderRadius: 24,
+    marginHorizontal: 8,
+  },
+});
 
 export default Singles;

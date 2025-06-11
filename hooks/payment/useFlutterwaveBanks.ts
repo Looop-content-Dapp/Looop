@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { FlutterwaveBank, UseBanksResult } from '../types/bank';
-import { FlutterwaveService } from '../services/flutterwave';
+import { FlutterwaveService } from "@/services/flutterwave";
+import { FlutterwaveBank, UseBanksResult } from "@/types/bank";
+import { useEffect, useState } from "react";
 
 export const useFlutterwaveBanks = (country: string): UseBanksResult => {
   const [banks, setBanks] = useState<FlutterwaveBank[]>([]);
@@ -14,7 +14,7 @@ export const useFlutterwaveBanks = (country: string): UseBanksResult => {
       const banksList = await FlutterwaveService.getBanks(country);
       setBanks(banksList);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch banks');
+      setError(err instanceof Error ? err.message : "Failed to fetch banks");
     } finally {
       setIsLoading(false);
     }
@@ -28,6 +28,6 @@ export const useFlutterwaveBanks = (country: string): UseBanksResult => {
     banks,
     isLoading,
     error,
-    refetch: fetchBanks
+    refetch: fetchBanks,
   };
 };

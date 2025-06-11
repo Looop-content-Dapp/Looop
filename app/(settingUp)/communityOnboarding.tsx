@@ -3,7 +3,7 @@ import { useLocalSearchParams } from "expo-router";
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useNavigation } from "expo-router";
-import { useGetCommunities, Community } from "@/hooks/useGetCommunities";
+import { useGetCommunities } from "@/hooks/community/useGetCommunities";
 import { AppButton } from "@/components/app-components/button";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { useLayoutEffect } from "react";
@@ -37,7 +37,7 @@ const CommunityOnboarding = () => {
       return;
     }
 
-    if (!userdata?.wallets?.xion.address) {
+    if (!userdata?.wallets?.xion?.address) {
       showToast("Xion wallet not found", "error");
       return;
     }
@@ -92,6 +92,7 @@ const CommunityOnboarding = () => {
         </View>
       ) : (
         <CommunitySectionList
+          userId={userdata?._id || ""}
           sections={communities || []}
           onJoin={handleJoinCommunity}
           selectedCommunities={selectedCommunities}

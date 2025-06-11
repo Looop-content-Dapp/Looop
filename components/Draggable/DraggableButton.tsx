@@ -7,7 +7,7 @@ import {
 import { router } from 'expo-router';
 import PropTypes from 'prop-types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import useMusicPlayer from '../../hooks/useMusicPlayer';
+import useMusicPlayer from '@/hooks/music/useMusicPlayer';
 
 const StaticButton = ({ icon: Icon, route, color }) => {
   const { currentTrack } = useMusicPlayer();

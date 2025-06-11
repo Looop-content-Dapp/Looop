@@ -7,7 +7,7 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import { useAppSelector } from "@/redux/hooks";
-import { useGetArtistBasedOnGenre} from "@/hooks/useGenre";
+import { useGetArtistBasedOnGenre} from "@/hooks/artist/useGenre";
 import ArtistsByGenre from "@/components/ArtistGenre";
 import {
     ArrowLeft02Icon,

@@ -9,20 +9,20 @@ import {
 } from "react-native";
 import React from "react";
 import { router } from "expo-router";
-import ToggleFlatListView from "../../../components/view/ToggleFlatlistView";
-import GridComponent from "../../../components/cards/GridComponents";
-import ListComponent from "../../../components/cards/ListComponents";
-import { useLibrary } from "../../../hooks/useLibrary";
+import ToggleFlatListView from "@/components/view/ToggleFlatlistView";
+import GridComponent from "@/components/cards/GridComponents";
+import ListComponent from "@/components/cards/ListComponents";
+import { useLibrary } from "@/hooks/music/useLibrary";
 import { useAppSelector } from "@/redux/hooks";
-import { useMusicPlayerContext } from "../../../context/MusicPlayerContext";
-import { LibrarySkeleton } from "../../../components/skeletons/LibrarySkeleton";
+import { useMusicPlayerContext } from "@/context/MusicPlayerContext";
+import { LibrarySkeleton } from "@/components/skeletons/LibrarySkeleton";
 
 const index = () => {
   const { userdata } = useAppSelector((auth) => auth.auth);
   const { lastPlayed } = useLibrary(userdata?._id);
   const musicPlayer = useMusicPlayerContext();
 
-  // Show skeleton while initial data is being fetched
+  // Show skeleton while initial data is being <fetched></fetched>
   if (!lastPlayed.data && lastPlayed.isLoading) {
     return (
       <ScrollView
@@ -39,23 +39,23 @@ const index = () => {
 
   const frames = [
     {
-      image: require("../../../assets/images/favourite.png"),
+      image: require("@/assets/images/favourite.png"),
       title: "Favorite Songs",
       route: "/favouriteSongs",
     },
     {
-      image: require("../../../assets/images/savedAlbums.png"),
+      image: require("@/assets/images/savedAlbums.png"),
       title: "Offline Download",
       route: "/savedAlbums",
     },
     {
-      image: require("../../../assets/images/myPlaylist.png"),
+      image: require("@/assets/images/myPlaylist.png"),
       title: "My Playlists",
       route: "/myPlaylist",
     },
   ];
 
-  const handleItemPress = (item) => {
+  const handleItemPress = (item: any) => {
     if (item.track) {
       const albumInfo = {
         title: item.release.title,
@@ -139,10 +139,10 @@ const index = () => {
               className="w-[190px] h-[160px] rounded-[24px]"
             >
               <View className="absolute bottom-4 left-3">
-                <Text className="text-[20px] font-PlusJakartaSansBold">
+                <Text className="text-[24px] font-TankerRegular">
                   {item.title.split(' ')[0]}
                 </Text>
-                <Text className="text-[20px] font-PlusJakartaSansBold">
+                <Text className="text-[24px] font-TankerRegular">
                   {item.title.split(' ').slice(1).join(' ')}
                 </Text>
               </View>

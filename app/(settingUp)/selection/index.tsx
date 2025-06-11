@@ -2,16 +2,8 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useLayoutEffect } from "react";
 import { useNavigation, useRouter } from "expo-router";
 import {
-  ArrowRight02Icon,
-  HeadphonesIcon,
-  UserGroupIcon,
   ArrowLeft02Icon,
 } from "@hugeicons/react-native";
-import { AppButton } from "@/components/app-components/button";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
 
 const Selection = () => {
     const navigation = useNavigation();

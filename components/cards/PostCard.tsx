@@ -1,18 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { View, Pressable, Text } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
-import { BlurView } from 'expo-blur';
-import { Skeleton } from 'moti/skeleton';
-import { StatusBar } from 'expo-status-bar';
-import UserSection from '../post/UserSection';
-import PostMedia from '../post/PostMedia';
-import EngagementSection from '../post/EngagementSection';
-import { router } from 'expo-router';
-import { Post } from '@/hooks/useUserFeed'; // Updated import
-import { useAppSelector } from '@/redux/hooks';
-import SharePost from '../bottomSheet/SharePost';
-import { formatTimeAgo } from '@/utils/dateUtils';
-import { Portal } from '@gorhom/portal'
+import { Post } from "@/hooks/user/useUserFeed"; // Updated import
+import { useAppSelector } from "@/redux/hooks";
+import { Portal } from "@gorhom/portal";
+import { BlurView } from "expo-blur";
+import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { Skeleton } from "moti/skeleton";
+import React, { useEffect, useState } from "react";
+import { Pressable, Text, View } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import SharePost from "../bottomSheet/SharePost";
+import EngagementSection from "../post/EngagementSection";
+import PostMedia from "../post/PostMedia";
+import UserSection from "../post/UserSection";
 
 interface PostCardProps {
   item: Post;
@@ -25,7 +24,7 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
   const { userdata } = useAppSelector((state) => state.auth);
   const [isShareSheetVisible, setIsShareSheetVisible] = useState(false);
   const [isCommentsVisible, setIsCommentsVisible] = useState(false);
-  console.log('item', item.communityId); // Add this lin
+  console.log("item", item.communityId); // Add this lin
 
   useEffect(() => {
     if (!item) setIsLoading(true);
@@ -36,7 +35,9 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
   const handleLikeUpdate = (success: boolean) => {
     if (success) {
       setLocalHasLiked(!localHasLiked);
-      setLocalLikeCount(prevCount => localHasLiked ? prevCount - 1 : prevCount + 1);
+      setLocalLikeCount((prevCount) =>
+        localHasLiked ? prevCount - 1 : prevCount + 1
+      );
     } else {
       // Revert on failure
       setLocalLikeCount(item?.likeCount || 0);
@@ -49,7 +50,7 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
 
     const words = content.split(/(\s+)/);
     return words.map((word, index) => {
-      if (word.startsWith('#')) {
+      if (word.startsWith("#")) {
         return (
           <Text
             key={index}
@@ -66,7 +67,8 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
   return (
     <Animated.View
       entering={FadeInDown.duration(400).springify()}
-      className="mb-4 overflow-hidden">
+      className="mb-4 overflow-hidden"
+    >
       <BlurView intensity={20} tint="dark" className="rounded-2xl">
         <View className="p-4 gap-y-4">
           <StatusBar style="light" />
@@ -111,19 +113,18 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
               onCommentPress={() => setIsCommentsVisible(true)}
             />
           </Skeleton>
-       <Portal>
-       <SharePost
-        isVisible={isShareSheetVisible}
-        onClose={() => setIsShareSheetVisible(false)}
-        album={{
-          title: item?.content || '',
-          artist: item?.artistId?.name || '',
-          image: item?.artistId?.profileImage || '',
-          communityName: item?.communityId?.communityName || '',
-        }}
-          />
-       </Portal>
-
+          <Portal>
+            <SharePost
+              isVisible={isShareSheetVisible}
+              onClose={() => setIsShareSheetVisible(false)}
+              album={{
+                title: item?.content || "",
+                artist: item?.artistId?.name || "",
+                image: item?.artistId?.profileImage || "",
+                communityName: item?.communityId?.communityName || "",
+              }}
+            />
+          </Portal>
         </View>
       </BlurView>
     </Animated.View>

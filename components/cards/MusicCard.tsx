@@ -2,7 +2,7 @@ import { View, Text, Image, Pressable } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Skeleton } from "moti/skeleton";
 import { useRouter } from "expo-router";
-import { useQuery } from "../../hooks/useQuery";
+import { useQuery } from "@/hooks/core/useQuery";
 
 interface MusicCardProps {
   item: {

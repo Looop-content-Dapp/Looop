@@ -1,22 +1,17 @@
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, ScrollView, Alert } from "react-native";
-import React, { useLayoutEffect, useState } from "react";
-import { useNavigation, useRouter } from "expo-router";
-import {
-
-  ArrowLeft02Icon,
-} from "@hugeicons/react-native";
 import { AppButton } from "@/components/app-components/button";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
-import { useCreateGenreForUser, useGetGenre } from "@/hooks/useGenre";
-import { MotiView } from "moti";
-import MusicCategoryGrid from "./MusicGrid";
-import type { Genre } from "@/hooks/useGenre";
+import type { Genre } from "@/hooks/artist/useGenre";
+import { useCreateGenreForUser, useGetGenre } from "@/hooks/artist/useGenre";
 import { useAppSelector } from "@/redux/hooks";
-
-
+import { ArrowLeft02Icon } from "@hugeicons/react-native";
+import { useNavigation, useRouter } from "expo-router";
+import { MotiView } from "moti";
+import React, { useLayoutEffect, useState } from "react";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from "react-native-responsive-screen";
+import MusicCategoryGrid from "./MusicGrid";
 
 const WhatDoYouListenTo = () => {
   const { userdata } = useAppSelector((state) => state.auth);
@@ -39,23 +34,23 @@ const WhatDoYouListenTo = () => {
 
   console.log("selectedGenres", selectedGenres);
   const handleContinue = () => {
-    createGenreForUser({
-      preferences: selectedGenres,
-      userId: userdata?._id as string,
-    },
-    {
-      onSuccess: () => {
-        router.push("/(settingUp)/listenTo/selection");
+    createGenreForUser(
+      {
+        preferences: selectedGenres,
+        userId: userdata?._id as string,
       },
+      {
+        onSuccess: () => {
+          router.push("/(settingUp)/listenTo/selection");
+        },
 
-      onError: (error) => {
-        Alert.alert("Error", error.message);
-        router.push("/(settingUp)/listenTo/selection");
-      },
-    }
-  );
-
-  }
+        onError: (error) => {
+          Alert.alert("Error", error.message);
+          router.push("/(settingUp)/listenTo/selection");
+        },
+      }
+    );
+  };
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -75,13 +70,19 @@ const WhatDoYouListenTo = () => {
 
   return (
     <View className="flex-1 items-center justify-center">
-      <MusicCategoryGrid data={data?.data as Genre[]} isLoading={isLoading}
+      <MusicCategoryGrid
+        data={data?.data as Genre[]}
+        isLoading={isLoading}
         selectedGenres={selectedGenres}
         onSelectGenre={handleGenreSelection}
       />
       <View style={styles.buttonContinueButtonContinue}>
-      <AppButton.Secondary
-          text={selectedGenres.length > 0 ? `Continue (${selectedGenres.length})` : "Continue"}
+        <AppButton.Secondary
+          text={
+            selectedGenres.length > 0
+              ? `Continue (${selectedGenres.length})`
+              : "Continue"
+          }
           color="#FF7A1B"
           disabled={selectedGenres.length === 0}
           onPress={handleContinue}
@@ -95,15 +96,15 @@ const WhatDoYouListenTo = () => {
 export default WhatDoYouListenTo;
 
 const SkeletonInterest = () => (
-    <View style={styles.skeletonInterestContainer}>
-      <MotiView
-        from={{ opacity: 0.5 }}
-        animate={{ opacity: 1 }}
-        transition={{ loop: true, duration: 1000 }}
-        style={styles.skeletonInterest}
-      />
-    </View>
-  );
+  <View style={styles.skeletonInterestContainer}>
+    <MotiView
+      from={{ opacity: 0.5 }}
+      animate={{ opacity: 1 }}
+      transition={{ loop: true, duration: 1000 }}
+      style={styles.skeletonInterest}
+    />
+  </View>
+);
 const styles = StyleSheet.create({
   buttonContinueButtonContinue: {
     position: "absolute",

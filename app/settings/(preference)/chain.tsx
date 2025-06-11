@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import React, { useLayoutEffect } from 'react';
 import { router, useNavigation } from 'expo-router';
 import { AppBackButton } from '@/components/app-components/back-btn';
-import { useUpdateProfile } from '@/hooks/useUpdateProfile';
+import { useUpdateProfile } from '@/hooks/user/useUpdateProfile';
 import { useAppSelector } from '@/redux/hooks';
 import { XIONB, StarknetB } from '@/assets/images/images';
 
@@ -97,7 +97,7 @@ const ChainPreference = () => {
               <View className='flex-row items-center justify-between'>
                 <View className='flex-row items-center gap-x-[12px]'>
                   <Image
-                    source={chain.image}
+                    source={chain.image as any}
                     className='w-[32px] h-[32px]'
                     resizeMode='contain'
                   />

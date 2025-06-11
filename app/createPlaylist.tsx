@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Alert, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '../hooks/useQuery';
 import { useNavigation } from 'expo-router';
-import { useCreatePlaylist } from '@/hooks/usePlaylist';
+import { useCreatePlaylist } from '@/hooks/music/usePlaylist';
 import { useAppSelector } from '@/redux/hooks';
 import { useNotification } from '@/context/NotificationContext';
 
@@ -39,7 +38,7 @@ const CreatePlaylist = () => {
             });
             navigation.goBack();
           },
-          onError: (error) => {
+          onError: (error: any) => {
             showNotification({
               type: 'error',
               title: 'Error',

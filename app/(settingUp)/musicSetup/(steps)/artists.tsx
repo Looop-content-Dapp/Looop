@@ -1,37 +1,43 @@
-import React, { useEffect, useLayoutEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
-import { router, useNavigation } from "expo-router";
-import { useQuery } from "../../../../hooks/useQuery";
 import { showToast } from "@/components/ShowMessage";
-import { AppButton } from "@/components/app-components/button";
-import { useAppSelector } from "@/redux/hooks";
-import ArtistSectionList from "@/components/settingUp/ArtistSectionList";
 import { AppBackButton } from "@/components/app-components/back-btn";
-import { useFollowArtist } from "@/hooks/useFollowArtist";
+import { AppButton } from "@/components/app-components/button";
+import ArtistSectionList from "@/components/settingUp/ArtistSectionList";
+import api from "@/config/apiConfig";
+import { useFollowArtist } from "@/hooks/artist/useFollowArtist";
+import { useAppSelector } from "@/redux/hooks";
+import { router, useNavigation } from "expo-router";
+import React, { useEffect, useLayoutEffect, useState } from "react";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 const Artists = () => {
   const [artistes, setArtistes] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const { userdata } = useAppSelector((state) => state.auth);
-  const { getAllArtists } = useQuery();
-  const { handleFollowArtist, followingStatus, isLoading: isFollowLoading } = useFollowArtist();
-  const navigation = useNavigation()
+  const {
+    handleFollowArtist,
+    followingStatus,
+    isLoading: isFollowLoading,
+  } = useFollowArtist();
+  const navigation = useNavigation();
 
-useLayoutEffect(() => {
+  useLayoutEffect(() => {
     navigation.setOptions({
-      headerLeft: () => <AppBackButton name="Discover artists on Looop" onBackPress={() => router.back()} />
+      headerLeft: () => (
+        <AppBackButton
+          name="Discover artists on Looop"
+          onBackPress={() => router.back()}
+        />
+      ),
     });
   }, [navigation]);
-
-
 
   const fetchArtists = async () => {
     try {
       setLoading(true);
-      const artistData = await getAllArtists();
+      const artistData = await api.get("/api/artist");
       setArtistes(
-        artistData?.data?.length > 0 && Array.isArray(artistData.data)
-          ? artistData.data
+        artistData?.data?.data.length > 0 && Array.isArray(artistData.data.data)
+          ? artistData.data.data
           : []
       );
     } catch (error) {
@@ -52,46 +58,44 @@ useLayoutEffect(() => {
 
       return prev.map((section) => ({
         ...section,
-        artists: section.artists?.map((artist) =>
-          artist.id === artistId
-            ? { ...artist, isFollowed }
-            : artist
-        ) || [] // Guard against undefined artists array
+        artists:
+          section.artists?.map((artist: any) =>
+            artist.id === artistId ? { ...artist, isFollowed } : artist
+          ) || [], // Guard against undefined artists array
       }));
     });
   };
 
   const onFollowPress = async (artistId: string) => {
-    await handleFollowArtist(userdata?._id, artistId, updateArtistsState);
+    await handleFollowArtist(userdata?._id, artistId);
   };
 
   return (
     <View style={styles.container}>
-    <View style={styles.header}>
-      <Text style={styles.title}>
-        {loading ? "Finding artists for you..." : "Choose 3 or more artists to start exploring"}
-      </Text>
-    </View>
-
-    {loading ? (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FF6D1B" />
+      <View style={styles.header}>
+        <Text style={styles.title}>
+          {loading
+            ? "Finding artists for you..."
+            : "Choose 3 or more artists to start exploring"}
+        </Text>
       </View>
-    ) : (
-      <ArtistSectionList
-        sections={artistes}
-        onFollow={onFollowPress}
-      />
-    )}
 
-    <AppButton.Secondary
-      onPress={() => router.push("/(musicTabs)")}
-      text="Finish"
-      color="#FF6D1B"
-      loading={loading}
-      className="absolute bottom-6 left-6 right-6 z-10 py-[16px] rounded-[56px]"
-    />
-  </View>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6D1B" />
+        </View>
+      ) : (
+        <ArtistSectionList sections={artistes} onFollow={onFollowPress} />
+      )}
+
+      <AppButton.Secondary
+        onPress={() => router.push("/(musicTabs)")}
+        text="Finish"
+        color="#FF6D1B"
+        loading={loading}
+        className="absolute bottom-6 left-6 right-6 z-10 py-[16px] rounded-[56px]"
+      />
+    </View>
   );
 };
 

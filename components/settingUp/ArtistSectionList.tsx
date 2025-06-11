@@ -1,16 +1,15 @@
-import React, { memo, useState, useEffect } from "react";
+import { Search01Icon, Tick01Icon } from "@hugeicons/react-native";
+import React, { memo, useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
+  Dimensions,
   FlatList,
   StyleSheet,
-  Dimensions,
+  Text,
   TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Tick01Icon, Search01Icon } from "@hugeicons/react-native";
-import FastImage from 'react-native-fast-image';
+import FastImage from "react-native-fast-image";
 
 const { width } = Dimensions.get("window");
 
@@ -31,44 +30,61 @@ const CARD_WIDTH = width * 0.3; // Adjusted for a 3-column grid
 const SKELETON_ANIMATION = {
   from: { opacity: 0.3 },
   animate: { opacity: 0.7 },
-  transition: { type: "timing", duration: 1000, repeatReverse: true, loop: true },
+  transition: {
+    type: "timing",
+    duration: 1000,
+    repeatReverse: true,
+    loop: true,
+  },
 } as const;
 
 // Memoized Artist Card
-const ArtistCard = memo(({ artist, onFollow }: { artist: Artist; onFollow: (id: string, follow: boolean) => void }) => {
-  const [isFollowing, setIsFollowing] = useState(artist.isFollowing || false);
+const ArtistCard = memo(
+  ({
+    artist,
+    onFollow,
+  }: {
+    artist: Artist;
+    onFollow: (id: string, follow: boolean) => void;
+  }) => {
+    const [isFollowing, setIsFollowing] = useState(artist.isFollowing || false);
 
-  const handleFollow = () => {
-    setIsFollowing(!isFollowing);
-    onFollow(artist._id, !isFollowing);
-  };
+    const handleFollow = () => {
+      setIsFollowing(!isFollowing);
+      onFollow(artist._id, !isFollowing);
+    };
 
-  return (
-    <View style={styles.card}>
-      <TouchableOpacity onPress={handleFollow} style={styles.imageContainer}>
-        <FastImage
-          source={{
-            uri: artist.profileImage || "https://via.placeholder.com/100",
-            priority: FastImage.priority.normal,
-            cache: FastImage.cacheControl.immutable
-          }}
-          style={styles.artistImage}
-          resizeMode={FastImage.resizeMode.cover}
-        />
-        {isFollowing && (
-          <View style={styles.checkmarkOverlay}>
-            <Tick01Icon size={24} color="#040405" />
-          </View>
-        )}
-      </TouchableOpacity>
-      <Text style={styles.artistName} numberOfLines={1}>
-        {artist.name}
-      </Text>
-    </View>
-  );
-});
+    return (
+      <View style={styles.card}>
+        <TouchableOpacity onPress={handleFollow} style={styles.imageContainer}>
+          <FastImage
+            source={{
+              uri: artist.profileImage || "https://via.placeholder.com/100",
+              priority: FastImage.priority.normal,
+              cache: FastImage.cacheControl.immutable,
+            }}
+            style={styles.artistImage}
+            resizeMode={FastImage.resizeMode.cover}
+            className="rounded-full"
+          />
+          {isFollowing && (
+            <View style={styles.checkmarkOverlay}>
+              <Tick01Icon size={24} color="#040405" />
+            </View>
+          )}
+        </TouchableOpacity>
+        <Text style={styles.artistName} numberOfLines={1}>
+          {artist.name}
+        </Text>
+      </View>
+    );
+  }
+);
 
-const ArtistSectionList: React.FC<ArtistSectionListProps> = ({ sections, onFollow }) => {
+const ArtistSectionList: React.FC<ArtistSectionListProps> = ({
+  sections,
+  onFollow,
+}) => {
   const [artists, setArtists] = useState<Artist[]>(sections);
   const [filteredArtists, setFilteredArtists] = useState<Artist[]>(sections);
   const [searchQuery, setSearchQuery] = useState("");
@@ -138,7 +154,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderColor: "#202227",
     borderWidth: 1,
-    height: 48
+    height: 48,
   },
   searchIcon: {
     marginRight: 8,
@@ -189,7 +205,7 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     textAlign: "center",
     marginBottom: 8,
-    lineHeight: 22
+    lineHeight: 22,
   },
   skeletonText: {
     height: 16,

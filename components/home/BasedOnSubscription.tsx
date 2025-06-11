@@ -1,11 +1,10 @@
-import { View, ScrollView, Text, Pressable } from "react-native";
-import React, { useState } from "react";
+import { useAppSelector } from "@/redux/hooks";
+import { useRouter } from "expo-router";
 import { MotiView } from "moti";
 import { Skeleton } from "moti/skeleton";
-import { useRouter } from "expo-router";
-import { useAppSelector } from "@/redux/hooks";
-import { Avatar } from "react-native-elements";
-import FastImage from 'react-native-fast-image';
+import React from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import FastImage from "react-native-fast-image";
 
 const ExploreDiscographies = ({
   title,
@@ -19,16 +18,6 @@ const ExploreDiscographies = ({
   if (isLoading) {
     return (
       <View className="mb-6">
-        {/* <Skeleton
-          colorMode="dark"
-          width={200}
-          height={24}
-          show={true}
-          transition={{
-            type: "timing",
-            duration: 1000,
-          }}
-        /> */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -48,7 +37,7 @@ const ExploreDiscographies = ({
 
   return (
     <View className="mb-6">
-      <Text className='text-[#D2D3D5] text-[20px] font-PlusJakartaSansMedium mb-4'>
+      <Text className="text-[#D2D3D5] text-[24px] font-TankerRegular font-bold mb-4">
         {title}
       </Text>
       <ScrollView
@@ -100,13 +89,13 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
               createdAt: item?.createdAt,
               updatedAt: item?.updatedAt,
               isActive: item?.isActive,
-              isFollowing: String(followers?.includes(userdata?._id)), // Convert to string
+              isFollowing: String(followers?.includes(userdata?._id)),
               noOfFollowers: followers.length,
             },
           });
         }
       }}
-      className="items-center gap-y-[8px] mb-2"
+      className="items-center gap-y-2"
     >
       <Skeleton
         colorMode="dark"
@@ -119,21 +108,25 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
           duration: 1000,
         }}
       >
-      {item?.profileImage && (
-          <FastImage
-            source={{
-              uri: item?.profileImage || "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
-              priority: FastImage.priority.normal,
-              cache: FastImage.cacheControl.immutable
-            }}
-            style={{
-              width: 140,
-              height: 140,
-              borderRadius: 70, // For rounded image
-            }}
-            resizeMode={FastImage.resizeMode.cover}
-          />
-        )}
+        <MotiView>
+          {item?.profileImage && (
+            <FastImage
+              source={{
+                uri:
+                  item?.profileImage ||
+                  "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
+                priority: FastImage.priority.normal,
+                cache: FastImage.cacheControl.immutable,
+              }}
+              style={{
+                width: 140,
+                height: 140,
+                borderRadius: 100, // Matching Figma's 100px border radius
+              }}
+              resizeMode={FastImage.resizeMode.cover}
+            />
+          )}
+        </MotiView>
       </Skeleton>
       <MotiView
         transition={{
@@ -144,22 +137,29 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
         animate={{
           opacity: loading ? [0.5, 1] : 1,
         }}
+        className="items-center"
       >
         <Skeleton
           colorMode="dark"
-          width={120}
-          height={20}
+          width={87}
+          height={22}
           show={loading}
           transition={{
             type: "timing",
             duration: 1000,
           }}
         >
-          {!loading && (
-            <Text className="text-[#F4F4F4] text-center font-PlusJakartaSansSemiBold">
-              {item?.name}
-            </Text>
-          )}
+          <MotiView>
+            {!loading && (
+              <Text
+                className="text-[#ffffff] text-[16px] text-center font-PlusJakartaSansBold font-bold tracking-[-0.32px]"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {item?.name}
+              </Text>
+            )}
+          </MotiView>
         </Skeleton>
         <Skeleton
           colorMode="dark"
@@ -170,13 +170,14 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
             type: "timing",
             duration: 1000,
           }}
-          className="mt-1"
         >
-          {!loading && (
-            <Text className="text-[#8E8E8E] text-[12px] text-center">
-              {followers.length} followers
-            </Text>
-          )}
+          <MotiView>
+            {!loading && (
+              <Text className="text-[#63656b] text-[12px] font-PlusJakartaSansBold font-bold tracking-[-0.24px]">
+                {followers.length}M Tribestars
+              </Text>
+            )}
+          </MotiView>
         </Skeleton>
       </MotiView>
     </Pressable>

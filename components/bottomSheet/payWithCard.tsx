@@ -1,20 +1,19 @@
-import { View, Text, Image, Alert, StyleSheet, Dimensions } from 'react-native';
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { FormField } from '@/components/app-components/formField';
-import { AppButton } from '@/components/app-components/button';
-import { useRouter } from 'expo-router';
-import useUserInfo from '@/hooks/useUserInfo';
-import { Currency, useFlutterwavePayment } from '@/hooks/useFlutterwavePayment';
+import { AppButton } from "@/components/app-components/button";
+import ChainPicker from "@/components/app-components/ChainPicker";
+import { FormField } from "@/components/app-components/formField";
+import { useFlutterwavePayment } from "@/hooks/payment/useFlutterwavePayment";
+import useUserInfo from "@/hooks/user/useUserInfo";
+import { useAppSelector } from "@/redux/hooks";
+import BottomSheet from "@gorhom/bottom-sheet";
+import { useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import { Alert, Dimensions, Image, StyleSheet, Text, View } from "react-native";
 import {
   CodeField,
   Cursor,
   useBlurOnFulfill,
   useClearByFocusCell,
-} from 'react-native-confirmation-code-field';
-import ChainPicker from '@/components/app-components/ChainPicker';
-import { CreditCardIcon } from "@hugeicons/react-native";
-import BottomSheet from '@gorhom/bottom-sheet';
-import { useAppSelector } from '@/redux/hooks';
+} from "react-native-confirmation-code-field";
 
 interface CardDetails {
   cardNumber: string;
@@ -30,29 +29,29 @@ interface PayWithCardProps {
 }
 
 const CELL_COUNT = 6;
-const { height } = Dimensions.get('window');
+const { height } = Dimensions.get("window");
 
 const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
   const router = useRouter();
   const { location } = useUserInfo();
   const { preAuthenticateCard } = useFlutterwavePayment();
   const [loading, setLoading] = useState(false);
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState("USD");
   const [value, setValue] = useState("");
   const [isCorrect, setIsCorrect] = useState<boolean>();
   const [cardDetails, setCardDetails] = useState<CardDetails>({
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    cardHolderName: '',
-    amount: ''
+    cardNumber: "",
+    expiryDate: "",
+    cvv: "",
+    cardHolderName: "",
+    amount: "",
   });
   const { validatePayment } = useFlutterwavePayment();
-  const { userdata }  = useAppSelector((auth) => auth.auth)
+  const { userdata } = useAppSelector((auth) => auth.auth);
 
   // Bottom sheet reference
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const snapPoints = React.useMemo(() => ['90%'], []);
+  const snapPoints = React.useMemo(() => ["90%"], []);
 
   // Effect to open/close the bottom sheet
   useEffect(() => {
@@ -67,38 +66,42 @@ const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
   useEffect(() => {
     if (location?.country) {
       const currencyMap: { [key: string]: string } = {
-        'Nigeria': 'NGN',
-        'Ghana': 'GHS',
-        'Kenya': 'KES',
-        'Uganda': 'UGX',
-        'Tanzania': 'TZS',
-        'United States': 'USD',
-        'United Kingdom': 'GBP',
+        Nigeria: "NGN",
+        Ghana: "GHS",
+        Kenya: "KES",
+        Uganda: "UGX",
+        Tanzania: "TZS",
+        "United States": "USD",
+        "United Kingdom": "GBP",
       };
-      setCurrency(currencyMap[location.country] || 'USD');
+      setCurrency(currencyMap[location.country] || "USD");
     }
   }, [location]);
 
   // Add state for card type
-  const [cardType, setCardType] = useState<'visa' | 'mastercard' | null>(null);
+  const [cardType, setCardType] = useState<"visa" | "mastercard" | null>(null);
 
   const handleInputChange = (field: keyof CardDetails, value: string) => {
-    const sanitizedValue = field === 'amount'
-      ? value.replace(/[^0-9.]/g, '')
-      : value.replace(/[^a-zA-Z0-9\s/]/g, '');
+    const sanitizedValue =
+      field === "amount"
+        ? value.replace(/[^0-9.]/g, "")
+        : value.replace(/[^a-zA-Z0-9\s/]/g, "");
 
-    if (field === 'cardNumber') {
-      const formattedValue = sanitizedValue.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
-      setCardDetails(prev => ({ ...prev, [field]: formattedValue }));
-      detectCardType(formattedValue.replace(/\s/g, ''));
-    } else if (field === 'expiryDate') {
+    if (field === "cardNumber") {
+      const formattedValue = sanitizedValue
+        .replace(/\s/g, "")
+        .replace(/(.{4})/g, "$1 ")
+        .trim();
+      setCardDetails((prev) => ({ ...prev, [field]: formattedValue }));
+      detectCardType(formattedValue.replace(/\s/g, ""));
+    } else if (field === "expiryDate") {
       const formatted = sanitizedValue
-        .replace(/\D/g, '')
-        .replace(/^(\d{2})/, '$1/')
+        .replace(/\D/g, "")
+        .replace(/^(\d{2})/, "$1/")
         .substr(0, 5);
-      setCardDetails(prev => ({ ...prev, [field]: formatted }));
+      setCardDetails((prev) => ({ ...prev, [field]: formatted }));
     } else {
-      setCardDetails(prev => ({ ...prev, [field]: sanitizedValue }));
+      setCardDetails((prev) => ({ ...prev, [field]: sanitizedValue }));
     }
   };
 
@@ -109,16 +112,17 @@ const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
       return;
     }
 
-    if (cardNumber.startsWith('4')) {
-      setCardType('visa');
+    if (cardNumber.startsWith("4")) {
+      setCardType("visa");
     } else if (
-      (cardNumber.startsWith('5') && ['1', '2', '3', '4', '5'].includes(cardNumber[1])) ||
-      (cardNumber.startsWith('2') &&
+      (cardNumber.startsWith("5") &&
+        ["1", "2", "3", "4", "5"].includes(cardNumber[1])) ||
+      (cardNumber.startsWith("2") &&
         cardNumber.length >= 4 &&
         parseInt(cardNumber.substring(0, 4)) >= 2221 &&
         parseInt(cardNumber.substring(0, 4)) <= 2720)
     ) {
-      setCardType('mastercard');
+      setCardType("mastercard");
     } else {
       setCardType(null);
     }
@@ -126,8 +130,8 @@ const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
 
   // Add new states for OTP verification
   const [showOTP, setShowOTP] = useState(false);
-  const [otpValue, setOtpValue] = useState('');
-  const [flwRef, setFlwRef] = useState('');
+  const [otpValue, setOtpValue] = useState("");
+  const [flwRef, setFlwRef] = useState("");
   const [verifying, setVerifying] = useState(false);
 
   const ref = useBlurOnFulfill({ value: otpValue, cellCount: CELL_COUNT });
@@ -141,28 +145,34 @@ const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
       setLoading(true);
 
       // Validate all fields including amount
-      if (!cardDetails.cardNumber ||
-          !cardDetails.expiryDate ||
-          !cardDetails.cvv ||
-          !cardDetails.cardHolderName ||
-          !cardDetails.amount) {
-        Alert.alert('Validation Error', 'Please fill in all fields');
+      if (
+        !cardDetails.cardNumber ||
+        !cardDetails.expiryDate ||
+        !cardDetails.cvv ||
+        !cardDetails.cardHolderName ||
+        !cardDetails.amount
+      ) {
+        Alert.alert("Validation Error", "Please fill in all fields");
         return;
       }
 
       // Validate amount is a valid number
       const amount = parseFloat(cardDetails.amount);
       if (isNaN(amount) || amount <= 0) {
-        Alert.alert('Invalid Amount', 'Please enter a valid amount');
+        Alert.alert("Invalid Amount", "Please enter a valid amount");
         return;
       }
 
       // For now, just show OTP screen
       setShowOTP(true);
-
     } catch (error) {
-      console.error('Payment Error:', error);
-      Alert.alert('Error', error instanceof Error ? error.message : 'An error occurred while validating your card');
+      console.error("Payment Error:", error);
+      Alert.alert(
+        "Error",
+        error instanceof Error
+          ? error.message
+          : "An error occurred while validating your card"
+      );
     } finally {
       setLoading(false);
     }
@@ -175,25 +185,30 @@ const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
       const validationPayload = {
         otp: otpValue,
         flw_ref: flwRef,
-        type: 'card' as const
+        type: "card" as const,
       };
 
       const response = await validatePayment(validationPayload);
 
-      if (response.status === 'success') {
+      if (response.status === "success") {
         router.push({
-          pathname: '/payment/MintingSuccess',
+          pathname: "/payment/MintingSuccess",
           params: {
-            name: 'Payment Successful',
-            transactionId: response.data?.id?.toString() || ''
-          }
+            name: "Payment Successful",
+            transactionId: response.data?.id?.toString() || "",
+          },
         });
         onClose();
       } else {
-        Alert.alert('Error', response.message || 'Payment verification failed');
+        Alert.alert("Error", response.message || "Payment verification failed");
       }
     } catch (error) {
-      Alert.alert('Error', error instanceof Error ? error.message : 'An error occurred during verification');
+      Alert.alert(
+        "Error",
+        error instanceof Error
+          ? error.message
+          : "An error occurred during verification"
+      );
     } finally {
       setVerifying(false);
     }
@@ -221,9 +236,9 @@ const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
               cellCount={CELL_COUNT}
               rootStyle={{
                 marginTop: 20,
-                width: '100%',
-                marginLeft: 'auto',
-                marginRight: 'auto',
+                width: "100%",
+                marginLeft: "auto",
+                marginRight: "auto",
               }}
               keyboardType="number-pad"
               textContentType="oneTimeCode"
@@ -273,7 +288,7 @@ const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
             </Text>
           </View>
 
-          <ChainPicker userId={userdata?._id} />
+          <ChainPicker />
 
           <View className="gap-y-4 mt-[30px]">
             {/* Amount Field */}
@@ -281,7 +296,7 @@ const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
               label={`Amount (${currency})`}
               placeholder="Enter amount"
               value={cardDetails.amount}
-              onChangeText={(text) => handleInputChange('amount', text)}
+              onChangeText={(text) => handleInputChange("amount", text)}
               keyboardType="numeric"
             />
 
@@ -291,20 +306,20 @@ const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
                 label="Card Number"
                 placeholder="•••• •••• •••• ••••"
                 value={cardDetails.cardNumber}
-                onChangeText={(text) => handleInputChange('cardNumber', text)}
+                onChangeText={(text) => handleInputChange("cardNumber", text)}
                 keyboardType="numeric"
                 maxLength={19}
               />
               <View className="absolute right-3 top-[38px]">
-                {cardType === 'visa' ? (
+                {cardType === "visa" ? (
                   <Image
-                    source={require('@/assets/images/visa-logo.png')}
-                    style={{ width: 24, height: 16, resizeMode: 'cover' }}
+                    source={require("@/assets/images/visa-logo.png")}
+                    style={{ width: 24, height: 16, resizeMode: "cover" }}
                   />
-                ) : cardType === 'mastercard' ? (
+                ) : cardType === "mastercard" ? (
                   <Image
-                    source={require('@/assets/images/mastercard-logo.png')}
-                    style={{ width: 24, height: 16, resizeMode: 'contain' }}
+                    source={require("@/assets/images/mastercard-logo.png")}
+                    style={{ width: 24, height: 16, resizeMode: "contain" }}
                   />
                 ) : null}
               </View>
@@ -316,7 +331,7 @@ const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
                   label="Expiry Date"
                   placeholder="MM/YY"
                   value={cardDetails.expiryDate}
-                  onChangeText={(text) => handleInputChange('expiryDate', text)}
+                  onChangeText={(text) => handleInputChange("expiryDate", text)}
                   keyboardType="numeric"
                   maxLength={5}
                 />
@@ -326,7 +341,7 @@ const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
                   label="CVV"
                   placeholder="•••"
                   value={cardDetails.cvv}
-                  onChangeText={(text) => handleInputChange('cvv', text)}
+                  onChangeText={(text) => handleInputChange("cvv", text)}
                   keyboardType="numeric"
                   secureTextEntry
                   maxLength={4}
@@ -338,7 +353,7 @@ const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
               label="Card Holder Name"
               placeholder="Enter name as shown on card"
               value={cardDetails.cardHolderName}
-              onChangeText={(text) => handleInputChange('cardHolderName', text)}
+              onChangeText={(text) => handleInputChange("cardHolderName", text)}
               autoCapitalize="words"
             />
           </View>
@@ -374,8 +389,8 @@ const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
       snapPoints={snapPoints}
       enablePanDownToClose={true}
       onClose={onClose}
-      handleIndicatorStyle={{ backgroundColor: '#63656B' }}
-      backgroundStyle={{ backgroundColor: '#111318' }}
+      handleIndicatorStyle={{ backgroundColor: "#63656B" }}
+      backgroundStyle={{ backgroundColor: "#111318" }}
     >
       {renderContent()}
     </BottomSheet>

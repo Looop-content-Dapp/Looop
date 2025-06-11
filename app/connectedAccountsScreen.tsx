@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,10 +9,9 @@ import {
     InformationCircleIcon,
 } from '@hugeicons/react-native';
 import { router } from 'expo-router';
-import { banks } from '@/data/data';
 import { FormField } from '@/components/app-components/formField';
-import { useFlutterwaveBanks } from '../hooks/useFlutterwaveBanks';
-import useUserInfo from '../hooks/useUserInfo';
+import { useFlutterwaveBanks } from '@/hooks/payment/useFlutterwaveBanks';
+import useUserInfo from '@/hooks/user/useUserInfo';
 
 type ScreenType = 'main' | 'addAccount' | 'accountDetails';
 

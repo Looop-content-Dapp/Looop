@@ -1,7 +1,13 @@
+import { StarknetB } from "@/assets/images/images";
 import { ArrowDown01Icon, Copy01Icon } from "@hugeicons/react-native";
-import { View, Text, TouchableOpacity, Image, ActivityIndicator } from "react-native";
-import { XIONB, StarknetB } from "@/assets/images/images";
 import { useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 type WalletBalanceProps = {
   balances?: {
@@ -22,7 +28,7 @@ export default function WalletBalance({
   addresses = [],
   isLoading = false,
   onCopyAddress,
-  usdcPrice = 1 // Default to 1 if not provided
+  usdcPrice = 1, // Default to 1 if not provided
 }: WalletBalanceProps) {
   const [selectedTab, setSelectedTab] = useState("All balances");
   const [currency, setCurrency] = useState<"USD" | "NGN">("USD");
@@ -30,7 +36,7 @@ export default function WalletBalance({
   const exchangeRate = 1450;
 
   const formatNumber = (num: number) => {
-    return num.toLocaleString('en-US', {
+    return num.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
@@ -49,7 +55,7 @@ export default function WalletBalance({
 
   const getCurrentBalance = () => {
     if (balance) {
-      const numericBalance = parseFloat(balance.replace(/[$,₦]/g, '')) || 0;
+      const numericBalance = parseFloat(balance.replace(/[$,₦]/g, "")) || 0;
       const usdAmount = numericBalance * usdcPrice;
 
       return currency === "NGN"
@@ -80,7 +86,9 @@ export default function WalletBalance({
               selectedTab === tab ? "bg-[#202227] px-[12px] py-[6px]" : ""
             } px-4 py-2 rounded-full`}
           >
-            <Text className="text-[#D2D3D5] text-[12px] font-PlusJakartaSansMedium">{tab}</Text>
+            <Text className="text-[#D2D3D5] text-[12px] font-PlusJakartaSansMedium">
+              {tab}
+            </Text>
           </TouchableOpacity>
         ))}
         <TouchableOpacity
@@ -102,45 +110,49 @@ export default function WalletBalance({
             <ActivityIndicator size="large" color="#FF8A49" />
           </View>
         ) : (
-          <Text className="text-white text-[40px] font-PlusJakartaSansBold">
+          <Text
+            numberOfLines={1}
+            className="text-white text-[40px] font-PlusJakartaSansBold"
+          >
             {getCurrentBalance()}
           </Text>
         )}
       </View>
 
-{/* Wallet Addresses */}
-<View className="bg-[#202227] p-[16px] gap-y-[10px] mt-[32px] rounded-[10px]">
-  <Text className="text-[14px] text-[#63656B] font-PlusJakartaSansMedium">
-    Wallet addresses
-  </Text>
-  <View className="gap-y-[12px]">
-    {addresses
-      .filter(addr => addr.chain === "Starknet")
-      .map((addr, index) => (
-        <TouchableOpacity
-          key={index}
-          className="flex-row items-center justify-between"
-          onPress={() => addr.address && onCopyAddress?.(addr.address)}
-        >
-          <View className="flex-row items-center gap-x-2 flex-1">
-            <Image
-              source={StarknetB}
-              className="w-5 h-5"
-            />
-            <Text
-              className="text-[#f4f4f4] text-[16px] font-PlusJakartaSansMedium flex-1"
-              numberOfLines={1}
-            >
-              {addr.address
-                ? `${addr.address.slice(0, 35)}...`
-                : "No address"}
-            </Text>
-          </View>
-          <Copy01Icon size={16} color="#63656B" style={{ marginLeft: 8 }} />
-        </TouchableOpacity>
-      ))}
-  </View>
-</View>
+      {/* Wallet Addresses */}
+      <View className="bg-[#202227] p-[16px] gap-y-[10px] mt-[32px] rounded-[10px]">
+        <Text className="text-[14px] text-[#63656B] font-PlusJakartaSansMedium">
+          Wallet addresses
+        </Text>
+        <View className="gap-y-[12px]">
+          {addresses
+            .filter((addr) => addr.chain === "Starknet")
+            .map((addr, index) => (
+              <TouchableOpacity
+                key={index}
+                className="flex-row items-center justify-between"
+                onPress={() => addr.address && onCopyAddress?.(addr.address)}
+              >
+                <View className="flex-row items-center gap-x-2 flex-1">
+                  <Image source={StarknetB} className="w-5 h-5" />
+                  <Text
+                    className="text-[#f4f4f4] text-[16px] font-PlusJakartaSansMedium flex-1"
+                    numberOfLines={1}
+                  >
+                    {addr.address
+                      ? `${addr.address.slice(0, 35)}...`
+                      : "No address"}
+                  </Text>
+                </View>
+                <Copy01Icon
+                  size={16}
+                  color="#63656B"
+                  style={{ marginLeft: 8 }}
+                />
+              </TouchableOpacity>
+            ))}
+        </View>
+      </View>
     </View>
   );
 }

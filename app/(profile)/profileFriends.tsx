@@ -7,7 +7,7 @@ import {
     FlatList,
     Image,
   } from 'react-native';
-  import React, { useState, useEffect } from 'react';
+  import React from 'react';
   import { ArrowLeft02Icon, Search01Icon } from '@hugeicons/react-native';
   import { router } from 'expo-router';
   import { widthPercentageToDP as wp } from 'react-native-responsive-screen';

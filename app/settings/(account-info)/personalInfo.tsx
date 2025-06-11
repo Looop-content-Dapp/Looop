@@ -1,10 +1,9 @@
-import { View, Text, Modal } from 'react-native'
+import { View, Text } from 'react-native'
 import { ArrowRight01Icon, SmartPhone02Icon, Message02Icon } from '@hugeicons/react-native'
-import React, { useLayoutEffect, useState } from 'react'
+import React, { useLayoutEffect } from 'react'
 import { TouchableOpacity } from 'react-native'
 import { router, useNavigation } from 'expo-router'
 import { AppBackButton } from '@/components/app-components/back-btn'
-import { useClerkAuthentication } from '@/hooks/useClerkAuthentication'
 
 const personalInfo = () => {
     const navigation = useNavigation()

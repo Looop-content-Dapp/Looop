@@ -1,21 +1,20 @@
-import "react-native-get-random-values";
+import { playbackService } from "@/services/PlaybackService";
+import { AbstraxionProvider } from "@burnt-labs/abstraxion-react-native";
+import { GiphySDK } from "@giphy/react-native-sdk";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { PortalProvider } from "@gorhom/portal";
+import { Buffer } from "buffer";
+import { Asset } from "expo-asset";
+import { SplashScreen, Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { StatusBar } from "expo-status-bar";
+import "react-native-get-random-values";
 import { KeyboardProvider } from "react-native-keyboard-controller";
-import { Provider } from "react-redux";
-import { router, SplashScreen, Stack } from "expo-router";
-import { GiphySDK } from "@giphy/react-native-sdk";
-import { PersistGate } from "redux-persist/integration/react";
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { playbackService } from '@/services/PlaybackService';
-import { setupPlayer } from '../services/PlaybackService';
-import { PortalProvider } from "@gorhom/portal";
-import { AbstraxionProvider } from "@burnt-labs/abstraxion-react-native";
-import { Asset } from "expo-asset";
-import Constants from "expo-constants";
-import { Buffer } from "buffer";
 import crypto from "react-native-quick-crypto";
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
+import { setupPlayer } from "../services/PlaybackService";
 
 // @ts-ignore
 global.crypto = crypto as unknown as Crypto;
@@ -27,36 +26,31 @@ setupPlayer();
 import { useFonts } from "expo-font";
 import "../global.css";
 
-import store, { persistor } from "../redux/store";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MusicPlayerProvider } from "@/context/MusicPlayerContext";
-import TrackPlayer from 'react-native-track-player';
-import * as Sentry from '@sentry/react-native';
 import { NotificationProvider } from "@/context/NotificationContext";
-import { Pressable, Text } from "react-native";
-import { useAppSelector } from "@/redux/hooks";
-
-
+import * as Sentry from "@sentry/react-native";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import TrackPlayer from "react-native-track-player";
+import store, { persistor } from "../redux/store";
 
 Sentry.init({
-  dsn: 'https://0d0b04e2a4f98122a0e2014b2a86b10c@o4509128364195840.ingest.de.sentry.io/4509128384774224',
+  dsn: "https://0d0b04e2a4f98122a0e2014b2a86b10c@o4509128364195840.ingest.de.sentry.io/4509128384774224",
 
   // uncomment the line below to enable Spotlight (https://spotlightjs.com)
   // spotlight: __DEV__,
 });
 
 const config = {
-    // Network configuration
-    rpcUrl: "https://rpc.xion-testnet-2.burnt.com:443",
-    restUrl: "https://api.xion-testnet-2.burnt.com:443",
-    gasPrice: "0.001uxion",
-    granter: "xion1m27pnvh7pp5dw0wda7w00cxr3kht8uxt2fjayn",
+  // Network configuration
+  rpcUrl: "https://rpc.xion-testnet-2.burnt.com:443",
+  restUrl: "https://api.xion-testnet-2.burnt.com:443",
+  gasPrice: "0.001uxion",
+  granter: "xion1m27pnvh7pp5dw0wda7w00cxr3kht8uxt2fjayn",
 
-    // Optional configurations
-    treasury: "xion13jetl8j9kcgsva86l08kpmy8nsnzysyxs06j4s69c6f7ywu7q36q4k5smc",
-    callbackUrl: "looop://",
-
-  };
+  // Optional configurations
+  treasury: "xion13jetl8j9kcgsva86l08kpmy8nsnzysyxs06j4s69c6f7ywu7q36q4k5smc",
+  callbackUrl: "looop://",
+};
 
 // Register the playback service
 TrackPlayer.registerPlaybackService(() => playbackService);
@@ -66,8 +60,6 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 function AppContent() {
-  const { userdata } = useAppSelector((state) => state.auth);
-  const { onBoarded } = useAppSelector((state) => state.misc);
   const [isSplashReady, setSplashReady] = useState(false);
   const [fontsLoaded, fontsError] = useFonts({
     PlusJakartaSansBold: require("../assets/fonts/PlusJakartaSans-Bold.ttf"),
@@ -81,9 +73,7 @@ function AppContent() {
     async function prepare() {
       try {
         // Load all assets here
-        await Promise.all([
-          Asset.loadAsync(require("../assets/images/logo"))
-        ]);
+        await Promise.all([Asset.loadAsync(require("../assets/images/logo"))]);
 
         // Hide the splash screen once everything is ready
         await SplashScreen.hideAsync();
@@ -96,8 +86,6 @@ function AppContent() {
 
     prepare();
   }, []);
-
-
 
   if (!isSplashReady || !fontsLoaded) {
     return null;
@@ -146,25 +134,29 @@ function AppContent() {
         <Stack.Screen
           name="withdrawFundsScreen"
           options={{
-            presentation: "fullScreenModal"
-          }} />
-        <Stack.Screen name="connectedAccountsScreen"
+            presentation: "fullScreenModal",
+          }}
+        />
+        <Stack.Screen
+          name="connectedAccountsScreen"
           options={{
-            presentation: "fullScreenModal"
-          }} />
+            presentation: "fullScreenModal",
+          }}
+        />
         <Stack.Screen name="settings" />
-        <Stack.Screen name="payment"
+        <Stack.Screen
+          name="payment"
           options={{
-            presentation: "fullScreenModal"
+            presentation: "fullScreenModal",
           }}
         />
         <Stack.Screen name="wallet" />
         <Stack.Screen
-  name="queue"
-  options={{
-    presentation: "fullScreenModal",
-  }}
-/>
+          name="queue"
+          options={{
+            presentation: "fullScreenModal",
+          }}
+        />
       </Stack>
     </>
   );
@@ -174,34 +166,29 @@ export default Sentry.wrap(function _RootLayout() {
   const queryClient = new QueryClient();
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-         <AbstraxionProvider config={config}>
-         <NotificationProvider>
-      <QueryClientProvider client={queryClient}>
-      <PortalProvider>
-        <BottomSheetModalProvider>
-
-          <Provider store={store}>
-            <PersistGate loading={null} persistor={persistor}>
-            <MusicPlayerProvider>
-
-        {/* <Pressable className="bg-Orange/08 absolute bottom-[120px] -[12px] z-[1000px] h-[60px] w-[60px]  items-center justify-center rounded-full" onPress={async () => {
+      <AbstraxionProvider config={config}>
+        <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <PortalProvider>
+              <BottomSheetModalProvider>
+                <Provider store={store}>
+                  <PersistGate loading={null} persistor={persistor}>
+                    <MusicPlayerProvider>
+                      {/* <Pressable className="bg-Orange/08 absolute bottom-[120px] -[12px] z-[1000px] h-[60px] w-[60px]  items-center justify-center rounded-full" onPress={async () => {
                 router.push("/(settingUp)")
               }}>
             <Text className="text-[#fff]">Reset</Text>
            </Pressable> */}
-              <KeyboardProvider>
-
-                <AppContent />
-
-              </KeyboardProvider>
-
-            </MusicPlayerProvider>
-            </PersistGate>
-          </Provider>
-        </BottomSheetModalProvider>
-        </PortalProvider>
-      </QueryClientProvider>
-      </NotificationProvider>
+                      <KeyboardProvider>
+                        <AppContent />
+                      </KeyboardProvider>
+                    </MusicPlayerProvider>
+                  </PersistGate>
+                </Provider>
+              </BottomSheetModalProvider>
+            </PortalProvider>
+          </QueryClientProvider>
+        </NotificationProvider>
       </AbstraxionProvider>
     </GestureHandlerRootView>
   );

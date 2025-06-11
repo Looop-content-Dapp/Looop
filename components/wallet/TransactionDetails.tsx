@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Pressable, Share, Platform, Image } from 'react-native';
-import { useTransactionDetails } from '@/hooks/useTransaction';
+import { useTransactionDetails } from '@/hooks/payment/useTransaction';
 import { Copy01Icon, Share01Icon, MessageQuestionIcon } from '@hugeicons/react-native';
 import * as Clipboard from 'expo-clipboard';
 import ViewShot, { captureRef } from 'react-native-view-shot';
@@ -28,7 +28,7 @@ export default function TransactionDetails({ transactionId }: TransactionDetails
   const { showNotification } = useNotification()
   const viewShotRef = useRef<ViewShotRefType>(null);
   const { data: response, isLoading } = useTransactionDetails(transactionId);
-  const transaction = response?.data;
+  const transaction = response?.metadata;
 
   const copyToClipboard = async (text: string) => {
     await Clipboard.setStringAsync(text);

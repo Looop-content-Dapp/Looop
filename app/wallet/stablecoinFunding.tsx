@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, SafeAreaView, Alert, Share } from "react-native";
+import { View, Text, TouchableOpacity, SafeAreaView, Share } from "react-native";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { useLayoutEffect } from "react";
 import { AppBackButton } from "@/components/app-components/back-btn";

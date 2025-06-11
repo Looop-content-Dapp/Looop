@@ -1,10 +1,10 @@
+import { showToast } from "@/components/ShowMessage";
 import api from "@/config/apiConfig";
-import { useAppDispatch } from "@/redux/hooks";
 import { setUserData } from "@/redux/slices/auth";
-import store from "@/redux/store";
+import store, { persistor } from "@/redux/store";
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
-import { router } from "expo-router";
+import { router, useRouter } from "expo-router";
+import { useState } from "react";
 
 interface OAuthResponse {
   status: string;
@@ -34,11 +34,13 @@ interface OAuthPayload {
   channel: "google" | "apple" | "xion" | "argent";
   email?: string;
   token?: string;
-  walletAddress?: string
+  walletAddress?: string;
 }
 
 export const useAuth = () => {
-  const verifyOAuthToken = async (payload: OAuthPayload): Promise<OAuthResponse> => {
+  const verifyOAuthToken = async (
+    payload: OAuthPayload
+  ): Promise<OAuthResponse> => {
     try {
       const response = await api.post("/api/oauth/auth", payload);
       return response.data;
@@ -48,17 +50,24 @@ export const useAuth = () => {
     }
   };
 
-  const { mutate: authenticateUser, isPending, error } = useMutation({
+  const {
+    mutate: authenticateUser,
+    isPending,
+    error,
+  } = useMutation({
     mutationFn: verifyOAuthToken,
     onSuccess: (response, variables) => {
-      console.log('OAuth mutation succeeded:', response)
+      console.log("OAuth mutation succeeded:", response);
       if (!response.data) {
         console.error("Invalid response format:", response);
         return;
       }
 
       if (response.data.isNewUser) {
-        console.log("New user detected, redirecting to user details:", response.data.user)
+        console.log(
+          "New user detected, redirecting to user details:",
+          response.data.user
+        );
 
         router.replace({
           pathname: "/(auth)/userDetail",
@@ -67,11 +76,14 @@ export const useAuth = () => {
             oauthId: response.data.user._id,
             isOAuth: "true",
             oauthProvider: variables.channel,
-            walletAddress: variables.walletAddress
+            walletAddress: variables.walletAddress,
           },
         });
       } else {
-        console.log("Existing user detected, redirecting to music tabs:", response.data)
+        console.log(
+          "Existing user detected, redirecting to music tabs:",
+          response.data
+        );
         store.dispatch(setUserData(response.data));
         router.replace("/(musicTabs)");
       }
@@ -81,7 +93,7 @@ export const useAuth = () => {
       console.error("Error details:", {
         message: error.message,
         status: error.response?.status,
-        data: error.response?.data
+        data: error.response?.data,
       });
       // You might want to show an error message to the user here
     },
@@ -91,5 +103,53 @@ export const useAuth = () => {
     authenticateUser,
     isPending,
     error,
+  };
+};
+
+/**
+ * Custom hook to handle authentication with OAuth providers
+ */
+export const useClerkAuthentication = () => {
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+
+  const handleLogout = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      store.dispatch(setUserData(null));
+      persistor.purge();
+      router.dismissTo("/");
+    } catch (error) {
+      console.error("Error during logout:", error);
+      showToast("Failed to logout. Please try again.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async (userId: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Clear local store
+      store.dispatch(setUserData(null));
+      showToast("Account successfully deleted", "success");
+      router.replace("/");
+    } catch (err: any) {
+      console.error("Error deleting account:", err);
+      setError("Failed to delete account");
+      showToast("Failed to delete account", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    error,
+    handleLogout,
+    handleDeleteAccount,
+    loading,
   };
 };

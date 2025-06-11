@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import { AccessIcon, ArrowRight01Icon, Notification02Icon, Settings01Icon, Shield02Icon, UserCircleIcon, Search01Icon, LockPasswordIcon, Delete01Icon, Wallet02Icon, Money02Icon } from '@hugeicons/react-native';
+import { ArrowRight01Icon, Wallet02Icon, Money02Icon } from '@hugeicons/react-native';
 import React, { useLayoutEffect } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { router, useNavigation } from 'expo-router';

@@ -24,7 +24,7 @@ import {
 import FastImage from "react-native-fast-image";
 import Share from "@/components/bottomSheet/Share";
 import { useRef } from "react";
-import { useTracksByMusic } from "@/hooks/useTracksByMusic";
+import { useTracksByMusic } from "@/hooks/music/useTracksByMusic";
 import { useMusicPlayerContext } from "@/context/MusicPlayerContext";
 import AddToPlaylistBottomSheet from "@/components/bottomSheet/AddToPlaylistBottomSheet";
 import { Portal } from "@gorhom/portal";
@@ -386,7 +386,7 @@ const MusicDetails = () => {
             {releaseInfo.tracks.map((track) => (
               <View key={track._id}>
                 <TouchableOpacity
-                  onPress={() => handleTrackPress(track)}
+                  onPress={() => handleTrackPress(track as any)}
                   className="flex-row items-center justify-between py-3"
                 >
                   <View className="flex-row items-center flex-1 mr-4">
@@ -418,7 +418,7 @@ const MusicDetails = () => {
                       />
                     )}
                   </View>
-                  <TouchableOpacity onPress={() => handleTrackMenuPress(track)}>
+                  <TouchableOpacity onPress={() => handleTrackMenuPress(track as any)}>
                     <MoreHorizontalIcon size={24} color="#fff" />
                   </TouchableOpacity>
                 </TouchableOpacity>
@@ -440,7 +440,7 @@ const MusicDetails = () => {
             type: releaseInfo.type,
             duration: selectedTrack ? selectedTrack.duration : releaseInfo.duration, // Pass the raw duration number
             id: selectedTrack ? selectedTrack._id : releaseInfo.id,
-            tracks: selectedTrack ? [selectedTrack] : releaseInfo.tracks,
+            tracks: selectedTrack ? [selectedTrack] : releaseInfo.tracks as any,
           }}
         />
       )}

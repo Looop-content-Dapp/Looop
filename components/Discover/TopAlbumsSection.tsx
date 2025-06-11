@@ -59,7 +59,7 @@ const AlbumItem = ({ position, title, artist, imageUrl, explicit, onPress }: Alb
 const TopAlbumsSection = ({ title, data }: TopAlbumsSectionProps) => {
   return (
     <View className="mt-8">
-      <Text className="text-[#F4F4F4] text-[24px] font-PlusJakartaSansMedium px-6 mb-4">
+      <Text className="text-[#F4F4F4] text-[24px] font-TankerRegular px-6 mb-4">
         {title}
       </Text>
       <FlatList

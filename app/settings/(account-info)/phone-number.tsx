@@ -9,7 +9,7 @@ import { phoneNumberSchema, type PhoneNumberSchema } from './validation'
 
 const PhoneNumber = () => {
     const navigation = useNavigation()
-    const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<PhoneNumberSchema>({
+    const { control, handleSubmit, formState: { errors } } = useForm<PhoneNumberSchema>({
         resolver: zodResolver(phoneNumberSchema)
     })
 

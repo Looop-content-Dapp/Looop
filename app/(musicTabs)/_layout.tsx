@@ -4,11 +4,10 @@ import { UserGroupIcon } from "@hugeicons/react-native";
 import { View, StyleSheet, Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context"; // Safe area hook
 
-import DraggableButton from "../../components/Draggable/DraggableButton";
-import MusicTab from "../../components/TabSection/MusicTab"; // Import your music tab
-import useMusicPlayer from "../../hooks/useMusicPlayer";
-import MusicPlayer from "../../components/MusicPlayer";
-import StaticButton from "../../components/Draggable/DraggableButton";
+import MusicTab from "@/components/TabSection/MusicTab"; // Import your music tab
+import useMusicPlayer from "@/hooks/music/useMusicPlayer";
+import MusicPlayer from "@/components/MusicPlayer";
+import StaticButton from "@/components/Draggable/DraggableButton";
 import { PortalProvider } from "@gorhom/portal";
 
 export default function _TabsLayout() {

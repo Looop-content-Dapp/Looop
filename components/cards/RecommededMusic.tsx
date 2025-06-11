@@ -1,22 +1,56 @@
-import React from 'react';
+import { useRouter } from "expo-router";
+import React from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
   Dimensions,
+  Image,
   Pressable,
   ScrollView,
-  Image,
-  ActivityIndicator,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import RecommendedMusicSkeleton from '../SkeletonLoading/RecommendedMusicSkeleton';
+  Text,
+  View,
+} from "react-native";
+import RecommendedMusicSkeleton from "../SkeletonLoading/RecommendedMusicSkeleton";
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.32;
-const CARD_GAP = 12; // Increased gap between cards
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = width * 0.4;
+const CARD_GAP = 10;
 
-const RecommededMusic = ({ data, isLoading, title = "Recommended For You" }) => {
+interface Artist {
+  name: string;
+  profileImage?: string;
+}
+
+interface Artwork {
+  cover_image?: {
+    high: string;
+  };
+  high?: string;
+}
+
+interface Release {
+  _id: string;
+  artwork?: Artwork;
+  type?: string;
+}
+
+interface MusicItem {
+  title: string;
+  artist: Artist | string;
+  release: Release;
+  isExplicit?: boolean;
+  cover?: string;
+}
+
+interface RecommendedMusicProps {
+  data: MusicItem[];
+  isLoading: boolean;
+  title?: string;
+}
+
+const RecommededMusic: React.FC<RecommendedMusicProps> = ({
+  data,
+  isLoading,
+  title = "Recommended For You",
+}) => {
   const router = useRouter();
 
   if (isLoading) {
@@ -27,84 +61,83 @@ const RecommededMusic = ({ data, isLoading, title = "Recommended For You" }) => 
     return null;
   }
 
-  // Utility function to truncate text
   const truncateText = (text: string, limit: number) => {
     return text?.length > limit ? `${text.substring(0, limit)}...` : text;
   };
 
-  // Helper function to get the image URL from different possible structures
-  const getImageUrl = (item: any) => {
+  const getImageUrl = (item: MusicItem): string => {
     if (item.release?.artwork?.cover_image?.high) {
       return item.release.artwork.cover_image.high;
     } else if (item.release?.artwork?.high) {
       return item.release.artwork.high;
     } else if (item.cover) {
       return item.cover;
-    } else if (item.artist?.profileImage) {
-      return item?.artist?.profileImage;
+    } else if (typeof item.artist !== "string" && item.artist?.profileImage) {
+      return item.artist.profileImage;
     }
-    return 'https://via.placeholder.com/300'; // Fallback image
+    return "https://via.placeholder.com/300";
   };
 
   const renderExplicitBadge = () => (
-    <View style={styles.explicitBadges}>
-      <Text style={styles.explicitText}>E</Text>
+    <View className="bg-[#999] rounded px-1 py-0.5">
+      <Text className="text-black text-[10px] font-semibold">E</Text>
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <Text className='text-[#D2D3D5] text-[20px] font-PlusJakartaSansMedium mb-4'>{title}</Text>
-      <View style={styles.cardsContainer}>
+    <View className="mt-6 mb-4">
+      <Text className="text-[#D2D3D5] text-[24px] font-TankerRegular mb-4">
+        {title}
+      </Text>
+      <View className="flex-1">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollViewContent}
+          contentContainerStyle={{ paddingHorizontal: 16, gap: CARD_GAP }}
           decelerationRate="fast"
         >
           {data.map((item, index) => (
-            <View key={index} style={styles.cardWrapper}>
+            <View key={index} className="mr-2.5" style={{ width: CARD_WIDTH }}>
               <Pressable
                 style={({ pressed }) => [
-                  styles.card,
-                  { opacity: pressed ? 0.8 : 1 }
+                  { width: "250%", height: "auto", opacity: pressed ? 0.8 : 1 },
                 ]}
                 onPress={() => {
                   router.push({
                     pathname: "/(musicTabs)/(home)/_screens/musicDetails",
                     params: {
                       id: item.release._id,
-                    }
+                    },
                   });
                 }}
               >
-                {/* Album/Track Artwork */}
                 <Image
                   source={{ uri: getImageUrl(item) }}
-                  style={styles.artwork}
+                  className="w-full aspect-square rounded-lg bg-[#2a2a2a]"
                   resizeMode="cover"
                 />
 
-                {/* Title and Artist Info */}
-                <View style={styles.textContainer}>
-                  <View style={styles.titleRow}>
+                <View className="mt-2 w-full">
+                  <View className="flex-row items-center gap-1 w-full">
                     <Text
                       numberOfLines={1}
-                      style={styles.title}
+                      className="text-[#D2D3D5] text-[14px] font-PlusJakartaSansBold font-bold flex-1"
                     >
                       {truncateText(item.title, 15)}
                     </Text>
                     {item.isExplicit && renderExplicitBadge()}
                   </View>
-                  <View style={styles.artistRow}>
+                  <View className="flex-row mt-0.5 gap-1 w-full">
                     <Text
                       numberOfLines={1}
-                      style={styles.artist}
+                      className="text-[#63656B] text-[12px] font-PlusJakartaSansBold font-bold"
                     >
-                      {typeof item.artist === 'string' ? item.artist : item.artist?.name}
+                      {typeof item.artist === "string"
+                        ? item.artist
+                        : item.artist?.name}
                     </Text>
                     {item.release?.type && (
-                      <Text style={styles.typeLabel}>
+                      <Text className="text-[11px] text-[#999] bg-opacity-10 px-1 py-0.5 rounded overflow-hidden capitalize">
                         {item.release.type}
                       </Text>
                     )}
@@ -118,87 +151,5 @@ const RecommededMusic = ({ data, isLoading, title = "Recommended For You" }) => 
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    marginTop: 24,
-    marginBottom: 16,
-  },
-  cardsContainer: {
-    flex: 1,
-  },
-  scrollViewContent: {
-    paddingHorizontal: 16,
-    gap: CARD_GAP,
-  },
-  cardWrapper: {
-    marginRight: CARD_GAP,
-    width: CARD_WIDTH,
-  },
-  card: {
-    width: '100%',
-    height: 'auto',
-  },
-  artwork: {
-    width: '100%',
-    aspectRatio: 1,
-    borderRadius: 8,
-    backgroundColor: '#2a2a2a',
-  },
-  textContainer: {
-    marginTop: 8,
-    width: '100%',
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    width: '100%',
-  },
-  title: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#fff',
-    flex: 1,
-  },
-  artistRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 2,
-    gap: 4,
-    width: '100%',
-  },
-  artist: {
-    fontSize: 12,
-    color: '#999',
-    flex: 1,
-  },
-  typeLabel: {
-    fontSize: 11,
-    color: '#999',
-    backgroundColor: 'rgba(29, 185, 84, 0.1)',
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderRadius: 3,
-    overflow: 'hidden',
-    textTransform: 'capitalize',
-  },
-  explicitBadges: {
-    backgroundColor: '#999',
-    borderRadius: 3,
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-  },
-  explicitText: {
-    color: '#000',
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  loadingContainer: {
-    height: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
 
 export default RecommededMusic;

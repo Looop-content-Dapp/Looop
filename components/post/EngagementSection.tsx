@@ -1,13 +1,15 @@
-import React, { useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Keyboard, Pressable } from 'react-native';
-import Animated, { FadeIn, withSpring, useSharedValue, useAnimatedStyle, runOnJS } from 'react-native-reanimated';
-import { FavouriteIcon, Comment02Icon, Share05Icon, EyeIcon } from '@hugeicons/react-native';
-import { router } from 'expo-router';
-// import Reanimated, { withSpring, useSharedValue, useAnimatedStyle, runOnJS } from 'react-native-reanimated';
-import { usePostInteractions } from '@/hooks/usePostInteractions';
-import { useAppSelector } from '@/redux/hooks';
-import CommentsBottomSheet from '@/components/bottomSheet/CommentsBottomSheet';
-import { Portal } from '@gorhom/portal';
+import CommentsBottomSheet from "@/components/bottomSheet/CommentsBottomSheet";
+import { usePostInteractions } from "@/hooks/community/usePostInteractions";
+import { useAppSelector } from "@/redux/hooks";
+import { Portal } from "@gorhom/portal";
+import { Comment02Icon, EyeIcon, FavouriteIcon } from "@hugeicons/react-native";
+import React, { useRef, useState } from "react";
+import { Keyboard, Pressable, Text, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
 interface Engagement {
   likes: number;
@@ -33,7 +35,7 @@ const EngagementSection: React.FC<EngagementSectionProps> = ({
   actions,
   index,
   onLikeUpdate,
-  onCommentPress
+  onCommentPress,
 }) => {
   const fadeAnim = useSharedValue(1);
   // State for controlling comments visibility
@@ -49,17 +51,21 @@ const EngagementSection: React.FC<EngagementSectionProps> = ({
   }));
 
   const handleLikeAnimation = () => {
-    'worklet';
-    scale.value = withSpring(1.5, {
-      damping: 8,
-      stiffness: 120,
-      mass: 0.5
-    }, () => {
-      scale.value = withSpring(1, {
-        damping: 10,
-        stiffness: 100
-      });
-    });
+    "worklet";
+    scale.value = withSpring(
+      1.5,
+      {
+        damping: 8,
+        stiffness: 120,
+        mass: 0.5,
+      },
+      () => {
+        scale.value = withSpring(1, {
+          damping: 10,
+          stiffness: 100,
+        });
+      }
+    );
   };
 
   const handleLike = async () => {
@@ -75,10 +81,10 @@ const EngagementSection: React.FC<EngagementSectionProps> = ({
     try {
       await likePost({
         userId: userdata?._id || "",
-        postId: index
+        postId: index,
       });
     } catch (error) {
-      console.error('Like failed:', error);
+      console.error("Like failed:", error);
       onLikeUpdate?.(false); // Revert on failure
     }
   };
@@ -99,19 +105,34 @@ const EngagementSection: React.FC<EngagementSectionProps> = ({
       <View className="flex-row items-center justify-between mt-2">
         <View className="flex-row items-center justify-between w-full">
           <View className="flex-row items-center justify-around gap-x-4">
-            <Animated.View style={[animatedStyle, { transform: [{ scale: fadeAnim.value }] }]}>
+            <Animated.View
+              style={[
+                animatedStyle,
+                { transform: [{ scale: fadeAnim.value }] },
+              ]}
+            >
               <Pressable
                 onPress={handleLike}
                 disabled={isLiking}
-                className={`bg-[#1A1B1E] border ${actions.like ? 'border-[#FF3B30]' : 'border-[#2C2D31]'} py-2.5 px-4 flex-row items-center gap-x-2 rounded-full shadow-sm ${actions.like ? 'bg-[#FF3B3015]' : ''}`}
-                style={({ pressed }) => pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] }}
+                className={`bg-[#1A1B1E] border ${
+                  actions.like ? "border-[#FF3B30]" : "border-[#2C2D31]"
+                } py-2.5 px-4 flex-row items-center gap-x-2 rounded-full shadow-sm ${
+                  actions.like ? "bg-[#FF3B3015]" : ""
+                }`}
+                style={({ pressed }) =>
+                  pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] }
+                }
               >
                 <FavouriteIcon
-                  variant={actions.like ? 'solid' : 'stroke'}
+                  variant={actions.like ? "solid" : "stroke"}
                   size={18}
-                  color={actions.like ? '#FF3B30' : '#9A9BA0'}
+                  color={actions.like ? "#FF3B30" : "#9A9BA0"}
                 />
-                <Text className={`${actions.like ? 'text-[#FF3B30]' : 'text-[#9A9BA0]'} font-medium text-sm`}>
+                <Text
+                  className={`${
+                    actions.like ? "text-[#FF3B30]" : "text-[#9A9BA0]"
+                  } font-medium text-sm`}
+                >
                   {engagement.likes}
                 </Text>
               </Pressable>
@@ -120,10 +141,14 @@ const EngagementSection: React.FC<EngagementSectionProps> = ({
             <Pressable
               onPress={handleCommentPress}
               className="bg-[#1A1B1E] border border-[#2C2D31] py-2.5 px-4 flex-row items-center gap-x-2 rounded-full shadow-sm"
-              style={({ pressed }) => pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] }}
+              style={({ pressed }) =>
+                pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] }
+              }
             >
               <Comment02Icon variant="stroke" size={18} color="#9A9BA0" />
-              <Text className="text-[#9A9BA0] font-medium text-sm">{engagement.comments}</Text>
+              <Text className="text-[#9A9BA0] font-medium text-sm">
+                {engagement.comments}
+              </Text>
             </Pressable>
           </View>
 
