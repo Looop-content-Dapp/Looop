@@ -1,5 +1,6 @@
 import api from "@/config/apiConfig";
 import useUserInfo from "@/hooks/user/useUserInfo";
+import { StreamData } from "@/types/player";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { useCallback, useState } from "react";
@@ -433,14 +434,15 @@ export const useQuery = () => {
     }
   }, []);
 
-  const getTracksFromId = useCallback(async (albumId: string) => {
+  const getTracksFromId = async (id: string) => {
     try {
-      const response = await api.get(`/api/song/releases/${albumId}/tracks`);
-      return response.data;
+      const response = await api.get(`/tracks/${id}`);
+      return await response;
     } catch (error) {
-      console.log("Error getting genres:", error);
+      console.error("Error fetching tracks:", error);
+      throw error;
     }
-  }, []);
+  };
 
   // -----------------------------
   // Song Interaction Functions
@@ -451,15 +453,15 @@ export const useQuery = () => {
    * @param {string} albumId - The ID of the album to save.
    * @returns {Promise<Object>} Response data from the API.
    */
-  const saveAlbum = useCallback(async (userId: string, albumId: string) => {
+  const saveAlbum = async (userId: string, albumId: string) => {
     try {
-      const response = await axios.post(`/api/song/album/${userId}/${albumId}`);
-      console.log("Album saved successfully:", response.data);
-      return response.data;
+      const response = await api.get(`/albums/${albumId}/save`);
+      return await response;
     } catch (error) {
       console.error("Error saving album:", error);
+      throw error;
     }
-  }, []);
+  };
 
   /**
    * Gets the saved albums for a user.
@@ -482,16 +484,21 @@ export const useQuery = () => {
    * @param {string} songId - The ID of the song to like.
    * @returns {Promise<Object>} Response data from the API.
    */
-  const likeSong = useCallback(async (userId: string, songId: string) => {
-    console.log("liking a song of", userId, songId);
+  const likeSong = async (userId: string, songId: string) => {
     try {
-      const response = await axios.post(`/api/song/like/${songId}/${userId}`);
-      console.log("Song liked successfully:", response.data);
-      return response.data;
+      const response = await fetch(`tracks/${songId}/like`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId }),
+      });
+      return await response.json();
     } catch (error) {
       console.error("Error liking song:", error);
+      throw error;
     }
-  }, []);
+  };
 
   /**
    * Gets the liked songs for a user.
@@ -1152,6 +1159,22 @@ export const useQuery = () => {
     []
   );
 
+  const streamTrack = async (streamData: StreamData) => {
+    try {
+      const response = await fetch(`/tracks/${streamData.trackId}/stream`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(streamData),
+      });
+      return await response.json();
+    } catch (error) {
+      console.error("Error streaming track:", error);
+      throw error;
+    }
+  };
+
   return {
     // -----------------------------
     // Authentication
@@ -1254,5 +1277,7 @@ export const useQuery = () => {
     getTrendingSearches,
     getLocationBasedTracks,
     getWorldwideTopSongs,
+
+    streamTrack,
   };
 };

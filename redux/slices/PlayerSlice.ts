@@ -1,25 +1,10 @@
-import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import TrackPlayer from 'react-native-track-player';
-
-// Add these imports at the top
-interface AlbumInfo {
-  title: string;
-  type: "album" | "single" | "ep";
-  coverImage: string;
-}
+import { AlbumInfo, ExtendedTrack } from "@/types/player";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface TrackData {
   _id: string;
   fileUrl: string;
   duration: number;
-}
-
-interface ExtendedTrack {
-  _id: string;
-  title: string;
-  artist: { name: string };
-  songData: TrackData;
-  release: { artwork: { high: string } };
 }
 
 interface PlayerState {
@@ -31,7 +16,11 @@ interface PlayerState {
   shuffle: boolean;
   repeat: boolean;
   queue: ExtendedTrack[];
-  isPlaying: boolean;  // Add this new property
+  isPlaying: boolean;
+  volume: number;
+  muted: boolean;
+  loading: boolean;
+  error: string | null;
 }
 
 const initialState: PlayerState = {
@@ -43,11 +32,15 @@ const initialState: PlayerState = {
   shuffle: false,
   repeat: false,
   queue: [] as ExtendedTrack[],
-  isPlaying: false,  // Add this new property
+  isPlaying: false,
+  volume: 1,
+  muted: false,
+  loading: false,
+  error: null,
 };
 
 export const shufflePlaylist = createAsyncThunk(
-  'player/shufflePlaylist',
+  "player/shufflePlaylist",
   async (_, { getState, dispatch }) => {
     const state = getState() as { player: PlayerState };
     const { playlist, currentTrackId } = state.player;
@@ -55,13 +48,16 @@ export const shufflePlaylist = createAsyncThunk(
     if (!playlist || !currentTrackId) return;
 
     // Keep current track and shuffle the rest
-    const currentTrack = playlist.find(t => t._id === currentTrackId);
-    const remainingTracks = playlist.filter(t => t._id !== currentTrackId);
+    const currentTrack = playlist.find((t) => t._id === currentTrackId);
+    const remainingTracks = playlist.filter((t) => t._id !== currentTrackId);
 
     // Shuffle remaining tracks
     for (let i = remainingTracks.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [remainingTracks[i], remainingTracks[j]] = [remainingTracks[j], remainingTracks[i]];
+      [remainingTracks[i], remainingTracks[j]] = [
+        remainingTracks[j],
+        remainingTracks[i],
+      ];
     }
 
     // Reconstruct playlist with current track at current position
@@ -69,7 +65,7 @@ export const shufflePlaylist = createAsyncThunk(
     const shuffledPlaylist = [
       ...remainingTracks.slice(0, currentIndex),
       currentTrack!,
-      ...remainingTracks.slice(currentIndex)
+      ...remainingTracks.slice(currentIndex),
     ];
 
     return shuffledPlaylist;
@@ -77,14 +73,17 @@ export const shufflePlaylist = createAsyncThunk(
 );
 
 const playerSlice = createSlice({
-  name: 'player',
+  name: "player",
   initialState,
   reducers: {
-    playTrack: (state, action: PayloadAction<{
-      track: ExtendedTrack;
-      albumInfo: AlbumInfo;
-      playlist?: ExtendedTrack[];
-    }>) => {
+    playTrack: (
+      state,
+      action: PayloadAction<{
+        track: ExtendedTrack;
+        albumInfo: AlbumInfo;
+        playlist?: ExtendedTrack[];
+      }>
+    ) => {
       state.track = action.payload.track;
       state.currentTrackId = action.payload.track._id;
       state.albumInfo = action.payload.albumInfo;
@@ -94,16 +93,16 @@ const playerSlice = createSlice({
           (t) => t._id === action.payload.track._id
         );
       }
+      state.isPlaying = true;
     },
     pauseTrack: (state) => {
-      // Keep track info but update playing state in component
+      state.isPlaying = false;
     },
     toggleShuffleMode: (state) => {
       state.shuffle = !state.shuffle;
     },
     toggleRepeatMode: (state) => {
       state.repeat = !state.repeat;
-      // Repeat mode will be handled in the hook
     },
     setPlaylist: (state, action: PayloadAction<ExtendedTrack[]>) => {
       state.playlist = action.payload;
@@ -124,8 +123,17 @@ const playerSlice = createSlice({
       state.isPlaying = action.payload;
     },
     setQueue: (state, action: PayloadAction<ExtendedTrack[]>) => {
-        state.queue = action.payload;
-      },
+      state.queue = action.payload;
+    },
+    setVolume: (state, action: PayloadAction<number>) => {
+      state.volume = action.payload;
+      if (action.payload > 0) {
+        state.muted = false;
+      }
+    },
+    setMuted: (state, action: PayloadAction<boolean>) => {
+      state.muted = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(shufflePlaylist.fulfilled, (state, action) => {
@@ -147,7 +155,9 @@ export const {
   clearQueue,
   updateQueue,
   setIsPlaying,
-  setQueue
+  setQueue,
+  setVolume,
+  setMuted,
 } = playerSlice.actions;
 
 export default playerSlice.reducer;

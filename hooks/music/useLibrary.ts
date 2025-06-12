@@ -1,20 +1,13 @@
-import { useCallback } from 'react';
 import api from "@/config/apiConfig";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import axios from 'axios';
-
-type StreamData = {
-  completionRate: number;
-  timestamp: string;
-  offline: boolean;
-  deviceType: string;
-  quality: 'high' | 'standard';
-  region?: string;
-};
+import { useQuery as useCoreQuery } from "@/hooks/core/useQuery";
+import { StreamData } from "@/types/player";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { useCallback } from "react";
 
 export const useLibrary = (userId?: string) => {
   const lastPlayed = useQuery({
-    queryKey: ['lastPlayed', userId],
+    queryKey: ["lastPlayed", userId],
     queryFn: async () => {
       const { data } = await api.get(`/api/song/history/last-played/${userId}`);
       return data;
@@ -24,7 +17,7 @@ export const useLibrary = (userId?: string) => {
   });
 
   const playlists = useQuery({
-    queryKey: ['userPlaylists', userId],
+    queryKey: ["userPlaylists", userId],
     queryFn: async () => {
       const { data } = await api.get(`/api/playlist/user/${userId}`);
       return data;
@@ -34,7 +27,7 @@ export const useLibrary = (userId?: string) => {
   });
 
   const topSongs = useQuery({
-    queryKey: ['topSongs', userId],
+    queryKey: ["topSongs", userId],
     queryFn: async () => {
       const { data } = await api.get(`/api/song/insights/top-songs/${userId}`);
       return data;
@@ -49,15 +42,15 @@ export const useLibrary = (userId?: string) => {
       return data;
     },
     onError: (error) => {
-      console.error('Failed to pin/unpin playlist:', error);
-    }
+      console.error("Failed to pin/unpin playlist:", error);
+    },
   });
 
   const streamSongMutation = useMutation({
     mutationFn: async ({
       songId,
       userId,
-      streamData
+      streamData,
     }: {
       songId: string;
       userId: string;
@@ -72,11 +65,11 @@ export const useLibrary = (userId?: string) => {
       } catch (error) {
         // Check if it's a network error
         if (axios.isAxiosError(error) && !error.response) {
-          throw new Error('Network error: Please check your connection');
+          throw new Error("Network error: Please check your connection");
         }
         // Check if it's a server error
         if (axios.isAxiosError(error) && error.response?.status === 500) {
-          throw new Error('Server error: Unable to record stream');
+          throw new Error("Server error: Unable to record stream");
         }
         throw error;
       }
@@ -84,9 +77,11 @@ export const useLibrary = (userId?: string) => {
     retry: 2, // Retry failed requests up to 2 times
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff
     onError: (error) => {
-      console.error('Error streaming song:', error.message);
-    }
+      console.error("Error streaming song:", error.message);
+    },
   });
+
+  const { streamTrack } = useCoreQuery();
 
   const handleStreamSong = useCallback(
     async (
@@ -98,7 +93,7 @@ export const useLibrary = (userId?: string) => {
     ) => {
       // Don't attempt to stream if offline
       if (network?.isConnected === false) {
-        console.log('Skipping stream recording while offline');
+        console.log("Skipping stream recording while offline");
         return;
       }
 
@@ -112,18 +107,13 @@ export const useLibrary = (userId?: string) => {
       };
 
       try {
-        return await streamSongMutation.mutateAsync({
-          songId,
-          userId: streamUserId,
-          streamData
-        });
+        return await streamTrack(streamData);
       } catch (error) {
-        // Silent fail - don't interrupt music playback due to streaming errors
-        console.warn('Failed to record stream:', error);
-        return null;
+        console.error("Error streaming track:", error);
+        throw error;
       }
     },
-    [streamSongMutation]
+    [streamTrack]
   );
 
   return {
@@ -132,7 +122,7 @@ export const useLibrary = (userId?: string) => {
       data: lastPlayed.data,
       isLoading: lastPlayed.isLoading,
       error: lastPlayed.error,
-      refetch: lastPlayed.refetch
+      refetch: lastPlayed.refetch,
     },
     playlists: {
       data: playlists.data,
