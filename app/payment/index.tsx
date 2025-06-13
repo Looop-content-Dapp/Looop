@@ -1,6 +1,7 @@
 import { View, Text, Image, TouchableOpacity, Modal, Alert, ScrollView } from "react-native";
 import React, { useLayoutEffect, useRef, useState } from "react";
 import {
+    router,
   useLocalSearchParams,
   useNavigation,
   useRouter,
@@ -14,7 +15,6 @@ const Index = () => {
   const { name, image, communityId, collectionAddress, type, userAddress } = useLocalSearchParams();
   const paystackWebViewRef = useRef<paystackProps.PayStackRef>();
   const navigation = useNavigation();
-  const router = useRouter();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { userdata } = useAppSelector((state) => state.auth);
 
@@ -62,7 +62,7 @@ const Index = () => {
   };
 
   const payNow = () => {
-    paystackWebViewRef?.current?.startTransaction();
+    router.navigate("/payment/payInCrypto");
   };
 
   return (
@@ -71,7 +71,14 @@ const Index = () => {
         color="#FF6D1B"
         text="Continue to Payment"
         loading={false}
-        onPress={() => setIsModalVisible(true)}
+        onPress={() => router.push({
+            pathname: "/payment/payInCrypto",
+            params: {
+                name: name,
+                image: image,
+                price: 5
+              }
+        })}
         className="absolute bottom-6 left-6 right-6 z-10 py-[16px] rounded-[56px]"
       />
 

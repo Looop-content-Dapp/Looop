@@ -84,16 +84,20 @@ const RecommededMusic: React.FC<RecommendedMusicProps> = ({
     </View>
   );
 
+  if (!data || data.length === 0) {
+    return null;
+  }
+
   return (
     <View className="mt-6 mb-4">
-      <Text className="text-[#D2D3D5] text-[24px] font-TankerRegular mb-4">
-        {title}
-      </Text>
+     <Text className="text-[#D2D3D5] text-[24px] font-TankerRegular mb-4">
+         {title}
+       </Text>
       <View className="flex-1">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16, gap: CARD_GAP }}
+          contentContainerStyle={{ gap: CARD_GAP }}
           decelerationRate="fast"
         >
           {data.map((item, index) => (

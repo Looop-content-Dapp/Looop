@@ -47,7 +47,6 @@ const Index = () => {
           contentContainerStyle={{
             paddingBottom: currentTrack ? 90 : 30,
             paddingTop: 12,
-            paddingLeft: 6,
           }}
         >
           <View className="gap-y-[12px]">

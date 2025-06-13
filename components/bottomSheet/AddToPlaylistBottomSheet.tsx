@@ -4,6 +4,7 @@ import {
   useUserPlaylists,
 } from "@/hooks/music/usePlaylist";
 import { useAppSelector } from "@/redux/hooks";
+import type { ExtendedTrack } from "@/types/player";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { Add01Icon, Search01Icon } from "@hugeicons/react-native";
 import { router } from "expo-router";
@@ -25,7 +26,14 @@ const AddToPlaylistBottomSheet = ({
 }: {
   isVisible: boolean;
   closeSheet: () => void;
-  album: any;
+  album: {
+    id: string | string[];
+    title: string;
+    artist: string;
+    image: string;
+    type: string;
+    tracks: ExtendedTrack[];
+  };
 }) => {
   const { showNotification } = useNotification();
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -68,9 +76,7 @@ const AddToPlaylistBottomSheet = ({
     if (!userdata?._id || selectedPlaylists.length === 0) return;
     try {
       // Handle both single track and multiple tracks
-      const trackIds = album?._id
-        ? [album._id]
-        : album?.tracks?.map((track: any) => track._id);
+      const trackIds = album?.tracks?.map((track: ExtendedTrack) => track._id);
 
       if (!trackIds?.length) {
         showNotification({

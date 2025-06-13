@@ -66,5 +66,7 @@ export const useGetCommunities = () => {
     refetchInterval: 30000,
     refetchIntervalInBackground: true,
     retry: 2,
+    refetchOnMount: true,
+    enabled: true,
   });
 };

@@ -21,7 +21,7 @@ export const useHeader = ({title}: {title: string}) => {
 
   return {
     headerLeft: () => (
-      <View className="flex-row items-center gap-x-[10px]">
+      <View className="flex-row items-center gap-x-[5px]">
         {title ? (
           <Text className="text-[18px] text-[#f4f4f4] font-PlusJakartaSansExtraBold">{title}</Text>
         ) : (

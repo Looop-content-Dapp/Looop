@@ -47,7 +47,16 @@ const AddFriends = () => {
   useFriendWebSocket(userdata?._id || "");
 
   // Initialize friend requests hook
-  const { sendRequest, isSending } = useFriendRequests(userdata?._id || "");
+  const {
+    sendRequest,
+    isSending,
+    getRequestStatus,
+    isFriend,
+    acceptRequest,
+    rejectRequest,
+    isAccepting,
+    isRejecting,
+  } = useFriendRequests(userdata?._id || "");
 
   // Fetch all users
   const { data: users = [], isLoading } = useQuery<User[]>({
@@ -107,6 +116,139 @@ const AddFriends = () => {
     });
   }, [navigation]);
 
+  const renderFriendButton = (user: User) => {
+    const requestStatus = getRequestStatus(user._id);
+    const isUserFriend = isFriend(user._id);
+
+    if (isUserFriend) {
+      return (
+        <TouchableOpacity
+          className="px-4 py-2 rounded-[56px] bg-[#2A2B32]"
+          disabled={true}
+        >
+          <Text className="text-[14px] font-PlusJakartaSansMedium text-[#787A80]">
+            Friends
+          </Text>
+        </TouchableOpacity>
+      );
+    }
+
+    if (requestStatus) {
+      if (requestStatus.type === "sent") {
+        if (requestStatus.status === "pending") {
+          return (
+            <TouchableOpacity
+              className="px-4 py-2 rounded-[56px] bg-[#2A2B32]"
+              disabled={true}
+            >
+              <Text className="text-[14px] font-PlusJakartaSansMedium text-[#787A80]">
+                {isSending(user._id) ? "Sending..." : "Request Sent"}
+              </Text>
+            </TouchableOpacity>
+          );
+        }
+        if (requestStatus.status === "rejected") {
+          return (
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                handleAddFriend(user._id);
+              }}
+              disabled={isSending(user._id)}
+              className={`px-4 py-2 rounded-[56px] ${
+                isSending(user._id) ? "bg-[#2A2B32]" : "bg-[#FF6D1B]"
+              }`}
+            >
+              <Text
+                className={`text-[14px] font-PlusJakartaSansMedium ${
+                  isSending(user._id) ? "text-[#787A80]" : "text-[#f4f4f4]"
+                }`}
+              >
+                {isSending(user._id) ? "Sending..." : "Add Friend"}
+              </Text>
+            </TouchableOpacity>
+          );
+        }
+      } else if (requestStatus.type === "received") {
+        if (requestStatus.status === "pending") {
+          return (
+            <View className="flex-row gap-x-2">
+              <TouchableOpacity
+                onPress={(e) => {
+                  e.stopPropagation();
+                  acceptRequest(requestStatus.requestId);
+                }}
+                disabled={isAccepting(requestStatus.requestId)}
+                className={`px-4 py-2 rounded-[56px] ${
+                  isAccepting(requestStatus.requestId)
+                    ? "bg-[#2A2B32]"
+                    : "bg-[#FF6D1B]"
+                }`}
+              >
+                <Text
+                  className={`text-[14px] font-PlusJakartaSansMedium ${
+                    isAccepting(requestStatus.requestId)
+                      ? "text-[#787A80]"
+                      : "text-[#f4f4f4]"
+                  }`}
+                >
+                  {isAccepting(requestStatus.requestId)
+                    ? "Accepting..."
+                    : "Accept"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={(e) => {
+                  e.stopPropagation();
+                  rejectRequest(requestStatus.requestId);
+                }}
+                disabled={isRejecting(requestStatus.requestId)}
+                className={`px-4 py-2 rounded-[56px] ${
+                  isRejecting(requestStatus.requestId)
+                    ? "bg-[#2A2B32]"
+                    : "bg-[#2A2B32]"
+                }`}
+              >
+                <Text
+                  className={`text-[14px] font-PlusJakartaSansMedium ${
+                    isRejecting(requestStatus.requestId)
+                      ? "text-[#787A80]"
+                      : "text-[#787A80]"
+                  }`}
+                >
+                  {isRejecting(requestStatus.requestId)
+                    ? "Rejecting..."
+                    : "Reject"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          );
+        }
+      }
+    }
+
+    return (
+      <TouchableOpacity
+        onPress={(e) => {
+          e.stopPropagation();
+          handleAddFriend(user._id);
+        }}
+        disabled={isSending(user._id)}
+        className={`px-4 py-2 rounded-[56px] ${
+          isSending(user._id) ? "bg-[#2A2B32]" : "bg-[#FF6D1B]"
+        }`}
+      >
+        <Text
+          className={`text-[14px] font-PlusJakartaSansMedium ${
+            isSending(user._id) ? "text-[#787A80]" : "text-[#f4f4f4]"
+          }`}
+        >
+          {isSending(user._id) ? "Sending..." : "Add Friend"}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
   const renderUserItem = ({ item }: { item: User }) => (
     <TouchableOpacity
       onPress={() =>
@@ -137,24 +279,7 @@ const AddFriends = () => {
           </View>
         </View>
       </View>
-      <TouchableOpacity
-        onPress={(e) => {
-          e.stopPropagation();
-          handleAddFriend(item._id);
-        }}
-        disabled={isSending}
-        className={`px-4 py-2 rounded-[56px] ${
-          isSending ? "bg-[#2A2B32]" : "bg-[#FF6D1B]"
-        }`}
-      >
-        <Text
-          className={`text-[14px] font-PlusJakartaSansMedium ${
-            isSending ? "text-[#787A80]" : "text-[#f4f4f4]"
-          }`}
-        >
-          {isSending ? "Sending..." : "Add Friend"}
-        </Text>
-      </TouchableOpacity>
+      {renderFriendButton(item)}
     </TouchableOpacity>
   );
 

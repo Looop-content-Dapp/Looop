@@ -5,14 +5,17 @@ import { useQuery } from "@tanstack/react-query";
 
 export const useGetUser = (userId?: string) => {
   return useQuery({
-    queryKey: ['user', userId],
+    queryKey: ["user", userId],
     queryFn: async () => {
       const { data } = await api.get(`/api/user/${userId}`);
       store.dispatch(setUserData(data.data));
+      console.log("data", data.data);
       return data.data;
     },
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: true,
     refetchInterval: 5000,
+    enabled: !!userId,
+    refetchOnMount: true,
   });
 };

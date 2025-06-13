@@ -105,9 +105,7 @@ const useMusicPlayer = () => {
     isPlaying,
   } = useAppSelector((state: RootState) => state.player);
 
-  const { userdata } = useAppSelector(
-    (state: { auth: { userdata: any } }) => state.auth
-  );
+  const { userdata } = useAppSelector((state: RootState) => state.auth);
 
   const [state, setState] = useState<MusicPlayerState>({
     tracks: [],
@@ -208,7 +206,11 @@ const useMusicPlayer = () => {
       playlist?: ExtendedTrack[]
     ) => {
       try {
-        if (!userdata?._id) return;
+        console.log("play called", { track, albumInfo, playlist, userdata });
+        if (!userdata?._id) {
+          console.warn("No user ID, cannot play");
+          return;
+        }
 
         setLoadingTrackId(track._id);
         dispatch(playTrack({ track, albumInfo, playlist }));

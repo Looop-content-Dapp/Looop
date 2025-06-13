@@ -13,7 +13,7 @@ const getBaseUrl = () => {
     }
   }
   // Production URL
-  return "https://your-production-url.com";
+  return "https://api.looopmusic.com";
 };
 
 const getWebSocketUrl = () => {
@@ -25,7 +25,7 @@ const getWebSocketUrl = () => {
     }
   }
   // Production WebSocket URL
-  return "wss://your-production-url.com";
+  return "wss://api.looopmusic.com";
 };
 
 export const ENV = {

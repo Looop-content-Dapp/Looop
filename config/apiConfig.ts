@@ -7,9 +7,6 @@ interface RetryConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
 
-// Configure environment variables
-const API_TIMEOUT = process.env.API_TIMEOUT || 30000;
-
 const api = axios.create({
   baseURL: ENV.API_URL,
   headers: {

@@ -21,7 +21,7 @@ const ExploreDiscographies = ({
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerClassName="gap-x-6 px-4 mt-4"
+          contentContainerClassName="mt-4"
         >
           {[...Array(5)].map((_, index) => (
             <ProfileCard key={index} loading={true} item={null} />
@@ -36,14 +36,14 @@ const ExploreDiscographies = ({
   }
 
   return (
-    <View className="mb-6">
+    <View className="mb-6 mt-6">
       <Text className="text-[#D2D3D5] text-[24px] font-TankerRegular font-bold mb-4">
         {title}
       </Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerClassName="gap-x-6 px-4"
+        contentContainerClassName="gap-x-6"
       >
         {data.map((item: any, index: React.Key) => (
           <ProfileCard key={index} loading={false} item={item} />
@@ -56,7 +56,6 @@ const ExploreDiscographies = ({
 export default ExploreDiscographies;
 
 const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
-  const { userdata } = useAppSelector((state) => state.auth);
   const router = useRouter();
   const followers = item?.followers || [];
 
@@ -68,29 +67,6 @@ const ProfileCard = ({ item, loading }: { item: any; loading: boolean }) => {
             pathname: `/(musicTabs)/(home)/_screens/artist/${item?._id}`,
             params: {
               id: item?._id,
-              artistId: item?.artistId,
-              image: item?.profileImage,
-              name: item?.name,
-              bio: item?.biography,
-              isVerified: item?.verified,
-              email: item?.email,
-              websiteUrl: item?.websiteurl,
-              address1: item?.address1,
-              address2: item?.address2,
-              city: item?.city,
-              country: item?.country,
-              postalCode: item?.postalcode,
-              followers: followers,
-              monthlyListeners: item?.monthlyListeners,
-              popularity: item?.popularity,
-              genres: item?.genres,
-              labels: item?.labels,
-              topTracks: item?.topTracks,
-              createdAt: item?.createdAt,
-              updatedAt: item?.updatedAt,
-              isActive: item?.isActive,
-              isFollowing: String(followers?.includes(userdata?._id)),
-              noOfFollowers: followers.length,
             },
           });
         }
