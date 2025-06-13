@@ -7,19 +7,18 @@ import {
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
 
 type WalletBalanceProps = {
   balances?: {
-    xion: number;
     starknet: number;
-    total: number;
   };
   balance?: string;
   addresses: { chain: string; address: string }[];
   isLoading?: boolean;
   onCopyAddress?: (address: string) => void;
-  usdcPrice?: number; // Add usdcPrice prop
+  usdcPrice?: number;
 };
 
 export default function WalletBalance({
@@ -28,11 +27,10 @@ export default function WalletBalance({
   addresses = [],
   isLoading = false,
   onCopyAddress,
-  usdcPrice = 1, // Default to 1 if not provided
+  usdcPrice = 1,
 }: WalletBalanceProps) {
-  const [selectedTab, setSelectedTab] = useState("All balances");
   const [currency, setCurrency] = useState<"USD" | "NGN">("USD");
-
+  const { width } = useWindowDimensions();
   const exchangeRate = 1450;
 
   const formatNumber = (num: number) => {
@@ -63,34 +61,21 @@ export default function WalletBalance({
         : `$${formatNumber(usdAmount)}`;
     }
 
-    switch (selectedTab) {
-      case "XION":
-        return getDisplayBalance(balances?.xion);
-      case "Starknet":
-        return getDisplayBalance(balances?.starknet);
-      default:
-        return getDisplayBalance(balances?.total);
-    }
+    return getDisplayBalance(balances?.starknet);
   };
 
-  // Rest of the component remains the same
+  // Calculate responsive font size based on screen width
+  const getResponsiveFontSize = () => {
+    if (width < 360) return 28;
+    if (width < 400) return 32;
+    if (width < 480) return 36;
+    return 40;
+  };
+
   return (
     <View className="px-4 py-6">
-      {/* Tab and Currency Selector */}
-      <View className="flex-row gap-x-2 my-4 mx-auto border border-[#202227] pl-[5px] pr-[4px] py-[4px] rounded-[24px]">
-        {["All balances", "XION", "Starknet"].map((tab) => (
-          <TouchableOpacity
-            key={tab}
-            onPress={() => setSelectedTab(tab)}
-            className={`${
-              selectedTab === tab ? "bg-[#202227] px-[12px] py-[6px]" : ""
-            } px-4 py-2 rounded-full`}
-          >
-            <Text className="text-[#D2D3D5] text-[12px] font-PlusJakartaSansMedium">
-              {tab}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      {/* Currency Selector */}
+      <View className="flex-row justify-end my-4">
         <TouchableOpacity
           onPress={() => setCurrency(currency === "USD" ? "NGN" : "USD")}
           className="bg-[#202227] px-3 py-[6px] flex-row items-center rounded-full"
@@ -112,7 +97,14 @@ export default function WalletBalance({
         ) : (
           <Text
             numberOfLines={1}
-            className="text-white text-[40px] font-PlusJakartaSansBold"
+            adjustsFontSizeToFit
+            style={{
+              fontSize: getResponsiveFontSize(),
+              fontFamily: "PlusJakartaSans-Bold",
+              color: "#FFFFFF",
+              textAlign: "center",
+              width: "100%",
+            }}
           >
             {getCurrentBalance()}
           </Text>

@@ -1,15 +1,24 @@
-import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ImageBackground } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { useNavigation, useRouter } from 'expo-router';
-import { AppBackButton } from '@/components/app-components/back-btn';
-import { Link05Icon, Search01Icon, } from '@hugeicons/react-native';
-import { useQuery } from '@tanstack/react-query';
-import { useNotification } from '@/context/NotificationContext';
+import { AppBackButton } from "@/components/app-components/back-btn";
+import api from "@/config/apiConfig";
+import { useNotification } from "@/context/NotificationContext";
+import { useFriendRequests } from "@/hooks/useFriendRequests";
+import { useFriendWebSocket } from "@/hooks/useFriendWebSocket";
+import { useAppSelector } from "@/redux/hooks";
+import { Link05Icon, Search01Icon } from "@hugeicons/react-native";
+import { useQuery } from "@tanstack/react-query";
+import * as Contacts from "expo-contacts";
+import { useNavigation, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  FlatList,
+  Image,
+  ImageBackground,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
-
-import * as Contacts from 'expo-contacts';
-import { useAppSelector } from '@/redux/hooks';
-import api from '@/config/apiConfig';
 
 interface User {
   _id: string;
@@ -26,19 +35,28 @@ interface User {
 }
 
 const AddFriends = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [contacts, setContacts] = useState<Contacts.Contact[]>([]);
-  const [tab, setTab] = useState<'all' | 'contacts'>('all');
+  const [tab, setTab] = useState<"all" | "contacts">("all");
   const navigation = useNavigation();
   const router = useRouter();
   const { userdata } = useAppSelector((state) => state.auth);
+  const { showNotification } = useNotification();
+
+  // Initialize WebSocket connection
+  useFriendWebSocket(userdata?._id || "");
+
+  // Initialize friend requests hook
+  const { sendRequest, isSending } = useFriendRequests(userdata?._id || "");
 
   // Fetch all users
   const { data: users = [], isLoading } = useQuery<User[]>({
-    queryKey: ['users'],
+    queryKey: ["users"],
     queryFn: async () => {
-      const response = await api.get('/api/user');
-      return response.data.data.filter((user: User) => user._id !== userdata?._id);
+      const response = await api.get("/api/user");
+      return response.data.data.filter(
+        (user: User) => user._id !== userdata?._id
+      );
     },
   });
 
@@ -46,7 +64,7 @@ const AddFriends = () => {
   useEffect(() => {
     (async () => {
       const { status } = await Contacts.requestPermissionsAsync();
-      if (status === 'granted') {
+      if (status === "granted") {
         const { data } = await Contacts.getContactsAsync({
           fields: [Contacts.Fields.Emails, Contacts.Fields.Name],
         });
@@ -56,34 +74,27 @@ const AddFriends = () => {
   }, []);
 
   // Filter users based on search query
-  const filteredUsers = users.filter(user =>
-    user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = users.filter(
+    (user) =>
+      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Filter contacts based on search query
-  const filteredContacts = contacts.filter(contact =>
-    contact.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    contact.emails?.[0]?.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredContacts = contacts.filter(
+    (contact) =>
+      contact.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      contact.emails?.[0]?.email
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase())
   );
 
   // Send friend request
-  const { showNotification } = useNotification();
   const handleAddFriend = async (friendId: string) => {
     try {
-      await api.post(`/api/user/friend/${userdata?._id}/${friendId}`);
-      showNotification({
-        type: 'success',
-        title: 'Friend Request Sent',
-        message: 'Your friend request has been sent successfully!'
-      });
+      await sendRequest(friendId);
     } catch (error) {
-      console.error('Error sending friend request:', error);
-      showNotification({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to send friend request. Please try again.'
-      });
+      console.error("Error sending friend request:", error);
     }
   };
 
@@ -98,26 +109,31 @@ const AddFriends = () => {
 
   const renderUserItem = ({ item }: { item: User }) => (
     <TouchableOpacity
-      onPress={() => router.push({
-        pathname: '/(profile)/userProfileView',
-        params: { userId: item._id }
-      })}
-      className="flex-row items-center justify-between p-4 border-b border-[#2A2B32]">
+      onPress={() =>
+        router.push({
+          pathname: "/(profile)/userProfileView",
+          params: { userId: item._id },
+        })
+      }
+      className="flex-row items-center justify-between p-4 border-b border-[#2A2B32]"
+    >
       <View className="flex-row items-center gap-x-3">
         <Image
-          source={{ uri: item.profileImage || 'https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg' }}
+          source={{
+            uri:
+              item.profileImage ||
+              "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
+          }}
           className="w-12 h-12 rounded-full"
         />
         <View>
-          <Text className="text-[16px] text-[#f4f4f4] font-PlusJakartaSansBold">{item.fullname || item.username}</Text>
-          <Text className="text-[14px] text-[#787A80] font-PlusJakartaSansMedium">{item.email.slice(0, 12)}...{item.email.slice(15, 20)}</Text>
+          <Text className="text-[16px] text-[#f4f4f4] font-PlusJakartaSansBold">
+            {item.username || ""}
+          </Text>
           <View className="flex-row items-center gap-x-2 mt-1">
-            {item.isPremium && (
-              <View className="bg-[#FF6D1B] px-2 py-0.5 rounded">
-                <Text className="text-[12px] text-[#f4f4f4] font-PlusJakartaSansMedium">Premium</Text>
-              </View>
-            )}
-            <Text className="text-[12px] text-[#787A80] font-PlusJakartaSansMedium">{item.role}</Text>
+            <Text className="text-[12px] text-[#787A80] font-PlusJakartaSansMedium">
+              {item.role}
+            </Text>
           </View>
         </View>
       </View>
@@ -126,13 +142,21 @@ const AddFriends = () => {
           e.stopPropagation();
           handleAddFriend(item._id);
         }}
-        className="bg-[#FF6D1B] px-4 py-2 rounded-[8px]"
+        disabled={isSending}
+        className={`px-4 py-2 rounded-[56px] ${
+          isSending ? "bg-[#2A2B32]" : "bg-[#FF6D1B]"
+        }`}
       >
-        <Text className="text-[14px] text-[#f4f4f4] font-PlusJakartaSansMedium">Add Friend</Text>
+        <Text
+          className={`text-[14px] font-PlusJakartaSansMedium ${
+            isSending ? "text-[#787A80]" : "text-[#f4f4f4]"
+          }`}
+        >
+          {isSending ? "Sending..." : "Add Friend"}
+        </Text>
       </TouchableOpacity>
     </TouchableOpacity>
   );
-
 
   const renderContactItem = ({ item }: { item: Contacts.Contact }) => (
     <View className="flex-row items-center justify-between p-4 border-b border-[#2A2B32]">
@@ -143,18 +167,41 @@ const AddFriends = () => {
           </Text>
         </View>
         <View>
-          <Text className="text-[16px] text-[#f4f4f4] font-PlusJakartaSansBold">{item.name}</Text>
+          <Text className="text-[16px] text-[#f4f4f4] font-PlusJakartaSansBold">
+            {item.name}
+          </Text>
           <Text className="text-[14px] text-[#787A80] font-PlusJakartaSansMedium">
-            {item.emails?.[0]?.email || 'No email'}
+            {item.emails?.[0]?.email || "No email"}
           </Text>
         </View>
       </View>
-      <TouchableOpacity
-        className="bg-[#2A2B32] px-4 py-2 rounded-[8px]"
-      >
-        <Text className="text-[14px] text-[#787A80] font-PlusJakartaSansMedium">Invite</Text>
+      <TouchableOpacity className="bg-[#2A2B32] px-4 py-2 rounded-[8px]">
+        <Text className="text-[14px] text-[#787A80] font-PlusJakartaSansMedium">
+          Invite
+        </Text>
       </TouchableOpacity>
     </View>
+  );
+
+  // Separate FlatLists for users and contacts
+  const renderUserList = () => (
+    <FlatList
+      data={filteredUsers}
+      renderItem={renderUserItem}
+      keyExtractor={(item) => item._id}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 20 }}
+    />
+  );
+
+  const renderContactList = () => (
+    <FlatList
+      data={filteredContacts}
+      renderItem={renderContactItem}
+      keyExtractor={(item) => item.id || item.name || Math.random().toString()}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 20 }}
+    />
   );
 
   return (
@@ -173,28 +220,36 @@ const AddFriends = () => {
 
         <View className="flex-row mb-4">
           <TouchableOpacity
-            onPress={() => setTab('all')}
-            className={`flex-1 py-2 ${tab === 'all' ? 'border-b-2 border-[#FF6D1B]' : ''}`}
+            onPress={() => setTab("all")}
+            className={`flex-1 py-2 ${
+              tab === "all" ? "border-b-2 border-[#FF6D1B]" : ""
+            }`}
           >
             <Text
-              className={`text-center text-[16px] font-PlusJakartaSansMedium ${tab === 'all' ? 'text-[#f4f4f4]' : 'text-[#787A80]'}`}
+              className={`text-center text-[16px] font-PlusJakartaSansMedium ${
+                tab === "all" ? "text-[#f4f4f4]" : "text-[#787A80]"
+              }`}
             >
               All Users
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => setTab('contacts')}
-            className={`flex-1 py-2 ${tab === 'contacts' ? 'border-b-2 border-[#FF6D1B]' : ''}`}
+            onPress={() => setTab("contacts")}
+            className={`flex-1 py-2 ${
+              tab === "contacts" ? "border-b-2 border-[#FF6D1B]" : ""
+            }`}
           >
             <Text
-              className={`text-center text-[16px] font-PlusJakartaSansMedium ${tab === 'contacts' ? 'text-[#f4f4f4]' : 'text-[#787A80]'}`}
+              className={`text-center text-[16px] font-PlusJakartaSansMedium ${
+                tab === "contacts" ? "text-[#f4f4f4]" : "text-[#787A80]"
+              }`}
             >
               Contacts
             </Text>
           </TouchableOpacity>
         </View>
 
-        {tab === 'contacts' && (
+        {tab === "contacts" && (
           <ImageBackground
             source={require("@/assets/images/friends.png")}
             style={{ width: wp("90%") }}
@@ -219,13 +274,7 @@ const AddFriends = () => {
           </ImageBackground>
         )}
 
-        <FlatList
-          data={tab === 'all' ? filteredUsers : filteredContacts}
-          renderItem={tab === 'all' ? renderUserItem : renderContactItem}
-          keyExtractor={(item) => item._id || item.id || ''}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
-        />
+        {tab === "all" ? renderUserList() : renderContactList()}
       </View>
     </View>
   );

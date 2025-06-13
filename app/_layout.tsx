@@ -4,10 +4,9 @@ import { GiphySDK } from "@giphy/react-native-sdk";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { PortalProvider } from "@gorhom/portal";
 import { Buffer } from "buffer";
-import { Asset } from "expo-asset";
-import { SplashScreen, Stack } from "expo-router";
+import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-get-random-values";
 import { KeyboardProvider } from "react-native-keyboard-controller";
@@ -56,11 +55,9 @@ const config = {
 TrackPlayer.registerPlaybackService(() => playbackService);
 
 GiphySDK.configure({ apiKey: "R25Je48LLUMFnuTOGV2kibJO2xFGSR6i" });
-SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 function AppContent() {
-  const [isSplashReady, setSplashReady] = useState(false);
   const [fontsLoaded, fontsError] = useFonts({
     PlusJakartaSansBold: require("../assets/fonts/PlusJakartaSans-Bold.ttf"),
     PlusJakartaSansLight: require("../assets/fonts/PlusJakartaSans-Light.ttf"),
@@ -69,25 +66,7 @@ function AppContent() {
     TankerRegular: require("../assets/fonts/Tanker-Regular.otf"),
   });
 
-  useEffect(() => {
-    async function prepare() {
-      try {
-        // Load all assets here
-        await Promise.all([Asset.loadAsync(require("../assets/images/logo"))]);
-
-        // Hide the splash screen once everything is ready
-        await SplashScreen.hideAsync();
-        setSplashReady(true);
-      } catch (e) {
-        console.warn(e);
-        setSplashReady(true);
-      }
-    }
-
-    prepare();
-  }, []);
-
-  if (!isSplashReady || !fontsLoaded) {
+  if (!fontsLoaded) {
     return null;
   }
 

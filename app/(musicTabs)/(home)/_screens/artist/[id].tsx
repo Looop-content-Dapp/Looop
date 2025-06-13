@@ -198,11 +198,11 @@ const ArtistDetails = () => {
                 {artistData?.verified && (
                   <View className="flex-row items-center gap-x-2 mb-2 shadow-black">
                     <CheckmarkBadge01Icon
-                      size={20}
+                      size={16}
                       variant="solid"
                       color="#2DD881"
                     />
-                    <Text className="text-[16px] font-TankerRegular font-bold text-[#2DD881]">
+                    <Text className="text-[14px] font-PlusJakartaSansMedium font-bold text-[#2DD881]">
                       Verified Artist
                     </Text>
                   </View>
@@ -210,7 +210,7 @@ const ArtistDetails = () => {
                 <Animated.Text
                   numberOfLines={1}
                   style={styles.artistName}
-                  className="font-PlusJakartaSansBold text-[28px] leading-[26px] tracking-[-0.56px]"
+                  className="font-TankerRegular text-[40px] leading-[110%]  tracking-[-0.56px]"
                 >
                   {artistData?.name}
                 </Animated.Text>
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20, // Add padding for the text
   },
   artistNameContainer: {
-    paddingHorizontal: "5%",
+    paddingHorizontal: 15,
   },
   artistName: {
     color: "#FFFFFF",

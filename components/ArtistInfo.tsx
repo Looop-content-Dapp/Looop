@@ -38,7 +38,6 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
   image
 }) => {
   const [followed, setFollowed] = useState(false);
-  const [showFullDesc, setShowFullDesc] = useState(false); // Add this state
   const [tipModalVisible, setTipModalVisible] = useState(false);
   const [tipAmount, setTipAmount] = useState("");
   const [tipLoading, setTipLoading] = useState(false);
