@@ -102,11 +102,12 @@ const WalletScreen = () => {
       ),
     });
   }, [navigation]);
+  console.log(walletData, "transaction");
 
   // Update walletData when transactions are loaded
   useEffect(() => {
     if (transactions && Array.isArray(transactions)) {
-      console.log(transactions, "transaction");
+
       setWalletData((prev) => ({
         ...prev,
         transactions: transactions.map((tx: APITransaction) => ({

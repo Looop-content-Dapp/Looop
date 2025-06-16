@@ -47,11 +47,11 @@ const MusicPlayer = () => {
             cache: true,
           });
 
-          let bgColor = '#0a0b0f';
+          let bgColor = '#040405';
           if (result.platform === 'android') {
             bgColor = result.dominant;
           } else if (result.platform === 'ios') {
-            bgColor = result.background;
+            bgColor = "#040405";
           }
 
           setBackgroundColor(bgColor);

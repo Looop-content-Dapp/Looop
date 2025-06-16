@@ -1,47 +1,55 @@
+import { AppBackButton } from "@/components/app-components/back-btn";
+import { useClerkAuthentication } from "@/hooks/auth/useAuth";
+import { useGetUser } from "@/hooks/user/useGetUser";
+import { useAppSelector } from "@/redux/hooks";
+import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  Share,
+  Edit01Icon,
+  MoreHorizontalIcon,
+  Setting06Icon,
+  UserAdd01Icon,
+  UserLock01Icon,
+  UserMinus01Icon,
+  Wallet02Icon,
+} from "@hugeicons/react-native";
+import { useNavigation, useRouter } from "expo-router";
+import React, { useLayoutEffect, useState } from "react";
+import {
+  ActivityIndicator, // Import ActivityIndicator
   Alert,
+  FlatList,
   Modal,
   Pressable,
+  Share,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import React, {  useLayoutEffect, useState } from "react";
-import { MoreHorizontalIcon, Wallet02Icon, UserAdd01Icon, Edit01Icon, UserLock01Icon, UserMinus01Icon, Setting06Icon } from "@hugeicons/react-native";
 import { Avatar } from "react-native-elements";
 import {
   ProfilePlaylist,
   ProfileTribes,
   StarSpotLight,
 } from "../../components/profile";
-import { useNavigation, useRouter } from "expo-router";
 import { formatNumber } from "../../utils/ArstsisArr";
-import {  useAppSelector } from "@/redux/hooks";
-import { AppBackButton } from "@/components/app-components/back-btn";
-import { useGetUser } from "@/hooks/user/useGetUser";
-import { FlatList } from 'react-native'
-import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
-import { useClerkAuthentication } from "@/hooks/auth/useAuth";
-
 
 const profile = () => {
   const [selectedTab, setSelectedTab] = useState("Playlists");
   const [showFullBio, setShowFullBio] = useState(false);
-  const { handleLogout } = useClerkAuthentication()
-  const { logout } = useAbstraxionAccount()
+  const { handleLogout } = useClerkAuthentication();
   const navigation = useNavigation();
 
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAppSelector((state) => state.auth); // Keep this for initial checks or other purposes if needed
   const router = useRouter();
 
-  // Use the hook and handle loading state
-  const { data: result, isLoading } = useGetUser(userdata?._id);
+  // Use the hook and handle loading/error states
+  const { data: result, isLoading, isError, error } = useGetUser();
+  if (isError) {
+    console.error("Profile screen - error from useGetUser:", error);
+  }
 
-  // Use result instead of userdata from Redux
-  const currentUser = {
-    ...(result || userdata)
-  };
+  // Use result instead of userdata from Redux for the main display
+  const currentUser = result ? { ...result || userdata } : null; // Set to null if no result
 
   const [showOptionsModal, setShowOptionsModal] = useState(false);
 
@@ -54,31 +62,42 @@ const profile = () => {
       headerRight: () => {
         return (
           <View className="flex-row items-center gap-x-[16px] mr-4">
-            <TouchableOpacity onPress={() => router.navigate("/wallet/userWallet")} className="bg-[#202227] p-[12px] rounded-full">
+            <TouchableOpacity
+              onPress={() => router.navigate("/wallet/userWallet")}
+              className=""
+            >
               <Wallet02Icon size={24} color="#63656B" variant="solid" />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setShowOptionsModal(true)}
-              className="rounded-full bg-[#202227] p-[12px]">
+              className=""
+            >
               <MoreHorizontalIcon size={24} color="#63656B" variant="solid" />
             </TouchableOpacity>
           </View>
-        )
+        );
       },
     });
   }, [navigation]);
 
-  const OptionsModal = ({ visible, onClose, onEditProfile, onLogout, onDeleteAccount }) => (
+  interface OptionsModalProps {
+    visible: boolean;
+    onClose: () => void;
+    onEditProfile: () => void;
+  }
+
+  const OptionsModal: React.FC<OptionsModalProps> = ({
+    visible,
+    onClose,
+    onEditProfile,
+  }) => (
     <Modal
       animationType="slide"
       transparent={true}
       visible={visible}
       onRequestClose={onClose}
     >
-      <Pressable
-        className="flex-1 bg-black/50"
-        onPress={onClose}
-      >
+      <Pressable className="flex-1 bg-black/50" onPress={onClose}>
         <Pressable
           className="mt-auto bg-[#202227] rounded-t-[20px] pb-10"
           onPress={(e) => e.stopPropagation()}
@@ -90,7 +109,9 @@ const profile = () => {
             className="flex-row items-center px-6 py-4 border-b border-[#2A2B32]"
           >
             <Edit01Icon size={24} color="#63656B" variant="solid" />
-            <Text className="text-[16px] text-[#f4f4f4] ml-4 font-PlusJakartaSansMedium">Edit Profile</Text>
+            <Text className="text-[16px] text-[#f4f4f4] ml-4 font-PlusJakartaSansMedium">
+              Edit Profile
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -101,24 +122,12 @@ const profile = () => {
             className="flex-row items-center px-6 py-4 border-b border-[#2A2B32]"
           >
             <Setting06Icon size={24} color="#63656B" variant="solid" />
-            <Text className="text-[16px] text-[#f4f4f4] ml-4 font-PlusJakartaSansMedium">Settings</Text>
+            <Text className="text-[16px] text-[#f4f4f4] ml-4 font-PlusJakartaSansMedium">
+              Settings
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={onLogout}
-            className="flex-row items-center px-6 py-4 border-b border-[#2A2B32]"
-          >
-            <UserLock01Icon size={24} color="#63656B" variant="solid" />
-            <Text className="text-[16px] text-[#f4f4f4] ml-4 font-PlusJakartaSansMedium">Log Out</Text>
-          </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={onDeleteAccount}
-            className="flex-row items-center px-6 py-4"
-          >
-            <UserMinus01Icon size={24} color="#FF3B30" variant="solid" />
-            <Text className="text-[16px] text-[#FF3B30] ml-4 font-PlusJakartaSansMedium">Delete Account</Text>
-          </TouchableOpacity>
         </Pressable>
       </Pressable>
     </Modal>
@@ -131,34 +140,40 @@ const profile = () => {
 
   // Share function
   const onShare = async (user: any) => {
+    if (!user || !user._id) {
+      Alert.alert("Error", "User data is not available to share. Please try again later.");
+      return;
+    }
     try {
-      const albumUrl = getAlbumShareLink(user.id);
-      const albumTitle = user.title;
-      const albumArtist = user.artist || "Unknown Artist"; // Adjust based on your user data structure
+      // Use user._id for the link and user.username for the message
+      const profileUrl = `https://yourapp.com/user/${user._id}`;
+      const userName = user.username || "A Looop User";
 
-      const message = `🎵 Check out My pofile and ;let explore some huge fun !\nListen here: ${albumUrl}`;
+      const message = `🎵 Check out ${userName}'s profile on Looop and let's explore some huge fun! 👀
+Profile link: ${profileUrl}`;
 
-      const result = await Share.share({
+      const shareResult = await Share.share({
         message,
       });
 
-      if (result.action === Share.sharedAction) {
-        if (result.activityType) {
-          console.log("Shared with activity type:", result.activityType);
+      if (shareResult.action === Share.sharedAction) {
+        if (shareResult.activityType) {
+          console.log("Shared with activity type:", shareResult.activityType);
         } else {
-          console.log("Album shared successfully!");
-          Alert.alert("Success", "Album shared successfully!");
+          console.log("Profile shared successfully!");
+          // Alert.alert("Success", "Profile shared successfully!"); // Optional: can be a bit intrusive
         }
-      } else if (result.action === Share.dismissedAction) {
+      } else if (shareResult.action === Share.dismissedAction) {
         console.log("Share dialog dismissed");
       }
-    } catch (error) {
-      console.error("Error sharing user:", error);
-      Alert.alert("Error", "Failed to share the user. Please try again.");
+    } catch (shareError: any) {
+      console.error("Error sharing profile:", shareError);
+      Alert.alert("Error", `Failed to share the profile: ${shareError.message}`);
     }
   };
 
   const renderTabContent = () => {
+    if (!currentUser) return null; // Don't render tabs if no user data
     switch (selectedTab) {
       case "Playlists":
         return <ProfilePlaylist />;
@@ -180,28 +195,6 @@ const profile = () => {
           setShowOptionsModal(false);
           router.push("/(profile)/editProfile");
         }}
-        onLogout={() => {
-          setShowOptionsModal(false);
-          handleLogout();
-          router.dismissTo("/");
-        }}
-        onDeleteAccount={() => {
-          setShowOptionsModal(false);
-          Alert.alert(
-            "Delete Account",
-            "Are you sure you want to delete your account? This action cannot be undone.",
-            [
-              { text: "Cancel", style: "cancel" },
-              {
-                text: "Delete",
-                style: "destructive",
-                onPress: () => {
-                  // Add your delete account logic here
-                }
-              }
-            ]
-          );
-        }}
       />
       <FlatList
         ListHeaderComponent={() => (
@@ -211,23 +204,23 @@ const profile = () => {
                 <View className="items-center gap-y-[16px]">
                   <Avatar
                     source={{
-                      uri: currentUser?.profileImage ||
+                      uri:
+                        currentUser?.profileImage ||
                         "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
                     }}
                     size={75}
                     rounded
                     avatarStyle={{
-                        borderWidth: 2,
-                        borderColor: "#f4f4f4",
-                      }}
+                      borderWidth: 2,
+                      borderColor: "#f4f4f4",
+                    }}
                   />
                   <View className="flex-row items-center gap-x-[12px]">
                     <Text className="text-[24px] text-[#f4f4f4] font-PlusJakartaSansBold overflow-hidden">
-                      {currentUser?.username}
+                      {currentUser?.username || 'Username'}
                     </Text>
                   </View>
                 </View>
-
               </View>
 
               {/* Stats section */}
@@ -237,7 +230,9 @@ const profile = () => {
                   className="items-center"
                 >
                   <Text className="text-[20px] font-PlusJakartaSansBold text-[#f4f4f4]">
-                    {formatNumber(currentUser?.following?.toString() as string ?? "0")}
+                    {formatNumber(
+                      currentUser?.following?.toString() ?? "0"
+                    )}
                   </Text>
                   <Text className="text-[12px] font-PlusJakartaSansBold text-[#D2D3D5]">
                     Following
@@ -247,14 +242,18 @@ const profile = () => {
                 <View className="mx-[12px] bg-gray-600 w-[1px] h-[24px]" />
 
                 <TouchableOpacity
-                  onPress={() => router.push({
-                    pathname: "/(profile)/profileFriends",
-                    params: { userId: currentUser?._id },
-                  })}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(profile)/profileFriends",
+                      params: { userId: currentUser?._id },
+                    })
+                  }
                   className="items-center"
                 >
                   <Text className="text-[20px] font-PlusJakartaSansBold text-[#f4f4f4]">
-                    {formatNumber(userdata?.friends?.length.toString() as string ?? "0")}
+                    {formatNumber(
+                      currentUser?.friendsCount?.toString() ?? "0" // Use friendsCount if available, or friends.length
+                    )}
                   </Text>
                   <Text className="text-[12px] font-PlusJakartaSansBold text-[#D2D3D5]">
                     Friends
@@ -265,10 +264,10 @@ const profile = () => {
 
                 <TouchableOpacity className="items-center">
                   <Text className="text-[20px] font-PlusJakartaSansBold text-[#f4f4f4]">
-                    {formatNumber(userdata?.artistPlayed ?? "0")}
+                    {formatNumber(currentUser?.artistPlayed?.toString() ?? "0")}
                   </Text>
                   <Text className="text-[12px] font-PlusJakartaSansBold text-[#D2D3D5]">
-                    Artistes played
+                    Artistes
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -276,19 +275,26 @@ const profile = () => {
               <View className="flex-row justify-around items-center mt-4 gap-x-2 px-4">
                 <TouchableOpacity
                   onPress={() => router.push("/(profile)/editProfile")}
-                  className="flex-1 flex-row items-center justify-center py-4 px-4 bg-[#12141B] border border-[#2A2B32] rounded-[12px] gap-x-2">
-                  <Text className="text-[16px] text-[#D2D3D5] font-PlusJakartaSansMedium">Edit Profile</Text>
+                  className="flex-1 flex-row items-center justify-center py-4 px-4 bg-[#12141B] border border-[#2A2B32] rounded-[12px] gap-x-2"
+                >
+                  <Text className="text-[16px] text-[#D2D3D5] font-PlusJakartaSansMedium">
+                    Edit Profile
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  onPress={() => onShare(currentUser)}
-                  className="flex-1 flex-row items-center justify-center py-4 px-4 bg-[#12141B] border border-[#2A2B32] rounded-[12px] gap-x-2">
-                  <Text className="text-[16px] text-[#D2D3D5] font-PlusJakartaSansMedium">Share Profile</Text>
+                  onPress={() => onShare(currentUser)} // Pass the currentUser object
+                  className="flex-1 flex-row items-center justify-center py-4 px-4 bg-[#12141B] border border-[#2A2B32] rounded-[12px] gap-x-2"
+                >
+                  <Text className="text-[16px] text-[#D2D3D5] font-PlusJakartaSansMedium">
+                    Share Profile
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   onPress={() => router.push("/(profile)/addFriends")}
-                  className="flex-row items-center justify-center p-3 bg-[#12141B] border border-[#2A2B32] rounded-[12px]">
+                  className="flex-row items-center justify-center p-3 bg-[#12141B] border border-[#2A2B32] rounded-[12px]"
+                >
                   <UserAdd01Icon size={24} color="#63656B" variant="solid" />
                 </TouchableOpacity>
               </View>
@@ -299,12 +305,14 @@ const profile = () => {
                   className="text-[14px] text-center text-[#D2D3D5] font-PlusJakartaSansMedium"
                   numberOfLines={showFullBio ? undefined : 1}
                 >
-                  {currentUser?.bio || 'No description available'}
+                  {currentUser?.bio || "No description available. Edit your profile to add one!"}
                 </Text>
                 {currentUser?.bio && currentUser.bio.length > 100 && (
-                  <TouchableOpacity onPress={() => setShowFullBio(!showFullBio)}>
+                  <TouchableOpacity
+                    onPress={() => setShowFullBio(!showFullBio)}
+                  >
                     <Text className="text-[12px] text-center text-[#FF6D1B] font-PlusJakartaSansMedium mt-2">
-                      {showFullBio ? 'See Less' : 'See More'}
+                      {showFullBio ? "See Less" : "See More"}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -312,35 +320,37 @@ const profile = () => {
             </View>
 
             {/* Tab Navigation */}
-            <View className="flex-row justify-between items-center mt-[10%] mb-[24px]">
+            <View className="flex-row justify-between items-end mt-8 mb-6">
               {["Playlists", "Tribes", "Star spotlight"].map((tab) => (
                 <TouchableOpacity
                   key={tab}
                   onPress={() => setSelectedTab(tab)}
-                  className="py-[12px]"
+                  className="flex-1 items-center"
+                  style={{ minWidth: 0 }}
                 >
-                  <Text
-                    className={`text-[16px] font-PlusJakartaSansMedium ${
-                      selectedTab === tab ? "text-[#f4f4f4]" : "text-[#787A80]"
+                  <View
+                    className={`w-full items-center pb-3 ${
+                      selectedTab === tab
+                        ? "border-b-2 border-[#FF6D1B]"
+                        : "border-b-2 border-transparent"
                     }`}
                   >
-                    {tab}
-                  </Text>
-                  {selectedTab === tab && (
-                    <View
-                      style={{
-                        height: 2,
-                        backgroundColor: "#FF6D1B",
-                        marginTop: 9,
-                      }}
-                    />
-                  )}
+                    <Text
+                      className={`text-[16px] font-PlusJakartaSansMedium ${
+                        selectedTab === tab
+                          ? "text-[#f4f4f4]"
+                          : "text-[#787A80]"
+                      }`}
+                    >
+                      {tab}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
               ))}
             </View>
           </>
         )}
-        data={[{ key: 'content' }]}
+        data={[{ key: "content" }]}
         renderItem={() => renderTabContent()}
         showsVerticalScrollIndicator={false}
       />

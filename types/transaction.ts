@@ -19,7 +19,7 @@ export type Transaction = {
   blockchain: 'Starknet' | 'XION';
   title?: string;
   message?: string;
-  metadata?: TransactionMetadata;
+  data?: TransactionMetadata;
   createdAt: string;
 };
 

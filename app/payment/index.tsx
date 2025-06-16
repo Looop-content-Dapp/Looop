@@ -1,22 +1,31 @@
-import { View, Text, Image, TouchableOpacity, Modal, Alert, ScrollView } from "react-native";
-import React, { useLayoutEffect, useRef, useState } from "react";
-import {
-    router,
-  useLocalSearchParams,
-  useNavigation,
-  useRouter,
-} from "expo-router";
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { AppButton } from "@/components/app-components/button";
-import { useAppSelector } from "@/redux/hooks";
-import { Paystack, paystackProps } from 'react-native-paystack-webview';
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import React, { useLayoutEffect, useState } from "react";
+import {
+  Alert,
+  Image,
+  Modal,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const Index = () => {
-  const { name, image, communityId, collectionAddress, type, userAddress } = useLocalSearchParams();
-  const paystackWebViewRef = useRef<paystackProps.PayStackRef>();
+  const { name, image, communityId, collectionAddress, type, userAddress } =
+    useLocalSearchParams();
+  console.log(
+    "payment",
+    name,
+    image,
+    communityId,
+    collectionAddress,
+    type,
+    userAddress
+  );
   const navigation = useNavigation();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const { userdata } = useAppSelector((state) => state.auth);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -26,43 +35,28 @@ const Index = () => {
     });
   }, [navigation]);
 
-  const handlePaystackSuccess = (response: any) => {
-    try {
-      const { reference, transaction, status } = response;
-      if (status === 'success') {
-        Alert.alert(
-          "Payment Successful",
-          `Transaction reference: ${reference}`
-        );
-        setIsModalVisible(false);
-        router.push({
-          pathname: "/payment/success",
-          params: {
-            name,
-            image,
-            reference,
-            communityId,
-            collectionAddress,
-            type: "paystack",
-            userAddress: userdata?.wallets?.xion,
-          },
-        });
-      }
-    } catch (error) {
-      Alert.alert(
-        "Verification Failed",
-        "Unable to verify your payment. Please contact support."
-      );
-    }
-  };
-
-  const handlePaystackCancel = () => {
-    Alert.alert("Payment Cancelled", "You cancelled the payment");
-    setIsModalVisible(false);
-  };
-
   const payNow = () => {
-    router.navigate("/payment/payInCrypto");
+    if (
+      !name ||
+      !image ||
+      !communityId ||
+      !collectionAddress ||
+      !type ||
+      !userAddress
+    ) {
+      return Alert.alert("Please fill all the fields");
+    }
+    router.navigate({
+      pathname: "/payment/payInCrypto",
+      params: {
+        name,
+        image,
+        communityId,
+        collectionAddress,
+        type,
+        userAddress,
+      },
+    });
   };
 
   return (
@@ -71,14 +65,20 @@ const Index = () => {
         color="#FF6D1B"
         text="Continue to Payment"
         loading={false}
-        onPress={() => router.push({
+        onPress={() =>
+          router.push({
             pathname: "/payment/payInCrypto",
             params: {
-                name: name,
-                image: image,
-                price: 5
-              }
-        })}
+              name,
+              image,
+              communityId,
+              collectionAddress,
+              type,
+              userAddress,
+              price: 5,
+            },
+          })
+        }
         className="absolute bottom-6 left-6 right-6 z-10 py-[16px] rounded-[56px]"
       />
 
@@ -89,7 +89,9 @@ const Index = () => {
               Mint your Tribe Pass
             </Text>
             <Text className="text-[18px] font-PlusJakartaSansMedium text-[#D2D3D5] mb-4">
-              Mint an NFT of your favorite artist to gain exclusive access to their Tribe. This NFT serves as your key pass to connect with fans, join conversations, and unlock unique experiences.
+              Mint an NFT of your favorite artist to gain exclusive access to
+              their Tribe. This NFT serves as your key pass to connect with
+              fans, join conversations, and unlock unique experiences.
             </Text>
           </View>
 
@@ -99,11 +101,19 @@ const Index = () => {
               className="w-full aspect-square rounded-[24px]"
               style={{ resizeMode: "cover" }}
             />
-            <Text numberOfLines={1} className="text-[24px] text-[#FAFBFB] font-PlusJakartaSansBold pl-[16px] pt-[6px]">{name}</Text>
+            <Text
+              numberOfLines={1}
+              className="text-[24px] text-[#FAFBFB] font-PlusJakartaSansBold pl-[16px] pt-[6px]"
+            >
+              {name}
+            </Text>
             <View className="flex-row items-center justify-between px-[16px] mt-[8px]">
               <View className="flex-1">
                 <View className="flex-row items-center self-start bg-[#A187B5] py-[6px] rounded-[56px] px-[12px]">
-                  <Text className="text-[#0A0B0F] text-[14px] font-PlusJakartaSansBold" numberOfLines={1}>
+                  <Text
+                    className="text-[#0A0B0F] text-[14px] font-PlusJakartaSansBold"
+                    numberOfLines={1}
+                  >
                     $5/month
                   </Text>
                 </View>
@@ -152,22 +162,9 @@ const Index = () => {
                   loading={false}
                   onPress={payNow}
                 />
-
               </TouchableOpacity>
             </TouchableOpacity>
           </Modal>
-
-          <Paystack
-            paystackKey="pk_test_e33557a82d21529a1933a0e04200c28edd269b7e"
-            billingEmail={userdata?.email as string}
-            amount={"5"} // Amount in kobo (₦5000.00)
-            billingName={userdata?.username || ''}
-            channels={['card', 'bank', 'ussd',]}
-            currency="NGN"
-            onCancel={handlePaystackCancel}
-            onSuccess={handlePaystackSuccess}
-            ref={paystackWebViewRef}
-          />
         </View>
       </ScrollView>
     </View>

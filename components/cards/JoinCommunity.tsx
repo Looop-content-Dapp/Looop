@@ -108,18 +108,16 @@ const JoinCommunity = ({ isLoading, communityData, onJoinPress, userId }: JoinCo
               />
             </View>
             <View className="flex-1 p-4 justify-between bg-[#1A1A1A]">
-              <View className="flex-1 justify-center gap-2">
+              <View className="flex-1 justify-center gap-y-[8px] py-[8px]">
                 <Text className="text-[20px] font-bold text-white font-TankerRegular leading-[160%] -tracking-[0.24px]" numberOfLines={1}>
                   {communityData.communityName}
                 </Text>
                 <Text className="text-[12px] text-[#D2D3D5] font-plusJakartaSansRegular leading-[16px] -tracking-[0.24px]" numberOfLines={2}>
                   {communityData.description}
                 </Text>
-                <Text className="text-[12px] text-white font-plusJakartaSansSemiBold pb-2 bg-black self-start py-[4px] px-[8px] rounded-xl mt-2">
-                  {formatNumber(communityData?.members.length)} Members
-                </Text>
+
               </View>
-              <View className="flex-row items-center justify-center border border-[#FF6D1B] py-[10px] px-[16px] rounded-3xl mt-4">
+              <View className="flex-row items-center justify-center border border-[#FF6D1B] py-[6px] px-[6px] rounded-3xl">
                 <Text className="text-base font-semibold text-[#FF7A1B] font-plusJakartaSansSemiBold mr-2">
                   Enter
                 </Text>

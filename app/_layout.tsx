@@ -1,23 +1,16 @@
 import { playbackService } from "@/services/PlaybackService";
-import { AbstraxionProvider } from "@burnt-labs/abstraxion-react-native";
 import { GiphySDK } from "@giphy/react-native-sdk";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { PortalProvider } from "@gorhom/portal";
 import { Buffer } from "buffer";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import "react-native-get-random-values";
 import { KeyboardProvider } from "react-native-keyboard-controller";
-import crypto from "react-native-quick-crypto";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { setupPlayer } from "../services/PlaybackService";
-
-// @ts-ignore
-global.crypto = crypto as unknown as Crypto;
-global.Buffer = Buffer;
 
 // In your app initialization
 setupPlayer();
@@ -31,6 +24,8 @@ import * as Sentry from "@sentry/react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import TrackPlayer from "react-native-track-player";
 import store, { persistor } from "../redux/store";
+import { Pressable } from "react-native";
+import { Text } from "react-native";
 
 Sentry.init({
   dsn: "https://0d0b04e2a4f98122a0e2014b2a86b10c@o4509128364195840.ingest.de.sentry.io/4509128384774224",
@@ -39,24 +34,11 @@ Sentry.init({
   // spotlight: __DEV__,
 });
 
-const config = {
-  // Network configuration
-  rpcUrl: "https://rpc.xion-testnet-2.burnt.com:443",
-  restUrl: "https://api.xion-testnet-2.burnt.com:443",
-  gasPrice: "0.001uxion",
-  granter: "xion1m27pnvh7pp5dw0wda7w00cxr3kht8uxt2fjayn",
-
-  // Optional configurations
-  treasury: "xion13jetl8j9kcgsva86l08kpmy8nsnzysyxs06j4s69c6f7ywu7q36q4k5smc",
-  callbackUrl: "looop://",
-};
-
 // Register the playback service
 TrackPlayer.registerPlaybackService(() => playbackService);
 
 GiphySDK.configure({ apiKey: "R25Je48LLUMFnuTOGV2kibJO2xFGSR6i" });
 
-const queryClient = new QueryClient();
 function AppContent() {
   const [fontsLoaded, fontsError] = useFonts({
     PlusJakartaSansBold: require("../assets/fonts/PlusJakartaSans-Bold.ttf"),
@@ -145,7 +127,6 @@ export default Sentry.wrap(function _RootLayout() {
   const queryClient = new QueryClient();
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <AbstraxionProvider config={config}>
         <NotificationProvider>
           <QueryClientProvider client={queryClient}>
             <PortalProvider>
@@ -154,7 +135,7 @@ export default Sentry.wrap(function _RootLayout() {
                   <PersistGate loading={null} persistor={persistor}>
                     <MusicPlayerProvider>
                       {/* <Pressable className="bg-Orange/08 absolute bottom-[120px] -[12px] z-[1000px] h-[60px] w-[60px]  items-center justify-center rounded-full" onPress={async () => {
-                router.push("/(settingUp)")
+                router.push("/(auth)/enterUserName")
               }}>
             <Text className="text-[#fff]">Reset</Text>
            </Pressable> */}
@@ -168,7 +149,6 @@ export default Sentry.wrap(function _RootLayout() {
             </PortalProvider>
           </QueryClientProvider>
         </NotificationProvider>
-      </AbstraxionProvider>
     </GestureHandlerRootView>
   );
 });

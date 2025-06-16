@@ -23,6 +23,7 @@ export default function TransactionHistory({ transactions, isLoading }: Transact
           </View>
         );
       }
+     console.log("transactions history", transactions)
 
   if (!transactions || transactions.length === 0) {
     return (

@@ -13,7 +13,7 @@ import {
 } from "@hugeicons/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { debounce } from "lodash";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
@@ -21,9 +21,12 @@ import {
   StyleSheet,
   Text,
   View,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { z } from "zod";
+import { KeyboardController, KeyboardControllerView } from 'react-native-keyboard-controller';
 
 type FormData = {
   username: string;
@@ -50,6 +53,7 @@ const schema = z.object({
     })
     .nonempty({ message: "Bio is required" }),
 });
+
 const EnterUserName = () => {
   const { showNotification } = useNotification();
   const { mutate: createUser, isPending, error, isError } = useCreateUser();
@@ -63,7 +67,8 @@ const EnterUserName = () => {
       walletAddress: string;
     }>();
   const router = useRouter();
-  // Add watch to useForm destructuring
+  const scrollViewRef = useRef<ScrollView>(null);
+
   const {
     control,
     handleSubmit,
@@ -78,7 +83,6 @@ const EnterUserName = () => {
   const [isChecking, setIsChecking] = useState(false);
   const [errormessage, setErrorMessage] = useState("");
 
-  // Add debounced username check
   const debouncedCheckUsername = React.useCallback(
     debounce((username: string) => {
       if (username) {
@@ -174,150 +178,173 @@ const EnterUserName = () => {
   }
 
   return (
-    <ScrollView className="flex-1">
-      <View className="flex-1 px-6 pb-32 gap-12">
-        <AuthHeader
-          title="Tell Us About Yourself"
-          description="Just a few more details to personalize your experience!"
-        />
+    <KeyboardControllerView style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+      >
+        <ScrollView
+          ref={scrollViewRef}
+          className="flex-1"
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View className="flex-1 px-6 pb-32 gap-12">
+            <AuthHeader
+              title="Tell Us About Yourself"
+              description="Just a few more details to personalize your experience!"
+            />
 
-        <View className="gap-y-6">
-          <Controller
-            control={control}
-            name="name"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <Input
-                label="What's your name?"
-                description="This is the name that will be displayed on your profile"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                placeholder="Name"
-                placeholderTextColor="#787A80"
-                keyboardAppearance="dark"
-                autoCapitalize="words"
-                autoCorrect={false}
-                returnKeyType="next"
-                error={errors.name?.message}
+            <View className="gap-y-6">
+              <Controller
+                control={control}
+                name="name"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <Input
+                    label="What's your name?"
+                    description="This is the name that will be displayed on your profile"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    placeholder="Name"
+                    placeholderTextColor="#787A80"
+                    keyboardAppearance="dark"
+                    autoCapitalize="words"
+                    autoCorrect={false}
+                    returnKeyType="next"
+                    error={errors.name?.message}
+                    onFocus={() => {
+                      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                    }}
+                  />
+                )}
               />
-            )}
-          />
 
-          <Controller
-            control={control}
-            name="username"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <View className="relative">
-                <Input
-                  label="Pick your username"
-                  description="We'll use this to create your meta account"
-                  onBlur={onBlur}
-                  onChangeText={(text) => {
-                    onChange(text);
-                    if (text) {
-                      setIsChecking(true);
-                      debouncedCheckUsername(text);
-                    } else {
-                      setUsernameError("");
-                      setIsChecking(false);
-                    }
-                  }}
-                  value={value}
-                  placeholder="Username"
-                  placeholderTextColor="#787A80"
-                  keyboardAppearance="dark"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  returnKeyType="next"
-                  error={errors.username?.message || usernameError}
-                />
-                {watch("username") && (
-                  <View className="absolute right-4 top-[73px]">
-                    {isChecking ? (
-                      <ActivityIndicator size={24} color="#787A80" />
-                    ) : usernameError ? (
-                      <XVariableCircleIcon size={24} color="#FF1B1B" />
-                    ) : (
-                      <CheckmarkCircle02Icon size={24} color="#4CAF50" />
+              <Controller
+                control={control}
+                name="username"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <View className="relative">
+                    <Input
+                      label="Pick your username"
+                      description="We'll use this to create your meta account"
+                      onBlur={onBlur}
+                      onChangeText={(text) => {
+                        onChange(text);
+                        if (text) {
+                          setIsChecking(true);
+                          debouncedCheckUsername(text);
+                        } else {
+                          setUsernameError("");
+                          setIsChecking(false);
+                        }
+                      }}
+                      value={value}
+                      placeholder="Username"
+                      placeholderTextColor="#787A80"
+                      keyboardAppearance="dark"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      returnKeyType="next"
+                      error={errors.username?.message || usernameError}
+                      onFocus={() => {
+                        scrollViewRef.current?.scrollTo({ y: 100, animated: true });
+                      }}
+                    />
+                    {watch("username") && (
+                      <View className="absolute right-4 top-[73px]">
+                        {isChecking ? (
+                          <ActivityIndicator size={24} color="#787A80" />
+                        ) : usernameError ? (
+                          <XVariableCircleIcon size={24} color="#FF1B1B" />
+                        ) : (
+                          <CheckmarkCircle02Icon size={24} color="#4CAF50" />
+                        )}
+                      </View>
                     )}
                   </View>
                 )}
-              </View>
-            )}
-          />
-
-          <Controller
-            control={control}
-            name="referralCode"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <Input
-                label="Referral Code (optional)"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                placeholder="Enter referral code"
-                placeholderTextColor="#787A80"
-                keyboardAppearance="dark"
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="done"
               />
-            )}
-          />
 
-          <Controller
-            control={control}
-            name="bio"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <Input
-                label="Bio"
-                description="Tell us a bit about yourself"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                placeholder="Enter your bio"
-                placeholderTextColor="#787A80"
-                keyboardAppearance="dark"
-                autoCapitalize="sentences"
-                autoCorrect={true}
-                returnKeyType="done"
-                multiline={true}
-                numberOfLines={3}
-                error={errors.bio?.message}
+              <Controller
+                control={control}
+                name="referralCode"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <Input
+                    label="Referral Code (optional)"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    placeholder="Enter referral code"
+                    placeholderTextColor="#787A80"
+                    keyboardAppearance="dark"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    returnKeyType="next"
+                    onFocus={() => {
+                      scrollViewRef.current?.scrollTo({ y: 200, animated: true });
+                    }}
+                  />
+                )}
               />
-            )}
-          />
-        </View>
 
-        <View className="gap-y-4 mt-4">
-          <Text className="text-[14px] text-gray-400 font-PlusJakartaSansRegular text-center">
-            By tapping create account, you agree to our{" "}
-            <Text
-              className="text-[#FF7A1B] text-[14px] font-PlusJakartaSansBold"
-              // href="https://looopmusic.com/policy"
-            >
-              Terms of Service
-            </Text>{" "}
-            and{" "}
-            <Text
-              className="text-[#FF7A1B] text-[14px] font-PlusJakartaSansBold"
-              // href="https://looopmusic.com/policy"
-            >
-              Privacy Policy
-            </Text>
-          </Text>
-        </View>
+              <Controller
+                control={control}
+                name="bio"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <Input
+                    label="Bio"
+                    description="Tell us a bit about yourself"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    placeholder="Enter your bio"
+                    placeholderTextColor="#787A80"
+                    keyboardAppearance="dark"
+                    autoCapitalize="sentences"
+                    autoCorrect={true}
+                    returnKeyType="done"
+                    multiline={true}
+                    numberOfLines={3}
+                    error={errors.bio?.message}
+                    onFocus={() => {
+                      scrollViewRef.current?.scrollTo({ y: 300, animated: true });
+                    }}
+                  />
+                )}
+              />
+            </View>
 
-        <View className="absolute bottom-8 left-6 right-6">
-          <AppButton.Secondary
-            text="Create Account"
-            onPress={handleSubmit(onSubmit)}
-            loading={isPending}
-            color="#FF7A1B"
-          />
-        </View>
-      </View>
-    </ScrollView>
+            <View className="gap-y-4 mt-4">
+              <Text className="text-[14px] text-gray-400 font-PlusJakartaSansRegular text-center">
+                By tapping create account, you agree to our{" "}
+                <Text
+                  className="text-[#FF7A1B] text-[14px] font-PlusJakartaSansBold"
+                >
+                  Terms of Service
+                </Text>{" "}
+                and{" "}
+                <Text
+                  className="text-[#FF7A1B] text-[14px] font-PlusJakartaSansBold"
+                >
+                  Privacy Policy
+                </Text>
+              </Text>
+            </View>
+
+            <View className="absolute bottom-8 left-6 right-6">
+              <AppButton.Secondary
+                text="Create Account"
+                onPress={handleSubmit(onSubmit)}
+                loading={isPending}
+                color="#FF7A1B"
+              />
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </KeyboardControllerView>
   );
 };
 
@@ -330,4 +357,5 @@ const styles = StyleSheet.create({
     padding: 20,
   },
 });
+
 export default EnterUserName;

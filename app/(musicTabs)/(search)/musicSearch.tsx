@@ -109,13 +109,15 @@ const renderSearchItem = ({
     >
       <Image
         source={{ uri: displayImage }}
-        className={`w-12 h-12 ${
+        className={`w-[48px] h-[48px] ${
           displayType === "artist" ? "rounded-full" : "rounded"
         }`}
       />
       <View className="ml-3">
-        <Text className="text-white text-base">{displayTitle}</Text>
-        <Text className="text-[#787A80]">
+        <Text className="text-white text-[16px] font-PlusJakartaSansBold">
+          {displayTitle}
+        </Text>
+        <Text className="text-[#63656B] text-[14px] font-PlusJakartaSansRegular">
           {displayType.charAt(0).toUpperCase() + displayType.slice(1)}
           {item.artist && ` • ${item.artist.name}`}
         </Text>
@@ -174,16 +176,42 @@ const RecentSearches = ({
 const searchApi = async (params: SearchParams): Promise<SearchResponse> => {
   try {
     const { query, resultType, limit = 20, sort = "relevance" } = params;
-    const response = await api.get("/search", {
-      params: {
-        query,
-        type: resultType,
-        limit,
-        sort,
-        page: 1,
-      },
-    });
-    return response.data;
+    if (!resultType || resultType === "all") {
+      // All categories
+      const response = await api.get("/api/search", {
+        params: { query, limit, sort, page: 1 },
+      });
+      return response.data;
+    } else {
+      // Specific category
+      const categoryMap: Record<string, string> = {
+        track: "tracks",
+        artist: "artists",
+        release: "releases",
+        playlist: "playlists",
+      };
+      const backendCategory = categoryMap[resultType] || resultType;
+      const response = await api.get("/search/category", {
+        params: {
+          query,
+          category: backendCategory,
+          limit,
+          sort,
+          page: 1,
+        },
+      });
+      // Adapt response to match SearchResponse shape
+      return {
+        ...response.data,
+        data: {
+          [backendCategory]: {
+            items: response.data.data.items,
+            total: response.data.data.total,
+            hasMore: response.data.data.hasMore,
+          },
+        },
+      };
+    }
   } catch (error) {
     throw handleApiError(error as AxiosError);
   }
@@ -233,7 +261,8 @@ const MusicSearch = () => {
 
   const loadRecentSearches = async () => {
     try {
-      setRecentSearches([]);
+      const response = await api.get("/api/search/recent");
+      setRecentSearches(response.data.data.map((s: any) => s.query));
     } catch (error) {
       console.error("Error loading recent searches:", error);
     }
@@ -241,9 +270,15 @@ const MusicSearch = () => {
 
   const handleClearRecentSearches = async () => {
     try {
+      await api.delete("/search/recent");
+      setRecentSearches([]);
     } catch (error) {
       console.error("Error clearing recent searches:", error);
     }
+  };
+
+  const handleRecentSearchSelect = (query: string) => {
+    setSearchQuery(query);
   };
 
   const handleSearch = useDebounce(async (query: string) => {
@@ -286,7 +321,7 @@ const MusicSearch = () => {
       return (
         <RecentSearches
           searches={recentSearches}
-          onSearchSelect={setSearchQuery}
+          onSearchSelect={handleRecentSearchSelect}
           onClearAll={handleClearRecentSearches}
         />
       );

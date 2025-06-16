@@ -1,8 +1,7 @@
-import { View, Text, TouchableOpacity, Image, SafeAreaView, StyleSheet, Platform } from "react-native";
+import { View, Text, TouchableOpacity, Image, SafeAreaView, StyleSheet, Platform, Linking } from "react-native";
 import { router, useNavigation } from "expo-router";
 import { useLayoutEffect, useState, useEffect } from "react";
 import { AppBackButton } from "@/components/app-components/back-btn";
-import FilterButton from "@/components/app-components/FilterButton";
 import { useAppSelector } from "@/redux/hooks";
 import { ArrowRight01Icon, BankIcon } from "@hugeicons/react-native";
 import { startOnrampSDK, onRampSDKNativeEvent, closeOnrampSDK } from '@onramp.money/onramp-react-native-sdk';
@@ -10,15 +9,13 @@ import { WebView } from 'react-native-webview';
 
 const FundWalletScreen = () => {
   const navigation = useNavigation();
-  const [selectedChain, setSelectedChain] = useState('XION');
+  const [selectedChain, setSelectedChain] = useState('Starknet');
   const { userdata } = useAppSelector(state => state.auth);
   const [webviewVisible, setWebviewVisible] = useState(false);
   const [currentUrl, setCurrentUrl] = useState<string | null>(null);
   const [isOnrampVisible, setIsOnrampVisible] = useState(false);
 
   const WIDGET_ID = 'YOUR_WIDGET_ID'; // Replace with your Kado widget ID
-
-  const chainOptions = ['XION', 'Starknet'];
 
   useEffect(() => {
     const onRampEventListener = onRampSDKNativeEvent.addListener(
@@ -56,22 +53,22 @@ const FundWalletScreen = () => {
     router.push({
       pathname: "/wallet/stablecoinFunding",
       params: {
-        chain: selectedChain,
-        address: userdata?.wallets?.[selectedChain.toLowerCase()]?.address
+        // chain: selectedChain, // Not needed as stablecoinFunding now defaults to Starknet
+        address: userdata?.wallets?.starknet?.address
       }
     });
   };
 
   const handleBankTransfer = () => {
-    const walletAddress = userdata?.wallets?.[selectedChain.toLowerCase()]?.address;
+    const walletAddress = userdata?.wallets?.starknet?.address;
 
     startOnrampSDK({
       appId: 1, // Replace with your actual appID
-      walletAddress: walletAddress,
+      walletAddress: walletAddress || undefined, // Ensure it's string or undefined
       flowType: 1, // Onramp
       fiatType: 2, // USD
       paymentMethod: 2, // Bank transfer
-      network: selectedChain === 'XION' ? 'NOBLE' : 'STARKNET',
+      network: 'STARKNET',
     });
 
     setIsOnrampVisible(true);
@@ -125,14 +122,7 @@ const FundWalletScreen = () => {
         <Text className="text-[24px] font-PlusJakartaSansBold text-white mb-2">
           Top up USD
         </Text>
-
-        <View className="mb-4">
-          <FilterButton
-            options={chainOptions}
-            selectedOption={selectedChain}
-            onOptionSelect={setSelectedChain}
-          />
-        </View>
+        {/* Chain selection removed as only Starknet is supported now */}
         </View>
 
 

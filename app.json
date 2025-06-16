@@ -3,7 +3,7 @@
     "name": "Looop",
     "slug": "looop",
     "scheme": "looop",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -12,27 +12,26 @@
       "usesAppleSignIn": true,
       "bundleIdentifier": "com.looop.music",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "This app requires microphone access to play and record audio.",
-        "NSContactsUsageDescription": "This app needs access to your contacts to demonstrate its functionality.",
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone to record and process audio for music creation and playback.",
+        "NSContactsUsageDescription": "$(PRODUCT_NAME) needs access to your contacts to demonstrate its functionality.",
         "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos to let you upload cover images and collectibles.",
         "NSPhotoLibraryAddUsageDescription": "Allow $(PRODUCT_NAME) to save photos.",
         "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera to take photos for your cover images and collectibles.",
-        "NSLocationWhenInUseUsageDescription": "This app needs access to your location to provide location-based services and show relevant content based on where you are.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location to provide location-based services and show relevant content based on where you are, even when the app is in the background.",
-        "NSLocationAlwaysUsageDescription": "This app needs access to your location to provide location-based services and show relevant content based on where you are, even when the app is in the background.",
+        "NSLocationWhenInUseUsageDescription": "$(PRODUCT_NAME) needs access to your location to provide location-based services and show relevant content based on where you are.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "$(PRODUCT_NAME) needs access to your location to provide location-based services and show relevant content based on where you are, even when the app is in the background.",
+        "NSLocationAlwaysUsageDescription": "$(PRODUCT_NAME) needs access to your location to provide location-based services and show relevant content based on where you are, even when the app is in the background.",
         "UIBackgroundModes": [
           "location",
           "fetch",
           "audio"
         ]
       },
-      "buildNumber": "1.1.2"
+      "buildNumber": "1.1.1"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FF6D1B",
-        "versionCode": "1.1.0"
+        "backgroundColor": "#FF6D1B"
       },
       "package": "com.looop.Looop",
       "permissions": [
@@ -74,8 +73,8 @@
         "expo-splash-screen",
         {
           "ios": {
-            "backgroundColor": "#ffffff",
-            "image": "./assets/images/splash.png",
+            "backgroundColor": "#FF7A1B",
+            "image": "./assets/splash.png",
             "resizeMode": "cover"
           }
         }

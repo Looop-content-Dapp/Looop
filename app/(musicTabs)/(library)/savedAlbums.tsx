@@ -1,20 +1,19 @@
+import { ArrowLeft02Icon, Search01Icon } from "@hugeicons/react-native";
+import { router, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  View,
-  Text,
   Animated,
-  ScrollView,
   ImageBackground,
   StyleSheet,
-  TouchableOpacity,
+  Text,
   TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Search01Icon, ArrowLeft02Icon } from "@hugeicons/react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useRouter } from "expo-router";
-import ToggleFlatListView from "../../../components/view/ToggleFlatlistView";
 import GridComponent from "../../../components/cards/GridComponents";
 import ListComponent from "../../../components/cards/ListComponents";
+import ToggleFlatListView from "../../../components/view/ToggleFlatlistView";
 
 const AnimatedImageBackground =
   Animated.createAnimatedComponent(ImageBackground);
@@ -63,7 +62,6 @@ const SavedAlbums = () => {
     const fetchSavedAlbums = async () => {
       setLoading(true);
       try {
-        
       } catch (error) {
         console.error("Error fetching saved albums:", error);
       } finally {
@@ -82,9 +80,10 @@ const SavedAlbums = () => {
           <ArrowLeft02Icon size={24} color="#D2D3D5" variant="stroke" />
         </TouchableOpacity>
         <Animated.Text
-          style={[styles.headerBarTitle, { opacity: headerTitleOpacity }]}
+          className="text-[28px] font-TankerRegular text-[#f4f4f4]"
+          style={{ opacity: headerTitleOpacity }}
         >
-        Saved Albums
+          Downloads
         </Animated.Text>
       </View>
 
@@ -95,7 +94,9 @@ const SavedAlbums = () => {
           style={[styles.imageBackground, { opacity: imageOpacity }]}
         >
           <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>Saved Albums</Text>
+            <Text className="text-[40px] font-TankerRegular text-[#f4f4f4]">
+              Downloads
+            </Text>
             <Text style={styles.headerSubtitle}>
               Browse through your downloads
             </Text>
@@ -155,7 +156,7 @@ const SavedAlbums = () => {
             data={filteredAlbums}
             GridComponent={GridComponent}
             ListComponent={ListComponent}
-            title="Saved Albums"
+            title="Downloads"
             loading={loading}
             renderItem={(item: any) => ({
               _id: item._id,
@@ -163,8 +164,8 @@ const SavedAlbums = () => {
               artist: { name: item.artist },
               release: {
                 artwork: { medium: item.coverImage },
-                title: item.title
-              }
+                title: item.title,
+              },
             })}
           />
         </View>

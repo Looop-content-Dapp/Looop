@@ -317,6 +317,7 @@ const MusicDetails = () => {
               {[
                 {
                   Icon: Playlist01Icon,
+                  variant: "solid",
                   size: 48,
                   onPress: () => setIsPlaylistModalVisible(true),
                 },
@@ -355,7 +356,7 @@ const MusicDetails = () => {
                     <control.Icon
                       size={control.isPlay ? 32 : 24}
                       color="#fff"
-                      variant={control.active ? "solid" : "stroke"}
+                      variant={"solid"}
                     />
                   </TouchableOpacity>
                 </View>

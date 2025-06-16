@@ -107,7 +107,7 @@ const Queue = () => {
       </View>
 
       <View className='pt-[24px] pb-[20px] pl-[23px] pr-[24px] gap-y-[16px] bg-[#1A1B1F]'>
-        <Text className="text-[20px] text-white font-PlusJakartaSansBold">
+        <Text className="text-[16px] text-white font-PlusJakartaSansBold">
           Now playing
         </Text>
         <View className="flex-row items-center">

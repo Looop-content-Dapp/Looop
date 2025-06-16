@@ -36,8 +36,15 @@ const ArtistDetails = () => {
   const { userdata } = useAppSelector((state) => state.auth);
   const scrollY = useRef(new Animated.Value(0)).current;
   const [isMember, setIsMember] = useState(false);
-  const { data: communityData, isLoading: isCommunityLoading } =
+  const { data: communityDataRaw, isLoading: isCommunityLoading } =
     useArtistCommunity(id as string);
+  const communityData = communityDataRaw
+    ? {
+        ...communityDataRaw,
+        coverImage: communityDataRaw.image || "",
+        members: (communityDataRaw as any).members || [],
+      }
+    : null;
   const router = useRouter();
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
 
@@ -126,48 +133,36 @@ const ArtistDetails = () => {
     extrapolate: "clamp",
   });
 
-  // Modify the header Animated.View
-  <Animated.View
-    style={[
-      styles.header,
-      {
-        transform: [{ translateY: headerTranslateY }],
-      },
-    ]}
-  >
-    <LinearGradient
-      colors={[backgroundColor, "transparent"]}
-      style={[StyleSheet.absoluteFill, { opacity: headerOpacity }]}
-    />
-    <View style={styles.headerContent}>
-      <TouchableOpacity
-        onPress={() => router.push("/(musicTabs)")}
-        style={[
-          styles.backButtonContainer,
-          { backgroundColor: "rgba(0, 0, 0, 0.5)" },
-        ]}
-      >
-        <ArrowLeft02Icon size={24} color={textColor} />
-      </TouchableOpacity>
-      <Animated.Text
-        numberOfLines={1}
-        style={[
-          styles.headerTitle,
-          {
-            color: textColor,
-            opacity: headerOpacity,
-          },
-        ]}
-        className="font-PlusJakartaSansBold ml-3 text-[28px] leading-[26px] tracking-[-0.56px]"
-      >
-        {artistData?.name}
-      </Animated.Text>
-    </View>
-  </Animated.View>;
+  // Add this animation value for the scroll header
+  const scrollHeaderOpacity = scrollY.interpolate({
+    inputRange: [SCREEN_HEIGHT * 0.08, SCREEN_HEIGHT * 0.15],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+
+ 
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
+        {/* Scroll header */}
+        <Animated.View
+          style={[styles.scrollHeader, { opacity: scrollHeaderOpacity }]}
+          pointerEvents={scrollHeaderOpacity ? "auto" : "none"}
+        >
+          <TouchableOpacity
+            onPress={() => router.push("/(musicTabs)")}
+            style={styles.scrollHeaderBack}
+          >
+            <ArrowLeft02Icon size={24} color="#fff" variant="solid" />
+          </TouchableOpacity>
+          <Text
+            numberOfLines={1}
+            className="text-[28px] font-TankerRegular text-[#f4f4f4]"
+          >
+            {artistData?.name}
+          </Text>
+        </Animated.View>
         {isArtistLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#fff" />
@@ -191,30 +186,6 @@ const ArtistDetails = () => {
                   <ArrowLeft02Icon size={24} color="#fff" />
                 </TouchableOpacity>
               </View>
-              <Animated.View
-                style={styles.artistNameContainer}
-                className="mt-[35%]"
-              >
-                {artistData?.verified && (
-                  <View className="flex-row items-center gap-x-2 mb-2 shadow-black">
-                    <CheckmarkBadge01Icon
-                      size={16}
-                      variant="solid"
-                      color="#2DD881"
-                    />
-                    <Text className="text-[14px] font-PlusJakartaSansMedium font-bold text-[#2DD881]">
-                      Verified Artist
-                    </Text>
-                  </View>
-                )}
-                <Animated.Text
-                  numberOfLines={1}
-                  style={styles.artistName}
-                  className="font-TankerRegular text-[40px] leading-[110%]  tracking-[-0.56px]"
-                >
-                  {artistData?.name}
-                </Animated.Text>
-              </Animated.View>
             </Animated.View>
 
             <Animated.View
@@ -236,6 +207,28 @@ const ArtistDetails = () => {
                 style={styles.image}
                 resizeMode={FastImage.resizeMode.cover}
               />
+              {/* Gradient overlay at the bottom */}
+              <LinearGradient
+                colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.7)", "rgba(0,0,0,1)"]}
+                style={styles.bottomGradient}
+                pointerEvents="none"
+              />
+              {/* Artist name and verified badge on top of gradient */}
+              <View style={styles.bottomTextContainer} pointerEvents="box-none">
+                {artistData?.verified && (
+                  <View style={styles.verifiedContainer}>
+                    <CheckmarkBadge01Icon
+                      size={16}
+                      variant="solid"
+                      color="#2DD881"
+                    />
+                    <Text style={styles.verifiedText}>Verified Artist</Text>
+                  </View>
+                )}
+                <Text numberOfLines={1} style={styles.artistNameOnImage}>
+                  {artistData?.name}
+                </Text>
+              </View>
             </Animated.View>
 
             <Animated.ScrollView
@@ -333,8 +326,8 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 1,
     height: "50%",
-    justifyContent: "flex-end", // Add this to position the text at bottom
-    paddingBottom: 20, // Add padding for the text
+    justifyContent: "flex-end",
+    paddingBottom: 0, // Remove padding, handled by bottomTextContainer
   },
   artistNameContainer: {
     paddingHorizontal: 15,
@@ -366,6 +359,80 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "black",
+  },
+  bottomGradient: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 120, // Adjust as needed for coverage
+    zIndex: 2,
+  },
+  bottomTextContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 20, // Padding from bottom
+    zIndex: 3,
+    alignItems: "flex-start",
+    paddingHorizontal: 20,
+  },
+  verifiedContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+  },
+  verifiedText: {
+    color: "#2DD881",
+    fontSize: 14,
+    fontFamily: "PlusJakartaSans-Medium",
+    fontWeight: "bold",
+    marginLeft: 4,
+  },
+  artistNameOnImage: {
+    color: "#fff",
+    fontSize: 40,
+    fontFamily: "TankerRegular",
+    fontWeight: "bold",
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 10,
+    letterSpacing: -0.56,
+  },
+  scrollHeader: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 100,
+    backgroundColor: "#040405",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingTop: Platform.OS === "ios" ? 36 : 32,
+    paddingHorizontal: 16,
+    zIndex: 100,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  scrollHeaderBack: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 8,
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+  scrollHeaderTitle: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+    flex: 1,
+    fontFamily: "PlusJakartaSans-Bold",
   },
 });
 

@@ -107,7 +107,7 @@ const AlbumsAndEps: React.FC<Props> = ({ songs, isLoading }) => {
   const styles = StyleSheet.create({
     container: {
       gap: 16,
-      paddingLeft: 14,
+      paddingLeft: 8,
     },
     header: {
       fontSize: 20,
@@ -163,7 +163,7 @@ const AlbumsAndEps: React.FC<Props> = ({ songs, isLoading }) => {
   return (
     <View style={styles.container}>
       {uniqueSongs.length > 0 && (
-        <Text className="text-[#D2D3D5] text-[24px] font-TankerRegular ml-[16px]">
+        <Text className="text-[#D2D3D5] text-[24px] font-TankerRegular ml-[10px]">
           Albums & EPs
         </Text>
       )}

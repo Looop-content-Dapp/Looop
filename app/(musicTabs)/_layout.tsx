@@ -39,8 +39,6 @@ export default function _TabsLayout() {
   {/* Music player positioned above the bottom tab bar */}
   {currentTrack && <MusicPlayer />}
  </PortalProvider>
-
-      {/*  */}
     </View>
   );
 }

@@ -12,7 +12,7 @@ import {
   import { SafeAreaView } from 'react-native-safe-area-context';
   import {
     ArrowLeft02Icon,
-    Backward01Icon,
+    PreviousIcon,
     FavouriteIcon,
     MoreHorizontalIcon,
     NextIcon,
@@ -88,16 +88,18 @@ import {
         if (cover) {
           try {
             const result = await getColors(cover as string, {
-              fallback: '#000000',
+              fallback: '#040405',
               cache: true,
             });
-            let bgColor = '#000000';
+            let bgColor = '#040405';
             if (result.platform === 'android') {
-              bgColor = result.dominant;
+              bgColor = result.darkMuted;
             } else if (result.platform === 'ios') {
-              bgColor = result.background;
+                console.log(result)
+              bgColor = "#040405";
             }
             setBackgroundColor(bgColor);
+            console.log(backgroundColor)
             const mainColor = getContrastColor(bgColor);
             setTextColor(mainColor);
             setSubTextColor(mainColor === '#FFFFFF' ? '#D2D3D5' : '#666666');
@@ -295,7 +297,7 @@ import {
                 onPress={handlePrevious}
                 className="w-[48px] h-[48px] items-center justify-center"
               >
-                <Backward01Icon size={32} color={textColor} variant="solid" />
+                <PreviousIcon size={32} color={textColor} variant="solid" />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -319,14 +321,14 @@ import {
                 ) : isPlaying ? (
                   <PauseIcon
                     size={40}
-                    color={backgroundColor}
+                    color={"#040405"}
                     variant="solid"
                     style={{ opacity: 0.9 }}
                   />
                 ) : (
                   <PlayIcon
                     size={40}
-                    color={backgroundColor}
+                    color={"#040405"}
                     variant="solid"
                     style={{ opacity: 0.9 }}
                   />

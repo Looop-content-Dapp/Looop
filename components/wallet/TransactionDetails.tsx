@@ -28,7 +28,7 @@ export default function TransactionDetails({ transactionId }: TransactionDetails
   const { showNotification } = useNotification()
   const viewShotRef = useRef<ViewShotRefType>(null);
   const { data: response, isLoading } = useTransactionDetails(transactionId);
-  const transaction = response?.metadata;
+  const transaction = response?.data;
 
   const copyToClipboard = async (text: string) => {
     await Clipboard.setStringAsync(text);
@@ -172,7 +172,7 @@ export default function TransactionDetails({ transactionId }: TransactionDetails
         </Text>
 
         {transaction.message && (
-          <Text className="text-[#63656B] text-[14px] font-PlusJakartaSansMedium text-center mt-1">
+          <Text numberOfLines={1} className="text-[#63656B] text-[14px] font-PlusJakartaSansMedium text-center mt-1">
             {transaction.message}
           </Text>
         )}

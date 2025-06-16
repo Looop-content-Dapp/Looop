@@ -9,7 +9,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import ChartListSection from "@/components/Discover/ChartListSection";
 import TopAlbumsSection from "@/components/Discover/TopAlbumsSection";
-import TopSection from "@/components/Discover/TopSection";  
+import TopSection from "@/components/Discover/TopSection";
 
 const index = () => {
   const { currentTrack } = useMusicPlayer();
@@ -114,7 +114,7 @@ const index = () => {
         <Pressable
           onPress={() => route.navigate("/(search)/musicSearch")}
           style={{ width: wp("90%") }}
-          className="flex-row items-center bg-transparent rounded-[10px] gap-x-[24px] py-[12px] mt-[24px] mx-[24px] pl-[12px] pr-[46px] border border-[#12141B] h-[48px]"
+          className="flex-row items-center bg-transparent rounded-[10px] gap-x-[24px] py-[12px] mt-[24px] mx-[4px] pl-[12px] pr-[46px] border border-[#12141B] h-[48px]"
         >
           <Search01Icon size={24} color="#787A80" />
           <Text className="text-[#787A80]">

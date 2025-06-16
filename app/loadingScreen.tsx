@@ -94,15 +94,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({
             {finalMessage}
           </Text>
         )}
-
-        {showFinalMessage && (
-          <TouchableOpacity
-            onPress={onContinue}
-            className="mt-[50%] bg-Orange/08 w-[90%] items-center py-[16px] rounded-[56px]"
-          >
-            <Text className="text-white text-lg">Continue</Text>
-          </TouchableOpacity>
-        )}
       </View>
     </SafeAreaView>
   );

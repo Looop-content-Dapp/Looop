@@ -9,7 +9,8 @@ import { useNotification } from "@/context/NotificationContext";
 
 const StablecoinFundingScreen = () => {
   const navigation = useNavigation();
-  const { chain, address } = useLocalSearchParams<{ chain: string; address: string }>();
+  const { address } = useLocalSearchParams<{ address: string }>(); // Removed chain from params
+  const chain = 'Starknet'; // Hardcode chain to Starknet
   const { showNotification } = useNotification()
 
   useLayoutEffect(() => {
@@ -31,8 +32,8 @@ const StablecoinFundingScreen = () => {
   const handleShare = async () => {
     try {
       const result = await Share.share({
-        message: `Here's my ${chain} USDC address: ${address}`,
-        title: `${chain} USDC Address`,
+        message: `Here's my Starknet USDC address: ${address}`,
+        title: `Starknet USDC Address`,
       });
 
       if (result.action === Share.sharedAction) {
@@ -66,7 +67,7 @@ const StablecoinFundingScreen = () => {
             PAYMENT INSTRUCTION
           </Text>
           <Text className="text-[14px] font-PlusJakartaSansMedium text-[#FF6D1B]">
-            Only send USDC on the {chain} network to this address. Your deposit will appear in your account within minutes.
+            Only send USDC on the Starknet network to this address. Your deposit will appear in your account within minutes.
           </Text>
         </View>
 
@@ -85,7 +86,7 @@ const StablecoinFundingScreen = () => {
               Network
             </Text>
             <Text className="text-[16px] text-white font-PlusJakartaSansBold mt-1">
-              {chain}
+              Starknet
             </Text>
           </View>
 

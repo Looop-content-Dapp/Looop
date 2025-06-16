@@ -8,12 +8,6 @@ import { XIONB, StarknetB } from '@/assets/images/images';
 
 const blockchains = [
   {
-    id: 'XION',
-    name: 'XION Network',
-    description: 'Fast and scalable Layer 2 blockchain',
-    image: XIONB
-  },
-  {
     id: 'STARKNET',
     name: 'Starknet',
     description: 'Ethereum L2 scaling solution',

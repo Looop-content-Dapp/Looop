@@ -1,28 +1,28 @@
-import React, { useRef, useState } from "react";
-import {
-  View,
-  Text,
-  Animated,
-  ScrollView,
-  ImageBackground,
-  TouchableOpacity,
-  StyleSheet,
-  TextInput,
-} from "react-native";
-import { Search01Icon, ArrowLeft02Icon } from "@hugeicons/react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import ToggleFlatListView from "@/components/view/ToggleFlatlistView";
 import GridComponent from "@/components/cards/GridComponents";
 import ListComponent from "@/components/cards/ListComponents";
-import { useRouter } from "expo-router";
-import { useUserPlaylists } from "@/hooks/music/usePlaylist";
+import ToggleFlatListView from "@/components/view/ToggleFlatlistView";
 import { useMusicPlayerContext } from "@/context/MusicPlayerContext";
+import { useUserPlaylists } from "@/hooks/music/usePlaylist";
+import { ArrowLeft02Icon, Search01Icon } from "@hugeicons/react-native";
+import { useRouter } from "expo-router";
+import React, { useRef, useState } from "react";
+import {
+  Animated,
+  ImageBackground,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
+const AnimatedImageBackground =
+  Animated.createAnimatedComponent(ImageBackground);
 
 const MyPlaylist = () => {
   const scrollY = useRef(new Animated.Value(0)).current;
-  const musicPlayer = useMusicPlayerContext()
+  const musicPlayer = useMusicPlayerContext();
   const [showStickySearch, setShowStickySearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredPlaylists, setFilteredPlaylists] = useState([]);
@@ -30,7 +30,6 @@ const MyPlaylist = () => {
 
   // Replace useLibrary with useUserPlaylists
   const { data: playlistResponse, isLoading, error } = useUserPlaylists();
-
 
   // Update how we extract the playlist data
   const playlistData = playlistResponse?.data || [];
@@ -88,7 +87,7 @@ const MyPlaylist = () => {
   const handlePlaylistPress = (playlistId: string) => {
     route.push({
       pathname: "/(musicTabs)/(library)/_Libscreens/PlaylistDetails",
-      params: { id: playlistId }
+      params: { id: playlistId },
     });
   };
 
@@ -100,7 +99,8 @@ const MyPlaylist = () => {
           <ArrowLeft02Icon size={24} color="#D2D3D5" variant="stroke" />
         </TouchableOpacity>
         <Animated.Text
-          style={[styles.headerBarTitle, { opacity: headerTitleOpacity }]}
+          className="text-[28px] font-TankerRegular text-[#f4f4f4]"
+          style={{ opacity: headerTitleOpacity }}
         >
           My Playlist
         </Animated.Text>
@@ -113,7 +113,9 @@ const MyPlaylist = () => {
           style={[styles.imageBackground, { opacity: imageOpacity }]}
         >
           <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>My Playlist</Text>
+            <Text className="text-[40px] font-TankerRegular text-[#f4f4f4]">
+              My Playlist
+            </Text>
             <Text style={styles.headerSubtitle}>
               All your created playlists in one place
             </Text>
@@ -160,7 +162,7 @@ const MyPlaylist = () => {
         )}
         scrollEventThrottle={16}
         contentContainerStyle={{
-            paddingBottom: musicPlayer.currentTrack ? 80 : 40
+          paddingBottom: musicPlayer.currentTrack ? 80 : 40,
         }}
       >
         {/* Search Bar Below Header with Animation */}
@@ -196,9 +198,9 @@ const MyPlaylist = () => {
               artist: { name: `${item.totalTracks} tracks` },
               release: {
                 artwork: { medium: item.coverImage },
-                title: item.description || 'Playlist'
+                title: item.description || "Playlist",
               },
-              onPress: () => handlePlaylistPress(item._id)
+              onPress: () => handlePlaylistPress(item._id),
             })}
           />
         </View>

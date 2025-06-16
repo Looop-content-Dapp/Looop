@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { formatNumber } from "../utils/ArstsisArr";
 import { Image } from "react-native";
+import api from "@/config/apiConfig";
 
 // Update the interface
 interface ArtistInfoProps {
@@ -45,7 +46,7 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
   useEffect(() => {
     setFollowed(isFollow); // Update when prop changes
   }, [isFollow]);
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAppSelector((state) => state.auth); // Assuming token is available in auth state
   const { handleFollowArtist, isLoading } = useFollowArtist();
 
   const onFollowPress = async () => {
@@ -80,18 +81,42 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
   };
 
   const handleSendTip = async () => {
+    if (!userdata?._id) {
+      showToast("Please log in to send a gift", "error");
+      return;
+    }
     if (!tipAmount || isNaN(Number(tipAmount)) || Number(tipAmount) <= 0) {
       showToast("Enter a valid tip amount", "error");
       return;
     }
     setTipLoading(true);
-    // TODO: Implement actual tip logic here
-    setTimeout(() => {
+
+    try {
+      const response = await api.post(
+        "/api/gift/send",
+        {
+          userId: userdata._id,
+          artistId: index,
+          amount: Number(tipAmount), // Ensure amount is a number
+          message: `Gift from ${userdata.username || 'a fan'}` // Optional: customize message
+        },
+      );
+
+      if (response.data.success) {
+        showToast("Gift sent successfully!", "success");
+        setTipModalVisible(false);
+        setTipAmount("");
+        // Optionally, update user's balance here or refetch user data
+      } else {
+        showToast(response.data.error || "Failed to send gift", "error");
+      }
+    } catch (error: any) {
+      console.error("Error sending gift:", error);
+      const errorMessage = error.response?.data?.error.message || error.message || "An unexpected error occurred.";
+      showToast(`Failed to send gift: ${errorMessage}`, "error");
+    }finally {
       setTipLoading(false);
-      setTipModalVisible(false);
-      setTipAmount("");
-      showToast("Tip sent!", "success");
-    }, 1200);
+    }
   };
 
   const renderVerificationBadge = () =>
@@ -146,7 +171,7 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
             </View>
           </View>
 
-          <View className="mb-6 bg-[#1E1F25] rounded-[12px] p-4 flex-row items-center justify-between">
+          <View className="mb-6 bg-[#1E1F25] rounded-[12px] p-4 flex-row items-center gap-x-[26px]">
             <Image source={{
                 uri: image
             }} className="w-[72px] h-[72px] rounded-full" resizeMode="cover" />

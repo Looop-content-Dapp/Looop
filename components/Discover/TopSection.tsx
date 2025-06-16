@@ -10,7 +10,7 @@ const TopSection = () => {
         <ImageBackground
           source={require("../../assets/images/new.jpg")}
           style={{ width: wp("85%"), height: hp("28%") }}
-          className="mt-[32px] rounded-[10px] ml-[16px] overflow-hidden"
+          className="mt-[32px] rounded-[10px] ml-[px] overflow-hidden"
           resizeMode="cover"
         >
           <View className="absolute inset-0 bg-black/30" />

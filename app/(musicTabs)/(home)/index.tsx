@@ -6,9 +6,14 @@ import BasedOnSubscription from "@/components/home/BasedOnSubscription";
 import { useDailyMix } from "@/hooks/music/useDailyMix";
 import useMusicPlayer from "@/hooks/music/useMusicPlayer";
 import { useUserDashboard } from "@/hooks/user/useUserFeed";
+import { useAppSelector } from "@/redux/hooks";
+import { Notification02Icon } from "@hugeicons/react-native";
+import { router, useNavigation } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import { SafeAreaView } from "moti";
+import React, { useLayoutEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Avatar } from "react-native-elements";
 
 const Index = () => {
   const { currentTrack } = useMusicPlayer();
@@ -16,6 +21,63 @@ const Index = () => {
   const { data: dailyMix, isLoading: isDailyMixesLoading } = useDailyMix();
   const { data: userFeedData, isLoading: isUserFeedLoading } =
     useUserDashboard();
+    const navigation = useNavigation()
+    const { userdata } = useAppSelector((state) => state.auth)
+
+    const getGreeting = () => {
+        const currentHour = new Date().getHours();
+
+        if (currentHour >= 5 && currentHour < 12) {
+          return "Start your morning with music";
+        } else if (currentHour >= 12 && currentHour < 18) {
+          return "Great afternoon for music";
+        } else {
+          return "Evening vibes huh?";
+        }
+      };
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+        // headerLeft: () =>  <Text className="text-[16px] text-[#fff]">{getGreeting()}</Text>,
+        // headerRight: () => (
+
+        //   ),
+        header: () =>  (
+            <SafeAreaView style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingHorizontal: 6,
+            }}>
+                <Text className="text-[18px] text-[#f4f4f4] font-PlusJakartaSansExtraBold">{getGreeting()}</Text>
+                <View className="flex-row items-center gap-x-[16px] px-4">
+              <Notification02Icon
+                size={24}
+                color="#787A80"
+                variant="stroke"
+                onPress={() => router.navigate("/notification") }
+              />
+              <Avatar
+                source={{
+                  uri:
+                    userdata?.profileImage
+                      ? userdata?.profileImage
+                      : "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
+                }}
+                size={35}
+                rounded
+                onPress={() => router.push("/(profile)") }
+                avatarStyle={{
+                  borderWidth: 2,
+                  borderColor: "#f4f4f4",
+                }}
+              />
+            </View>
+            </SafeAreaView>
+        ),
+          title: ""
+    })
+  })
 
   const categories = [
     "All",

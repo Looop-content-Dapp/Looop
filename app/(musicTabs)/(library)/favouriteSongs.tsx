@@ -1,20 +1,20 @@
+import { ArrowLeft02Icon, Search01Icon } from "@hugeicons/react-native";
+import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  View,
-  Text,
   Animated,
   ImageBackground,
-  TouchableOpacity,
   StyleSheet,
+  Text,
   TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Search01Icon, ArrowLeft02Icon } from "@hugeicons/react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { artistsArr, fetchAllAlbumsAndEPs } from "../../../utils/ArstsisArr";
-import ToggleFlatListView from "../../../components/view/ToggleFlatlistView";
 import GridComponent from "../../../components/cards/GridComponents";
 import ListComponent from "../../../components/cards/ListComponents";
-import { useRouter } from "expo-router";
+import ToggleFlatListView from "../../../components/view/ToggleFlatlistView";
+import { artistsArr, fetchAllAlbumsAndEPs } from "../../../utils/ArstsisArr";
 
 const AnimatedImageBackground =
   Animated.createAnimatedComponent(ImageBackground);
@@ -36,7 +36,6 @@ const FavouriteSongs = () => {
   const handleRefresh = async () => {
     setPage(1);
     try {
-     
     } catch (error) {
       console.error("Error refreshing liked songs:", error);
     }
@@ -47,8 +46,6 @@ const FavouriteSongs = () => {
 
     setLoadingMore(true);
     try {
-     
-       
     } catch (error) {
       console.error("Error loading more liked songs:", error);
     } finally {
@@ -62,7 +59,6 @@ const FavouriteSongs = () => {
     const fetchLikedSongs = async () => {
       setLoading(true);
       try {
-       
       } catch (error) {
         console.error("Error fetching liked songs:", error);
       } finally {
@@ -110,7 +106,8 @@ const FavouriteSongs = () => {
           <ArrowLeft02Icon size={24} color="#D2D3D5" variant="stroke" />
         </TouchableOpacity>
         <Animated.Text
-          style={[styles.headerBarTitle, { opacity: headerTitleOpacity }]}
+          className="text-[28px] font-TankerRegular text-[#f4f4f4]"
+          style={{ opacity: headerTitleOpacity }}
         >
           Favorite Songs
         </Animated.Text>
@@ -123,7 +120,9 @@ const FavouriteSongs = () => {
           style={[styles.imageBackground, { opacity: imageOpacity }]}
         >
           <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>Favorite Songs</Text>
+            <Text className="text-[40px] font-TankerRegular text-[#f4f4f4]">
+              Favorite Songs
+            </Text>
             <Text style={styles.headerSubtitle}>
               All your saved songs in one place
             </Text>
@@ -192,7 +191,7 @@ const FavouriteSongs = () => {
               track: { title: item.title },
               artist: { name: item.artist },
               release: item.release,
-              featuredArtists: item.featuredArtists
+              featuredArtists: item.featuredArtists,
             })}
           />
         </View>

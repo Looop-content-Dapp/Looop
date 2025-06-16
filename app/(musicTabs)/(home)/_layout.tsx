@@ -1,10 +1,7 @@
-import { useHeader } from "@/hooks/core/useHeader";
 import { Stack } from "expo-router";
 import React from "react";
 
 export default function HomeLayout() {
-  const headerConfig = useHeader({ title: "" });
-
   return (
     <Stack
       screenOptions={{
@@ -19,9 +16,6 @@ export default function HomeLayout() {
     >
       <Stack.Screen
         name="index"
-        options={{
-          ...headerConfig,
-        }}
       />
       <Stack.Screen
         name="_screens"

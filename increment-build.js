@@ -5,7 +5,7 @@ const appJsonPath = path.join(__dirname, 'app.json');
 const appJson = JSON.parse(fs.readFileSync(appJsonPath, 'utf8'));
 
 // Get current build number
-let buildNumber = appJson.expo.ios?.buildNumber || '1.1.0';
+let buildNumber = appJson.expo.ios?.buildNumber || '1.1.1';
 let [major, minor, patch] = buildNumber.split('.').map(Number);
 
 // Increment patch version (or modify as needed)

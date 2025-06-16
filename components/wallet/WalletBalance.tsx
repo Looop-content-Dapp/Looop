@@ -74,22 +74,29 @@ export default function WalletBalance({
 
   return (
     <View className="px-4 py-6">
-      {/* Currency Selector */}
-      <View className="flex-row justify-end my-4">
+      {/* Centered Currency Selector with Wallet Balance Label */}
+      <View className="flex-row justify-center my-4">
         <TouchableOpacity
           onPress={() => setCurrency(currency === "USD" ? "NGN" : "USD")}
-          className="bg-[#202227] px-3 py-[6px] flex-row items-center rounded-full"
+          className="border-[1px] border-[#202227] p-[4px] flex-row items-center rounded-full"
+          style={{ alignItems: "center" }}
         >
-          <Text className="text-[#D2D3D5] text-[12px]">
-            {currency === "USD" ? "NGN" : "USD"}
-          </Text>
-          <ArrowDown01Icon size={18} color="#63656B" variant="solid" />
+          <View className="bg-[#202227] px-[12px] py-[6px] rounded-full">
+            <Text className="text-[#D2D3D5] text-[12px] font-PlusJakartaSansMedium mr-2">
+              Wallet balance
+            </Text>
+          </View>
+          <View className="flex-row items-center py-[4px] px-[8px]">
+            <Text className="text-[14px] text-[#D2D3D5] font-PlusJakartaSansBold mx-1">
+              {currency}
+            </Text>
+            <ArrowDown01Icon size={18} color="#63656B" variant="solid" />
+          </View>
         </TouchableOpacity>
       </View>
 
       {/* Balance Display */}
       <View className="mx-auto items-center">
-        <Text className="text-[#63656B] text-[14px] mb-2">Wallet balance</Text>
         {isLoading ? (
           <View className="justify-center items-center">
             <ActivityIndicator size="large" color="#FF8A49" />

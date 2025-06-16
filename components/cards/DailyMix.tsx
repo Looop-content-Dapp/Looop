@@ -43,11 +43,6 @@ const DailyMixCard = ({
       resizeMode={FastImage.resizeMode.cover}
     >
       <View style={styles.overlay} />
-      <FastImage
-        source={require("../../assets/images/logo-orange.png")}
-        style={styles.logo}
-        resizeMode={FastImage.resizeMode.contain}
-      />
       <View style={styles.contentContainer}>
         <Text style={styles.title} className="text-[#D2D3D5] text-[24px] font-TankerRegular font-bold capitalize" numberOfLines={2}>
           {mix.name}
