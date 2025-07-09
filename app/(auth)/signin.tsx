@@ -105,7 +105,7 @@ const Signin: React.FC = () => {
         title: "Login Failed",
         message:
           error instanceof Error
-            ? error.message
+            ? error?.response?.data.message
             : "Invalid email or password",
         position: "top",
       });
@@ -119,6 +119,7 @@ const Signin: React.FC = () => {
         router.navigate("/(musicTabs)");
       },
       onError: (error: any) => {
+        console.log("error signing", error?.response?.data.message)
         showNotification({
           type: "error",
           title: "Signup Failed",

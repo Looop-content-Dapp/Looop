@@ -3,15 +3,18 @@ import { GiphySDK } from "@giphy/react-native-sdk";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { PortalProvider } from "@gorhom/portal";
 import { Buffer } from "buffer";
-import { router, Stack } from "expo-router";
+import { router, SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React from "react";
+import React, { useEffect, useMemo } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { setupPlayer } from "../services/PlaybackService";
 
+SplashScreen.preventAutoHideAsync().catch(() => {
+  /* reloading the app might trigger some race conditions, ignore them */
+});
 // In your app initialization
 setupPlayer();
 
@@ -24,8 +27,9 @@ import * as Sentry from "@sentry/react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import TrackPlayer from "react-native-track-player";
 import store, { persistor } from "../redux/store";
-import { Pressable } from "react-native";
+import { Animated, Pressable } from "react-native";
 import { Text } from "react-native";
+import { useAppSelector } from "@/redux/hooks";
 
 Sentry.init({
   dsn: "https://0d0b04e2a4f98122a0e2014b2a86b10c@o4509128364195840.ingest.de.sentry.io/4509128384774224",
@@ -40,6 +44,9 @@ TrackPlayer.registerPlaybackService(() => playbackService);
 GiphySDK.configure({ apiKey: "R25Je48LLUMFnuTOGV2kibJO2xFGSR6i" });
 
 function AppContent() {
+  const { userdata } = useAppSelector((state) => state.auth);
+  const { onBoarded } = useAppSelector((state) => state.misc);
+  const animation = useMemo(() => new Animated.Value(1), []);
   const [fontsLoaded, fontsError] = useFonts({
     PlusJakartaSansBold: require("../assets/fonts/PlusJakartaSans-Bold.ttf"),
     PlusJakartaSansLight: require("../assets/fonts/PlusJakartaSans-Light.ttf"),
@@ -51,6 +58,26 @@ function AppContent() {
   if (!fontsLoaded) {
     return null;
   }
+
+  useEffect(() => {
+    if (!fontsLoaded) {
+      Animated.timing(animation, {
+        toValue: 0,
+        duration: 1000,
+        useNativeDriver: true,
+      }).start(() => {
+        SplashScreen.hideAsync()
+        // Navigate to appropriate screen after animation
+        if (onBoarded === false && userdata === null) {
+          router.replace("/onboarding2");
+        } else if (onBoarded === true && userdata === null) {
+          router.replace("/(auth)");
+        } else {
+          router.replace("/(musicTabs)/(home)/");
+        }
+      });
+    }
+  }, [fontsLoaded, animation, onBoarded, userdata]);
 
   return (
     <>
@@ -64,9 +91,10 @@ function AppContent() {
           contentStyle: { backgroundColor: "#0A0B0F" },
           headerShown: false,
         }}
-        initialRouteName={"index"}
+        initialRouteName={"onboarding2"}
       >
         {/* Define all possible screens here */}
+        <Stack.Screen name="onboarding2" />
         <Stack.Screen
           name="index"
           options={{

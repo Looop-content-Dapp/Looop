@@ -1,10 +1,15 @@
 import React from 'react';
-import { View, Text, Modal, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, Modal, ActivityIndicator, StyleSheet, Dimensions } from 'react-native';
+import AnimatedLogoFill from '../animated/AnimatedLogoFill';
+// Assuming you have an icon library like react-native-vector-icons or a custom icon component
+// import Icon from 'react-native-vector-icons/Ionicons'; // Example, replace with your actual icon import
 
 interface LoadingModalProps {
   visible: boolean;
   message?: string;
 }
+
+const { width, height } = Dimensions.get('window');
 
 const LoadingModal: React.FC<LoadingModalProps> = ({ visible, message = 'Processing transaction...' }) => {
   return (
@@ -16,7 +21,11 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ visible, message = 'Process
     >
       <View style={styles.modalBackground}>
         <View style={styles.activityIndicatorWrapper}>
-          <ActivityIndicator size="large" color="#FF6D1B" />
+          {/* Replace ActivityIndicator with a more engaging element if desired */}
+          {/* For example, a custom animated SVG or a Lottie animation */}
+         <AnimatedLogoFill />
+          {/* Example of adding an icon - ensure you have the icon library setup */}
+          {/* <Icon name="sync-circle-outline" size={80} color="#FF6D1B" style={styles.iconStyle} /> */}
           <Text style={styles.messageText}>{message}</Text>
         </View>
       </View>
@@ -28,34 +37,27 @@ const styles = StyleSheet.create({
   modalBackground: {
     flex: 1,
     alignItems: 'center',
-    flexDirection: 'column',
-    justifyContent: 'space-around',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)', // Semi-transparent background
+    justifyContent: 'center', // Center content vertically and horizontally
+    backgroundColor: '#040405', // Slightly darker semi-transparent background
   },
   activityIndicatorWrapper: {
     backgroundColor: '#1A1C23', // Dark background for the modal content
-    height: '100%', // Changed to full height
-    width: '100%', // Changed to full width
-    borderRadius: 0, // Optional: remove border radius if it's full screen
+    // Ensure it takes full screen or a significant portion, adjust as needed
+    width: width, // Full width
+    height: height, // Full height
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-around',
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    justifyContent: 'center', // Center content within the wrapper
+    padding: 30, // Increased padding
   },
+
   messageText: {
-    marginTop: 15,
-    fontSize: 16,
+    marginTop: 25, // Increased margin for better spacing
+    fontSize: 18, // Slightly larger font size
     color: '#E0E0E0', // Light text color for contrast
     textAlign: 'center',
-    fontFamily: 'PlusJakartaSans-Medium',
+    fontFamily: 'PlusJakartaSans-SemiBold', // Using a slightly bolder font weight
+    paddingHorizontal: 20, // Add horizontal padding to prevent text from touching edges
   },
 });
 

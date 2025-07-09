@@ -11,7 +11,7 @@ const AnimatedLogoFill = () => {
     // Start animation when component mounts
     Animated.timing(progress, {
       toValue: 1,
-      duration: 5000, // 5 seconds for the logo to fill up
+      duration: 20000,
       easing: Easing.linear,
       useNativeDriver: false,
     }).start();
@@ -78,7 +78,7 @@ const AnimatedLogoFill = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#040405',
     justifyContent: 'center',
     alignItems: 'center',
   },

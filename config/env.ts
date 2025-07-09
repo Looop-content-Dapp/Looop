@@ -7,7 +7,7 @@ import { Platform } from "react-native";
 const getBaseUrl = () => {
   if (__DEV__) {
     if (Platform.OS === "ios") {
-      return "http://localhost:3000";
+      return "http://localhost:3001/api/v1";
     } else if (Platform.OS === "android") {
       return "http://10.0.2.2:3000";
     }
@@ -19,7 +19,7 @@ const getBaseUrl = () => {
 const getWebSocketUrl = () => {
   if (__DEV__) {
     if (Platform.OS === "ios") {
-      return "ws://localhost:3000";
+      return "ws://localhost:3001/api/v1";
     } else if (Platform.OS === "android") {
       return "ws://10.0.2.2:3000";
     }

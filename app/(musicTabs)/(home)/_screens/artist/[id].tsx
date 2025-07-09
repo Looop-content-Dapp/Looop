@@ -140,7 +140,7 @@ const ArtistDetails = () => {
     extrapolate: "clamp",
   });
 
- 
+
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

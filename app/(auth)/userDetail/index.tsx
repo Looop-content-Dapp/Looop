@@ -60,8 +60,6 @@ import {
     }, [email, password, oauthProvider, walletAddress]);
 
     const router = useRouter();
-    const defaultStyles = useDefaultStyles();
-    const [selected, setSelected] = useState<DateType>();
 
     // Initialize form with default values and resolver
     const {
