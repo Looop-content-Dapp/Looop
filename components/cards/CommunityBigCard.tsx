@@ -3,16 +3,16 @@ import React from 'react';
 import { CheckmarkBadge01Icon } from '@hugeicons/react-native';
 import { BlurView } from 'expo-blur';
 import { Skeleton } from 'moti/skeleton';
-import { Community } from '@/hooks/useGetCommunities';
+import { Community } from '@/hooks/community/useGetCommunities';
 import { router } from 'expo-router';
-import { useAppSelector } from '@/redux/hooks';
+import { useAuth } from '@/stores/hooks';
 
 type Props = {
     item: Community;
 };
 
 const CommunityBigCard = ({ item}: Props) => {
-    const { userdata } = useAppSelector((state) => state.auth);
+    const { userdata } = useAuth();
 
     const handleRoute = () => {
         if (!item) {
@@ -33,7 +33,7 @@ const CommunityBigCard = ({ item}: Props) => {
 
         // Fixed member check logic with null check for userId
         const isMember = Array.isArray(item.members) && item.members.length > 0
-            ? item.members.some(member => member.userId && member.userId._id === userdata._id)
+            ? item.members.some((member: any) => member.userId && member.userId._id === userdata._id)
             : false;
 
         if (!isMember) {

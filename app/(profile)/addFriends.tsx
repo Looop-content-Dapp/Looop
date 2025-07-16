@@ -3,7 +3,7 @@ import api from "@/config/apiConfig";
 import { useNotification } from "@/context/NotificationContext";
 import { useFriendRequests } from "@/hooks/useFriendRequests";
 import { useFriendWebSocket } from "@/hooks/useFriendWebSocket";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { Link05Icon, Search01Icon } from "@hugeicons/react-native";
 import { useQuery } from "@tanstack/react-query";
 import * as Contacts from "expo-contacts";
@@ -40,7 +40,7 @@ const AddFriends = () => {
   const [tab, setTab] = useState<"all" | "contacts">("all");
   const navigation = useNavigation();
   const router = useRouter();
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const { showNotification } = useNotification();
 
   // Initialize WebSocket connection

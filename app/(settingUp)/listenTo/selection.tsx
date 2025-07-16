@@ -6,7 +6,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { useGetArtistBasedOnGenre} from "@/hooks/artist/useGenre";
 import ArtistsByGenre from "@/components/ArtistGenre";
 import {
@@ -20,7 +20,7 @@ interface SelectedArtist {
 }
 
 const Selection = () => {
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const { data, isLoading } = useGetArtistBasedOnGenre(userdata?._id as string);
   const [selectedArtists, setSelectedArtists] = useState<SelectedArtist[]>([]);
   

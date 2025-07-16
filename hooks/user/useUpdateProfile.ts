@@ -1,6 +1,6 @@
 import api from "@/config/apiConfig";
-import { useAppDispatch } from "@/redux/hooks";
-import { setUserData } from "@/redux/slices/auth";
+import { useAuthActions } from "@/stores/hooks";
+
 import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 
@@ -64,7 +64,7 @@ export const profileSchema = z.object({
 export type ProfileFormData = z.infer<typeof profileSchema>;
 
 export const useUpdateProfile = () => {
-  const dispatch = useAppDispatch();
+  const { setUserData } = useAuthActions();
 
   return useMutation({
     mutationFn: async ({ userId, data }: { userId: string; data: ProfileFormData }) => {
@@ -73,7 +73,7 @@ export const useUpdateProfile = () => {
         const response = await api.patch(`/api/user/profile/${userId}`, validatedData);
 
         if (response.data?.user) {
-          dispatch(setUserData(response.data.user));
+          setUserData(response.data.user);
         }
 
         return response.data;

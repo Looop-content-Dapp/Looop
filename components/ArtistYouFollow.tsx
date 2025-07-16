@@ -1,4 +1,4 @@
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import React from "react";
 import { ScrollView, Text, View } from "react-native";
 import { useFollowedCommunities } from "../hooks/community/useFollowedCommunities";
@@ -6,7 +6,7 @@ import CommunitySmallCard from "./cards/CommunitySmallCard";
 import { SmallCardSkeleton } from "./skeletons/CommunityCardSkeleton";
 
 const ArtistYouFollow = () => {
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const { data: communities, isLoading } = useFollowedCommunities(
     userdata?._id || ""
   );

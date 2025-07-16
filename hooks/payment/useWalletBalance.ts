@@ -1,5 +1,5 @@
 import api from "@/config/apiConfig";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { Alert } from "react-native";
 
@@ -31,7 +31,7 @@ type WalletBalanceResponse = {
 };
 
 export const useWalletBalance = () => {
-  const { userdata } = useAppSelector((auth) => auth.auth);
+  const { userdata } = useAuth();
 
   return useQuery<WalletBalanceResponse>({
     queryKey: ['wallet-balance', userdata?._id],

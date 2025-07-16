@@ -1,6 +1,6 @@
 import CommentsBottomSheet from "@/components/bottomSheet/CommentsBottomSheet";
 import { usePostInteractions } from "@/hooks/community/usePostInteractions";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { Portal } from "@gorhom/portal";
 import { Comment02Icon, EyeIcon, FavouriteIcon } from "@hugeicons/react-native";
 import React, { useRef, useState } from "react";
@@ -42,7 +42,7 @@ const EngagementSection: React.FC<EngagementSectionProps> = ({
   const [showComments, setShowComments] = useState(false);
 
   const scale = useSharedValue(1);
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const { likePost, isLiking } = usePostInteractions();
   const lastLikeTime = useRef(0);
 

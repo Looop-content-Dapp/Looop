@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, Image, SafeAreaView, StyleSheet, Platform
 import { router, useNavigation } from "expo-router";
 import { useLayoutEffect, useState, useEffect } from "react";
 import { AppBackButton } from "@/components/app-components/back-btn";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { ArrowRight01Icon, BankIcon } from "@hugeicons/react-native";
 import { startOnrampSDK, onRampSDKNativeEvent, closeOnrampSDK } from '@onramp.money/onramp-react-native-sdk';
 import { WebView } from 'react-native-webview';
@@ -10,7 +10,7 @@ import { WebView } from 'react-native-webview';
 const FundWalletScreen = () => {
   const navigation = useNavigation();
   const [selectedChain, setSelectedChain] = useState('Starknet');
-  const { userdata } = useAppSelector(state => state.auth);
+  const { userdata } = useAuth();
   const [webviewVisible, setWebviewVisible] = useState(false);
   const [currentUrl, setCurrentUrl] = useState<string | null>(null);
   const [isOnrampVisible, setIsOnrampVisible] = useState(false);

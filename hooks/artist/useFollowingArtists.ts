@@ -25,25 +25,19 @@ export interface FollowingArtistsResponse {
   };
 }
 
-export const useFollowingArtists = (userId: string, page: number = 1, limit: number = 10) => {
+export const useFollowingArtists = ( page: number = 1, limit: number = 10) => {
   return useQuery<FollowingArtistsResponse>({
-    queryKey: ['followingArtists', userId, page, limit],
+    queryKey: ['followingArtists',page, limit],
     queryFn: async () => {
       try {
-        const { data } = await api.get(`/api/user/following/${userId}`, {
-            params: {
-              page,
-              limit
-            }
-          });
-        console.log("API Response:", data);
+        const { data } = await api.get(`/social/following?page=${page}&limit=${limit}`);
+        console.log("API Response:", data.data.following.artists);
         return data;
       } catch (error) {
         console.error("Error fetching following artists:", error);
         throw error;
       }
     },
-    enabled: !!userId && userId.length > 0,
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 5000,

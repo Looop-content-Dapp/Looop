@@ -1,5 +1,5 @@
 import api from "@/config/apiConfig";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -79,7 +79,7 @@ type UserLike = {
 
 
 export const useUserFeed = () => {
-  const { userdata } = useAppSelector((auth) => auth.auth);
+  const { userdata } = useAuth();
 
   return useQuery({
     queryKey: ["userFeed", userdata?._id],
@@ -142,7 +142,7 @@ type Track = {
 
 
 export const useUserDashboard = () => {
-  const { userdata } = useAppSelector((auth) => auth.auth);
+  const { userdata } = useAuth();
   const [loading, setIsLoading] = useState(true)
 
   return useQuery({

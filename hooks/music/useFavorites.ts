@@ -1,5 +1,5 @@
 import api from "@/config/apiConfig";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 type Artist = {
@@ -64,7 +64,7 @@ type AddFavoriteInput = {
 };
 
 export const useFavorites = (userId: string) => {
-    const { userdata } = useAppSelector((state) => state.auth);
+    const { userdata } = useAuth();
   // Get favorite tracks
   const getFavoriteTracks = useQuery({
     queryKey: ['favoriteTracks', userdata?._id],

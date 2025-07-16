@@ -3,7 +3,7 @@ import CommentsBottomSheet from "@/components/bottomSheet/CommentsBottomSheet";
 import PostCard from "@/components/cards/PostCard";
 import CommentsScreen from "@/components/post/CommentScreen";
 import { useGetPost } from "@/hooks/community/useCreateCommunity";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { ArrowDown01Icon } from "@hugeicons/react-native";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -24,7 +24,7 @@ const CommentScreen = () => {
   const { id } = useLocalSearchParams();
   const navigation = useNavigation();
   const { data: postData, isLoading } = useGetPost(id as string);
-  const { userdata } = useAppSelector((auth) => auth.auth);
+  const { userdata } = useAuth();
   const [comment, setComment] = useState("");
   const textInputRef = useRef<TextInput>(null);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);

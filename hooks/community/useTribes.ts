@@ -1,5 +1,5 @@
 import api from "@/config/apiConfig";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { useQuery } from "@tanstack/react-query";
 
 type Artist = {
@@ -141,7 +141,7 @@ export const useTribes = (page: number = 1, limit: number = 10, refetchInterval:
 };
 
 export const useUserSubscriptions = (refetchInterval: number = 30000) => {
-  const { userdata } = useAppSelector((auth) => auth.auth);
+  const { userdata } = useAuth();
 
   return useQuery<SubscriptionsResponse>({
     queryKey: ["subscriptions", userdata?._id],

@@ -3,7 +3,7 @@ import ChainPicker from "@/components/app-components/ChainPicker";
 import { FormField } from "@/components/app-components/formField";
 import { useFlutterwavePayment } from "@/hooks/payment/useFlutterwavePayment";
 import useUserInfo from "@/hooks/user/useUserInfo";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -47,7 +47,7 @@ const PayWithCard = ({ isVisible, onClose }: PayWithCardProps) => {
     amount: "",
   });
   const { validatePayment } = useFlutterwavePayment();
-  const { userdata } = useAppSelector((auth) => auth.auth);
+  const { userdata } = useAuth();
 
   // Bottom sheet reference
   const bottomSheetRef = useRef<BottomSheet>(null);

@@ -9,7 +9,7 @@ type VerifyEmailInput = {
 export const useVerifyEmailOtp = () => {
   return useMutation({
     mutationFn: async (input: VerifyEmailInput) => {
-      const { data } = await api.post("/api/user/verify-otp", input);
+      const { data } = await api.post("/auth/verify-email-otp", input);
       return data;
     },
   });

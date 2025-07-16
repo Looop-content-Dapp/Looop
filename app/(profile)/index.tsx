@@ -1,19 +1,16 @@
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { useClerkAuthentication } from "@/hooks/auth/useAuth";
 import { useGetUser } from "@/hooks/user/useGetUser";
-import { useAppSelector } from "@/redux/hooks";
-import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
+import { useAuth } from "@/stores/hooks";
 import {
   Edit01Icon,
   MoreHorizontalIcon,
   Setting06Icon,
   UserAdd01Icon,
-  UserLock01Icon,
-  UserMinus01Icon,
   Wallet02Icon,
 } from "@hugeicons/react-native";
 import { useNavigation, useRouter } from "expo-router";
-import React, { useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import {
   ActivityIndicator, // Import ActivityIndicator
   Alert,
@@ -32,6 +29,7 @@ import {
   StarSpotLight,
 } from "../../components/profile";
 import { formatNumber } from "../../utils/ArstsisArr";
+ import { useAuthActions } from "@/stores/hooks"
 
 const profile = () => {
   const [selectedTab, setSelectedTab] = useState("Playlists");
@@ -39,19 +37,16 @@ const profile = () => {
   const { handleLogout } = useClerkAuthentication();
   const navigation = useNavigation();
 
-  const { userdata } = useAppSelector((state) => state.auth); // Keep this for initial checks or other purposes if needed
+  const { userdata } = useAuth();
+  const { setUserData } = useAuthActions();
   const router = useRouter();
+  const [showOptionsModal, setShowOptionsModal] = useState(false);
 
   // Use the hook and handle loading/error states
   const { data: result, isLoading, isError, error } = useGetUser();
-  if (isError) {
-    console.error("Profile screen - error from useGetUser:", error);
-  }
 
-  // Use result instead of userdata from Redux for the main display
-  const currentUser = result ? { ...result || userdata } : null; // Set to null if no result
 
-  const [showOptionsModal, setShowOptionsModal] = useState(false);
+
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -79,6 +74,22 @@ const profile = () => {
       },
     });
   }, [navigation]);
+
+  useEffect(() => {
+    if (result?.user) {
+      setUserData(result.user);
+    }
+  }, [result, setUserData]);
+
+  if (isError) {
+    console.error("Profile screen - error from useGetUser:", error);
+  }
+
+     const currentUser = {
+    ...(result?.user || userdata)
+  };
+
+  console.log("currentUser", currentUser)
 
   interface OptionsModalProps {
     visible: boolean;
@@ -178,7 +189,7 @@ Profile link: ${profileUrl}`;
       case "Playlists":
         return <ProfilePlaylist />;
       case "Tribes":
-        return <ProfileTribes userId={currentUser._id} />;
+        return <ProfileTribes userId={currentUser?._id ?? ''} />;
       case "Star spotlight":
         return <StarSpotLight />;
       default:
@@ -188,6 +199,7 @@ Profile link: ${profileUrl}`;
 
   return (
     <View className="pt-5 px-[24px] flex-1">
+
       <OptionsModal
         visible={showOptionsModal}
         onClose={() => setShowOptionsModal(false)}
@@ -205,7 +217,7 @@ Profile link: ${profileUrl}`;
                   <Avatar
                     source={{
                       uri:
-                        currentUser?.profileImage ||
+                        currentUser?.image ??
                         "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
                     }}
                     size={75}
@@ -217,7 +229,7 @@ Profile link: ${profileUrl}`;
                   />
                   <View className="flex-row items-center gap-x-[12px]">
                     <Text className="text-[24px] text-[#f4f4f4] font-PlusJakartaSansBold overflow-hidden">
-                      {currentUser?.username || 'Username'}
+                      {currentUser?.username ?? 'Username'}
                     </Text>
                   </View>
                 </View>
@@ -231,7 +243,7 @@ Profile link: ${profileUrl}`;
                 >
                   <Text className="text-[20px] font-PlusJakartaSansBold text-[#f4f4f4]">
                     {formatNumber(
-                      currentUser?.following?.toString() ?? "0"
+                      currentUser?.following?.length ?? 0
                     )}
                   </Text>
                   <Text className="text-[12px] font-PlusJakartaSansBold text-[#D2D3D5]">
@@ -245,14 +257,14 @@ Profile link: ${profileUrl}`;
                   onPress={() =>
                     router.push({
                       pathname: "/(profile)/profileFriends",
-                      params: { userId: currentUser?._id },
+                      params: { userId: currentUser?._id ?? '' },
                     })
                   }
                   className="items-center"
                 >
                   <Text className="text-[20px] font-PlusJakartaSansBold text-[#f4f4f4]">
                     {formatNumber(
-                      currentUser?.friendsCount?.toString() ?? "0" // Use friendsCount if available, or friends.length
+                      currentUser?.friendsCount ?? 0 // Use friendsCount if available, or 0
                     )}
                   </Text>
                   <Text className="text-[12px] font-PlusJakartaSansBold text-[#D2D3D5]">
@@ -264,7 +276,7 @@ Profile link: ${profileUrl}`;
 
                 <TouchableOpacity className="items-center">
                   <Text className="text-[20px] font-PlusJakartaSansBold text-[#f4f4f4]">
-                    {formatNumber(currentUser?.artistPlayed?.toString() ?? "0")}
+                    {formatNumber(currentUser?.artistPlayed ?? 0)}
                   </Text>
                   <Text className="text-[12px] font-PlusJakartaSansBold text-[#D2D3D5]">
                     Artistes
@@ -305,9 +317,9 @@ Profile link: ${profileUrl}`;
                   className="text-[14px] text-center text-[#D2D3D5] font-PlusJakartaSansMedium"
                   numberOfLines={showFullBio ? undefined : 1}
                 >
-                  {currentUser?.bio || "No description available. Edit your profile to add one!"}
+                  {currentUser?.bio ?? "No description available. Edit your profile to add one!"}
                 </Text>
-                {currentUser?.bio && currentUser.bio.length > 100 && (
+                {currentUser?.bio && (currentUser.bio?.length ?? 0) > 100 && (
                   <TouchableOpacity
                     onPress={() => setShowFullBio(!showFullBio)}
                   >

@@ -4,7 +4,7 @@ import React from 'react';
 import { ImageBackground, View, Text, Pressable } from 'react-native';
 import { formatNumber } from '../../utils/ArstsisArr';
 import { router } from 'expo-router';
-import { useAppSelector } from '@/redux/hooks';
+import { useAuth } from '@/stores/hooks';
 
 interface ItemProps {
   id: string;
@@ -24,7 +24,7 @@ type Props = {
 }
 
 const CommunitySmallCard = ({ item }: Props) => {
-    const { userdata } = useAppSelector((state) => state.auth);
+    const { userdata } = useAuth();
 
   const handleRoute = () => {
     if(!userdata?._id) return console.log("pls login first")

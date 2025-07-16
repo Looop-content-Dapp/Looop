@@ -4,7 +4,7 @@ import { AppButton } from "@/components/app-components/button";
 import ArtistSectionList from "@/components/settingUp/ArtistSectionList";
 import api from "@/config/apiConfig";
 import { useFollowArtist } from "@/hooks/artist/useFollowArtist";
-import { useAppSelector } from "@/redux/hooks";
+import {  useAuthActions } from "@/stores/hooks";
 import { router, useNavigation } from "expo-router";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
@@ -12,7 +12,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 const Artists = () => {
   const [artistes, setArtistes] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { setSettingDone } = useAuthActions();
   const {
     handleFollowArtist,
     followingStatus,
@@ -34,10 +34,14 @@ const Artists = () => {
   const fetchArtists = async () => {
     try {
       setLoading(true);
-      const artistData = await api.get("/api/artist");
+      const artistData = await api.get("/artists/discover");
+      console.log("artistData", artistData.data.data.artists);
       setArtistes(
-        artistData?.data?.data.length > 0 && Array.isArray(artistData.data.data)
-          ? artistData.data.data
+        artistData?.data?.data.artists.length > 0 &&
+          Array.isArray(artistData.data.data.artists)
+          ? artistData.data.data.artists.map((artist: any) => ({
+              ...artist
+            }))
           : []
       );
     } catch (error) {
@@ -52,23 +56,14 @@ const Artists = () => {
     fetchArtists();
   }, []);
 
-  const updateArtistsState = (artistId: string, isFollowed: boolean) => {
-    setArtistes((prev) => {
-      if (!prev) return prev; // Guard against undefined
-
-      return prev.map((section) => ({
-        ...section,
-        artists:
-          section.artists?.map((artist: any) =>
-            artist.id === artistId ? { ...artist, isFollowed } : artist
-          ) || [], // Guard against undefined artists array
-      }));
-    });
-  };
-
   const onFollowPress = async (artistId: string) => {
-    await handleFollowArtist(userdata?._id, artistId);
+    await handleFollowArtist(artistId);
   };
+
+  const handleRouteHome  = () => {
+    setSettingDone(true);
+    router.replace("/(musicTabs)");
+  }
 
   return (
     <View style={styles.container}>
@@ -89,7 +84,7 @@ const Artists = () => {
       )}
 
       <AppButton.Secondary
-        onPress={() => router.push("/(musicTabs)")}
+        onPress={handleRouteHome}
         text="Finish"
         color="#FF6D1B"
         loading={loading}

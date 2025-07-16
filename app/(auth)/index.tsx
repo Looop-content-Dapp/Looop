@@ -2,7 +2,6 @@ import { AppButton } from "@/components/app-components/button";
 import AuthHeader from "@/components/AuthHeader";
 import { Input } from "@/components/ui/input";
 import {
-  useAbstraxionAuth,
   useAppleAuth,
   useGoogleAuth,
 } from "@/hooks/auth/useSocialAuth";
@@ -100,12 +99,6 @@ const EmailSignUp: React.FC = () => {
     loading: appleLoading,
     isAuthenticating: isAppleAuthenticating,
   } = useAppleAuth();
-  const {
-    handleAbstraxionLogin,
-    loading: abstraxionLoading,
-    isConnecting,
-    isAuthenticating: isAbstraxionAuthenticating,
-  } = useAbstraxionAuth();
 
   const {
     control,

@@ -1,11 +1,11 @@
-import { useAppSelector } from '@/redux/hooks';
+import { useAuth } from '@/stores/hooks';
 import { Notification02Icon } from '@hugeicons/react-native';
 import { Text, View } from 'react-native';
 import { Avatar } from 'react-native-elements';
 import { router } from 'expo-router';
 
 export const useHeader = ({title}: {title: string}) => {
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
 
   const getGreeting = () => {
     const currentHour = new Date().getHours();

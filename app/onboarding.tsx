@@ -24,8 +24,7 @@ import {
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 import { router } from "expo-router";
-import { useAppDispatch } from "@/redux/hooks";
-import { updateOnBoarded } from "@/redux/slices/miscelleaneous";
+import { useMiscActions } from "@/stores/hooks";
 
 export default function OnBoardingScreen() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -33,7 +32,7 @@ export default function OnBoardingScreen() {
   const [backgrounImage, setBackgroundImage] = useState<any | undefined>(
     vector1
   );
-  const dispatch = useAppDispatch();
+  const { updateOnBoarded } = useMiscActions();
   const [onBoardImage, setOnboardImage] = useState<any | undefined>(onboard1);
   const [title, setTitle] = useState<string | undefined>(
     "The community app for all the real music lovers"
@@ -134,7 +133,7 @@ export default function OnBoardingScreen() {
   };
 
   const completeOnboarding = (type: string) => {
-    dispatch(updateOnBoarded());
+    updateOnBoarded();
     switch (type) {
       case "create_account":
         router.navigate("/(auth)/");

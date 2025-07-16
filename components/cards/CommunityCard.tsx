@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
-import type { Community } from '@/hooks/useFollowedCommunities';
+import type { Community } from '@/hooks/community/useFollowedCommunities';
 import { router } from 'expo-router';
-import { useAppSelector } from '@/redux/hooks';
+import { useAuth } from '@/stores/hooks';
 
 type CommunityCardProps = {
   data: Community[];
@@ -11,7 +11,7 @@ type CommunityCardProps = {
 };
 
 const CommunityCard = ({ data, isLoading, title }: CommunityCardProps) => {
-    const { userdata } = useAppSelector((state) => state.auth)
+    const { userdata } = useAuth();
 
   const handleRoute = (community: Community) => {
     if (!userdata || !userdata._id) {
@@ -21,7 +21,7 @@ const CommunityCard = ({ data, isLoading, title }: CommunityCardProps) => {
 
     // Fixed member check logic with additional null checks
     const isMember = Array.isArray(community?.members) && community?.members.length > 0
-      ? community.members.some(member => member?.userId && member.userId._id === userdata._id)
+      ? community.members.some((member: any) => member?.userId && member.userId._id === userdata._id)
       : false;
 
     console.log("Is member:", isMember);

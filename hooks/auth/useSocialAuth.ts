@@ -4,15 +4,13 @@ import * as WebBrowser from "expo-web-browser";
 import { useState, useCallback, useEffect } from "react";
 import { AuthRequest, AuthRequestPromptOptions, AuthSessionResult } from 'expo-auth-session';
 import { jwtDecode } from "jwt-decode";
-import { useAuth } from "./useAuth";
-import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
-import { useNotification } from "@/context/NotificationContext";
+import { useAppAuth } from "./useAuth";
 
 WebBrowser.maybeCompleteAuthSession();
 
 export const useGoogleAuth = () => {
   const [loading, setLoading] = useState(false);
-  const { authenticateUser, isPending } = useAuth();
+  const { authenticateUser, isPending } = useAppAuth();
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || "776440951072-v1ncd4jb1o8arac8f541p0ghrv24v4ro.apps.googleusercontent.com",
@@ -49,7 +47,7 @@ export const useGoogleAuth = () => {
         } catch (error) {
             setLoading(false);
           console.error("Google Auth Processing Error:", error);
-        } 
+        }
       } else if (response !== null) {
         console.error("Google Auth failed:", response);
         setLoading(false);
@@ -60,6 +58,7 @@ export const useGoogleAuth = () => {
       handleResponse();
     }
   }, [response, loading, authenticateUser]);
+
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -80,7 +79,7 @@ export const useGoogleAuth = () => {
 
 export const useAppleAuth = () => {
   const [loading, setLoading] = useState(false);
-  const { authenticateUser, isPending } = useAuth();
+  const { authenticateUser, isPending } = useAppAuth();
 
   const handleAppleSignIn = useCallback(async () => {
     setLoading(true);
@@ -133,57 +132,3 @@ export const useAppleAuth = () => {
     isAuthenticating: isPending,
   };
 };
-
-export const useAbstraxionAuth = () => {
-    const [loading, setLoading] = useState(false);
-    const {showNotification} = useNotification()
-    const { data, isConnected, isConnecting, login, logout } = useAbstraxionAccount();
-    const { authenticateUser, isPending } = useAuth();
-
-    const handleAbstraxionLogin = async () => {
-      try {
-        setLoading(true);
-        await login();
-
-        if (!isConnected || !data?.bech32Address) {
-          showNotification({
-            title: "Abstraxion Login Failed",
-            message: "Please try again later",
-            type: "error",
-            position: "bottom"
-          });
-          return;
-        }
-
-      } catch (error) {
-        // setLoading(false);
-        console.error('Login error:', error);
-        showNotification({
-          title: "Login Error",
-          message: "An error occurred during login",
-          type: "error",
-          position: "bottom"
-        });
-      }
-    };
-
-    useEffect(() => {
-      if(isConnected && data?.bech32Address){
-        authenticateUser({
-            channel: "xion",
-            walletAddress: data.bech32Address
-          });
-          setLoading(false)
-      }
-    }, [isConnected, data?.bech32Address])
-
-    return {
-      handleAbstraxionLogin,
-      loading: loading || isPending,
-      isConnecting,
-      isConnected,
-      data,
-      logout,
-      isAuthenticating: isPending,
-    };
-  };

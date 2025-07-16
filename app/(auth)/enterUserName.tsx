@@ -116,15 +116,15 @@ const EnterUserName = () => {
 
       createUser(
         {
+          name: data.name,
           email: email || "",
           password: password ? password : "",
-          age: calculateAge(dob).toLocaleString(),
-          fullname: data.name,
+        //   age: calculateAge(dob).toLocaleString(),
           username: data.username,
-          gender,
-          referralCode: data.referralCode,
-          oauthprovider: oauthProvider,
-          walletAddress: walletAddress,
+        //   gender,
+          referralCode: data.referralCode as string,
+        //   oauthprovider: oauthProvider,
+        //   walletAddress: walletAddress,
           bio: data.bio || "",
         },
         {

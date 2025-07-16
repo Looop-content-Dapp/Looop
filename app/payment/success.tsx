@@ -6,13 +6,13 @@ import { Audit01Icon, HeadphonesIcon, UserGroupIcon } from '@hugeicons/react-nat
 import LoadingScreen from '../loadingScreen'
 import Confetti from '@/assets/svg/Confetti'
 import { useJoinCommunity } from '@/hooks/community/useJoinCommunity'
-import { useAppSelector } from '@/redux/hooks'
+import { useAuth } from '@/stores/hooks';
 
 const { width, height } = Dimensions.get('window'); 
 
 const successful = () => {
   const { name, image, userId, communityId } = useLocalSearchParams()
-  const { userdata } = useAppSelector((state) => state.auth)
+  const { userdata } = useAuth();
   const router = useRouter()
   const [showMintingScreen, setShowMintingScreen] = useState(true);
   const joinCommunityMutation = useJoinCommunity();

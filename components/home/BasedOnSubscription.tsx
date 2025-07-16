@@ -1,4 +1,3 @@
-import { useAppSelector } from "@/redux/hooks";
 import { useRouter } from "expo-router";
 import { MotiView } from "moti";
 import { Skeleton } from "moti/skeleton";

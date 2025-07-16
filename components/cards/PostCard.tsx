@@ -1,5 +1,6 @@
-import { Post } from "@/hooks/user/useUserFeed"; // Updated import
-import { useAppSelector } from "@/redux/hooks";
+import { Post as UserFeedPost } from "@/hooks/user/useUserFeed";
+import { Media } from "@/hooks/community/useCreateCommunity";
+import { useAuth } from "@/stores/hooks";
 import { Portal } from "@gorhom/portal";
 import { BlurView } from "expo-blur";
 import { router } from "expo-router";
@@ -14,17 +15,17 @@ import PostMedia from "../post/PostMedia";
 import UserSection from "../post/UserSection";
 
 interface PostCardProps {
-  item: Post;
+  item: UserFeedPost;
 }
 
 const PostCard: React.FC<PostCardProps> = ({ item }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [localLikeCount, setLocalLikeCount] = useState(item?.likeCount || 0);
   const [localHasLiked, setLocalHasLiked] = useState(item?.hasLiked || false);
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const [isShareSheetVisible, setIsShareSheetVisible] = useState(false);
   const [isCommentsVisible, setIsCommentsVisible] = useState(false);
-  console.log("item", item.communityId); // Add this lin
+
 
   useEffect(() => {
     if (!item) setIsLoading(true);
@@ -53,14 +54,14 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
       if (word.startsWith("#")) {
         return (
           <Text
-            key={index}
+            key={`hashtag-${index}`}
             className="text-[#1DA1F2] text-[16px] font-PlusJakartaSansMedium"
           >
             {word}
           </Text>
         );
       }
-      return <Text key={index}>{word}</Text>;
+      return <Text key={`word-${index}`}>{word}</Text>;
     });
   };
 
@@ -96,7 +97,7 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
                   {renderContent(item?.content)}
                 </Text>
               </Pressable>
-              <PostMedia media={item?.media} />
+              <PostMedia media={item?.media as Media[]} />
             </View>
           </Skeleton>
 
@@ -121,7 +122,7 @@ const PostCard: React.FC<PostCardProps> = ({ item }) => {
                 title: item?.content || "",
                 artist: item?.artistId?.name || "",
                 image: item?.artistId?.profileImage || "",
-                communityName: item?.communityId?.communityName || "",
+                communityName: (item?.communityId as any)?.communityName || "",
               }}
             />
           </Portal>

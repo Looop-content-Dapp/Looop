@@ -1,6 +1,6 @@
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { useUpdateProfile } from "@/hooks/user/useUpdateProfile";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { router, useNavigation } from "expo-router";
 import React, { useLayoutEffect } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -18,7 +18,7 @@ const currencies = [
 const CurrencyPreference = () => {
   const navigation = useNavigation();
   const { mutate } = useUpdateProfile();
-  const { userdata } = useAppSelector((auth) => auth.auth);
+  const { userdata } = useAuth();
 
   let user = userdata;
 
@@ -40,6 +40,7 @@ const CurrencyPreference = () => {
       userId: user?._id,
       data: {
         ...user,
+        tel: user?.tel ? String(user.tel) : null,
         preferences: {
           ...user?.preferences,
           currency: currencyCode as

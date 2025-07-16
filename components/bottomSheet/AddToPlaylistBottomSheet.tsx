@@ -3,7 +3,7 @@ import {
   useAddSongToPlaylist,
   useUserPlaylists,
 } from "@/hooks/music/usePlaylist";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import type { ExtendedTrack } from "@/types/player";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { Add01Icon, Search01Icon } from "@hugeicons/react-native";
@@ -37,7 +37,7 @@ const AddToPlaylistBottomSheet = ({
 }) => {
   const { showNotification } = useNotification();
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const [error, setError] = useState<string | null>("");
   const {
     data: playlistResponse,

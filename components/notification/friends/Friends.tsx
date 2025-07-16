@@ -5,16 +5,21 @@ import { TouchableOpacity } from "react-native";
 import { Link05Icon } from "@hugeicons/react-native";
 import * as Contacts from "expo-contacts";
 import * as Sharing from 'expo-sharing';
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import api from "@/config/apiConfig";
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { withRepeat, withSequence, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 
+interface ReferralData {
+  code: string;
+  // Add other properties as needed
+}
+
 const Friends = () => {
-  const [contacts, setContacts] = useState([]);
-  const [referralData, setReferralData] = useState(null);
+  const [contacts, setContacts] = useState<Contacts.Contact[]>([]);
+  const [referralData, setReferralData] = useState<ReferralData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { userdata } = useAppSelector((auth) => auth.auth);
+  const { userdata } = useAuth();
 
   const handleFetchReferral = async () => {
     if (!userdata?._id) return;
@@ -31,7 +36,7 @@ const Friends = () => {
 
   const handleShare = async () => {
     try {
-      const message = `Join me on Looop! Use my referral code: ${referralData?.code}\n\nDownload the app here: [Your App Store Link]`;
+      const message = `Join me on Looop! Use my referral code: ${referralData?.code || 'N/A'}\n\nDownload the app here: [Your App Store Link]`;
       const result = await Share.share(
         {
           message: message,

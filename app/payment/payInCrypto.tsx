@@ -1,10 +1,10 @@
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { AppButton } from "@/components/app-components/button";
 import ChainPicker from "@/components/app-components/ChainPicker";
-import LoadingModal from '@/components/app-components/LoadingModal'; // Added import
+import LoadingModal from '@/components/app-components/LoadingModal';
 import { useNotification } from "@/context/NotificationContext";
 import { useJoinCommunity } from "@/hooks/community/useJoinCommunity";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import React, { useLayoutEffect, useState } from "react";
 import { Image, ScrollView, Text, View } from "react-native";
@@ -26,7 +26,7 @@ const payInCrypto = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isTransactionLoading, setIsTransactionLoading] = useState(false); // Added state for loading modal
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const joinCommunity = useJoinCommunity();
   console.log("currentRoute", currentRoute);
 

@@ -13,7 +13,7 @@ import { Search01Icon } from "@hugeicons/react-native";
 import { router, useNavigation } from "expo-router";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import { AppBackButton } from "@/components/app-components/back-btn";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { useFollowingArtists, Artist } from "@/hooks/artist/useFollowingArtists";
 import { formatNumber } from "@/utils/ArstsisArr";
 import { useFollowArtist } from '@/hooks/artist/useFollowArtist';
@@ -25,11 +25,11 @@ interface IFollowing extends Artist {}
 const ProfileFollowing = () => {
   const [page, setPage] = useState<number>(1);
   const navigation = useNavigation();
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
 
   // Use the new hook to fetch following artists
-  const { data, isLoading, error } = useFollowingArtists(userdata?._id || '', page);
-  const artistFollowing = data?.data?.artists || [];
+  const { data, isLoading, error } = useFollowingArtists(page);
+  const artistFollowing = data?.data.following.artists || [];
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -81,7 +81,7 @@ const ProfileFollowing = () => {
       {/* List of Artists */}
       <FlatList
         data={artistFollowing}
-        keyExtractor={(item) => item._id.toString()}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }: ListRenderItemInfo<IFollowing>) => (
           <FollowingCard item={item} />
         )}
@@ -103,7 +103,7 @@ export default ProfileFollowing;
 // Following Card Component
 const FollowingCard = ({ item }: { item: IFollowing }) => {
   const [isFollowing, setIsFollowing] = useState(true); // Initialize as true since this is the Following list
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const { handleFollowArtist, isLoading } = useFollowArtist();
 
   const onFollowPress = async () => {
@@ -117,7 +117,7 @@ const FollowingCard = ({ item }: { item: IFollowing }) => {
       setIsFollowing(prev => !prev);
 
       // Call the follow artist function from the hook
-      const result = await handleFollowArtist(userdata._id, item._id);
+      const result = await handleFollowArtist(userdata.id, item.id);
 
       // If the API call fails, revert the UI state
       if (result === null) {
@@ -134,7 +134,7 @@ const FollowingCard = ({ item }: { item: IFollowing }) => {
 
   return (
     <View className="flex-row items-center justify-between py-[12px]">
-      <Pressable onPress={() => router.navigate(`/(musicTabs)/(home)/_screens/artist/${item._id}`)} className="flex-row items-center gap-x-[12px]">
+      <Pressable onPress={() => router.navigate(`/(musicTabs)/(home)/_screens/artist/${item.id}`)} className="flex-row items-center gap-x-[12px]">
         <Image
           source={{ uri: item.profileImage }}
           style={{ width: 48, height: 48, borderRadius: 24 }}

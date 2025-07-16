@@ -9,13 +9,13 @@ import { AppBackButton } from "@/components/app-components/back-btn";
 import { useLayoutEffect } from "react";
 import CommunitySectionList from "@/components/settingUp/CommunitySectionList";
 import { showToast } from "@/components/ShowMessage";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 
 const CommunityOnboarding = () => {
     const navigation = useNavigation();
   const params = useLocalSearchParams();
   const { data: communities, isLoading } = useGetCommunities();
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const [selectedCommunities, setSelectedCommunities] = useState<string[]>([]);
 
   useLayoutEffect(() => {

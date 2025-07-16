@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useState, useEffect } from 'react';
 import { View, ScrollView, Image, Alert } from 'react-native';
 import { router, useNavigation } from 'expo-router';
-import { useAppSelector } from '@/redux/hooks';
+import { useAuth } from '@/stores/hooks';
 import FilterButton from '@/components/app-components/FilterButton';
 import { AppBackButton } from '@/components/app-components/back-btn';
 import { countries } from '@/data/data';
@@ -18,7 +18,7 @@ const WalletScreen = () => {
   const [timeFrame, setTimeFrame] = useState('Last 30 days');
   const [selectedNetwork, setSelectedNetwork] = useState<string>('Xion');
   const networkOptions: string[] = ['Xion', 'Starknet'];
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const navigation = useNavigation();
   const { data: walletBalanceData, isLoading: walletLoading } = useWalletBalance();
 

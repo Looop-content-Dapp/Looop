@@ -1,5 +1,5 @@
 import api from "@/config/apiConfig";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -55,7 +55,7 @@ type ArtistMusicResponse = {
 };
 
 export const useArtistMusic = () => {
-  const { userdata } = useAppSelector((auth) => auth.auth);
+  const { userdata } = useAuth();
   const queryClient = useQueryClient();
 
   // Prefetch next page of data

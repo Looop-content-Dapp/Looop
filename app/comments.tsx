@@ -20,7 +20,7 @@ import {
 import { Avatar } from "react-native-elements";
 
 import api from "@/config/apiConfig";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { useQuery } from "@tanstack/react-query";
 
 // Update the Comment interface to match the API response
@@ -108,7 +108,7 @@ export default function CommentScreen() {
   const { postId, type, parentId, commentId } = useLocalSearchParams();
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
-  const { userdata } = useAppSelector((auth) => auth.auth);
+  const { userdata } = useAuth();
   const { commentOnPost, replyToComment, isCommenting, isReplying } =
     usePostInteractions();
   const navigation = useNavigation();

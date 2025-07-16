@@ -1,6 +1,7 @@
 import api from "@/config/apiConfig";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAblyChannel } from '@/config/ablyConfig';
+import { useAuth } from "@/stores/hooks";
 
 interface CommentInput {
   userId: string;
@@ -37,11 +38,12 @@ interface Post {
 
 export const usePostInteractions = () => {
   const queryClient = useQueryClient();
+  const { userdata } = useAuth();
 
   const likeMutation = useMutation({
-    mutationFn: async (input: LikeInput) => {
-      const { data } = await api.post("/api/post/like", input);
-      return data;
+    mutationFn: async ({ postId, userId }: { postId: string; userId: string }) => {
+      const response = await api.post(`/api/community/posts/${postId}/like`, { userId });
+      return response.data;
     },
     onSuccess: (data) => {
       // Update the post data with the server response

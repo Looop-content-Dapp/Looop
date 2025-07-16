@@ -5,7 +5,7 @@ import { TouchableOpacity } from 'react-native'
 import { router, useNavigation } from 'expo-router'
 import { AppBackButton } from '@/components/app-components/back-btn'
 import { useClerkAuthentication } from '@/hooks/auth/useAuth'
-import { useAppSelector } from '@/redux/hooks'
+
 import { account } from '@/appWrite'
 import { showToast } from '@/components/ShowMessage'
 

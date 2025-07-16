@@ -15,7 +15,7 @@ const { width } = Dimensions.get("window");
 
 // Type definitions
 interface Artist {
-  _id: string;
+  id: string;
   name: string;
   profileImage?: string;
   isFollowing?: boolean; // Optional, defaults to false
@@ -51,7 +51,7 @@ const ArtistCard = memo(
 
     const handleFollow = () => {
       setIsFollowing(!isFollowing);
-      onFollow(artist._id, !isFollowing);
+      onFollow(artist.id, !isFollowing);
     };
 
     return (

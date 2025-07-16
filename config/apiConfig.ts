@@ -1,7 +1,7 @@
-import store from "@/redux/store";
 import axios, { InternalAxiosRequestConfig } from "axios";
 import { showToast } from "../components/ShowMessage";
 import { ENV } from "./env";
+import { authStore } from "@/stores/authStore";
 
 interface RetryConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -18,7 +18,7 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     try {
-      const token = store.getState().auth.token ?? "";
+      const token = authStore.getState().authToken ?? "";
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -46,7 +46,7 @@ api.interceptors.response.use(
 
       try {
         // Logout user on 401
-        store.dispatch({ type: "auth/logout" });
+        authStore.getState().logout();
         return Promise.reject(error);
       } catch (refreshError) {
         return Promise.reject(refreshError);

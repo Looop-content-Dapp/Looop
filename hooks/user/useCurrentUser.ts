@@ -1,9 +1,9 @@
 import api from "@/config/apiConfig";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { useQuery } from "@tanstack/react-query";
 
 export const useCurrentUser = () => {
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
 
   return useQuery({
     queryKey: ["user", userdata?._id],

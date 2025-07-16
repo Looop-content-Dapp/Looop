@@ -3,7 +3,7 @@ import React, { useLayoutEffect } from 'react';
 import { router, useNavigation } from 'expo-router';
 import { AppBackButton } from '@/components/app-components/back-btn';
 import { useUpdateProfile } from '@/hooks/user/useUpdateProfile';
-import { useAppSelector } from '@/redux/hooks';
+import { useAuth } from '@/stores/hooks';
 import { XIONB, StarknetB } from '@/assets/images/images';
 
 const blockchains = [
@@ -18,7 +18,7 @@ const blockchains = [
 const ChainPreference = () => {
   const navigation = useNavigation();
   const { mutate } = useUpdateProfile();
-  const { userdata } = useAppSelector((auth) => auth.auth);
+  const { userdata } = useAuth();
 
   const user = userdata;
   console.log("chain", user)

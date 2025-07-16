@@ -5,7 +5,8 @@ import TransactionHistory from "@/components/wallet/TransactionHistory";
 import WalletBalance from "@/components/wallet/WalletBalance";
 import { useTransaction } from "@/hooks/payment/useTransaction";
 import { useWalletBalance } from "@/hooks/payment/useWalletBalance";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
+import { Wallets } from "@/types/authTypes";
 import {
   ArrowRight01Icon,
   CreditCardIcon,
@@ -40,11 +41,13 @@ type APITransaction = {
   message?: string;
 };
 
-type Transaction = {
+type LocalTransaction = {
+  id: string;
   title: string;
   amount: string;
   date: string;
-  source: "card" | "wallet" | "applepay"; // Updated to match APITransaction source types
+  source: "card" | "wallet" | "applepay";
+  status?: "success" | "failed";
 };
 
 type WalletData = {
@@ -53,11 +56,8 @@ type WalletData = {
     starknet: number;
     total: number;
   };
-  addresses: Array<{
-    chain: string;
-    address: string;
-  }>;
-  transactions: Transaction[];
+  addresses: Wallets;
+  transactions: LocalTransaction[];
 };
 
 const WalletScreen = () => {
@@ -65,11 +65,12 @@ const WalletScreen = () => {
   const [activeTab, setActiveTab] = useState("Balances");
   const [selectedPeriod, setSelectedPeriod] = useState("Last 30 days");
   const [isLoading, setIsLoading] = useState(true);
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const { data: walletBalanceData, isLoading: loading } = useWalletBalance();
   const { data: transactions, isLoading: transactionsLoading } = useTransaction(
     userdata?._id || ""
   );
+  console.log("userdata", userdata);
   const filterOptions = [
     "Last 7 days",
     "Last 30 days",
@@ -84,13 +85,12 @@ const WalletScreen = () => {
       starknet: 0,
       total: 0,
     },
-    addresses: [
-      { chain: "XION", address: `${userdata?.wallets?.xion?.address || ""}` },
-      {
-        chain: "Starknet",
-        address: `${userdata?.wallets?.starknet?.address || ""}`,
-      },
-    ],
+    addresses: {
+      wallet: {
+        address: `${userdata?.wallet.address || ""}`,
+        publickKey: `${userdata?.wallet.publickKey || ""}`,
+      }
+    },
     transactions: [], // Now properly typed as Transaction[]
   });
 
@@ -102,46 +102,22 @@ const WalletScreen = () => {
       ),
     });
   }, [navigation]);
-  console.log(walletData, "transaction");
 
   // Update walletData when transactions are loaded
   useEffect(() => {
     if (transactions && Array.isArray(transactions)) {
-
       setWalletData((prev) => ({
         ...prev,
-        transactions: transactions.map((tx: APITransaction) => ({
-          id: tx?._id,
-          title: tx?.title || tx?.type || "",
-          amount: `${["funding", "transfer"].includes(tx.type) ? "+" : "-"}${
-            tx?.amount || 0
-          } ${tx?.currency || ""}`,
-          date: tx?.createdAt
-            ? new Date(tx.createdAt).toLocaleDateString()
-            : "",
-          source: tx?.source || "wallet",
-        })),
-      }));
-    }
-  }, [transactions]);
-
-  // Update the useEffect for transaction mapping
-  useEffect(() => {
-    if (transactions?.success && transactions?.data?.transactions) {
-      setWalletData((prev) => ({
-        ...prev,
-        transactions: transactions.data.transactions.map(
-          (tx: APITransaction) => ({
-            id: tx?._id,
-            title: tx.title || tx.type,
-            amount: `${
-              tx.status === "failed" ? "" : tx.type === "funding" ? "+" : "-"
-            }${tx.amount / 1000000} ${tx.currency}`,
-            date: new Date(tx.createdAt).toLocaleDateString(),
-            source: tx.source,
-            status: tx.status, // Add status to be used in TransactionHistory
-          })
-        ),
+        transactions: transactions.map((tx) => ({
+          id: tx?._id || "",
+          title: tx.title || tx.type || "",
+          amount: `${
+            tx.status === "failed" ? "" : (tx.type === "funding" || tx.type === "transfer" ? "+" : "-")
+          }${tx.amount / 1000000 || 0} ${tx.currency || ""}`,
+          date: tx.createdAt ? new Date(tx.createdAt).toLocaleDateString() : "",
+          source: tx.source || "wallet",
+          status: tx.status,
+        })) as LocalTransaction[],
       }));
     }
   }, [transactions]);
@@ -153,7 +129,7 @@ const WalletScreen = () => {
       const xionBalance =
         walletBalanceData?.data?.xion?.balances?.[0]?.usdValue ?? 0;
       const starknetBalance =
-        walletBalanceData?.data?.starknet?.usdValue ?? 0;
+        walletBalanceData?.data?.starknet?.balance?.usdValue ?? 0;
 
       setWalletData((prev) => ({
         ...prev,
@@ -217,7 +193,7 @@ const WalletScreen = () => {
           <>
             <WalletBalance
               balances={walletData?.balances}
-              addresses={walletData?.addresses}
+              addresses={walletData?.addresses?.wallet ? [{ chain: "Starknet", address: walletData?.addresses?.wallet?.address || "" }] : []}
               isLoading={loading}
               usdcPrice={walletBalanceData?.data?.usdcPrice}
               onCopyAddress={async (address) => {

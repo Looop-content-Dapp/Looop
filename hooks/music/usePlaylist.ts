@@ -1,5 +1,5 @@
 import api from "@/config/apiConfig";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 type Playlist = {
@@ -51,7 +51,7 @@ export const useAddSongToPlaylist = () => {
 };
 
 export const useUserPlaylists = () => {
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   return useQuery({
     queryKey: ["userPlaylists", userdata?._id],
     queryFn: async () => {

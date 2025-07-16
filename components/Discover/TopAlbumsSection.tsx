@@ -65,7 +65,10 @@ const TopAlbumsSection = ({ title, data }: TopAlbumsSectionProps) => {
       <FlatList
         horizontal
         data={data}
-        renderItem={({ item }) => <AlbumItem {...item} />}
+        renderItem={({ item }) => {
+          const { key, ...itemProps } = item as any;
+          return <AlbumItem {...itemProps} />;
+        }}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingLeft: 4 }}
       />

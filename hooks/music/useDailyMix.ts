@@ -1,9 +1,9 @@
 import api from "@/config/apiConfig";
 import { useQuery } from "@tanstack/react-query";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 
 export const useDailyMix = () => {
-  const { userdata } = useAppSelector((auth) => auth.auth)
+  const { userdata } = useAuth();
 
   return useQuery({
     queryKey: ["dailyMix", userdata?._id],

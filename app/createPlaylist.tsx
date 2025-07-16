@@ -3,13 +3,13 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingVi
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from 'expo-router';
 import { useCreatePlaylist } from '@/hooks/music/usePlaylist';
-import { useAppSelector } from '@/redux/hooks';
+import { useAuth } from '@/stores/hooks';
 import { useNotification } from '@/context/NotificationContext';
 
 const CreatePlaylist = () => {
   const { showNotification } = useNotification();
   const [playlistName, setPlaylistName] = useState('Daily Mix 1');
-  const { userdata } = useAppSelector((auth) => auth.auth);
+  const { userdata } = useAuth();
   const navigation = useNavigation();
   const createPlaylist = useCreatePlaylist();
   const inputRef = useRef<TextInput>(null);

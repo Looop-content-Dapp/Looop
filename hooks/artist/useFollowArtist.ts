@@ -3,7 +3,6 @@ import api from "@/config/apiConfig";
 import { useMutation } from "@tanstack/react-query";
 
 type FollowArtistInput = {
-  userId: string;
   artistId: string;
 };
 
@@ -13,7 +12,10 @@ export const useFollowArtist = () => {
   const mutation = useMutation({
     mutationFn: async (input: FollowArtistInput) => {
       const { data } = await api.post(
-        `/api/user/follow/${input.userId}/${input.artistId}`
+        `/social/follow/`,
+        {
+            followingId: input.artistId
+        }
       );
       return data;
     },
@@ -25,13 +27,10 @@ export const useFollowArtist = () => {
     }
   });
 
-  const handleFollowArtist = async (userId: string | undefined, artistId: string) => {
-    if (!userId) {
-      return null;
-    }
+  const handleFollowArtist = async (artistId: string) => {
 
     try {
-      const response = await mutation.mutateAsync({ userId, artistId });
+      const response = await mutation.mutateAsync({ artistId });
 
       if (response?.status !== "success") {
         throw new Error(response?.message || "Failed to follow artist");

@@ -4,7 +4,7 @@ import {
   TribeCardSkeleton,
 } from "@/components/skeletons/TribeSkeletons";
 import { useTribes, useUserSubscriptions } from "@/hooks/community/useTribes";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { SubscriptionItem, TribeItem } from "@/types/tribe";
 import { ArrowRight01Icon } from "@hugeicons/react-native";
 import { router, useNavigation } from "expo-router";
@@ -249,7 +249,7 @@ const TabButton: React.FC<TabButtonProps> = React.memo(({ tab, isActive, onPress
 
 const Index = () => {
   const navigation = useNavigation();
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const [activeTab, setActiveTab] = useState("My Tribes");
   const {
     data: tribesData,

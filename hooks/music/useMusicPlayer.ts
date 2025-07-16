@@ -1,20 +1,6 @@
 import { useQuery } from "@/hooks/core/useQuery";
 import { useLibrary } from "@/hooks/music/useLibrary";
-import { useAppSelector } from "@/redux/hooks";
-import {
-  addToQueue,
-  pauseTrack,
-  playTrack,
-  setIsPlaying,
-  setMuted,
-  setPlaylist,
-  setQueue,
-  setVolume,
-  toggleRepeatMode,
-  toggleShuffleMode,
-  updateCurrentIndex,
-} from "@/redux/slices/PlayerSlice";
-import { RootState } from "@/redux/store";
+import { usePlayer, useAuth } from "@/stores/hooks";
 import {
   AlbumInfo,
   ExtendedTrack,
@@ -32,7 +18,6 @@ import TrackPlayer, {
   usePlaybackState,
   useProgress,
 } from "react-native-track-player";
-import { useDispatch } from "react-redux";
 import useUserInfo from "../user/useUserInfo";
 
 const PLAYBACK_TRACKING_TIMEOUT = 60000; // 1 minute in milliseconds
@@ -80,7 +65,6 @@ const formatTrack = (
 });
 
 const useMusicPlayer = () => {
-  const dispatch = useDispatch();
   const {
     getTracksFromId,
     saveAlbum,
@@ -103,9 +87,20 @@ const useMusicPlayer = () => {
     volume,
     muted,
     isPlaying,
-  } = useAppSelector((state: RootState) => state.player);
+    setIsPlaying,
+    setMuted,
+    setVolume,
+    setQueue,
+    setPlaylist,
+    addToQueue,
+    playTrack,
+    pauseTrack,
+    toggleShuffleMode,
+    toggleRepeatMode,
+    updateCurrentIndex,
+  } = usePlayer();
 
-  const { userdata } = useAppSelector((state: RootState) => state.auth);
+  const { userdata } = useAuth();
 
   const [state, setState] = useState<MusicPlayerState>({
     tracks: [],
@@ -140,12 +135,12 @@ const useMusicPlayer = () => {
 
     const playbackStateListener = async (event: { state: State }) => {
       if (event.state === State.Playing) {
-        dispatch(setIsPlaying(true));
+        setIsPlaying(true);
       } else if (
         event.state === State.Paused ||
         event.state === State.Stopped
       ) {
-        dispatch(setIsPlaying(false));
+        setIsPlaying(false);
       }
     };
 
@@ -159,7 +154,7 @@ const useMusicPlayer = () => {
               ...prev,
               currentPlayingIndex: event.index ?? -1,
             }));
-            dispatch(playTrack({ track: nextTrack, albumInfo, playlist }));
+            playTrack({ track: nextTrack, albumInfo, playlist });
           }
         }
       }
@@ -197,7 +192,7 @@ const useMusicPlayer = () => {
     };
 
     return setupListeners();
-  }, [dispatch, playlist, albumInfo, repeat]);
+  }, [setIsPlaying, playTrack, playlist, albumInfo, repeat]);
 
   const play = useCallback(
     async (
@@ -213,7 +208,7 @@ const useMusicPlayer = () => {
         }
 
         setLoadingTrackId(track._id);
-        dispatch(playTrack({ track, albumInfo, playlist }));
+        playTrack({ track, albumInfo, playlist });
 
         const trackIndex = playlist?.findIndex((t) => t._id === track._id) ?? 0;
 
@@ -230,7 +225,7 @@ const useMusicPlayer = () => {
           if (index !== -1) {
             await TrackPlayer.skip(index);
             await TrackPlayer.play();
-            dispatch(setIsPlaying(true));
+            setIsPlaying(true);
             setLoadingTrackId(null);
             return;
           }
@@ -249,7 +244,7 @@ const useMusicPlayer = () => {
         }
 
         await TrackPlayer.play();
-        dispatch(setIsPlaying(true));
+        setIsPlaying(true);
         await storeCurrentTrack(track, albumInfo);
 
         const streamingTimeout = setTimeout(async () => {
@@ -293,29 +288,29 @@ const useMusicPlayer = () => {
           loading: false,
           isAlbumPlaying: false,
         }));
-        dispatch(setIsPlaying(false));
+        setIsPlaying(false);
       } finally {
         setLoadingTrackId(null);
       }
     },
-    [dispatch, userdata?._id, userInfo, streamSong]
+    [playTrack, setIsPlaying, userdata?._id, userInfo, streamSong]
   );
 
   const pause = useCallback(async () => {
     try {
       await TrackPlayer.pause();
-      dispatch(setIsPlaying(false));
-      dispatch(pauseTrack());
+      setIsPlaying(false);
+      pauseTrack();
       setState((prev) => ({ ...prev, isAlbumPlaying: false }));
     } catch (error) {
       console.error("Error pausing track:", error);
     }
-  }, [dispatch]);
+  }, [setIsPlaying, pauseTrack]);
 
   const stop = useCallback(async () => {
     try {
       await TrackPlayer.reset();
-      dispatch(pauseTrack());
+      pauseTrack();
       setState((prev) => ({
         ...prev,
         isAlbumPlaying: false,
@@ -323,7 +318,7 @@ const useMusicPlayer = () => {
     } catch (error) {
       console.error("Error stopping track:", error);
     }
-  }, [dispatch]);
+  }, [pauseTrack]);
 
   const next = useCallback(async () => {
     try {
@@ -348,11 +343,11 @@ const useMusicPlayer = () => {
 
       await TrackPlayer.skip(nextIndex);
       await TrackPlayer.play();
-      dispatch(updateCurrentIndex(nextIndex));
+      updateCurrentIndex(nextIndex);
     } catch (error) {
       console.error("Error skipping to next:", error);
     }
-  }, [dispatch, repeat]);
+  }, [updateCurrentIndex, repeat]);
 
   const previous = useCallback(async () => {
     try {
@@ -377,15 +372,15 @@ const useMusicPlayer = () => {
 
       await TrackPlayer.skip(prevIndex);
       await TrackPlayer.play();
-      dispatch(updateCurrentIndex(prevIndex));
+      updateCurrentIndex(prevIndex);
     } catch (error) {
       console.error("Error skipping to previous:", error);
     }
-  }, [dispatch, repeat]);
+  }, [updateCurrentIndex, repeat]);
 
   const toggleShuffle = useCallback(async () => {
     try {
-      dispatch(toggleShuffleMode());
+      toggleShuffleMode();
 
       if (!shuffle) {
         const queue = await TrackPlayer.getQueue();
@@ -410,22 +405,22 @@ const useMusicPlayer = () => {
           await TrackPlayer.play();
         }
 
-        dispatch(setQueue(newQueue as ExtendedTrack[]));
+        setQueue(newQueue as ExtendedTrack[]);
       }
     } catch (error) {
       console.error("Error toggling shuffle:", error);
     }
-  }, [dispatch, shuffle, isPlaying]);
+  }, [toggleShuffleMode, setQueue, shuffle, isPlaying]);
 
   const toggleRepeat = useCallback(async () => {
     try {
-      dispatch(toggleRepeatMode());
+      toggleRepeatMode();
       const newRepeatMode = repeat ? RepeatMode.Off : RepeatMode.Track;
       await TrackPlayer.setRepeatMode(newRepeatMode);
     } catch (error) {
       console.error("Error toggling repeat:", error);
     }
-  }, [dispatch, repeat]);
+  }, [toggleRepeatMode, repeat]);
 
   const seekTo = useCallback(async (seconds: number) => {
     try {
@@ -439,23 +434,23 @@ const useMusicPlayer = () => {
     async (value: number) => {
       try {
         await TrackPlayer.setVolume(value);
-        dispatch(setVolume(value));
+        setVolume(value);
       } catch (error) {
         console.error("Error setting volume:", error);
       }
     },
-    [dispatch]
+    [setVolume]
   );
 
   const toggleMute = useCallback(async () => {
     try {
       const newMutedState = !muted;
       await TrackPlayer.setVolume(newMutedState ? 0 : volume);
-      dispatch(setMuted(newMutedState));
+      setMuted(newMutedState);
     } catch (error) {
       console.error("Error toggling mute:", error);
     }
-  }, [dispatch, muted, volume]);
+  }, [setMuted, muted, volume]);
 
   const loadAlbumData = useCallback(
     async (albumId: string, type: string) => {
@@ -515,7 +510,7 @@ const useMusicPlayer = () => {
       try {
         if (!albumInfo) return;
 
-        dispatch(setQueue(newQueue));
+        setQueue(newQueue);
         await TrackPlayer.reset();
 
         const formattedTracks = newQueue.map((track) =>
@@ -530,7 +525,7 @@ const useMusicPlayer = () => {
         console.error("Error updating queue:", error);
       }
     },
-    [dispatch, albumInfo, isPlaying]
+    [setQueue, albumInfo, isPlaying]
   );
 
   return {
@@ -566,16 +561,16 @@ const useMusicPlayer = () => {
     handleLike,
     updateQueue,
     updatePlaylist: useCallback(
-      (tracks: ExtendedTrack[]) => dispatch(setPlaylist(tracks)),
-      [dispatch]
+      (tracks: ExtendedTrack[]) => setPlaylist(tracks),
+      [setPlaylist]
     ),
     addToQueue: useCallback(
       async (track: ExtendedTrack) => {
         if (!albumInfo) return;
-        dispatch(addToQueue(track));
+        addToQueue(track);
         await TrackPlayer.add(formatTrack(track, albumInfo));
       },
-      [dispatch, albumInfo]
+      [addToQueue, albumInfo]
     ),
     getStoredTrack: useCallback(async () => await getStoredTrack(), []),
   };

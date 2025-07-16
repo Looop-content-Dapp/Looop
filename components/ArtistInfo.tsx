@@ -1,6 +1,6 @@
 import { showToast } from "@/components/ShowMessage";
 import { useFollowArtist } from "@/hooks/artist/useFollowArtist";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { CheckmarkBadge01Icon, PlayIcon, Money02Icon, XVariableIcon, Notification01Icon } from "@hugeicons/react-native";
 import React, { useEffect, useState } from "react";
 import {
@@ -46,7 +46,7 @@ const ArtistInfo: React.FC<ArtistInfoProps> = ({
   useEffect(() => {
     setFollowed(isFollow); // Update when prop changes
   }, [isFollow]);
-  const { userdata } = useAppSelector((state) => state.auth); // Assuming token is available in auth state
+  const { userdata } = useAuth(); // Assuming token is available in auth state
   const { handleFollowArtist, isLoading } = useFollowArtist();
 
   const onFollowPress = async () => {

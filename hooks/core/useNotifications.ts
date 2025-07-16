@@ -1,8 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/config/apiConfig';
-import { useAppDispatch } from '@/redux/hooks';
-import { markAsRead, setNotifications } from '@/redux/slices/notifications';
+import { useNotificationsActions } from '@/stores/hooks';
 
 interface Notification {
   _id: string;
@@ -25,7 +24,7 @@ interface NotificationResponse {
 }
 
 export const useNotifications = (userId: string) => {
-  const dispatch = useAppDispatch();
+  const { setNotifications, markAsRead } = useNotificationsActions();
   const queryClient = useQueryClient();
 
   // Fetch notifications
@@ -33,7 +32,7 @@ export const useNotifications = (userId: string) => {
     queryKey: ['notifications', userId],
     queryFn: async () => {
       const { data } = await api.get(`/api/notifications/user/${userId}`);
-      dispatch(setNotifications(data.data.notifications));
+      setNotifications(data.data.notifications);
       return data.data;
     },
     refetchInterval: 30000, // Refetch every 30 seconds
@@ -54,7 +53,7 @@ export const useNotifications = (userId: string) => {
       const { data } = await api.post(`/api/notifications/user/${userId}/read`, {
         notificationIds,
       });
-      dispatch(markAsRead(notificationIds));
+      markAsRead(notificationIds);
       return data;
     },
     onSuccess: () => {

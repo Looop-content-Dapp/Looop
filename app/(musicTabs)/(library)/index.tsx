@@ -13,12 +13,12 @@ import ToggleFlatListView from "@/components/view/ToggleFlatlistView";
 import GridComponent from "@/components/cards/GridComponents";
 import ListComponent from "@/components/cards/ListComponents";
 import { useLibrary } from "@/hooks/music/useLibrary";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { useMusicPlayerContext } from "@/context/MusicPlayerContext";
 import { LibrarySkeleton } from "@/components/skeletons/LibrarySkeleton";
 
 const index = () => {
-  const { userdata } = useAppSelector((auth) => auth.auth);
+  const { userdata } = useAuth();
   const { lastPlayed } = useLibrary(userdata?._id);
   const musicPlayer = useMusicPlayerContext();
 

@@ -1,5 +1,5 @@
 import api from "@/config/apiConfig";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 type Community = {
@@ -89,7 +89,7 @@ type CommunityPostsResponse = {
 };
 
 export const useGetCommunityPosts = (communityId: string) => {
-    const { userdata } = useAppSelector((state) => state.auth);
+    const { userdata } = useAuth();
   return useQuery({
     queryKey: ['communityPosts', communityId],
     queryFn: async () => {
@@ -112,7 +112,7 @@ type SinglePostResponse = {
 };
 
 export const useGetPost = (postId: string) => {
-    const { userdata } = useAppSelector((state) => state.auth);
+    const { userdata } = useAuth();
   return useQuery({
     queryKey: ['post', postId, userdata?._id],
     queryFn: async () => {

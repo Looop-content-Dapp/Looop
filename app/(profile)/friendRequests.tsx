@@ -1,7 +1,7 @@
 import { AppBackButton } from "@/components/app-components/back-btn";
 import { useFriendRequests } from "@/hooks/useFriendRequests";
 import { useFriendWebSocket } from "@/hooks/useFriendWebSocket";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { useNavigation, useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
@@ -25,7 +25,7 @@ interface FriendRequest {
 const FriendRequests = () => {
   const navigation = useNavigation();
   const router = useRouter();
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
 
   // Initialize WebSocket connection
   useFriendWebSocket(userdata?._id || "");

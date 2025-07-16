@@ -5,7 +5,7 @@ import { Select } from "@/components/ui/select";
 import { useNotification } from "@/context/NotificationContext";
 import { countries, languages } from "@/data/data";
 import { useUpdateProfile } from "@/hooks/user/useUpdateProfile";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -106,7 +106,7 @@ type ProfileFormData = yup.InferType<typeof profileSchema>;
 const EditProfile = () => {
   const { showNotification } = useNotification();
   const router = useRouter();
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile();
 
   // Update the defaultValues in useForm

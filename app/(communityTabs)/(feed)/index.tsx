@@ -1,5 +1,5 @@
 import NowPlaying from "@/components/player/NowPlaying";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { router, useNavigation } from "expo-router";
 import { MotiView } from "moti";
 import React, { useLayoutEffect } from "react";
@@ -138,7 +138,7 @@ const Feed = () => {
   const navigation = useNavigation();
   const [refreshing, setRefreshing] = React.useState(false);
   const { data, isLoading, isError, refetch, isFetching } = useUserFeed();
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);

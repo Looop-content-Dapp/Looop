@@ -6,7 +6,7 @@ import BasedOnSubscription from "@/components/home/BasedOnSubscription";
 import { useDailyMix } from "@/hooks/music/useDailyMix";
 import useMusicPlayer from "@/hooks/music/useMusicPlayer";
 import { useUserDashboard } from "@/hooks/user/useUserFeed";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { Notification02Icon } from "@hugeicons/react-native";
 import { router, useNavigation } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -22,7 +22,7 @@ const Index = () => {
   const { data: userFeedData, isLoading: isUserFeedLoading } =
     useUserDashboard();
     const navigation = useNavigation()
-    const { userdata } = useAppSelector((state) => state.auth)
+    const { userdata } = useAuth()
 
     const getGreeting = () => {
         const currentHour = new Date().getHours();

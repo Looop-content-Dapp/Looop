@@ -1,6 +1,6 @@
 import { usePostComments } from "@/hooks/community/usePostComments";
 import { usePostInteractions } from "@/hooks/community/usePostInteractions";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetScrollView,
@@ -33,22 +33,31 @@ import {
 import { Avatar } from "react-native-elements";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// Define comment type based on your data structure
-interface User {
+// Use the actual Comment type from the API
+interface CommentUser {
   _id: string;
   username: string;
   profileImage: string;
   isVerified?: boolean;
+  email: string;
+  bio: string;
+  fullname: string;
+  gender: string;
 }
 
-interface CommentType {
-  id: string;
-  user: User;
-  text: string;
-  timestamp: string;
-  likes: number;
-  replies: CommentType[];
-  isEdited?: boolean;
+interface Comment {
+  _id: string;
+  userId: CommentUser;
+  postId: string;
+  parentCommentId: string | null;
+  content: string;
+  createdAt: string;
+  likes: string[];
+  likeCount: number;
+  hasLiked: boolean;
+  replies: Comment[];
+  replyCount: number;
+  isEdited: boolean;
 }
 
 interface CommentsBottomSheetProps {
@@ -78,7 +87,7 @@ const CommentsBottomSheet: React.FC<CommentsBottomSheetProps> = ({
 
   const { data, isLoading } = usePostComments(postId);
   const { commentOnPost, likePost, isCommenting } = usePostInteractions();
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const [commentText, setCommentText] = useState("");
   const inputRef = useRef<TextInput>(null);
 
@@ -151,7 +160,7 @@ const CommentsBottomSheet: React.FC<CommentsBottomSheetProps> = ({
         userId: userdata._id,
         postId,
         content: commentText,
-        replyTo: replyToComment?._id,
+        parentCommentId: replyToComment?._id,
       });
       setCommentText("");
       if (currentPage === "reply") {
@@ -196,7 +205,7 @@ const CommentsBottomSheet: React.FC<CommentsBottomSheetProps> = ({
   };
 
   // Render a single comment
-  const renderComment = ({ item }: { item: CommentType }) => {
+  const renderComment = ({ item }: { item: Comment }) => {
     return (
       <View className="mb-4 px-4">
         <View className="flex-row mb-1">
@@ -204,7 +213,7 @@ const CommentsBottomSheet: React.FC<CommentsBottomSheetProps> = ({
             <Avatar
               source={{
                 uri:
-                  item.user.profileImage ||
+                  item.userId.profileImage ||
                   "https://i.pinimg.com/564x/bc/7a/0c/bc7a0c399990de122f1b6e09d00e6c4c.jpg",
               }}
               size={38}
@@ -215,28 +224,28 @@ const CommentsBottomSheet: React.FC<CommentsBottomSheetProps> = ({
           <View className="flex-1">
             <View className="flex-row items-center mb-1 justify-between">
               <Text className="text-[16px] font-PlusJakartaSansBold text-[#FFFFFF] mr-1.5">
-                {item.user.username}
+                {item.userId.username}
               </Text>
-              {item.user.isVerified && (
+              {item.userId.isVerified && (
                 <View className="bg-green-500 w-4 h-4 rounded-full justify-center items-center mr-1.5">
                   <Text className="text-gray-900 text-xs font-bold">✓</Text>
                 </View>
               )}
               <Text className="text-[12px] text-[#63656B] font-PlusJakartaSansMedium">
-                {formatTimestamp(item.timestamp)}
+                {formatTimestamp(item.createdAt)}
               </Text>
             </View>
             <Text className="text-[14px] text-[#FFFFFF] font-PlusJakartaSansRegular mb-2 leading-5">
-              {item.text}
+              {item.content}
             </Text>
             <View className="flex-row items-center">
               <TouchableOpacity
                 className="flex-row items-center gap-x-2 mr-4"
-                onPress={() => handleLike(item.id)}
+                onPress={() => handleLike(item._id)}
               >
                 <FavouriteIcon size={20} color="#63656B" />
                 <Text className="text-[14px] text-[#D2D3D5] font-PlusJakartaSansMedium">
-                  {item.likes}
+                  {item.likeCount}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -251,7 +260,7 @@ const CommentsBottomSheet: React.FC<CommentsBottomSheetProps> = ({
               {item.replies && item.replies.length > 0 && (
                 <TouchableOpacity onPress={() => handleReply(item)}>
                   <Text className="text-xs text-gray-500">
-                    {item.replies.length} Replies
+                    {item.replyCount} Replies
                   </Text>
                 </TouchableOpacity>
               )}
@@ -263,7 +272,7 @@ const CommentsBottomSheet: React.FC<CommentsBottomSheetProps> = ({
         {false && item.replies && item.replies.length > 0 && (
           <View className="ml-12 mt-2">
             {item.replies.map((reply) => (
-              <View key={reply.id} className="mb-2">
+              <View key={reply._id} className="mb-2">
                 {/* Reply content here if we decide to show replies inline */}
               </View>
             ))}

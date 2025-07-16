@@ -19,8 +19,7 @@ import {
   View,
 } from "react-native";
 import PostCard from "../../../components/cards/PostCard";
-import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
-import { addRecentSearch } from "../../../redux/slices/searchSlice";
+import { useAuth, useSearch as useSearchStore, useSearchActions } from "@/stores/hooks";
 
 // Import types from useSearch
 type Genre = {
@@ -115,9 +114,9 @@ const SearchScreen = () => {
     "posts" | "tribes" | "artistes"
   >();
   const navigation = useNavigation();
-  const dispatch = useAppDispatch();
-  const recentSearches = useAppSelector((state) => state.search.recentSearches);
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { addRecentSearch } = useSearchActions();
+  const { recentSearches } = useSearchStore();
+  const { userdata } = useAuth();
 
   const { data, isLoading } = useSearch(searchQuery, activeFilter);
   const results = data?.data?.results || [];
@@ -129,7 +128,7 @@ const SearchScreen = () => {
   const handleSearch = (text: string) => {
     setSearchQuery(text);
     if (text.trim() && !recentSearches.includes(text.trim())) {
-      dispatch(addRecentSearch(text.trim()));
+      addRecentSearch(text.trim());
     }
   };
 

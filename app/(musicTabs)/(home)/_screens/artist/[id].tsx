@@ -3,7 +3,7 @@ import ArtistReleases from "@/components/ArtistProfile/ArtistReleases";
 import JoinCommunity from "@/components/cards/JoinCommunity";
 import { useArtistCommunity } from "@/hooks/artist/useArtistCommunity";
 import { useFetchArtist } from "@/hooks/artist/useFetchArtist"; // Import the hook
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { ArrowLeft02Icon, CheckmarkBadge01Icon } from "@hugeicons/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -29,11 +29,12 @@ import { getColors } from "react-native-image-colors";
 
 const ArtistDetails = () => {
   const { id } = useLocalSearchParams(); // Use only id
+  console.log(id);
   const [showFullDesc, setShowFullDesc] = useState(false);
   const { data: artistData, isLoading: isArtistLoading } = useFetchArtist(
     id as string
   ); // Fetch artist data
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const scrollY = useRef(new Animated.Value(0)).current;
   const [isMember, setIsMember] = useState(false);
   const { data: communityDataRaw, isLoading: isCommunityLoading } =
@@ -64,10 +65,14 @@ const ArtistDetails = () => {
   };
 
   useEffect(() => {
-    if (artistData?.joinSuccess === "true") {
-      setIsMember(true);
+    // Check if user is a member based on community data
+    if (communityData && userdata?._id) {
+      const isMemberOfCommunity = communityData.members?.some(
+        (member: any) => member.userId === userdata._id
+      );
+      setIsMember(isMemberOfCommunity);
     }
-  }, [artistData]);
+  }, [communityData, userdata]);
 
   const headerTranslateY = scrollY.interpolate({
     inputRange: [0, SCREEN_HEIGHT * 0.3],
@@ -244,12 +249,12 @@ const ArtistDetails = () => {
                 <ArtistInfo
                   image={artistData?.profileImage}
                   name={artistData?.name}
-                  follow={artistData?.noOfFollowers.toString()}
+                  follow={artistData?.followers.toString()}
                   desc={artistData?.biography}
-                  follower={artistData?.communityMembers.length.toString()}
+                  follower={artistData?._count?.communities.toString() || "0"}
                   isVerfied={artistData?.verified.toString()}
                   index={id as string}
-                  isFollow={artistData?.followers.includes(userdata?._id)}
+                  isFollow={artistData?.isFollowed}
                 />
 
                 <JoinCommunity

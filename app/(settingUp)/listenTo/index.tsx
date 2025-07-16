@@ -1,7 +1,7 @@
 import { AppButton } from "@/components/app-components/button";
 import type { Genre } from "@/hooks/artist/useGenre";
 import { useCreateGenreForUser, useGetGenre } from "@/hooks/artist/useGenre";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { ArrowLeft02Icon } from "@hugeicons/react-native";
 import { useNavigation, useRouter } from "expo-router";
 import { MotiView } from "moti";
@@ -14,15 +14,14 @@ import {
 import MusicCategoryGrid from "./MusicGrid";
 
 const WhatDoYouListenTo = () => {
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const { mutate: createGenreForUser, isPending } = useCreateGenreForUser();
   const { data, isLoading } = useGetGenre();
-  const [selectedGenres, setSelectedGenres] = useState([]);
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const navigation = useNavigation();
   const router = useRouter();
 
   const handleGenreSelection = (genreName: string) => {
-    // @ts-expect-error: Type 'string' is not assignable to type 'SetStateAction<string[]>'.
     setSelectedGenres((prev: string[]) => {
       if (prev.includes(genreName)) {
         return prev.filter((name) => name !== genreName);

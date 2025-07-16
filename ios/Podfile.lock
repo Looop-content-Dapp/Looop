@@ -1796,7 +1796,7 @@ PODS:
     - Yoga
   - react-native-track-player (4.1.1):
     - React-Core
-    - SwiftAudioEx (= 1.1.1)
+    - SwiftAudioEx (= 1.1.0)
   - react-native-video (6.12.0):
     - DoubleConversion
     - glog
@@ -2327,7 +2327,7 @@ PODS:
     - SDWebImage/Core (~> 5.10)
   - Sentry/HybridSDK (8.48.0)
   - SocketRocket (0.7.1)
-  - SwiftAudioEx (1.1.1)
+  - SwiftAudioEx (1.1.0)
   - Yoga (0.0.0)
 
 DEPENDENCIES:

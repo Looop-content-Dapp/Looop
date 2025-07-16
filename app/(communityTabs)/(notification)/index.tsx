@@ -1,6 +1,6 @@
 import NotificationItem from "@/components/NotificationItem";
 import { useNotifications } from "@/hooks/core/useNotifications";
-import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/stores/hooks";
 import { router, useNavigation } from "expo-router";
 import React, { useLayoutEffect, useState } from "react";
 import {
@@ -15,7 +15,7 @@ import { Avatar } from "react-native-elements";
 
 const NotificationScreen = () => {
   const navigation = useNavigation();
-  const { userdata } = useAppSelector((state) => state.auth);
+  const { userdata } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
 
   const {
